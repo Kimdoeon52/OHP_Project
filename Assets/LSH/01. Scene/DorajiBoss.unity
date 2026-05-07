@@ -334,7 +334,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &555281447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -351,6 +351,7 @@ MonoBehaviour:
   currentHp: 0
   bossLevel: 0
   actionCases: []
+  patternDelay: 0
 --- !u!4 &555281448
 Transform:
   m_ObjectHideFlags: 0
@@ -1649,6 +1650,7 @@ MonoBehaviour:
   currentHp: 0
   bossLevel: 0
   actionCases: []
+  patternDelay: 0
   image: {fileID: 413440078}
   image2: {fileID: 413440078}
   bossABullet: {fileID: 0}
