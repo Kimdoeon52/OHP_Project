@@ -7,8 +7,8 @@ namespace PrototypeRT
     [RequireComponent(typeof(RectTransform))]
     public class ItemGrid : MonoBehaviour
     {
-        public const float TileWidth = 48f;
-        public const float TileHeight = 48f;
+        public const float TileWidth = 64f;
+        public const float TileHeight = 64f;
 
         [Header("그리드 크기")]
         [Tooltip("인벤토리의 가로 칸 수입니다. 실제 UI 너비는 이 값에 칸 너비 32픽셀을 곱해 자동으로 정해집니다.")]
