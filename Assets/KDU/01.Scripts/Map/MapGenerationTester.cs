@@ -38,7 +38,7 @@ public class MapGenerationTester : MonoBehaviour
         Debug.Log($"[Determinism seed={runSeed} depth={depth}] {(ok ? "PASS" : "FAIL")}  hash1={hash1}  hash2={hash2}");
     }
 
-    [ContextMenu("3) 100 시드 연결성 스트레스")]
+    [ContextMenu("3) 100 시드 연결성 테스트")]
     public void StressTest()
     {
         if (!ValidateRefs()) return;
@@ -46,7 +46,7 @@ public class MapGenerationTester : MonoBehaviour
         var failedSeeds = new List<int>();
         for (int i = 0; i < stressTestCount; i++)
         {
-            int seed = unchecked(runSeed + i * 7919); // 임의 stride 로 시드 분산
+            int seed = unchecked(runSeed + i * 7919);
             var rooms = generator.Generate(seed, depth, builder, painter);
             if (rooms != null && MapGraph.IsConnected(rooms)) passed++;
             else failedSeeds.Add(seed);

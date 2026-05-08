@@ -10,8 +10,8 @@ using UnityEngine;
 public class LoopBuilder : ScriptableObject, ILayoutBuilder
 {
     [Header("루프 배치")]
-    [SerializeField] private int baseLoopRadius = 22;
-    [SerializeField] private int radiusPerExtraRoom = 3;
+    [SerializeField] private int minLoopRadius = 8;     // 방이 작아도 이 이하로는 줄이지 않음
+    [SerializeField] private int interRoomGap = 3;      // 인접 방 사이 최소 여유 (벽 + 터널 폭 흡수)
 
     [Header("방 크기 범위 (셀 단위, min/max 모두 포함)")]
     [SerializeField] private Vector2Int normalSize = new Vector2Int(5, 7);
@@ -93,7 +93,7 @@ public class LoopBuilder : ScriptableObject, ILayoutBuilder
     private void PositionInLoop(List<RoomData> loop)
     {
         int n = loop.Count;
-        int radius = baseLoopRadius + Mathf.Max(0, n - 4) * radiusPerExtraRoom;
+        int radius = ComputeLoopRadius(loop);
         for (int i = 0; i < n; i++)
         {
             float angle = (float)i / n * Mathf.PI * 2f;
@@ -102,6 +102,30 @@ public class LoopBuilder : ScriptableObject, ILayoutBuilder
             var b = loop[i].bounds;
             loop[i].bounds = new RectInt(cx - b.width / 2, cy - b.height / 2, b.width, b.height);
         }
+    }
+
+    /// <summary>
+    /// 인접 방쌍이 겹치지 않을 만큼만 반지름 확보. chord = 2R·sin(π/N) 식 역산.
+    /// 방 크기 합 + interRoomGap 을 인접쌍 거리(chord) 의 하한으로 잡고, 가장 큰 케이스로 R 결정.
+    /// </summary>
+    private int ComputeLoopRadius(List<RoomData> loop)
+    {
+        int n = loop.Count;
+        if (n < 2) return minLoopRadius;
+
+        float maxChordNeeded = 0f;
+        for (int i = 0; i < n; i++)
+        {
+            var a = loop[i];
+            var b = loop[(i + 1) % n];
+            float aHalf = Mathf.Max(a.bounds.width, a.bounds.height) * 0.5f;
+            float bHalf = Mathf.Max(b.bounds.width, b.bounds.height) * 0.5f;
+            float need = aHalf + bHalf + interRoomGap;
+            if (need > maxChordNeeded) maxChordNeeded = need;
+        }
+
+        float r = maxChordNeeded / (2f * Mathf.Sin(Mathf.PI / n));
+        return Mathf.Max(minLoopRadius, Mathf.CeilToInt(r));
     }
 
     private void ConnectWithTunnel(RoomData a, RoomData b, List<RoomData> allRooms, DungeonRandom rng)

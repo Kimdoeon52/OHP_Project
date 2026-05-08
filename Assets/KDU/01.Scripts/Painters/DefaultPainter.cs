@@ -60,7 +60,27 @@ public class DefaultPainter : ScriptableObject, IRegionPainter
                 }
             }
         }
+
+        // Pass 1: 모든 wall 타일 먼저 SetTile — RuleTile 이웃 갱신 다 끝낸 후
+        // Pass 2 에서 transform 을 잠가야 refresh 에 의해 reset 되지 않음.
         foreach (var c in wallSet)
             wallTilemap.SetTile(new Vector3Int(c.x, c.y, 0), wallTile);
+
+        // Pass 2: 우측 측면 벽만 X-flip + LockTransform.
+        // 표준 RuleTile MirrorX 는 측면 벽 패턴이 X 대칭이라 발동하지 않으므로 강제 미러.
+        var flipMatrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(-1f, 1f, 1f));
+        foreach (var c in wallSet)
+        {
+            bool floorW = floorSet.Contains(c + Vector2Int.left);
+            bool floorE = floorSet.Contains(c + Vector2Int.right);
+            bool floorN = floorSet.Contains(c + Vector2Int.up);
+            bool floorS = floorSet.Contains(c + Vector2Int.down);
+            bool isPureRightSideWall = floorW && !floorE && !floorN && !floorS;
+            if (!isPureRightSideWall) continue;
+
+            var pos = new Vector3Int(c.x, c.y, 0);
+            wallTilemap.SetTransformMatrix(pos, flipMatrix);
+            wallTilemap.SetTileFlags(pos, TileFlags.LockTransform);
+        }
     }
 }
