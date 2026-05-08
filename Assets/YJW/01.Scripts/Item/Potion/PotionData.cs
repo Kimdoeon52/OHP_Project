@@ -11,6 +11,7 @@ public enum PotionType
     ice
 }
 
+[CreateAssetMenu(fileName = "NewPotion", menuName = "Item/Potion/NewPotion")]
 public class PotionData : ItemBase
 {
     [SerializeField] private PotionType potionType;
@@ -21,16 +22,16 @@ public class PotionData : ItemBase
         switch(potionType)
         {
             case PotionType.HP:
-                // 플레이어 HP 회복
+                PlayerStats.Instance.AddStat(StatType.Hp, value);
                 break;
             case PotionType.strength:
-                // 플레이어 힘 증가
+                PlayerStats.Instance.AddStat(StatType.Strength, value);
                 break;
             case PotionType.sight:
                 // 맵 시야 밝힘
                 break;
             case PotionType.experience:
-                // 플레이어 경험치 증가
+                PlayerStats.Instance.AddStat(StatType.Level, value);
                 break;
         }
     }

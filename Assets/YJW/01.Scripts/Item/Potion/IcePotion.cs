@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-[CreateAssetMenu(fileName = "IcePotion", menuName = "Item/Potion/Ice")]
+[CreateAssetMenu(fileName = "IcePotion", menuName = "Item/Potion/ThrowablePotion/Ice")]
 public class IcePotion : ThrowablePotion
 {
     protected override void ApplyEffect(Vector2Int tile)
