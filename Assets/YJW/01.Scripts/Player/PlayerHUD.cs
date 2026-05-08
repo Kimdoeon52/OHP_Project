@@ -4,7 +4,8 @@ public class PlayerHUD : MonoBehaviour
 {
     private void OnEnable()
     {
-        PlayerStats.Instance.OnStatChanged += UpdateUI;
+        if (PlayerStats.Instance != null)
+            PlayerStats.Instance.OnStatChanged += UpdateUI;
     }
 
     private void OnDisable()
