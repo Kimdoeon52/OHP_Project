@@ -3,15 +3,15 @@
 GDD v1.0을 바탕으로 적(Enemy) 파트 담당자가 수행해야 할 작업 목록입니다.
 
 ## 1. 기반 시스템 및 스폰 규칙 (RoomSpawnRule)
-- `[ ]` **추상 클래스 `RoomSpawnRule` 기반 방 타입별 스폰 규칙 구현** (P0)
-  - `[ ]` `SafeRoomSpawnRule`: 적 스폰 금지
-  - `[ ]` `NormalRoomSpawnRule`: Safe Room으로부터의 그래프 거리 기반 난이도 곡선 스폰
-  - `[ ]` `ExitRoomSpawnRule`: 강한 적 + Elite 확정 스폰
-  - `[ ]` `BossRoomSpawnRule`: 보스 1체 스폰
-- `[ ]` **공통 스폰 제약 조건 구현**
-  - `[ ]` 입구 인접 셀(1칸 거리) 스폰 금지 (즉사 방지)
-  - `[ ]` Archer는 4방향 직선 LOS 확보 셀에만 배치
-- `[ ]` **거리 기반 난이도 곡선(Safe 거리 1~4) 데이터 연동**
+- `[X]` **추상 클래스 `RoomSpawnRule` 기반 방 타입별 스폰 규칙 구현** (P0)
+  - `[X]` `SafeRoomSpawnRule`: 적 스폰 금지
+  - `[X]` `NormalRoomSpawnRule`: Safe Room으로부터의 그래프 거리 기반 난이도 곡선 스폰
+  - `[X]` `ExitRoomSpawnRule`: 강한 적 + Elite 확정 스폰
+  - `[X]` `BossRoomSpawnRule`: 보스 1체 스폰
+- `[X]` **공통 스폰 제약 조건 구현**
+  - `[X]` 입구 인접 셀(1칸 거리) 스폰 금지 (즉사 방지)
+  - `[X]` Archer는 4방향 직선 LOS 확보 셀에만 배치
+- `[X]` **거리 기반 난이도 곡선(Safe 거리 1~4) 데이터 연동**
 
 ## 2. 몬스터 추가 및 확장 (우선순위별)
 - `[ ]` **신규 몬스터 클래스 구현 (Area 2, 3용)** (P2 확장)
