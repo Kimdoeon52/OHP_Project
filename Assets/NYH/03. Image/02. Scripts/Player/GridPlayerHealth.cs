@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -20,26 +21,40 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
     [SerializeField] private float potionDuration = 25f;
 
     private GridPlayer _player;
+    private NYHPlayerStats _stats;
     private Coroutine _regenCoroutine;
 
+    public event Action OnHealthChanged;
+
     public int CurrentHp { get; private set; }
-    public int MaxHp => maxHp;
+    public int MaxHp => _stats != null ? _stats.MaxHealth : maxHp;
     public bool IsDead => CurrentHp <= 0;
     public int PotionCount { get; private set; }
 
     public void Init(GridPlayer player)
     {
         _player = player;
-        CurrentHp = maxHp;
+        _stats = GetComponent<NYHPlayerStats>();
+        if (_stats == null)
+            _stats = NYHPlayerStats.Instance;
+        if (_stats != null)
+            _stats.OnStatAdded += OnStatAdded;
+
+        CurrentHp = MaxHp;
         PotionCount = startPotionCount;
+        RaiseHealthChanged();
     }
 
     public void TakeDamage(int amount)
     {
         if (IsDead || amount <= 0) return;
 
-        CurrentHp = Mathf.Max(0, CurrentHp - amount);
-        GameEvents.OnPlayerDamaged?.Invoke(amount);
+        int finalDamage = CalculateIncomingDamage(amount);
+        if (finalDamage <= 0) return;
+
+        CurrentHp = Mathf.Max(0, CurrentHp - finalDamage);
+        GameEvents.OnPlayerDamaged?.Invoke(finalDamage);
+        RaiseHealthChanged();
 
         if (CurrentHp <= 0)
         {
@@ -51,12 +66,14 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
     public void Heal(int amount)
     {
         if (IsDead || amount <= 0) return;
-        CurrentHp = Mathf.Min(maxHp, CurrentHp + amount);
+        CurrentHp = Mathf.Min(MaxHp, CurrentHp + amount);
+        RaiseHealthChanged();
     }
 
     public void AddPotion(int count = 1)
     {
         PotionCount += count;
+        RaiseHealthChanged();
     }
 
     public void TryUsePotion()
@@ -64,9 +81,10 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
         if (PotionCount <= 0 || IsDead) return;
 
         PotionCount--;
+        RaiseHealthChanged();
 
         // 즉시 +50% MaxHp
-        Heal(Mathf.RoundToInt(maxHp * 0.5f));
+        Heal(Mathf.RoundToInt(MaxHp * 0.5f));
 
         // 진행 중인 회복 코루틴 취소 후 새로 시작
         if (_regenCoroutine != null) StopCoroutine(_regenCoroutine);
@@ -78,7 +96,7 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
     private IEnumerator RegenOverTime()
     {
         float elapsed = 0f;
-        float pool = maxHp * 0.5f;  // 시간에 걸쳐 회복할 총량 = 50% MaxHp
+        float pool = MaxHp * 0.5f;  // 시간에 걸쳐 회복할 총량 = 50% MaxHp
         float deliveredFraction = 0f;
 
         while (elapsed < potionDuration)
@@ -103,5 +121,31 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
         }
 
         _regenCoroutine = null;
+    }
+
+    private void OnDestroy()
+    {
+        if (_stats != null)
+            _stats.OnStatAdded -= OnStatAdded;
+    }
+
+    private void OnStatAdded(NYHStatType type, int amount)
+    {
+        if (type == NYHStatType.Health && amount > 0)
+            Heal(amount);
+
+        RaiseHealthChanged();
+    }
+
+    private int CalculateIncomingDamage(int rawDamage)
+    {
+        if (rawDamage <= 0) return 0;
+        if (_stats == null) return rawDamage;
+        return _stats.CalculateIncomingDamage(rawDamage);
+    }
+
+    private void RaiseHealthChanged()
+    {
+        OnHealthChanged?.Invoke();
     }
 }
