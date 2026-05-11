@@ -7,11 +7,16 @@ public static class GameEvents
     // 타이머
     public static Action<float> OnTimeChanged;
     public static Action OnTimeUp;
+    public static Action<float> OnPlayerActionCompleted;
 
     // 전투
     public static Action<Vector2Int, float> OnEnemyKilled;  // pos, timeBonus
     public static Action<int> OnPlayerDamaged;              // damage amount
     public static Action<Vector2Int> OnTrapTriggered;
+    public static Action<StatusRequest> OnStatusRequested;
+    public static Action<TrapTerrainRequest> OnTrapTerrainRequested;
+    public static Action<TrapSpawnRequest> OnTrapSpawnRequested;
+    public static Action<TrapStubRequest> OnTrapStubRequested;
 
     // 시야
     public static Action<IReadOnlyCollection<Vector2Int>, IReadOnlyCollection<Vector2Int>> OnVisionUpdated; // visible, explored
@@ -24,14 +29,18 @@ public static class GameEvents
     public static Action<Vector2Int, Vector2Int> OnDaggerThrown;    // from, to
     public static Action<Vector2Int> OnDaggerRetrieved;
 
-    // 씬 재시작 시 호출 — static 이벤트는 씬 전환으로 안 정리되므로 직접 초기화
     public static void ClearAllEvents()
     {
         OnTimeChanged = null;
         OnTimeUp = null;
+        OnPlayerActionCompleted = null;
         OnEnemyKilled = null;
         OnPlayerDamaged = null;
         OnTrapTriggered = null;
+        OnStatusRequested = null;
+        OnTrapTerrainRequested = null;
+        OnTrapSpawnRequested = null;
+        OnTrapStubRequested = null;
         OnVisionUpdated = null;
         OnPlayerDied = null;
         OnLevelComplete = null;

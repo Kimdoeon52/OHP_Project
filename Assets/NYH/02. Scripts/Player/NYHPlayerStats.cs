@@ -91,7 +91,7 @@ public class NYHPlayerStats : MonoBehaviour
         if (rawDamage <= 0) return 0;
         if (evasion > 0 && UnityEngine.Random.value < evasion / 100f) return 0;
 
-        // 초반 밸런싱이 쉽도록 방어력은 고정 피해 감소로만 처리한다.
+        // 초반 밸런싱이 쉽도록 방어력은 고정 피해 감소로만 처리
         return Mathf.Max(0, rawDamage - defense);
     }
 

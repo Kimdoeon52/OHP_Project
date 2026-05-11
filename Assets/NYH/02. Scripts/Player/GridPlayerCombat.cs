@@ -60,7 +60,7 @@ public class GridPlayerCombat : MonoBehaviour
         var entity = TurnManager.Instance.GetEntityAt(target);
         if (entity is IDamageable damageable && (Object)damageable != _player)
         {
-            damageable.TakeDamage(meleeDamage);
+            damageable.TakeDamage(GetModifiedOutgoingDamage(meleeDamage));
             TurnManager.Instance.OnPlayerActionCompleted(_player.Config.meleeTimeCost);
         }
         // 적 없으면 빈 휘두름 — 시간 소모 X (회전만 함)
@@ -86,7 +86,7 @@ public class GridPlayerCombat : MonoBehaviour
         // 데미지는 즉시 적용 (비행은 순수 시각 효과)
         if (hitTarget != null)
         {
-            hitTarget.TakeDamage(daggerData.damage);
+            hitTarget.TakeDamage(GetModifiedOutgoingDamage(daggerData.damage));
         }
 
         // facing 갱신 — 8방향 sign으로 정규화
@@ -171,5 +171,11 @@ public class GridPlayerCombat : MonoBehaviour
         landingCell = bestCell;
         hitTarget = bestTarget;
         return true;
+    }
+
+    private int GetModifiedOutgoingDamage(int baseDamage)
+    {
+        StatusController statusController = _player.GetComponent<StatusController>();
+        return statusController != null ? statusController.ModifyOutgoingDamage(baseDamage) : baseDamage;
     }
 }
