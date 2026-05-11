@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 [CreateAssetMenu(fileName = "FirePotion", menuName = "Item/Potion/ThrowablePotion/Fire")]
 public class FirePotion : ThrowablePotion
@@ -16,11 +17,23 @@ public class FirePotion : ThrowablePotion
             ObjectPool.Instance.Return(PoolType.FirePotion, projectile); // 착지 후 반납
         });
     }
-    protected override void ApplyEffect(Vector2Int tile)
+    protected override async UniTask ApplyEffect(Vector2Int tile)
     {
         // 이 타일에 불 붙이기
         GameObject fireEffect = ObjectPool.Instance.Get(PoolType.FireEffect);
-        fireEffect.transform.position = (Vector3Int)tile;
-    }
+        Vector3 worldPos = GridSystem.Instance.GridToWorld(tile);
+        fireEffect.transform.position = worldPos;
+
+        // 3초 뒤에 사라지기
+        // 풀 타일이 있는 경우
+        //await UniTask.Delay(3000);
+        //ObjectPool.Instance.Return(PoolType.FireEffect, fireEffect);
+        // 풀 타일이 탄 흔적으로 사라지기
+
+        // 풀 타일이 아닌 경우
+        await UniTask.Delay(1000);
+		ObjectPool.Instance.Return(PoolType.FireEffect, fireEffect);
+	}
+
 }
 
