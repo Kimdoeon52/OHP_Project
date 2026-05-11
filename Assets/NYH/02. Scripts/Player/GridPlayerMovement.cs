@@ -38,13 +38,22 @@ public class GridPlayerMovement : MonoBehaviour
 
         // 이동 후 단검 회수 시도 (이동 비용 + 회수 비용 합산)
         float totalCost = _player.Config.moveTimeCost;
+        StatusController statusController = _player.GetComponent<StatusController>();
+        if (statusController != null)
+            totalCost = statusController.ModifyMoveTimeCost(totalCost);
+
         if (_player.Combat.TryRetrieveAt(target))
         {
             totalCost += _player.Config.retrieveTimeCost;
         }
 
         _player.SetGridPosition(target);
-        VisionSystem.Instance.UpdateVision(target);
+
+        // 이동한 칸에 덫이 있으면 플레이어 턴 종료 전에 먼저 발동합니다.
+        // 텔레포트 덫처럼 플레이어 위치를 다시 바꾸는 덫이 있으므로,
+        // 시야 갱신은 덫 발동 이후의 최종 위치를 기준으로 합니다.
+        TrapSystem.Instance?.TryTriggerAt(target, _player);
+        VisionSystem.Instance.UpdateVision(_player.GridPosition);
 
         TurnManager.Instance.OnPlayerActionCompleted(totalCost);
     }

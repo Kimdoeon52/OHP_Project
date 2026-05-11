@@ -1,18 +1,26 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace PrototypeRT
 {
-    public enum ItemType //아이템 종류
+    /// <summary>
+    /// 아이템의 큰 분류입니다.
+    /// 장착/소비/판매 같은 시스템에서 1차 필터로 사용합니다.
+    /// </summary>
+    public enum ItemType
     {
-        Loot,      //전리품
-        Weapon,    //무기
-        Armor,     //갑옷
-        Consumable //소모품
+        Loot,      // 전리품
+        Weapon,    // 무기
+        Armor,     // 갑옷
+        Consumable // 소모품
     }
 
-    public enum EquipmentSlot //장착 슬롯
+    /// <summary>
+    /// 장착 가능한 아이템이 들어갈 슬롯입니다.
+    /// ItemType이 Weapon이어도 EquipmentSlot이 Weapon이 아니면 장착 로직에서 제외될 수 있습니다.
+    /// </summary>
+    public enum EquipmentSlot
     {
-        None,
+        None,          // 장착 불가
         Weapon,        // 무기
         Armor,         // 갑옷
         Ring,          // 반지
@@ -20,6 +28,10 @@ namespace PrototypeRT
         Rune           // 룬
     }
 
+    /// <summary>
+    /// 아이템 하나의 정적 데이터를 담는 ScriptableObject입니다.
+    /// 인벤토리 UI 크기, 아이콘, 분류, 기본 수치를 코드 수정 없이 인스펙터에서 조정할 수 있습니다.
+    /// </summary>
     [CreateAssetMenu(fileName = "ItemData", menuName = "Prototype RT/Item Data")]
     public class ItemData : ScriptableObject
     {
@@ -64,6 +76,10 @@ namespace PrototypeRT
         public int SellPrice => sellPrice;
         public int AttackBonus => attackBonus;
 
+        /// <summary>
+        /// 월드에 표시할 스프라이트를 반환합니다.
+        /// 무기 전용 스프라이트가 없으면 인벤토리 아이콘을 대신 사용해 테스트 데이터도 바로 보이게 합니다.
+        /// </summary>
         public Sprite GetWorldSprite()
         {
             // 인벤토리 아이콘과 손에 든 무기 이미지를 분리하되, 테스트 데이터가 덜 채워져도 바로 볼 수 있게 아이콘을 fallback으로 쓴다.

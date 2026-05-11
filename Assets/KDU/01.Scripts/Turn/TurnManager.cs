@@ -64,6 +64,7 @@ public class TurnManager : MonoBehaviour
     {
         if (_processingTurn) return;
 
+        GameEvents.OnPlayerActionCompleted?.Invoke(timeCost);
         TimeSystem.Instance.ConsumeTime(timeCost);
 
         // 시간 소진으로 이미 게임오버 처리된 경우 적 턴 불필요
