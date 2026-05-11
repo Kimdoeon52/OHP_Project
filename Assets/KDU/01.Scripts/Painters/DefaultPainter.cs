@@ -15,14 +15,18 @@ public class DefaultPainter : ScriptableObject, IRegionPainter
 
     public void Paint(
         List<RoomData> rooms,
-        Tilemap floorTilemap,
-        Tilemap wallTilemap,
+        TerrainTilemaps tilemaps,
         FloorFeeling feeling,
         DungeonRandom rng)
     {
-        if (floorTilemap == null || wallTilemap == null)
+        if (tilemaps == null)
         {
-            Debug.LogError("DefaultPainter.Paint: Tilemap 참조 없음");
+            Debug.LogError("DefaultPainter.Paint: TerrainTilemaps 미할당");
+            return;
+        }
+        if (tilemaps.floor == null || tilemaps.wall == null)
+        {
+            Debug.LogError("DefaultPainter.Paint: floor/wall Tilemap 미할당");
             return;
         }
         if (floorTile == null || wallTile == null)
@@ -31,8 +35,7 @@ public class DefaultPainter : ScriptableObject, IRegionPainter
             return;
         }
 
-        floorTilemap.ClearAllTiles();
-        wallTilemap.ClearAllTiles();
+        tilemaps.ClearAll();
 
         // 1. 모든 방/터널 floorCells 합집합
         var floorSet = new HashSet<Vector2Int>();
@@ -44,7 +47,7 @@ public class DefaultPainter : ScriptableObject, IRegionPainter
 
         // 2. floor 페인트
         foreach (var c in floorSet)
-            floorTilemap.SetTile(new Vector3Int(c.x, c.y, 0), floorTile);
+            tilemaps.floor.SetTile(new Vector3Int(c.x, c.y, 0), floorTile);
 
         // 3. wall = floor 의 8방향 이웃 중 floor 가 아닌 셀
         var wallSet = new HashSet<Vector2Int>();
@@ -64,7 +67,7 @@ public class DefaultPainter : ScriptableObject, IRegionPainter
         // Pass 1: 모든 wall 타일 먼저 SetTile — RuleTile 이웃 갱신 다 끝낸 후
         // Pass 2 에서 transform 을 잠가야 refresh 에 의해 reset 되지 않음.
         foreach (var c in wallSet)
-            wallTilemap.SetTile(new Vector3Int(c.x, c.y, 0), wallTile);
+            tilemaps.wall.SetTile(new Vector3Int(c.x, c.y, 0), wallTile);
 
         // Pass 2: 우측 측면 벽만 X-flip + LockTransform.
         // 표준 RuleTile MirrorX 는 측면 벽 패턴이 X 대칭이라 발동하지 않으므로 강제 미러.
@@ -79,8 +82,8 @@ public class DefaultPainter : ScriptableObject, IRegionPainter
             if (!isPureRightSideWall) continue;
 
             var pos = new Vector3Int(c.x, c.y, 0);
-            wallTilemap.SetTransformMatrix(pos, flipMatrix);
-            wallTilemap.SetTileFlags(pos, TileFlags.LockTransform);
+            tilemaps.wall.SetTransformMatrix(pos, flipMatrix);
+            tilemaps.wall.SetTileFlags(pos, TileFlags.LockTransform);
         }
     }
 }

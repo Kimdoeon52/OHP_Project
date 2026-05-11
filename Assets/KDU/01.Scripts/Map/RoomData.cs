@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum RoomType { Safe, Normal, Special, Secret, Exit, Tunnel }
+public enum RoomType { Safe, Normal, Special, Secret, Exit, Boss, Tunnel }
 
 public enum SizeCategory { Normal, Large, Giant }
 

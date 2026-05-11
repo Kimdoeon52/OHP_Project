@@ -1,12 +1,13 @@
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 public class GridSystem : MonoBehaviour
 {
     public static GridSystem Instance { get; private set; }
 
-    [SerializeField] private Tilemap floorTilemap;
-    [SerializeField] private Tilemap wallTilemap;
+    [Header("타일맵 레이어 (MapGenerator 와 동일한 참조)")]
+    [SerializeField] private TerrainTilemaps tilemaps = new TerrainTilemaps();
+
+    public TerrainTilemaps Tilemaps => tilemaps;
 
     private void Awake()
     {
@@ -28,7 +29,7 @@ public class GridSystem : MonoBehaviour
     /// </summary>
     public Vector3 GridToWorld(Vector2Int pos)
     {
-        return floorTilemap.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0));
+        return tilemaps.floor.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0));
     }
 
     /// <summary>
@@ -36,18 +37,27 @@ public class GridSystem : MonoBehaviour
     /// </summary>
     public Vector2Int WorldToGrid(Vector3 worldPos)
     {
-        Vector3Int cell = floorTilemap.WorldToCell(worldPos);
+        Vector3Int cell = tilemaps.floor.WorldToCell(worldPos);
         return new Vector2Int(cell.x, cell.y);
     }
 
     /// <summary>
-    /// 해당 격자 셀이 이동 가능한지 (바닥 타일 있고 벽 타일 없음)
+    /// 해당 격자 셀이 이동 가능한지 (바닥 타일 있고, 벽/낭떨어지 타일 없음)
     /// </summary>
     public bool IsWalkable(Vector2Int pos)
     {
         var cell = new Vector3Int(pos.x, pos.y, 0);
-        if (wallTilemap != null && wallTilemap.HasTile(cell)) return false;
-        return floorTilemap.HasTile(cell);
+        if (tilemaps.wall != null && tilemaps.wall.HasTile(cell)) return false;
+        if (tilemaps.chasm != null && tilemaps.chasm.HasTile(cell)) return false;
+        return tilemaps.floor != null && tilemaps.floor.HasTile(cell);
+    }
+
+    /// <summary>
+    /// 한 셀의 지형 타입 — 포션/AI/시야 등이 분기 조건으로 사용.
+    /// </summary>
+    public TerrainType GetTerrain(Vector2Int pos)
+    {
+        return tilemaps.Get(pos);
     }
 
     /// <summary>
@@ -56,8 +66,8 @@ public class GridSystem : MonoBehaviour
     public bool IsInBounds(Vector2Int pos)
     {
         var cell = new Vector3Int(pos.x, pos.y, 0);
-        if (floorTilemap.HasTile(cell)) return true;
-        return wallTilemap != null && wallTilemap.HasTile(cell);
+        if (tilemaps.floor != null && tilemaps.floor.HasTile(cell)) return true;
+        return tilemaps.wall != null && tilemaps.wall.HasTile(cell);
     }
 
     /// <summary>
@@ -65,9 +75,10 @@ public class GridSystem : MonoBehaviour
     /// </summary>
     public System.Collections.Generic.IEnumerable<Vector2Int> GetAllWalkableCells()
     {
-        foreach (var pos in floorTilemap.cellBounds.allPositionsWithin)
+        if (tilemaps.floor == null) yield break;
+        foreach (var pos in tilemaps.floor.cellBounds.allPositionsWithin)
         {
-            if (floorTilemap.HasTile(pos))
+            if (tilemaps.floor.HasTile(pos))
             {
                 var grid = new Vector2Int(pos.x, pos.y);
                 if (IsWalkable(grid))
@@ -83,17 +94,20 @@ public class GridSystem : MonoBehaviour
     {
         var visited = new System.Collections.Generic.HashSet<Vector2Int>();
 
-        foreach (var pos in floorTilemap.cellBounds.allPositionsWithin)
+        if (tilemaps.floor != null)
         {
-            if (floorTilemap.HasTile(pos))
-                visited.Add(new Vector2Int(pos.x, pos.y));
+            foreach (var pos in tilemaps.floor.cellBounds.allPositionsWithin)
+            {
+                if (tilemaps.floor.HasTile(pos))
+                    visited.Add(new Vector2Int(pos.x, pos.y));
+            }
         }
 
-        if (wallTilemap != null)
+        if (tilemaps.wall != null)
         {
-            foreach (var pos in wallTilemap.cellBounds.allPositionsWithin)
+            foreach (var pos in tilemaps.wall.cellBounds.allPositionsWithin)
             {
-                if (wallTilemap.HasTile(pos))
+                if (tilemaps.wall.HasTile(pos))
                     visited.Add(new Vector2Int(pos.x, pos.y));
             }
         }

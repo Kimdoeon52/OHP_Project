@@ -16,7 +16,11 @@ public abstract class FloorFeeling
 }
 
 /// <summary>
-/// FloorFeeling.ApplyToSpawn 시그니처용 Phase 1 placeholder.
-/// Phase 4 에서 _Game/Spawning/EnemySpawner 가 이 인터페이스를 구현한다.
+/// 한 층의 모든 적을 스폰하는 책임. MapGenerator 가 Build/Paint 완료 후 Spawn(rooms, depth, rng) 호출.
+/// Phase 4 에서 KKH/EnemySystem.EnemySpawner 가 이 인터페이스를 구현 (RoomSpawnRule 디스패치 + prefab 인스턴스화).
+/// FloorFeeling.ApplyToSpawn 이 이 인터페이스를 받아 스폰 파라미터를 조정 (몬스터 -1 등).
 /// </summary>
-public interface IEnemySpawner { }
+public interface IEnemySpawner
+{
+    void Spawn(System.Collections.Generic.List<RoomData> rooms, int depth, DungeonRandom rng);
+}

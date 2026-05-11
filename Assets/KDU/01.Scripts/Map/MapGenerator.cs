@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using EnemySystem;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 /// <summary>
 /// 절차적 맵 생성 진입점. Initialize → Build → Paint → (Phase 4 Spawn) 파이프라인을 호출한다.
@@ -10,12 +10,17 @@ public class MapGenerator : MonoBehaviour
 {
     public static MapGenerator Instance { get; private set; }
 
-    [Header("타일맵 (GridSystem 과 동일한 타일맵 참조)")]
-    [SerializeField] private Tilemap floorTilemap;
-    [SerializeField] private Tilemap wallTilemap;
+    [Header("타일맵 레이어 (GridSystem 과 동일한 참조 — 같은 GameObject 드래그)")]
+    [SerializeField] private TerrainTilemaps tilemaps = new TerrainTilemaps();
+    public TerrainTilemaps Tilemaps => tilemaps;
 
     [Header("설정")]
     [SerializeField] private GameConfig config;
+
+    [Header("스폰 (옵션 — 미할당 시 적 없음)")]
+    [Tooltip("EnemySpawner 컴포넌트 (KKH/EnemySystem). 매 Generate 호출마다 Spawn() 호출.")]
+    [SerializeField] private EnemySpawner spawner;
+    private IEnemySpawner Spawner => spawner;
 
     public DungeonRandom Rng { get; } = new DungeonRandom();
     public List<RoomData> CurrentRooms { get; private set; }
@@ -66,11 +71,16 @@ public class MapGenerator : MonoBehaviour
             return null;
         }
 
-        // 3. Paint — Tilemap 에 타일 배치
+        // 3. Paint — TerrainTilemaps 각 레이어에 타일 배치.
         feeling?.ApplyToPaint(painter);
-        painter.Paint(rooms, floorTilemap, wallTilemap, feeling, Rng);
+        painter.Paint(rooms, tilemaps, feeling, Rng);
 
-        // 4. Spawn — Phase 4 에서 추가 (EnemySpawner.Spawn(rooms); feeling?.ApplyToSpawn(spawner);)
+        // 4. Spawn — Spawner 가 할당됐으면 호출. Feeling 의 ApplyToSpawn 으로 사전 파라미터 변경 가능.
+        if (Spawner != null)
+        {
+            feeling?.ApplyToSpawn(Spawner);
+            Spawner.Spawn(rooms, depth, Rng);
+        }
 
         CurrentRooms = rooms;
         return rooms;

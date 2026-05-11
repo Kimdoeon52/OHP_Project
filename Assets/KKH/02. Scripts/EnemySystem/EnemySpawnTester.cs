@@ -18,7 +18,7 @@ public class EnemySpawnTester : MonoBehaviour
     [Header("의존성")]
     public EnemySpawnTable spawnTable;
     public List<EnemyPrefabMapping> prefabMappings;
-  //  public EnemyData testBossData;
+    public EnemyData testBossData;
 
     [Header("가상 방 설정")]
     public RoomType testRoomType = RoomType.Normal;
@@ -67,7 +67,7 @@ public class EnemySpawnTester : MonoBehaviour
             case RoomType.Safe: rule = new SafeRoomSpawnRule(); break;
             case RoomType.Normal: rule = new NormalRoomSpawnRule(); break;
             case RoomType.Exit: rule = new ExitRoomSpawnRule(); break;
-       //     case RoomType.Boss: rule = new BossRoomSpawnRule(testBossData); break;
+            case RoomType.Boss: rule = new BossRoomSpawnRule(testBossData); break;
             default: rule = new NormalRoomSpawnRule(); break;
         }
 
