@@ -75,8 +75,9 @@ public class MapGenerationTester : MonoBehaviour
             else roomCount++;
         }
         bool connected = MapGraph.IsConnected(rooms);
+        bool hasBoss = rooms.Exists(r => r.type == RoomType.Boss);
         var sb = new StringBuilder();
-        sb.AppendLine($"[Map seed={runSeed} depth={depth}] 방 {roomCount} / 터널 {tunnelCount} / 연결 {(connected ? "OK" : "FAIL")}");
+        sb.AppendLine($"[Map seed={runSeed} depth={depth}] 방 {roomCount} / 터널 {tunnelCount} / 연결 {(connected ? "OK" : "FAIL")}{(hasBoss ? " / BOSS 층" : "")}");
         foreach (var r in rooms)
         {
             if (r.type == RoomType.Tunnel) continue;

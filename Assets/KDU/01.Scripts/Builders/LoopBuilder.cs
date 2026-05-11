@@ -68,11 +68,15 @@ public class LoopBuilder : ScriptableObject, ILayoutBuilder
         room.bounds = new RectInt(0, 0, w, h);
     }
 
-    /// <summary>Safe → 절반 Normal → Exit → 나머지 Normal 순서로 cycle 구성.</summary>
+    /// <summary>
+    /// Safe → 절반 Normal → (Boss) → Exit → 나머지 Normal 순서로 cycle 구성.
+    /// Boss 가 존재하면 Exit 바로 앞에 배치 — Safe 반대편(루프 N/2 지점 부근)에 위치하게 됨.
+    /// </summary>
     private List<RoomData> BuildLoopOrder(List<RoomData> rooms)
     {
         var safe = rooms.Find(r => r.type == RoomType.Safe);
         var exit = rooms.Find(r => r.type == RoomType.Exit);
+        var boss = rooms.Find(r => r.type == RoomType.Boss);
         var normals = rooms.FindAll(r => r.type == RoomType.Normal);
 
         if (safe == null || exit == null)
@@ -85,6 +89,7 @@ public class LoopBuilder : ScriptableObject, ILayoutBuilder
         var order = new List<RoomData>(rooms.Count);
         order.Add(safe);
         for (int i = 0; i < half; i++) order.Add(normals[i]);
+        if (boss != null) order.Add(boss);
         order.Add(exit);
         for (int i = half; i < normals.Count; i++) order.Add(normals[i]);
         return order;

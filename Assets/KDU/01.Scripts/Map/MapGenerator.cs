@@ -22,6 +22,10 @@ public class MapGenerator : MonoBehaviour
     [SerializeField] private EnemySpawner spawner;
     private IEnemySpawner Spawner => spawner;
 
+    [Header("보스 층 규칙")]
+    [Tooltip("보스 등장 주기 — N의 배수 depth 에 Boss 방 배치. 0 = 보스 없음. 기본 5 → depth 5/10/15...")]
+    [SerializeField] private int bossDepthInterval = 5;
+
     public DungeonRandom Rng { get; } = new DungeonRandom();
     public List<RoomData> CurrentRooms { get; private set; }
     public int CurrentSeed { get; private set; }
@@ -87,8 +91,9 @@ public class MapGenerator : MonoBehaviour
     }
 
     /// <summary>
-    /// Phase 1 임시 규칙 — Phase 2 LoopBuilder 가 동작할 최소 방 세트.
-    /// 본 규칙(층별 가변 개수, depth 기반 Special/Secret 등) 은 후속 Phase 에서 정교화.
+    /// 한 층의 방 리스트 초기화. 보스 층(depth 가 bossDepthInterval 배수) 은 Safe + Boss(Giant) + Exit 3방.
+    /// 일반 층은 Safe + Normal × 가변 + Exit.
+    /// 본 규칙(Special/Secret 등) 은 후속 Phase 에서 정교화.
     /// </summary>
     private List<RoomData> InitializeRooms(int depth, DungeonRandom rng)
     {
@@ -97,14 +102,24 @@ public class MapGenerator : MonoBehaviour
             new RoomData { type = RoomType.Safe, sizeCategory = SizeCategory.Normal }
         };
 
-        int normalCount = rng.Range(4, 7); // 4~6 개
-        for (int i = 0; i < normalCount; i++)
+        bool isBossFloor = bossDepthInterval > 0 && depth > 0 && depth % bossDepthInterval == 0;
+
+        if (isBossFloor)
         {
-            rooms.Add(new RoomData
+            // 보스 층: Safe + Boss(Giant) + Exit. Normal 없음. Exit 는 보스 처치 시 열림 (게임 플로우 별도).
+            rooms.Add(new RoomData { type = RoomType.Boss, sizeCategory = SizeCategory.Giant });
+        }
+        else
+        {
+            int normalCount = rng.Range(4, 7); // 4~6 개
+            for (int i = 0; i < normalCount; i++)
             {
-                type = RoomType.Normal,
-                sizeCategory = PickNormalSize(rng)
-            });
+                rooms.Add(new RoomData
+                {
+                    type = RoomType.Normal,
+                    sizeCategory = PickNormalSize(rng)
+                });
+            }
         }
 
         rooms.Add(new RoomData { type = RoomType.Exit, sizeCategory = SizeCategory.Normal });
