@@ -1,6 +1,7 @@
-using Cysharp.Threading.Tasks;
+ï»¿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Net.Security;
+using System.Threading;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
@@ -19,28 +20,30 @@ public class ActionCases
 }
 public class BossBase : MonoBehaviour
 {
-    [Header("º¸½º Ã¼·Â")]
+    [Header("ë³´ìŠ¤ ì²´ë ¥")]
     [SerializeField] protected int maxHp;
     [SerializeField] protected int currentHp;
 
-    [Header("º¸½º ·¹º§")] //·¹º§¿¡ µû¶ó¼­ º¸½º ÆĞÅÏÀÌ³ª º¸½ºÀÇ ´É·ÂÄ¡°¡ ´Ş¶óÁú ¼ö ÀÖÀ½
+    [Header("ë³´ìŠ¤ ë ˆë²¨")] //ë ˆë²¨ì— ë”°ë¼ì„œ ë³´ìŠ¤ íŒ¨í„´ì´ë‚˜ ë³´ìŠ¤ì˜ ëŠ¥ë ¥ì¹˜ê°€ ë‹¬ë¼ì§ˆ ìˆ˜ ìˆìŒ
     [SerializeField] protected int bossLevel;
 
-    [Header("º¸½º ÆĞÅÏ")]
+    [Header("ë³´ìŠ¤ íŒ¨í„´")]
     [SerializeField] protected List<ActionCases> actionCases = new List<ActionCases>();
 
-    [Header("º¸½º ÆĞÅÏ µô·¹ÀÌ (ÃÊ)")]
-    [SerializeField] protected int patternDelay; //º¸½º ÆĞÅÏ Çàµ¿ »çÀÌÀÇ µô·¹ÀÌ ½Ã°£
+    [Header("ë³´ìŠ¤ íŒ¨í„´ ë”œë ˆì´ (ì´ˆ)")]
+    [SerializeField] protected int patternDelay; //ë³´ìŠ¤ íŒ¨í„´ í–‰ë™ ì‚¬ì´ì˜ ë”œë ˆì´ ì‹œê°„
 
-    protected bool isBossAttacking; //º¸½º°¡ °ø°İ ÁßÀÎÁö ¿©ºÎ¸¦ ³ªÅ¸³»´Â º¯¼ö
-    protected Animator bossAnimation; //º¸½º ¾Ö´Ï¸ŞÀÌ¼ÇÀ» Á¦¾îÇÏ±â À§ÇÑ º¯¼ö
+    protected bool isBossAttacking; //ë³´ìŠ¤ê°€ ê³µê²© ì¤‘ì¸ì§€ ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚´ëŠ” ë³€ìˆ˜
+    protected Animator bossAnimation; //ë³´ìŠ¤ ì• ë‹ˆë©”ì´ì…˜ì„ ì œì–´í•˜ê¸° ìœ„í•œ
+    protected CancellationTokenSource cancelToken;
     protected virtual void Start()
     {
+        cancelToken = new CancellationTokenSource();
         actionCases.Clear();
-        bossLevel = 1; //º¸½º ·¹º§ ÃÊ±âÈ­
-        bossAnimation = GetComponent<Animator>(); //º¸½º ¾Ö´Ï¸ŞÀÌ¼Ç ÄÄÆ÷³ÍÆ® °¡Á®¿À±â
-        patternDelay *= 1000; //ÃÊ·Î º¯È¯.
-        //°¢ º¸½º Ã¼·ÂÀÌ³ª ·¹º§¿¡ µû¸¥ ÆĞÅÏ È®·ü ¼³Á¤Àº °¢ º¸½º¸¶´Ù ´Ù¸£°Ô ±¸Çö
+        bossLevel = 1; //ë³´ìŠ¤ ë ˆë²¨ ì´ˆê¸°í™”
+        bossAnimation = GetComponent<Animator>(); //ë³´ìŠ¤ ì• ë‹ˆë©”ì´ì…˜ ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°
+        patternDelay *= 1000; //ì´ˆë¡œ ë³€í™˜.
+        //ê° ë³´ìŠ¤ ì²´ë ¥ì´ë‚˜ ë ˆë²¨ì— ë”°ë¥¸ íŒ¨í„´ í™•ë¥  ì„¤ì •ì€ ê° ë³´ìŠ¤ë§ˆë‹¤ ë‹¤ë¥´ê²Œ êµ¬í˜„
     }
 
     protected virtual void Update()
@@ -48,125 +51,136 @@ public class BossBase : MonoBehaviour
         if (isBossAttacking)
             return;
         PhaseState();
-        if(Input.GetKeyDown(KeyCode.Alpha1))
+    }
+
+    protected virtual void OnDestroy()
+    {
+        cancelToken.Cancel(); //ë³´ìŠ¤ê°€ íŒŒê´´ë  ë•Œ ì·¨ì†Œ í† í°ì„ ì·¨ì†Œí•˜ì—¬ ëª¨ë“  ë¹„ë™ê¸° ì‘ì—…ì„ ì¤‘ë‹¨
+        cancelToken.Dispose(); //ì·¨ì†Œ í† í° ì†Œë©¸
+    }
+
+    protected virtual void PatternStop()
+    {
+        //ë³´ìŠ¤ íŒ¨í„´ì„ ì¤‘ë‹¨
+        if (cancelToken != null)
         {
-            bossLevel = 1; //´ÙÀ½ ÆäÀÌÁî·Î ³Ñ¾î°¨.
-            bossAnimation.SetBool("Phase2", true);
+            cancelToken.Cancel();
+            cancelToken.Dispose();
         }
     }
-    //====================================Çàµ¿=====================================
-    protected virtual void AddActionCase(BossAction bossAction, int chance) //º¸½ºº° Çàµ¿ Ãß°¡.
+    //====================================í–‰ë™=====================================
+    protected virtual void AddActionCase(BossAction bossAction, int chance) //ë³´ìŠ¤ë³„ í–‰ë™ ì¶”ê°€.
     {
         actionCases.Add(new ActionCases { action = bossAction, patternChance = chance });
     }
-    protected virtual async void Phase1BossPattern() //Ã¹¹øÂ° ÆäÀÌÁî
+    protected virtual async void Phase1BossPattern() //ì²«ë²ˆì§¸ í˜ì´ì¦ˆ
     {
-        isBossAttacking = true; //º¸½º°¡ °ø°İ ÁßÀÓÀ» ³ªÅ¸³¿
+        isBossAttacking = true; //ë³´ìŠ¤ê°€ ê³µê²© ì¤‘ì„ì„ ë‚˜íƒ€ëƒ„
         BossAction bossAction = BossPatternPer();
-        await UniTask.Delay(patternDelay); //ÆĞÅÏ ¼±ÅÃ ÈÄ µô·¹ÀÌ
+        await UniTask.Delay(patternDelay); //íŒ¨í„´ ì„ íƒ í›„ ë”œë ˆì´
         switch(bossAction)
         {
             case BossAction.Pattern1:
                 Phase1Pattern1().Forget();
-                //ÆĞÅÏ1 Çàµ¿ ±¸Çö
+                //íŒ¨í„´1 í–‰ë™ êµ¬í˜„
                 break;
             case BossAction.Pattern2:
                 Phase1Pattern2().Forget();
-                //ÆĞÅÏ2 Çàµ¿ ±¸Çö
+                //íŒ¨í„´2 í–‰ë™ êµ¬í˜„
                 break;
             case BossAction.Pattern3:
                 Phase1Pattern3().Forget();
-                //ÆĞÅÏ3 Çàµ¿ ±¸Çö
+                //íŒ¨í„´3 í–‰ë™ êµ¬í˜„
                 break;
         }
     }
 
-    protected virtual async void Phase2BossPattern() //µÎ¹øÂ° ÆäÀÌÁî º¸½º ÆĞÅÏ
+    protected virtual async void Phase2BossPattern() //ë‘ë²ˆì§¸ í˜ì´ì¦ˆ ë³´ìŠ¤ íŒ¨í„´
     {
-        isBossAttacking = true; //º¸½º°¡ °ø°İ ÁßÀÓÀ» ³ªÅ¸³¿
+        isBossAttacking = true; //ë³´ìŠ¤ê°€ ê³µê²© ì¤‘ì„ì„ ë‚˜íƒ€ëƒ„
         BossAction bossAction = BossPatternPer();
-        await UniTask.Delay(patternDelay); //ÆĞÅÏ ¼±ÅÃ ÈÄ Çàµ¿ ½ÃÀÛ±îÁöÀÇ µô·¹ÀÌ
+        await UniTask.Delay(patternDelay); //íŒ¨í„´ ì„ íƒ í›„ í–‰ë™ ì‹œì‘ê¹Œì§€ì˜ ë”œë ˆì´
         switch (bossAction)
         {
             case BossAction.Pattern1:
                 Phase2Pattern1().Forget();
-                //ÆĞÅÏ1 Çàµ¿ ±¸Çö
+                //íŒ¨í„´1 í–‰ë™ êµ¬í˜„
                 break;
             case BossAction.Pattern2:
                 Phase2Pattern2().Forget();
-                //ÆĞÅÏ2 Çàµ¿ ±¸Çö
+                //íŒ¨í„´2 í–‰ë™ êµ¬í˜„
                 break;
             case BossAction.Pattern3:
                 Phase2Pattern3().Forget();
-                //ÆĞÅÏ3 Çàµ¿ ±¸Çö
+                //íŒ¨í„´3 í–‰ë™ êµ¬í˜„
                 break;
         }
     }
-    protected virtual BossAction BossPatternPer() //º¸½º ÆĞÅÏ È®·ü °è»ê
+    protected virtual BossAction BossPatternPer() //ë³´ìŠ¤ íŒ¨í„´ í™•ë¥  ê³„ì‚°
     {
         int totalWeight = 0;
         foreach (var actionCase in actionCases)
         {
-            totalWeight += actionCase.patternChance; //°¢ ÆĞÅÏÀÇ °¡ÁßÄ¡ ÇÕ»ê
+            totalWeight += actionCase.patternChance; //ê° íŒ¨í„´ì˜ ê°€ì¤‘ì¹˜ í•©ì‚°
         }
-        if(totalWeight == 0) return 0; //°¡ÁßÄ¡°¡ ¸ğµÎ 0ÀÎ °æ¿ì ¿¹¿Ü Ã³¸®
-        int randomValue = Random.Range(0, totalWeight); //0ºÎÅÍ ÃÑ °¡ÁßÄ¡ »çÀÌÀÇ ·£´ı °ª »ı¼º
+        if(totalWeight == 0) return 0; //ê°€ì¤‘ì¹˜ê°€ ëª¨ë‘ 0ì¸ ê²½ìš° ì˜ˆì™¸ ì²˜ë¦¬
+        int randomValue = Random.Range(0, totalWeight); //0ë¶€í„° ì´ ê°€ì¤‘ì¹˜ ì‚¬ì´ì˜ ëœë¤ ê°’ ìƒì„±
         int currentWeight = 0;
 
         foreach(var actionCase in actionCases)
         {
-            currentWeight += actionCase.patternChance; //ÇöÀç ÆĞÅÏÀÇ °¡ÁßÄ¡¸¦ ´©Àû
-            if (randomValue < currentWeight) //·£´ı °ªÀÌ ÇöÀç ´©Àû °¡ÁßÄ¡º¸´Ù ÀÛÀº °æ¿ì ÇØ´ç ÆĞÅÏ ¼±ÅÃ
+            currentWeight += actionCase.patternChance; //í˜„ì¬ íŒ¨í„´ì˜ ê°€ì¤‘ì¹˜ë¥¼ ëˆ„ì 
+            if (randomValue < currentWeight) //ëœë¤ ê°’ì´ í˜„ì¬ ëˆ„ì  ê°€ì¤‘ì¹˜ë³´ë‹¤ ì‘ì€ ê²½ìš° í•´ë‹¹ íŒ¨í„´ ì„ íƒ
             {
-                return actionCase.action; //¼±ÅÃµÈ ÆĞÅÏ ¹İÈ¯
+                return actionCase.action; //ì„ íƒëœ íŒ¨í„´ ë°˜í™˜
             }
         }
-        return 0; //¿¹¿Ü Ã³¸®, ¸ğµç ÆĞÅÏÀÌ ¼±ÅÃµÇÁö ¾ÊÀº °æ¿ì
+        return 0; //ì˜ˆì™¸ ì²˜ë¦¬, ëª¨ë“  íŒ¨í„´ì´ ì„ íƒë˜ì§€ ì•Šì€ ê²½ìš°
     }
-    //==================================º¸½º Phase ±¸Çö======================================
-    protected virtual void PhaseState() //Ã¹ ÆäÀÌÁî´Â È¸ÇÇ±¸°£ µÎ¹øÂ° ÆäÀÌÁî´Â °ø°İ±¸°£
+    //==================================ë³´ìŠ¤ Phase êµ¬í˜„======================================
+    protected virtual void PhaseState() //ì²« í˜ì´ì¦ˆëŠ” íšŒí”¼êµ¬ê°„ ë‘ë²ˆì§¸ í˜ì´ì¦ˆëŠ” ê³µê²©êµ¬ê°„
     {
         switch(bossLevel)
         {
-            case 1: //Ã¹¹øÂ° ÆäÀÌÁî
+            case 1: //ì²«ë²ˆì§¸ í˜ì´ì¦ˆ
                 Phase1BossPattern();
                 break;
-            case 2: //µÎ¹øÂ° ÆäÀÌÁî
+            case 2: //ë‘ë²ˆì§¸ í˜ì´ì¦ˆ
                 Phase2BossPattern();
                 break;
         }
     }
-    //====================================Phase1 ÆĞÅÏ====================================
+    //====================================Phase1 íŒ¨í„´====================================
     protected virtual async UniTask Phase1Pattern1()
     {
-        await UniTask.Delay(1000); //ÆĞÅÏ1 Çàµ¿ µô·¹ÀÌ
-         Debug.Log($"<color=red>[Phase1Çàµ¿ÆĞÅÏ1]</color> ");
+        await UniTask.Delay(1000); //íŒ¨í„´1 í–‰ë™ ë”œë ˆì´
+         Debug.Log($"<color=red>[Phase1í–‰ë™íŒ¨í„´1]</color> ");
     }
     protected virtual async UniTask Phase1Pattern2()
     {
-        await UniTask.Delay(1000); //ÆĞÅÏ1 Çàµ¿ µô·¹ÀÌ
-        Debug.Log($"<color=red>[Phase1Çàµ¿ÆĞÅÏ2]</color> ");
+        await UniTask.Delay(1000); //íŒ¨í„´1 í–‰ë™ ë”œë ˆì´
+        Debug.Log($"<color=red>[Phase1í–‰ë™íŒ¨í„´2]</color> ");
     }
     protected virtual async UniTask Phase1Pattern3()
     {
-        await UniTask.Delay(1000); //ÆĞÅÏ1 Çàµ¿ µô·¹ÀÌ
-        Debug.Log($"<color=red>[Phase1Çàµ¿ÆĞÅÏ3]</color> ");
+        await UniTask.Delay(1000); //íŒ¨í„´1 í–‰ë™ ë”œë ˆì´
+        Debug.Log($"<color=red>[Phase1í–‰ë™íŒ¨í„´3]</color> ");
     }
 
-    //=====================================Phase2 ÆĞÅÏ=================================================
+    //=====================================Phase2 íŒ¨í„´=================================================
     protected virtual async UniTask Phase2Pattern1()
     {
-        await UniTask.Delay(1000); //ÆĞÅÏ1 Çàµ¿ µô·¹ÀÌ
-        Debug.Log($"<color=red>[Phase2Çàµ¿ÆĞÅÏ1]</color> ");
+        await UniTask.Delay(1000); //íŒ¨í„´1 í–‰ë™ ë”œë ˆì´
+        Debug.Log($"<color=red>[Phase2í–‰ë™íŒ¨í„´1]</color> ");
     }
     protected virtual async UniTask Phase2Pattern2()
     {
-        await UniTask.Delay(1000); //ÆĞÅÏ1 Çàµ¿ µô·¹ÀÌ
-        Debug.Log($"<color=red>[Phase2Çàµ¿ÆĞÅÏ2]</color> ");
+        await UniTask.Delay(1000); //íŒ¨í„´1 í–‰ë™ ë”œë ˆì´
+        Debug.Log($"<color=red>[Phase2í–‰ë™íŒ¨í„´2]</color> ");
     }
     protected virtual async UniTask Phase2Pattern3()
     {
-        await UniTask.Delay(1000); //ÆĞÅÏ1 Çàµ¿ µô·¹ÀÌ
-        Debug.Log($"<color=red>[Phase2Çàµ¿ÆĞÅÏ3]</color> ");
+        await UniTask.Delay(1000); //íŒ¨í„´1 í–‰ë™ ë”œë ˆì´
+        Debug.Log($"<color=red>[Phase2í–‰ë™íŒ¨í„´3]</color> ");
     }
 }

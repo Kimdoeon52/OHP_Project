@@ -1,25 +1,31 @@
-using Cysharp.Threading.Tasks;
+ï»¿using Cysharp.Threading.Tasks;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
 /*
- * BossA ¿¹»ó ÄÁ¼Á
- * phase1: 30ÃÊ ¹öÆ¼±â. ÆĞÅÏ1: È­¸é°¡¸®±â. ÆĞÅÏ2: °¡·Î ·¹ÀÌÀú °ø°İ. ÆĞÅÏ3: ¼¼·Î ·¹ÀÌÁ® °ø°İ
+ * BossA ì˜ˆìƒ ì»¨ì…‰
+ * phase1: 30ì´ˆ ë²„í‹°ê¸°. íŒ¨í„´1: í™”ë©´ê°€ë¦¬ê¸°. íŒ¨í„´2: ê°€ë¡œ ë ˆì´ì € ê³µê²©. íŒ¨í„´3: ì„¸ë¡œ ë ˆì´ì ¸ ê³µê²©
  * 
- * phase2: º¸½º µîÀå. 
- * Ã¼·Â 100%- ÆĞÅÏ1: ¸¶±¸ Á¡ÇÁ(±âº»ÀûÀ¸·Î ´êÀ¸¸é µ¥¹ÌÁö). ÆĞÅÏ2: 8¹æÇâ È¸Àü ·¹ÀÌÀú °ø°İ.
- * Ã¼·Â 30%- »¡°²°Ô º¯ÇÏ¸ç ±ä¹ÚÇÔ À½¾Ç+8¹æÇâ È¸Àü ·¹ÀÌÀú °ø°İ + È­¸é °¡¸®±â °ø°İ. ¾È³¡³².
+ * phase2: ë³´ìŠ¤ ë“±ì¥. 
+ * ì²´ë ¥ 100%- íŒ¨í„´1: ë§ˆêµ¬ ì í”„(ê¸°ë³¸ì ìœ¼ë¡œ ë‹¿ìœ¼ë©´ ë°ë¯¸ì§€). íŒ¨í„´2: 8ë°©í–¥ íšŒì „ ë ˆì´ì € ê³µê²©.
+ * ì²´ë ¥ 30%- ë¹¨ê°›ê²Œ ë³€í•˜ë©° ê¸´ë°•í•¨ ìŒì•…+8ë°©í–¥ íšŒì „ ë ˆì´ì € ê³µê²© + í™”ë©´ ê°€ë¦¬ê¸° ê³µê²©. ì•ˆëë‚¨.
  */
 
-//´ÙÀ½¿¡ ÇÒ²¨ °¡·Î ¼¼·Î ·¹ÀÌÁ® °ø°İ ¸¸µé±â.
+//ë‹¤ìŒì— í• êº¼ ê°€ë¡œ ì„¸ë¡œ ë ˆì´ì ¸ ê³µê²© ë§Œë“¤ê¸°.
 public class BossA : BossBase
 {
-    [Header("º¸½º È­¸é °¡¸®±â ÆĞÅÏ")]
+    [Header("ë³´ìŠ¤ í™”ë©´ ê°€ë¦¬ê¸° íŒ¨í„´")]
     [SerializeField] private Image image;
     [SerializeField] private Image image2;
 
-    [Header("º¸½º ÃÑ¾Ë")]
+    [Header("ë³´ìŠ¤ ì´ì•Œ")]
     [SerializeField] private GameObject bossABullet;
+
+    [Header("ë ˆì´ì € ì„¤ì •")]
+    [SerializeField] private LineRenderer dangerLinePrefab; // LineRendererê°€ ë‹¬ë¦° í”„ë¦¬íŒ¹
+    [SerializeField] private GameObject lazerAttackPrefab; // ì‹¤ì œ ë°ë¯¸ì§€ íŒì •ì´ ìˆëŠ” í”„ë¦¬íŒ¹
+
     protected override void Start()
     {
         base.Start();
@@ -31,22 +37,32 @@ public class BossA : BossBase
         image.gameObject.SetActive(false);
         image2.gameObject.SetActive(false);
     }
-    //=====================================º¸½º Çàµ¿ ÆĞÅÏ ±¸Çö=====================================
+    protected override void Update()
+    {
+        base.Update();
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            bossLevel = 2; //ë‹¤ìŒ í˜ì´ì¦ˆë¡œ ë„˜ì–´ê°.
+            bossAnimation.SetBool("Phase2", true);
+            patternDelay = patternDelay / 2; //íŒ¨í„´ í–‰ë™ ë”œë ˆì´ ì ˆë°˜ìœ¼ë¡œ ì¤„ì„.
+        }
+    }
+    //=====================================ë³´ìŠ¤ í–‰ë™ íŒ¨í„´ êµ¬í˜„=====================================
 
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Phase 1 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-    //===================================== ÆĞÅÏ1 ==================================================
+    //===================================== íŒ¨í„´1 ==================================================
     protected override async UniTask Phase1Pattern1()
     {
-        Debug.Log($"<color=red>[Çàµ¿ÆĞÅÏ1]</color> ");
+        Debug.Log($"<color=red>[í–‰ë™íŒ¨í„´1]</color> ");
         ImageAttack().Forget();
-        await UniTask.Delay(patternDelay); //ÆĞÅÏ1 Çàµ¿ µô·¹ÀÌ
-        isBossAttacking = false; //º¸½º°¡ °ø°İÀ» ¸¶ÃÆÀ½À» ³ªÅ¸³¿
+        await UniTask.Delay(patternDelay); //íŒ¨í„´1 í–‰ë™ ë”œë ˆì´
+        isBossAttacking = false; //ë³´ìŠ¤ê°€ ê³µê²©ì„ ë§ˆì³¤ìŒì„ ë‚˜íƒ€ëƒ„
     }
 
-    private async UniTask ImageAttack() //È­¸é °¡¸®±â °ø°İ
+    private async UniTask ImageAttack() //í™”ë©´ ê°€ë¦¬ê¸° ê³µê²©
     {
-        Debug.Log($"<color = red > [È­¸é °¡¸®±â °ø°İ!] </color >");
+        Debug.Log($"<color = red > [í™”ë©´ ê°€ë¦¬ê¸° ê³µê²©!] </color >");
         int randomValue = Random.Range(0, 2);
         switch (randomValue)
         {
@@ -57,7 +73,7 @@ public class BossA : BossBase
                 image2.gameObject.SetActive(true);
                 break;
         }
-        await UniTask.Delay(3000); //°ø°İ µô·¹ÀÌ
+        await UniTask.Delay(3000); //ê³µê²© ë”œë ˆì´
         ImageOff();
     }
 
@@ -66,34 +82,121 @@ public class BossA : BossBase
         image.gameObject.SetActive(false);
         image2.gameObject.SetActive(false);
     }
-    //===================================== ÆĞÅÏ2 ==================================================    
+    //===================================== ê°€ë¡œë ˆì´ì ¸2 ==================================================    
     protected override async UniTask Phase1Pattern2()
     {
-        Debug.Log($"<color=red>[Çàµ¿ÆĞÅÏ2]</color> ");
-        await UniTask.Delay(1000); //ÆĞÅÏ1 Çàµ¿ µô·¹ÀÌ
-        isBossAttacking = false; //º¸½º°¡ °ø°İÀ» ¸¶ÃÆÀ½À» ³ªÅ¸³¿
+        Debug.Log($"<color=red>[í–‰ë™íŒ¨í„´2]</color> ");
+
+        // í™”ë©´ìƒì˜ ëœë¤í•œ ë†’ì´(Yì¶•) ê²°ì •
+        int ranY = Random.Range(-4, 4);
+        Vector3 pos = new Vector3(0, ranY, 0);
+
+        // ê³µê²© ì‹¤í–‰
+        await LazerAttack(pos, Quaternion.identity, cancelToken.Token);
+
+        await UniTask.Delay(patternDelay, cancellationToken: cancelToken.Token);
+        isBossAttacking = false;
     }
 
-    //===================================== ÆĞÅÏ3 ==================================================
+    //===================================== íŒ¨í„´3 ==================================================
     protected override async UniTask Phase1Pattern3()
     {
-        Debug.Log($"<color=red>[Çàµ¿ÆĞÅÏ3]</color> ");
-        await UniTask.Delay(1000); //ÆĞÅÏ1 Çàµ¿ µô·¹ÀÌ
-        isBossAttacking = false; //º¸½º°¡ °ø°İÀ» ¸¶ÃÆÀ½À» ³ªÅ¸³¿
-    }
+        Debug.Log($"<color=red>[í–‰ë™íŒ¨í„´3]</color> ");
+        // í™”ë©´ìƒì˜ ëœë¤í•œ ê°€ë¡œ ìœ„ì¹˜(Xì¶•) ê²°ì •
+        int ranX = Random.Range(-8, 8);
+        Vector3 pos = new Vector3(ranX, 0, 0);
 
+        // 90ë„ íšŒì „ì‹œì¼œ ì„¸ë¡œë¡œ ë§Œë“¦
+        Quaternion quaternion = Quaternion.Euler(0, 0, 90f);
+
+        await LazerAttack(pos, quaternion, cancelToken.Token);
+
+        await UniTask.Delay(patternDelay, cancellationToken: cancelToken.Token);
+        isBossAttacking = false;
+    }
+    //===================================== ë ˆì´ì € ê³µê²© êµ¬í˜„ =======================================
+    private async UniTask LazerAttack(Vector3 pos, Quaternion q, CancellationToken token)
+    {
+        // 1. ì˜ˆê³ ì„  ìƒì„±
+        LineRenderer dangerLine = Instantiate(dangerLinePrefab, pos, q);
+
+        dangerLine.useWorldSpace = false;
+        dangerLine.positionCount = 2;
+
+        // ë¡œì»¬ ì¢Œí‘œ ê¸°ì¤€ì´ë¯€ë¡œ (0,0,0)ì„ ì¤‘ì‹¬ìœ¼ë¡œ ì¢Œìš°(í˜¹ì€ ìƒí•˜)ë¡œ ê¸¸ê²Œ ë»—ê²Œ í•©ë‹ˆë‹¤.
+        // 2D ê²Œì„ì´ë¯€ë¡œ ì¶©ë¶„íˆ ê¸´ ê°’(ì˜ˆ: 50f)ì„ ì¤ë‹ˆë‹¤.
+        dangerLine.SetPosition(0, new Vector3(-25f, 0, 0));
+        dangerLine.SetPosition(1, new Vector3(25f, 0, 0));
+        try
+        {
+            await UniTask.Delay(patternDelay, cancellationToken: token);
+            if (dangerLine != null)
+            {
+                Destroy(dangerLine.gameObject);
+            }
+            GameObject lazer = Instantiate(lazerAttackPrefab, pos, q);
+
+            await UniTask.Delay(patternDelay, cancellationToken: token);
+            if (lazer != null)
+            {
+                Destroy(lazer);
+            }
+        }
+        catch (System.OperationCanceledException)
+        {
+            // ê³µê²©ì´ ì·¨ì†Œëœ ê²½ìš° ì˜ˆê³ ì„ ì„ ì¦‰ì‹œ ì œê±°
+            Destroy(dangerLine.gameObject);
+            return;
+        }
+    }
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Phase2 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-    //=====================================ÆĞÅÏ1==================================================
+    //=====================================íŒ¨í„´1==================================================
     protected override async UniTask Phase2Pattern1()
     {
-        await UniTask.Delay(1000); //ÆĞÅÏ1 Çàµ¿ µô·¹ÀÌ
-        Debug.Log($"<color=red>[Phase2 Çàµ¿ÆĞÅÏ1]</color> ");
+        Debug.Log($"<color=red>[Phase2 í–‰ë™íŒ¨í„´1]</color> ");
+        for (int i = 0; i < 5; i++)
+        {
+            // í™”ë©´ìƒì˜ ëœë¤í•œ ê°€ë¡œ ìœ„ì¹˜(Xì¶•) ê²°ì •
+            int ranX = Random.Range(-8, 8);
+            Vector3 pos = new Vector3(ranX, 0, 0);
+
+            // 90ë„ íšŒì „ì‹œì¼œ ì„¸ë¡œë¡œ ë§Œë“¦
+            Quaternion quaternion = Quaternion.Euler(0, 0, 90f);
+
+            await LazerAttack(pos, quaternion, cancelToken.Token);
+        }
+        isBossAttacking = false;
     }
-    //=====================================ÆĞÅÏ2==================================================
+    //=====================================íŒ¨í„´2==================================================
     protected override async UniTask Phase2Pattern2()
     {
-        await UniTask.Delay(1000); //ÆĞÅÏ1 Çàµ¿ µô·¹ÀÌ
-        Debug.Log($"<color=red>[Phase2 Çàµ¿ÆĞÅÏ2]</color> ");
+        Debug.Log($"<color=red>[Phase2 í–‰ë™íŒ¨í„´2]</color> ");
+
+        for(int i = 0; i < 8; i++)
+        {
+            // 45ë„ì”© íšŒì „í•˜ì—¬ 8ë°©í–¥ìœ¼ë¡œ ë ˆì´ì € ê³µê²©
+            float angle = i * 45f;
+            Quaternion q = Quaternion.Euler(0, 0, angle);
+            await LazerAttack(Vector3.zero, q, cancelToken.Token);
+        }
+        isBossAttacking = false;
+    }
+
+    //=====================================íŒ¨í„´3==================================================
+    protected override async UniTask Phase2Pattern3()
+    {
+        Debug.Log($"<color=red>[Phase2 í–‰ë™íŒ¨í„´3]</color> ");
+        for (int i = 0; i < 5; i++)
+        {
+            int ranY = Random.Range(-4, 4);
+            Vector3 pos = new Vector3(0, ranY, 0);
+
+            // ê³µê²© ì‹¤í–‰
+            await LazerAttack(pos, Quaternion.identity, cancelToken.Token);
+        }
+        isBossAttacking = false;
     }
 }
+
+

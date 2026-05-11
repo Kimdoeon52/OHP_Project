@@ -1650,10 +1650,12 @@ MonoBehaviour:
   currentHp: 0
   bossLevel: 0
   actionCases: []
-  patternDelay: 0
+  patternDelay: 1
   image: {fileID: 413440078}
   image2: {fileID: 413440078}
   bossABullet: {fileID: 0}
+  dangerLinePrefab: {fileID: 8411815674160977536, guid: e8dbde64d1226bf4792ae22b4cccbde2, type: 3}
+  lazerAttackPrefab: {fileID: 1691323043319350433, guid: f9d3e6b15d7356049a22ce73bbd20d81, type: 3}
 --- !u!4 &2058279049
 Transform:
   m_ObjectHideFlags: 0
