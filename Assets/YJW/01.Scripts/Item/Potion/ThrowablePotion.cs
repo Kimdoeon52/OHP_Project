@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 public class ThrowablePotion : PotionData, IThrowable
 {
@@ -15,9 +16,12 @@ public class ThrowablePotion : PotionData, IThrowable
         }
     }
 
-    protected virtual void ApplyEffect(Vector2Int tile) { }
+	protected virtual UniTask ApplyEffect(Vector2Int tile)
+	{
+		return UniTask.CompletedTask; // UniTask를 직접 반환
+	}
 
-    public override void Use()
+	public override void Use()
     {
         // 던지는 포션은 Use()로 사용하지 않음
         Debug.LogWarning("던지는 포션은 Throw()를 사용하세요!");
