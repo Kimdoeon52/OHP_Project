@@ -1,8 +1,6 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
-using System.Net.Security;
 using System.Threading;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public enum BossAction
@@ -32,14 +30,26 @@ public class BossBase : EnemyBase
     protected bool isBossAttacking; //보스가 공격 중인지 여부를 나타내는 변수
     protected Animator bossAnimation; //보스 애니메이션을 제어하기 위한
     protected CancellationTokenSource cancelToken;
-    protected virtual void Start()
+    protected override void Start()
     {
+        base.Start(); // EnemyBase: Player 찾기, 격자 스냅, TurnManager 등록
+
         cancelToken = new CancellationTokenSource();
         actionCases.Clear();
         bossLevel = 1; //보스 레벨 초기화
         bossAnimation = GetComponent<Animator>(); //보스 애니메이션 컴포넌트 가져오기
         patternDelay *= 1000; //초로 변환.
         //각 보스 체력이나 레벨에 따른 패턴 확률 설정은 각 보스마다 다르게 구현
+    }
+
+    /// <summary>
+    /// 턴 시스템 연동. 보스는 Update 기반 비동기 패턴을 사용하므로
+    /// 턴 시스템에서는 별도 행동 없이 패스한다.
+    /// 턴 연동이 필요하면 이 메서드를 오버라이드.
+    /// </summary>
+    public override void OnTurnUpdate()
+    {
+        // 보스는 Update() + UniTask 기반 패턴으로 독립 동작
     }
 
     protected virtual void Update()
@@ -51,8 +61,11 @@ public class BossBase : EnemyBase
 
     protected virtual void OnDestroy()
     {
-        cancelToken.Cancel(); //보스가 파괴될 때 취소 토큰을 취소하여 모든 비동기 작업을 중단
-        cancelToken.Dispose(); //취소 토큰 소멸
+        if (cancelToken != null)
+        {
+            cancelToken.Cancel(); //보스가 파괴될 때 취소 토큰을 취소하여 모든 비동기 작업을 중단
+            cancelToken.Dispose(); //취소 토큰 소멸
+        }
     }
 
     protected virtual void PatternStop()

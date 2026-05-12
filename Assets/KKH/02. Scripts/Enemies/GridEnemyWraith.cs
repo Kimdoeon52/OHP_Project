@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 /// <summary>
 /// 망령: 벽을 통과하여 플레이어를 추적함
@@ -10,7 +10,7 @@
 /// 벨런스 조절을 위하여 시야 밖에서도 플레이어의 위치를 감지하는 
 /// 대신 공격력 및 체력이 Tracker보다 더 낮게 설정되어야함
 /// </summary>
-public class GridEnemyWraith : GridEnemyBase
+public class GridEnemyWraith : EnemyBase
 {
     private Vector2Int? _pendingAttackCell;
 

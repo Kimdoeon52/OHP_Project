@@ -26,8 +26,7 @@ public class BossB : BossBase
     protected override void Start()
     {
         base.Start();
-        maxHp = 100; //보스 체력 설정
-        currentHp = maxHp;
+        CurrentHp = 100; // 보스 체력 설정
         AddActionCase(BossAction.Pattern1, 50); // 랜덤 이동
         AddActionCase(BossAction.Pattern2, 50); // 플레이어 추적
 

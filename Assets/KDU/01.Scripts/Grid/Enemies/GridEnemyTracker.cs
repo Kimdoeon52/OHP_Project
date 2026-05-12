@@ -7,7 +7,7 @@ using UnityEngine;
 ///   2. 시야 안이면 플레이어 방향으로 1칸 이동
 ///   3. 인접하면 다음 턴 공격 의도(플레이어 현재 칸) 표시
 /// </summary>
-public class GridEnemyTracker : GridEnemyBase
+public class GridEnemyTracker : EnemyBase
 {
     private Vector2Int? _pendingAttackCell;
 

@@ -7,7 +7,7 @@ using UnityEngine;
 ///   1. 이전 턴 발사 라인에 플레이어 있으면 데미지
 ///   2. 직선상에 플레이어 있으면 라인 전체 텔레그래프 표시 (다음 턴 발사 예고)
 /// </summary>
-public class GridEnemyArcher : GridEnemyBase
+public class GridEnemyArcher : EnemyBase
 {
     private List<Vector2Int> _pendingAttackLine;
 

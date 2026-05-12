@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public class GridEnemyCrawler : GridEnemyBase
+public class GridEnemyCrawler : EnemyBase
 {
     private Vector2Int? _pendingAttackCell;
     private List<Vector2Int> _movePath = new List<Vector2Int>(); // 턴 내 이동 경로 기록용
