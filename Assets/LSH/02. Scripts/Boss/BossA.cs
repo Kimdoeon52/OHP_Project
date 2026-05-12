@@ -1,9 +1,6 @@
-<<<<<<< Updated upstream
-﻿using Cysharp.Threading.Tasks;
-using System.Collections.Generic;
-=======
 using Cysharp.Threading.Tasks;
->>>>>>> Stashed changes
+using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
