@@ -51,7 +51,7 @@ public class BossB : BossBase
     protected override async UniTask Phase1Pattern2()
     {
         Debug.Log($"<color=red>[보스 플레이어 추적 패턴1]</color> ");
-        for (int i = 0; i < stepsPerPattern; i++)
+        for (int i = 0; i < 12; i++)
         {
             await StepTowardPlayer();
             await UniTask.Delay(stepDelayMs, cancellationToken: cancelToken.Token);

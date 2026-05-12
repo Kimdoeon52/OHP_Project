@@ -1,5 +1,9 @@
+<<<<<<< Updated upstream
 ﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+=======
+using Cysharp.Threading.Tasks;
+>>>>>>> Stashed changes
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
@@ -27,7 +31,8 @@ public class BossA : BossBase
     [SerializeField] private LineRenderer dangerLinePrefab;
     [SerializeField] private GameObject lazerAttackPrefab;
 
-    private HashSet<Vector2Int> _bossRoomCells;
+    private RectInt _bossRoomBounds;
+    private bool _hasBossRoomBounds;
 
     protected override void Start()
     {
@@ -46,8 +51,9 @@ public class BossA : BossBase
     {
         if (MapGenerator.Instance?.CurrentRooms == null) return;
         var bossRoom = MapGenerator.Instance.CurrentRooms.Find(r => r.type == RoomType.Boss);
-        if (bossRoom != null)
-            _bossRoomCells = new HashSet<Vector2Int>(bossRoom.floorCells);
+        if (bossRoom == null) return;
+        _bossRoomBounds = bossRoom.bounds;
+        _hasBossRoomBounds = true;
     }
 
     protected override void Update()
@@ -153,48 +159,53 @@ public class BossA : BossBase
 
     // ─── 방 경계 탐색 헬퍼 ────────────────────────────────────────────────────
 
-    /// <summary>
-    /// 레이저 시작점 pos 에서 q 방향 기준 양쪽 방 경계 월드 좌표를 반환.
-    /// GridSystem / 방 데이터 없으면 ±25 고정값으로 폴백.
-    /// </summary>
     private (Vector3 start, Vector3 end) FindLaserEndpoints(Vector3 worldPos, Quaternion q)
     {
         Vector3 fallbackStart = worldPos + q * new Vector3(-25f, 0, 0);
         Vector3 fallbackEnd   = worldPos + q * new Vector3( 25f, 0, 0);
 
-        if (_bossRoomCells == null || GridSystem.Instance == null)
+        if (!_hasBossRoomBounds || GridSystem.Instance == null)
             return (fallbackStart, fallbackEnd);
-
-        var gridPos = GridSystem.Instance.WorldToGrid(worldPos);
-        if (!_bossRoomCells.Contains(gridPos))
-            return (fallbackStart, fallbackEnd); // 시작 위치가 방 밖이면 폴백
 
         var dir = WorldDirToGridDir(q * Vector3.right);
         if (dir == Vector2Int.zero)
             return (fallbackStart, fallbackEnd);
 
-        var endCell   = WalkToWall(gridPos,  dir);
-        var startCell = WalkToWall(gridPos, -dir);
+        Vector2Int startCell, endCell;
+
+        if (dir.y == 0) // 가로 레이저: bounds에서 랜덤 행 선택
+        {
+            int gridY = Random.Range(_bossRoomBounds.yMin + 1, _bossRoomBounds.yMax - 1);
+            startCell = new Vector2Int(_bossRoomBounds.xMin, gridY);
+            endCell   = new Vector2Int(_bossRoomBounds.xMax - 1, gridY);
+        }
+        else if (dir.x == 0) // 세로 레이저: bounds에서 랜덤 열 선택
+        {
+            int gridX = Random.Range(_bossRoomBounds.xMin + 1, _bossRoomBounds.xMax - 1);
+            startCell = new Vector2Int(gridX, _bossRoomBounds.yMin);
+            endCell   = new Vector2Int(gridX, _bossRoomBounds.yMax - 1);
+        }
+        else // 대각선(Phase2 8방향): 보스 위치에서 IsWalkable로 벽 탐색
+        {
+            var gridPos = GridSystem.Instance.WorldToGrid(transform.position);
+            endCell   = WalkToWall(gridPos,  dir);
+            startCell = WalkToWall(gridPos, -dir);
+        }
 
         return (GridSystem.Instance.GridToWorld(startCell),
                 GridSystem.Instance.GridToWorld(endCell));
     }
 
-    /// <summary>
-    /// origin 에서 dir 방향으로 방 경계(다음 칸이 방 밖)까지 이동한 마지막 격자 좌표 반환.
-    /// </summary>
+    // 대각선 레이저 전용: 벽(IsWalkable 실패)에 닿을 때까지 이동
     private Vector2Int WalkToWall(Vector2Int origin, Vector2Int dir)
     {
         var current = origin;
         int guard = 100;
-        while (guard-- > 0 && _bossRoomCells.Contains(current + dir))
+        while (guard-- > 0 && GridSystem.Instance.IsWalkable(current + dir))
             current += dir;
         return current;
     }
 
-    /// <summary>
-    /// 월드 방향 벡터를 8방향 격자 방향(각 축 -1/0/1)으로 변환.
-    /// </summary>
     private static Vector2Int WorldDirToGridDir(Vector3 worldDir)
     {
         int x = Mathf.Clamp(Mathf.RoundToInt(worldDir.x), -1, 1);
