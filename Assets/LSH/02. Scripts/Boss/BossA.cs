@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
@@ -15,6 +15,7 @@ using UnityEngine.UI;
 
 public class BossA : BossBase
 {
+
     [Header("보스 화면 가리기 패턴")]
     [SerializeField] private Image image;
     [SerializeField] private Image image2;

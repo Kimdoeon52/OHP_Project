@@ -4,3 +4,5 @@ public interface IThrowable
 {
     void Throw(Vector2Int targetPos);
 }
+
+

@@ -1,14 +1,23 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class EnemyBase : MonoBehaviour
 {
-    [Header("Ã¼·Â")]
+    [Header("ì²´ë ¥")]
     [SerializeField] protected int maxHp;
-    [SerializeField] protected int currentHp;
+    [SerializeField] public int currentHp;
 
-    [Header("¼Óµµ")]
-    [SerializeField] protected float moveSpeed;
+    [Header("ì†ë„")]
+    [SerializeField] public float moveSpeed;
 
-    [Header("ÀÎ½ÄÇß´ÂÁö")]
-    [SerializeField] protected bool isDetected = false;
+    [Header("ì¸ì‹í–ˆëŠ”ì§€")]
+    [SerializeField] public bool isDetected = false;
+
+    public virtual void TakeDamage(int damage)
+    {
+        currentHp -= damage;
+        if (currentHp <= 0)
+        {
+            //Die();
+        }
+    }
 }
