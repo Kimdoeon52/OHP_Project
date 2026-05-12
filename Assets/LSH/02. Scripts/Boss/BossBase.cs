@@ -18,12 +18,8 @@ public class ActionCases
     public BossAction action;
     [Range(0, 100)] public int patternChance;
 }
-public class BossBase : MonoBehaviour
+public class BossBase : EnemyBase
 {
-    [Header("보스 체력")]
-    [SerializeField] protected int maxHp;
-    [SerializeField] protected int currentHp;
-
     [Header("보스 레벨")] //레벨에 따라서 보스 패턴이나 보스의 능력치가 달라질 수 있음
     [SerializeField] protected int bossLevel;
 
@@ -50,7 +46,7 @@ public class BossBase : MonoBehaviour
     {
         if (isBossAttacking)
             return;
-        PhaseState();
+        PhaseState().Forget();
     }
 
     protected virtual void OnDestroy()
@@ -73,7 +69,7 @@ public class BossBase : MonoBehaviour
     {
         actionCases.Add(new ActionCases { action = bossAction, patternChance = chance });
     }
-    protected virtual async void Phase1BossPattern() //첫번째 페이즈
+    protected virtual async UniTask Phase1BossPattern() //첫번째 페이즈
     {
         isBossAttacking = true; //보스가 공격 중임을 나타냄
         BossAction bossAction = BossPatternPer();
@@ -95,7 +91,7 @@ public class BossBase : MonoBehaviour
         }
     }
 
-    protected virtual async void Phase2BossPattern() //두번째 페이즈 보스 패턴
+    protected virtual async UniTask Phase2BossPattern() //두번째 페이즈 보스 패턴
     {
         isBossAttacking = true; //보스가 공격 중임을 나타냄
         BossAction bossAction = BossPatternPer();
@@ -138,15 +134,15 @@ public class BossBase : MonoBehaviour
         return 0; //예외 처리, 모든 패턴이 선택되지 않은 경우
     }
     //==================================보스 Phase 구현======================================
-    protected virtual void PhaseState() //첫 페이즈는 회피구간 두번째 페이즈는 공격구간
+    protected virtual async UniTask PhaseState() //첫 페이즈는 회피구간 두번째 페이즈는 공격구간
     {
         switch(bossLevel)
         {
             case 1: //첫번째 페이즈
-                Phase1BossPattern();
+                await Phase1BossPattern();
                 break;
             case 2: //두번째 페이즈
-                Phase2BossPattern();
+                await Phase2BossPattern();
                 break;
         }
     }
