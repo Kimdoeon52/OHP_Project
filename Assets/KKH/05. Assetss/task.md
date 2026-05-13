@@ -16,11 +16,12 @@ GDD v1.0을 바탕으로 적(Enemy) 파트 담당자가 수행해야 할 작업 
 
 ## 2. 몬스터 추가 및 확장 (우선순위별)
 
+- `[X]` **EnemyBase로 전환 완료**
 - `[ ]` **신규 몬스터 클래스 구현 (Area 2, 3용)** (P2 확장)
-  - `[ ]` `Crawler` (고속 이동)
+  - `[X]` `Crawler` (고속 이동)
   - `[X]` `Wraith` (벽 통과)
-  - `[ ]` `Phantom` (사망 시 분열)
-  - `[ ]` `Hollow King's Guard` (고체력)
+  - `[X]` `Phantom` (사망 시 분열)
+  - `[X]` `Hollow King's Guard` (고체력)
   - `[ ]` Elite 변종 (Exit Room 인접 배치용)
 - `[ ]` **보스 3종 패턴 및 동작 구현** (P1, 최소 Area 1 보스는 P0)
   - `[ ]` Area 1 보스: 광맥의 군주 (Lord of the Veins)
