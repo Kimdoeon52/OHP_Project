@@ -14,29 +14,43 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tiers:
   - pool:
-    - enemyData: {fileID: 11400000, guid: 38c624b21ca52a540b954e08e5d08d62, type: 2}
+    - enemyData: {fileID: 11400000, guid: f69f9729e25928048a38c54cff613537, type: 2}
       weight: 1
       requiresLineOfSight: 1
     minCount: 1
     maxCount: 3
     eliteChance: 0
   - pool:
-    - enemyData: {fileID: 11400000, guid: f69f9729e25928048a38c54cff613537, type: 2}
-      weight: 4
+    - enemyData: {fileID: 11400000, guid: 42492307303ddea4681e8c737bea24b5, type: 2}
+      weight: 1
       requiresLineOfSight: 0
     minCount: 2
     maxCount: 4
     eliteChance: 0
   - pool:
-    - enemyData: {fileID: 11400000, guid: be2c9cba2af97d943999d00935ab9e0b, type: 2}
+    - enemyData: {fileID: 11400000, guid: 38c624b21ca52a540b954e08e5d08d62, type: 2}
       weight: 1
       requiresLineOfSight: 0
     minCount: 4
     maxCount: 5
     eliteChance: 0
   - pool:
-    - enemyData: {fileID: 11400000, guid: 42492307303ddea4681e8c737bea24b5, type: 2}
-      weight: 4
+    - enemyData: {fileID: 11400000, guid: be2c9cba2af97d943999d00935ab9e0b, type: 2}
+      weight: 1
+      requiresLineOfSight: 0
+    minCount: 1
+    maxCount: 5
+    eliteChance: 0
+  - pool:
+    - enemyData: {fileID: 11400000, guid: 94f9e0f2c13360340b7a19611e5fdac6, type: 2}
+      weight: 1
+      requiresLineOfSight: 0
+    minCount: 1
+    maxCount: 5
+    eliteChance: 0
+  - pool:
+    - enemyData: {fileID: 11400000, guid: 1f7d9e2f43270fa4ba1463fa239101ad, type: 2}
+      weight: 1
       requiresLineOfSight: 0
     minCount: 1
     maxCount: 5
