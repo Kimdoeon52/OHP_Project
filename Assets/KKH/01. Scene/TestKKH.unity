@@ -261,6 +261,11 @@ MonoBehaviour:
     prefab: {fileID: 5570546586574092517, guid: e48a3d083319d444ca6e06c8218c9fbf, type: 3}
   - enemyData: {fileID: 11400000, guid: f69f9729e25928048a38c54cff613537, type: 2}
     prefab: {fileID: 2537672650221550757, guid: bd4c058ab9448d14ea68461d36840c32, type: 3}
+  - enemyData: {fileID: 11400000, guid: be2c9cba2af97d943999d00935ab9e0b, type: 2}
+    prefab: {fileID: 7409686244963002317, guid: cafe7f40c72df9642afee274c301763f, type: 3}
+  - enemyData: {fileID: 11400000, guid: 42492307303ddea4681e8c737bea24b5, type: 2}
+    prefab: {fileID: 2493901957273684215, guid: bb4d7ee8501aa4f4fa63aebc3659de08, type: 3}
+  testBossData: {fileID: 0}
   testRoomType: 1
   distanceFromSafe: 2
   roomSize: {x: 5, y: 5}
@@ -294,8 +299,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b5fc0c4ea3f1e34caa116f56a3250bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  floorTilemap: {fileID: 2115981815}
-  wallTilemap: {fileID: 0}
+  tilemaps:
+    floor: {fileID: 2115981815}
+    wall: {fileID: 0}
+    water: {fileID: 0}
+    grass: {fileID: 0}
+    chasm: {fileID: 0}
 --- !u!4 &1757199527
 Transform:
   m_ObjectHideFlags: 0

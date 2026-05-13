@@ -77,12 +77,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 5
-  m_Sprite: {fileID: -4145317351016324679, guid: 2c33a49807aa81e4ba0e760717f8a732, type: 3}
+  m_Sprite: {fileID: -371974518, guid: 0e0c49562085468e8b180291b8414bf8, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.17, y: 0.13}
+  m_Size: {x: 8, y: 8}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -102,3 +102,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   data: {fileID: 11400000, guid: f69f9729e25928048a38c54cff613537, type: 2}
   telegraphPrefab: {fileID: 6650546338721390145, guid: fc684c7a9e25aa641ab9f283ab1a7450, type: 3}
+  moveSpeed: 0
+  isDetected: 0
