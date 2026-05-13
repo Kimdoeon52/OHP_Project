@@ -6,7 +6,8 @@ using UnityEngine;
 public class ThrowableWeapon : ItemBase, IThrowable
 {
     public int damage { get; private set; }
-    protected int CanUseStrength;
+    [SerializeField] protected int CanUseStrength;
+    [SerializeField] private PoolType poolType;
 
     public void Throw(Vector2Int targetPos)
     {
@@ -19,15 +20,19 @@ public class ThrowableWeapon : ItemBase, IThrowable
         Vector2Int currentPos = GridSystem.Instance.WorldToGrid(GameManager.Instance.player.transform.position);
         Vector2Int? targetTile = FindTarget(currentPos, targetPos);
 
+        GameObject weapon = ObjectPool.Instance.Get(poolType);
+        weapon.transform.position = GameManager.Instance.player.transform.position;
+
         if (targetTile.HasValue)
         {
-            // 해당 타일로 무기 날리기
-        }
+
+		}
         else
         {
             // 적 없으면 직선으로 날리기 등
         }
     }
+
 
     private Vector2Int? FindTarget(Vector2Int origin, Vector2Int direction)
     {

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 public enum PoolType
@@ -6,7 +6,14 @@ public enum PoolType
     FirePotion,
     FireEffect,
     IcePotion,
-    IceEffect
+    IceEffect,
+    ThrowingSword,  // íˆ¬ì²™ìš© ê²€
+	harpoon,        // ì‘ì‚´
+    Shuriken,       // ìˆ˜ë¦¬ê²€
+    Kunai,          // ì¿ ë‚˜ì´
+    Noose,          // ì˜¬ê°€ë¯¸
+    Javelin,        // íˆ¬ì°½
+    ThrowingAxe     // íˆ¬ì²™ìš© ë„ë¼
 }
 
 public class ObjectPool : Singleton<ObjectPool>
@@ -14,24 +21,24 @@ public class ObjectPool : Singleton<ObjectPool>
     [System.Serializable]
     public class PoolInfo
     {
-        public PoolType type;    // Ç® Å¸ÀÔ
-        public GameObject prefab; // »ı¼ºÇÒ ÇÁ¸®ÆÕ
-        public int count;         // ¹Ì¸® »ı¼ºÇÒ °³¼ö
+        public PoolType type;    // í’€ íƒ€ì…
+        public GameObject prefab; // ìƒì„±í•  í”„ë¦¬íŒ¹
+        public int count;         // ë¯¸ë¦¬ ìƒì„±í•  ê°œìˆ˜
     }
 
-    [SerializeField] PoolInfo[] pools; // ÀÎ½ºÆåÅÍ¿¡¼­ Ç® ¼³Á¤
-    Dictionary<PoolType, Queue<GameObject>> poolDic = new(); // Å¸ÀÔº° ¿ÀºêÁ§Æ® Å¥
+    [SerializeField] PoolInfo[] pools; // ì¸ìŠ¤í™í„°ì—ì„œ í’€ ì„¤ì •
+    Dictionary<PoolType, Queue<GameObject>> poolDic = new(); // íƒ€ì…ë³„ ì˜¤ë¸Œì íŠ¸ í
 
     protected override void Awake()
     {
         base.Awake();
         foreach (var info in pools)
         {
-            // Å¸ÀÔº° ºÎ¸ğ ¿ÀºêÁ§Æ® »ı¼º
+            // íƒ€ì…ë³„ ë¶€ëª¨ ì˜¤ë¸Œì íŠ¸ ìƒì„±
             GameObject parent = new GameObject(info.type.ToString());
             parent.transform.SetParent(transform);
 
-            // count¸¸Å­ ¹Ì¸® »ı¼º ÈÄ ºñÈ°¼ºÈ­ÇÏ¿© Å¥¿¡ ÀúÀå
+            // countë§Œí¼ ë¯¸ë¦¬ ìƒì„± í›„ ë¹„í™œì„±í™”í•˜ì—¬ íì— ì €ì¥
             Queue<GameObject> q = new();
             for (int i = 0; i < info.count; i++)
             {
@@ -43,7 +50,7 @@ public class ObjectPool : Singleton<ObjectPool>
         }
     }
 
-    // Ç®¿¡¼­ ¿ÀºêÁ§Æ® ²¨³»¼­ ¹İÈ¯
+    // í’€ì—ì„œ ì˜¤ë¸Œì íŠ¸ êº¼ë‚´ì„œ ë°˜í™˜
     public GameObject Get(PoolType type)
     {
         if (!poolDic.ContainsKey(type)) return null;
@@ -51,7 +58,7 @@ public class ObjectPool : Singleton<ObjectPool>
         var q = poolDic[type];
         if (q.Count == 0)
         {
-            Debug.LogWarning($"{type} Ç® ºÎÁ·!");
+            Debug.LogWarning($"{type} í’€ ë¶€ì¡±!");
             return null;
         }
 
@@ -60,7 +67,7 @@ public class ObjectPool : Singleton<ObjectPool>
         return obj;
     }
 
-    // ´Ù ¾´ ¿ÀºêÁ§Æ® Ç®¿¡ ¹İ³³
+    // ë‹¤ ì“´ ì˜¤ë¸Œì íŠ¸ í’€ì— ë°˜ë‚©
     public void Return(PoolType type, GameObject obj)
     {
         obj.SetActive(false);
