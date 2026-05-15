@@ -7,7 +7,7 @@ public class BossB : BossBase
 {
     [Header("이동 설정")]
     [SerializeField] private float moveTime = 0.25f; //이동하는데 걸리는 시간
-    [SerializeField] private Ease moveEase = Ease.OutBack; //Ease.OutBack는 살짝 튕기는 느낌으로 이동이 끝나는 두트윈임.
+    [SerializeField] private Ease moveEase = Ease.Linear; //스르륵 미끄러지게 끝나는 두트윈임.
     [SerializeField] private int stepsPerPattern = 4; //이동 횟수
     [SerializeField] private int stepDelayMs = 1000; //이동 딜레이
 
@@ -40,8 +40,8 @@ public class BossB : BossBase
         base.Start();
         currentHp = maxHp; // 보스 체력 설정
         AddActionCase(BossAction.Pattern1, 50); // 랜덤 이동
-        AddActionCase(BossAction.Pattern2, 50); // 플레이어 추적
-        AddActionCase(BossAction.Pattern3, 0); // 패턴3 없음
+        AddActionCase(BossAction.Pattern2, 30); // 플레이어 추적
+        AddActionCase(BossAction.Pattern3, 20); // 패턴3 없음
         anime = GetComponent<Animator>();
     }
 
@@ -116,69 +116,122 @@ public class BossB : BossBase
             await UniTask.Delay(rockDelayMs, cancellationToken: cancelToken.Token);
         }
     }
-    ////============================= 이동 로직 ==============================================
+    //===============================임시 이동 패턴========================================
+    protected override async UniTask Phase1Pattern3()
+    {
+        await BossMoveStart(false);
+        isBossAttacking = false;
+    }
+    //============================= 이동 로직 ==============================================
 
-    //private async UniTask StepRandom()
-    //{
-    //    var dirs = (Vector2Int[])Dirs.Clone();
-    //    Shuffle(dirs);
+    public async UniTask BossMoveStart(bool chasePlayer)
+    {
+        isMove = true;
+        anime.SetBool("Walk", true);
+        // 지정된 횟수(stepsPerPattern)만큼 멈추지 않고 연속 이동 연출
+        for (int i = 0; i < stepsPerPattern; i++)
+        {
+            if (cancelToken.IsCancellationRequested) break;
 
-    //    foreach (var dir in dirs)
-    //    {
-    //        if (TryStep(dir))
-    //        {
-    //            await AnimateMove();
-    //            return;
-    //        }
-    //    }
-    //    // 이동 가능 방향 없으면 대기만
-    //    await UniTask.Delay((int)(moveTime * 1000), cancellationToken: cancelToken.Token);
-    //}
+            bool moveGood = false;
 
-    //private async UniTask StepTowardPlayer()
-    //{
-    //    if (player == null) { await StepRandom(); return; } //플레이어가 없으면 랜덤 이동
+            if (chasePlayer)
+            {
+                moveGood = await NextMoveToPlayer();
+            }
+            else
+            {
+                moveGood = await RanMove();
+            }
 
-    //    var diff = player.GridPosition - gridPos; // 플레이어와의 격자 좌표 차이 계산
-    //    var dirX = diff.x != 0 ? new Vector2Int(System.Math.Sign(diff.x), 0) : Vector2Int.zero; // 플레이어와의 격자 좌표 차이에 따라 우선적으로 시도할 방향과 보조적으로 시도할 방향을 결정
-    //    var dirY = diff.y != 0 ? new Vector2Int(0, System.Math.Sign(diff.y)) : Vector2Int.zero;
-    //    bool xFirst = Mathf.Abs(diff.x) >= Mathf.Abs(diff.y);
+            // 만약 사방이 막혀서 이동에 실패했다면 루프 탈출
+            if (!moveGood) break;
 
-    //    var primary = xFirst ? dirX : dirY; // 플레이어와의 격자 좌표 차이에 따라 우선적으로 시도할 방향과 보조적으로 시도할 방향을 결정
-    //    var secondary = xFirst ? dirY : dirX; // 플레이어와의 격자 좌표 차이에 따라 우선적으로 시도할 방향과 보조적으로 시도할 방향을 결정
+            // 칸 사이의 딜레이를 0에 가깝게 주거나 moveTime과 맞춰야 끊기지 않습니다.
+            // 연속으로 스르륵 움직이게 하려면 stepDelayMs를 0으로 주거나 아주 짧게(50ms) 설정.
+            if (stepDelayMs > 0 && i < stepsPerPattern - 1)
+            {
+                await UniTask.Delay(stepDelayMs, cancellationToken: cancelToken.Token);
+            }
+        }
+        anime.SetBool("Walk", false);
+        isMove = false;
+    }
 
-    //    if (primary   != Vector2Int.zero && TryStep(primary))   { await AnimateMove(); return; }
-    //    if (secondary != Vector2Int.zero && TryStep(secondary)) { await AnimateMove(); return; }
+    private async UniTask<bool> RanMove()
+    {
+        var dirArray = (Vector2Int[])Dirs.Clone();
+        Array_Shuffle(dirArray);
 
-    //    // 플레이어 방향이 막히면 랜덤으로 우회
-    //    await StepRandom();
-    //}
+        foreach (var dir in dirArray)
+        {
+            if (CheckAndUpateGrid(dir))
+            {
+                await MoveAnime();
+                return true;
+            }
+        }
+        return false;
+    }
 
-    //private bool TryStep(Vector2Int dir)
-    //{
-    //    var next = gridPos + dir; // 다음 위치 계산
-    //    if (!GridSystem.Instance.IsWalkable(next)) return false; // 다음 위치가 걸을 수 없는 곳이면 실패
-    //    if (player != null && next == player.GridPosition) return false; // 다음 위치에 플레이어가 있으면 실패
-    //    gridPos = next;
-    //    return true;
-    //}
+    private async UniTask<bool> NextMoveToPlayer()
+    {
+        if (player == null) return await RanMove();
 
-    //private async UniTask AnimateMove()
-    //{
-    //    var target = GridSystem.Instance.GridToWorld(gridPos); // 격자 좌표를 월드 좌표로 변환하여 이동 목표 지점 계산
-    //    bool done = false;
-    //    transform.DOMove(target, moveTime)
-    //        .SetEase(moveEase)
-    //        .OnComplete(() => done = true);
-    //    await UniTask.WaitUntil(() => done, cancellationToken: cancelToken.Token);
-    //}
+        var girdDis = player.GridPosition - gridPos;
+        var realDir = Vector2Int.zero;
+        var orDir = Vector2Int.zero;
 
-    //private static void Shuffle(Vector2Int[] arr) 
-    //{
-    //    for (int i = arr.Length - 1; i > 0; i--)
-    //    {
-    //        int j = Random.Range(0, i + 1);
-    //        (arr[i], arr[j]) = (arr[j], arr[i]);
-    //    }
-    //}
+        // 더 멀리 떨어진 축을 주 방향으로 설정
+        if (Mathf.Abs(girdDis.x) >= Mathf.Abs(girdDis.y))
+        {
+            if (girdDis.x != 0) realDir = new Vector2Int(System.Math.Sign(girdDis.x), 0);
+            if (girdDis.y != 0) orDir = new Vector2Int(0, System.Math.Sign(girdDis.y));
+        }
+        else
+        {
+            if (girdDis.y != 0) realDir = new Vector2Int(0, System.Math.Sign(girdDis.y));
+            if (girdDis.x != 0) orDir = new Vector2Int(System.Math.Sign(girdDis.x), 0);
+        }
+
+        // 1순위: 플레이어와 더 멀어진 축 방향으로 전진
+        if (realDir != Vector2Int.zero && CheckAndUpateGrid(realDir)) { await MoveAnime(); return true; }
+        // 2순위: 막혔다면 차선책 축 방향으로 전진
+        if (orDir != Vector2Int.zero && CheckAndUpateGrid(orDir)) { await MoveAnime(); return true; }
+
+        // 다 막혔으면 우회하기 위해 랜덤 이동
+        return await RanMove();
+    }
+
+    private bool CheckAndUpateGrid(Vector2Int dir)
+    {
+        var nextPos = gridPos + dir;
+
+        if (!GridSystem.Instance.IsWalkable(nextPos)) return false;
+        if (player != null && nextPos == player.GridPosition) return false;
+
+        gridPos = nextPos;
+        return true;
+    }
+
+    private async UniTask MoveAnime()
+    {
+        var targetPos = GridSystem.Instance.GridToWorld(gridPos);
+        bool moveCom = false;
+        
+        transform.DOMove(targetPos, moveTime)
+            .SetEase(moveEase)
+            .OnComplete(() => moveCom = true);
+
+        await UniTask.WaitUntil(() => moveCom, cancellationToken: cancelToken.Token);
+    }
+
+    private static void Array_Shuffle(Vector2Int[] array)
+    {
+        for (int i = array.Length - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            (array[i], array[j]) = (array[j], array[i]);
+        }
+    }
 }

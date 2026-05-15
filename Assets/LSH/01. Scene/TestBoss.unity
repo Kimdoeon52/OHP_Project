@@ -10319,15 +10319,15 @@ MonoBehaviour:
   actionCases: []
   patternDelay: 3
   moveTime: 0.25
-  moveEase: 27
-  stepsPerPattern: 4
-  stepDelayMs: 1000
+  moveEase: 1
+  stepsPerPattern: 10
+  stepDelayMs: 50
   attack1Effect: {fileID: 3591762288387914882, guid: e4ec0dbb884146045ad1e26fe26a34e8, type: 3}
   fallingRock: {fileID: 8334909061003502288, guid: 91e964234cbfa3f4997372c385a3b341, type: 3}
   swordGround: {fileID: 6793405847708951032, guid: 1d3f598b44e42ac4f9ae01682401ce07, type: 3}
   rockMinDis: 1
   rockMaxDis: 3
-  rockDelayMs: 500
+  rockDelayMs: 200
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
