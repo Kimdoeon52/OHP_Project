@@ -34,7 +34,7 @@ public class BossA : BossBase
     protected override void Start()
     {
         base.Start();
-        CurrentHp = 100; // 보스 체력 설정
+        currentHp = maxHp; // 보스 체력 설정
         AddActionCase(BossAction.Pattern1, 30);
         AddActionCase(BossAction.Pattern2, 30);
         AddActionCase(BossAction.Pattern3, 40);
