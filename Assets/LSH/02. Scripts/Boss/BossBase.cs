@@ -16,8 +16,13 @@ public class ActionCases
     public BossAction action;
     [Range(0, 100)] public int patternChance;
 }
-public class BossBase : EnemyBase
+public class BossBase : MonoBehaviour
 {
+    [Header("보스 데이터")]
+    [SerializeField] protected int maxHp;
+    [SerializeField] protected int currentHp;
+    
+
     [Header("보스 레벨")] //레벨에 따라서 보스 패턴이나 보스의 능력치가 달라질 수 있음
     [SerializeField] protected int bossLevel;
 
@@ -30,9 +35,9 @@ public class BossBase : EnemyBase
     protected bool isBossAttacking; //보스가 공격 중인지 여부를 나타내는 변수
     protected Animator bossAnimation; //보스 애니메이션을 제어하기 위한
     protected CancellationTokenSource cancelToken;
-    protected override void Start()
+    protected virtual void Start()
     {
-        base.Start(); // EnemyBase: Player 찾기, 격자 스냅, TurnManager 등록
+        //base.Start(); // EnemyBase: Player 찾기, 격자 스냅, TurnManager 등록
 
         cancelToken = new CancellationTokenSource();
         actionCases.Clear();
@@ -40,17 +45,18 @@ public class BossBase : EnemyBase
         bossAnimation = GetComponent<Animator>(); //보스 애니메이션 컴포넌트 가져오기
         patternDelay *= 1000; //초로 변환.
         //각 보스 체력이나 레벨에 따른 패턴 확률 설정은 각 보스마다 다르게 구현
+        WaitBossCoolTime().Forget(); //보스 패턴 행동 사이의 딜레이를 기다림.
     }
-
-    /// <summary>
-    /// 턴 시스템 연동. 보스는 Update 기반 비동기 패턴을 사용하므로
-    /// 턴 시스템에서는 별도 행동 없이 패스한다.
-    /// 턴 연동이 필요하면 이 메서드를 오버라이드.
-    /// </summary>
-    public override void OnTurnUpdate()
+    protected async UniTask WaitBossCoolTime()
     {
-        // 보스는 Update() + UniTask 기반 패턴으로 독립 동작
+        isBossAttacking = true; //일단 공격 대기
+        await UniTask.Delay(patternDelay, cancellationToken: cancelToken.Token); //보스 패턴 행동 사이의 딜레이를 기다림.
+        isBossAttacking = false; //딜레이가 끝나면 보스가 공격할 수 있도록 설정
     }
+    //public virtual void OnTurnUpdate()
+    //{
+    ////    보스는 Update() +UniTask 기반 패턴으로 독립 동작
+    //}
 
     protected virtual void Update()
     {
