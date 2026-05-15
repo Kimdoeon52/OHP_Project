@@ -3,6 +3,17 @@
 public class WeaponProjectile : MonoBehaviour
 {
     [SerializeField] private ThrowableWeapon weapon;
+
+    public void FlyNoEnemy()
+    {
+
+    }
+
+    public void FlyEnemy()
+    {
+
+    }
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if(collision.gameObject.CompareTag("Enemy"))
