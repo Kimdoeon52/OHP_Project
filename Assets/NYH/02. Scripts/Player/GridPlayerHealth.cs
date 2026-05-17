@@ -26,6 +26,12 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
 
     public event Action OnHealthChanged;
 
+    /// <summary>
+    /// 플레이어 체력이 0이 되어 사망이 확정됐을 때 호출된다.
+    /// 사용 예: GridPlayerAnimationController가 구독해서 사망 애니메이션을 재생한다.
+    /// </summary>
+    public event Action OnDied;
+
     public int CurrentHp { get; private set; }
     public int MaxHp => _stats != null ? _stats.MaxHealth : maxHp;
     public bool IsDead => CurrentHp <= 0;
@@ -58,6 +64,7 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
 
         if (CurrentHp <= 0)
         {
+            OnDied?.Invoke();
             GameEvents.OnPlayerDied?.Invoke();
             TimeSystem.Instance.StopTimer();
         }

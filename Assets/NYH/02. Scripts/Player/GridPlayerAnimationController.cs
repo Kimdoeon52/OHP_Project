@@ -1,0 +1,232 @@
+using UnityEngine;
+
+/// <summary>
+/// 플레이어 애니메이션 전용 어댑터.
+/// 이동/공격/체력 로직이 Animator를 직접 알지 않도록 이벤트만 구독한다.
+/// 사용법:
+/// 1. Player 오브젝트에 Animator와 이 컴포넌트를 붙인다.
+/// 2. Animator Controller에 Attack, Die, Move Trigger와 IsMoving, IsDead Bool을 만든다.
+/// 3. idleStateName/runStateName을 Animator의 실제 상태 이름과 맞춘다.
+/// </summary>
+[RequireComponent(typeof(Animator))]
+[RequireComponent(typeof(SpriteRenderer))]
+[RequireComponent(typeof(GridPlayer))]
+public class GridPlayerAnimationController : MonoBehaviour
+{
+    [Header("Animator Parameters")]
+    [Tooltip("공격 성공 시 사용하는 Trigger 이름.")]
+    [SerializeField] private string attackTriggerName = "Attack";
+
+    [Tooltip("사망 시 사용하는 Trigger 이름.")]
+    [SerializeField] private string dieTriggerName = "Die";
+
+    [Tooltip("이전 Move Trigger가 남아 있으면 늦게 소비될 수 있어 이동 시작/종료 때 Reset만 한다.")]
+    [SerializeField] private string moveTriggerName = "Move";
+
+    [Tooltip("이동 중 true, 이동 종료 시 false가 되는 Bool 이름.")]
+    [SerializeField] private string isMovingBoolName = "IsMoving";
+
+    [Tooltip("사망 후 true로 고정되는 Bool 이름.")]
+    [SerializeField] private string isDeadBoolName = "IsDead";
+
+    [Header("Animator States")]
+    [Tooltip("기본 Base Layer는 0. 다른 레이어에서 재생할 때만 바꾼다.")]
+    [SerializeField] private int baseLayerIndex;
+
+    [Tooltip("이동이 끝났을 때 즉시 재생할 Idle 상태 이름.")]
+    [SerializeField] private string idleStateName = "warrior idle";
+
+    [Tooltip("이동이 시작됐을 때 즉시 재생할 Run/Walk 상태 이름.")]
+    [SerializeField] private string runStateName = "warrior run";
+
+    [Header("Facing")]
+    [Tooltip("원본 스프라이트가 오른쪽을 보고 있으면 true, 왼쪽을 보고 있으면 false.")]
+    [SerializeField] private bool faceRightByDefault = true;
+
+    private Animator _animator;
+    private SpriteRenderer _spriteRenderer;
+    private GridPlayer _player;
+    private bool _isDead;
+    private bool _isFacingRight;
+    private bool _isSubscribed;
+
+    private void Awake()
+    {
+        _animator = GetComponent<Animator>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
+        _player = GetComponent<GridPlayer>();
+        _isFacingRight = faceRightByDefault;
+        ApplyFacing();
+    }
+
+    private void OnEnable()
+    {
+        TrySubscribe();
+    }
+
+    private void Start()
+    {
+        TrySubscribe();
+    }
+
+    private void OnDisable()
+    {
+        Unsubscribe();
+        if (_animator != null)
+            _animator.speed = 1f;
+    }
+
+    private void OnDestroy()
+    {
+        Unsubscribe();
+    }
+
+    private void TrySubscribe()
+    {
+        if (_isSubscribed) return;
+
+        if (_player == null)
+            _player = GetComponent<GridPlayer>();
+
+        if (_player == null || _player.Movement == null || _player.Combat == null || _player.Health == null)
+            return;
+
+        // GridPlayer.Awake 이후에만 구독해 컴포넌트 초기화 순서 문제를 피한다.
+        _player.Movement.OnMoveSucceeded += OnMoveSucceeded;
+        _player.Movement.OnMoveFinished += OnMoveFinished;
+        _player.Movement.OnMoveSpeedChanged += OnMoveSpeedChanged;
+        _player.Combat.OnAttackPerformed += OnAttackPerformed;
+        _player.Health.OnDied += OnDied;
+        _isSubscribed = true;
+    }
+
+    private void Unsubscribe()
+    {
+        if (!_isSubscribed || _player == null) return;
+
+        _player.Movement.OnMoveSucceeded -= OnMoveSucceeded;
+        _player.Movement.OnMoveFinished -= OnMoveFinished;
+        _player.Movement.OnMoveSpeedChanged -= OnMoveSpeedChanged;
+        _player.Combat.OnAttackPerformed -= OnAttackPerformed;
+        _player.Health.OnDied -= OnDied;
+        _isSubscribed = false;
+    }
+
+    private void OnMoveSucceeded(Vector2Int direction)
+    {
+        if (_isDead) return;
+
+        UpdateHorizontalFacing(direction);
+        ResetTriggerIfConfigured(moveTriggerName);
+        SetBoolIfConfigured(isMovingBoolName, true);
+
+        // Trigger가 남아서 늦게 재생되는 문제를 막기 위해 이동 상태는 직접 재생한다.
+        PlayStateIfConfigured(runStateName, keepCurrentRunTime: true);
+    }
+
+    private void OnMoveFinished()
+    {
+        ResetTriggerIfConfigured(moveTriggerName);
+        SetBoolIfConfigured(isMovingBoolName, false);
+
+        // 걷기 클립이 끝나길 기다리지 않고 도착 즉시 Idle로 자른다.
+        PlayStateIfConfigured(idleStateName, keepCurrentRunTime: false);
+    }
+
+    private void OnMoveSpeedChanged(float speedMultiplier)
+    {
+        if (_isDead || _animator == null) return;
+
+        // 이동 시간이 짧아진 만큼 걷기 애니메이션도 빨라지게 맞춘다.
+        _animator.speed = speedMultiplier;
+    }
+
+    private void OnAttackPerformed(Vector2Int direction)
+    {
+        if (_isDead) return;
+
+        UpdateHorizontalFacing(direction);
+        SetTriggerIfConfigured(attackTriggerName);
+    }
+
+    private void OnDied()
+    {
+        if (_isDead) return;
+
+        _isDead = true;
+        if (_animator != null)
+            _animator.speed = 1f;
+
+        ResetTriggerIfConfigured(moveTriggerName);
+        SetBoolIfConfigured(isMovingBoolName, false);
+        SetBoolIfConfigured(isDeadBoolName, true);
+        SetTriggerIfConfigured(dieTriggerName);
+    }
+
+    private void UpdateHorizontalFacing(Vector2Int direction)
+    {
+        if (direction.x == 0) return;
+
+        _isFacingRight = direction.x > 0;
+        ApplyFacing();
+    }
+
+    private void ApplyFacing()
+    {
+        // 원본 스프라이트가 오른쪽을 본다는 전제로 flipX만 뒤집어 좌우 리소스 중복을 줄인다.
+        _spriteRenderer.flipX = faceRightByDefault ? !_isFacingRight : _isFacingRight;
+    }
+
+    private void PlayStateIfConfigured(string stateName, bool keepCurrentRunTime)
+    {
+        if (string.IsNullOrEmpty(stateName) || _animator == null || _animator.runtimeAnimatorController == null)
+            return;
+
+        int stateHash = Animator.StringToHash(stateName);
+        if (!_animator.HasState(baseLayerIndex, stateHash))
+            return;
+
+        float normalizedTime = 0f;
+        if (keepCurrentRunTime && IsCurrentState(stateHash))
+            normalizedTime = _animator.GetCurrentAnimatorStateInfo(baseLayerIndex).normalizedTime;
+
+        _animator.Play(stateHash, baseLayerIndex, normalizedTime);
+    }
+
+    private bool IsCurrentState(int stateHash)
+    {
+        if (_animator == null) return false;
+        return _animator.GetCurrentAnimatorStateInfo(baseLayerIndex).shortNameHash == stateHash;
+    }
+
+    private void SetTriggerIfConfigured(string triggerName)
+    {
+        if (string.IsNullOrEmpty(triggerName) || !HasParameter(triggerName, AnimatorControllerParameterType.Trigger)) return;
+        _animator.SetTrigger(triggerName);
+    }
+
+    private void ResetTriggerIfConfigured(string triggerName)
+    {
+        if (string.IsNullOrEmpty(triggerName) || !HasParameter(triggerName, AnimatorControllerParameterType.Trigger)) return;
+        _animator.ResetTrigger(triggerName);
+    }
+
+    private void SetBoolIfConfigured(string boolName, bool value)
+    {
+        if (string.IsNullOrEmpty(boolName) || !HasParameter(boolName, AnimatorControllerParameterType.Bool)) return;
+        _animator.SetBool(boolName, value);
+    }
+
+    private bool HasParameter(string parameterName, AnimatorControllerParameterType parameterType)
+    {
+        if (_animator == null || _animator.runtimeAnimatorController == null) return false;
+
+        foreach (AnimatorControllerParameter parameter in _animator.parameters)
+        {
+            if (parameter.type == parameterType && parameter.name == parameterName)
+                return true;
+        }
+
+        return false;
+    }
+}

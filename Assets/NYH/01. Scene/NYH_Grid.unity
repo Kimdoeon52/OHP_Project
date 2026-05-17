@@ -5906,6 +5906,8 @@ GameObject:
   - component: {fileID: 553153695}
   - component: {fileID: 553153694}
   - component: {fileID: 553153701}
+  - component: {fileID: 553153702}
+  - component: {fileID: 553153703}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -6010,6 +6012,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d128fdf7f6a79ea4c830d313e6a1707f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  baseMoveDuration: 0.18
+  moveSpeedDurationMultiplier: 0.15
+  minMoveDuration: 0.06
 --- !u!114 &553153698
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6066,7 +6071,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 8
-  m_Sprite: {fileID: 4723107735738678597, guid: 94b368e1380a47da9c367185182d9c0a, type: 3}
+  m_Sprite: {fileID: -66217544, guid: fe0dc9402aa7e484db54324243c0cb64, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -6086,8 +6091,8 @@ Transform:
   m_GameObject: {fileID: 553153693}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.49, y: 1.16, z: -0.22331142}
-  m_LocalScale: {x: 0.27749187, y: 0.26734668, z: 1}
+  m_LocalPosition: {x: -5.486, y: 1.225, z: -0.22331142}
+  m_LocalScale: {x: 1.4760759, y: 1.5702506, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -6111,6 +6116,49 @@ MonoBehaviour:
   level: 1
   defense: 0
   evasion: 0
+--- !u!95 &553153702
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 553153693}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 41f9a1aceb11aa4448962f807088a1f3, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &553153703
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 553153693}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93cb5caa8f1d4b94db0c6bbdf0fa6f7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackTriggerName: Attack
+  dieTriggerName: Die
+  moveTriggerName: Move
+  isMovingBoolName: IsMoving
+  isDeadBoolName: IsDead
+  baseLayerIndex: 0
+  idleStateName: warrior idle
+  runStateName: warrior run
+  faceRightByDefault: 1
 --- !u!1 &575217851
 GameObject:
   m_ObjectHideFlags: 0
@@ -8832,8 +8880,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b5fc0c4ea3f1e34caa116f56a3250bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  floorTilemap: {fileID: 262466322}
-  wallTilemap: {fileID: 1847170266}
+  tilemaps:
+    floor: {fileID: 262466322}
+    wall: {fileID: 1847170266}
+    water: {fileID: 536007657}
+    grass: {fileID: 0}
+    chasm: {fileID: 0}
 --- !u!1 &1571003148
 GameObject:
   m_ObjectHideFlags: 0

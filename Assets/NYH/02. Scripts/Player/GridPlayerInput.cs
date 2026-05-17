@@ -16,25 +16,27 @@ public class GridPlayerInput : MonoBehaviour
     {
         if (TurnManager.Instance == null || !TurnManager.Instance.IsPlayerTurn) return;
         if (_player.Health.IsDead) return;
+        // 한 칸 이동 보간 중에는 다음 입력을 막아 턴 처리와 위치가 어긋나지 않게 한다.
+        if (_player.Movement.IsMoving) return;
         if (!TimeSystem.Instance.IsRunning) return;
 
         // 이동 (단일 키 처리 — 동시 입력 시 위 우선)
-        if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
         {
             _player.Movement.TryMove(Vector2Int.up);
             return;
         }
-        if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+        if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
         {
             _player.Movement.TryMove(Vector2Int.down);
             return;
         }
-        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
         {
             _player.Movement.TryMove(Vector2Int.left);
             return;
         }
-        if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
         {
             _player.Movement.TryMove(Vector2Int.right);
             return;

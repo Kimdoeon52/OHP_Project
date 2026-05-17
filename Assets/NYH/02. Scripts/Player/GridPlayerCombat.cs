@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,6 +8,12 @@ using UnityEngine;
 /// </summary>
 public class GridPlayerCombat : MonoBehaviour
 {
+    /// <summary>
+    /// 공격이 실제로 성공했을 때 호출된다.
+    /// 사용 예: GridPlayerAnimationController가 구독해서 공격 애니메이션을 재생한다.
+    /// </summary>
+    public event Action<Vector2Int> OnAttackPerformed;
+
     [SerializeField] private WeaponData daggerData;
     [SerializeField] private GridDagger daggerPrefab;
     [SerializeField] private int meleeDamage = 1;
@@ -58,9 +65,10 @@ public class GridPlayerCombat : MonoBehaviour
         var target = _player.GridPosition + dir;
 
         var entity = TurnManager.Instance.GetEntityAt(target);
-        if (entity is IDamageable damageable && (Object)damageable != _player)
+        if (entity is IDamageable damageable && (UnityEngine.Object)damageable != _player)
         {
             damageable.TakeDamage(GetModifiedOutgoingDamage(meleeDamage));
+            OnAttackPerformed?.Invoke(dir);
             TurnManager.Instance.OnPlayerActionCompleted(_player.Config.meleeTimeCost);
         }
         // 적 없으면 빈 휘두름 — 시간 소모 X (회전만 함)
@@ -108,6 +116,7 @@ public class GridPlayerCombat : MonoBehaviour
         }
 
         GameEvents.OnDaggerThrown?.Invoke(origin, landingCell);
+        OnAttackPerformed?.Invoke(facingDir);
         TurnManager.Instance.OnPlayerActionCompleted(_player.Config.throwTimeCost);
     }
 
@@ -153,7 +162,7 @@ public class GridPlayerCombat : MonoBehaviour
             if (cell == _player.GridPosition) continue;
 
             var entity = TurnManager.Instance.GetEntityAt(cell);
-            if (entity is IDamageable damageable && (Object)damageable != _player)
+            if (entity is IDamageable damageable && (UnityEngine.Object)damageable != _player)
             {
                 var diff = cell - _player.GridPosition;
                 float distSq = diff.x * diff.x + diff.y * diff.y;
