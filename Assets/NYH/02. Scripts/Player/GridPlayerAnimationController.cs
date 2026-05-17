@@ -49,6 +49,7 @@ public class GridPlayerAnimationController : MonoBehaviour
     private bool _isDead;
     private bool _isFacingRight;
     private bool _isSubscribed;
+    private bool _isMoveVisualActive;
 
     private void Awake()
     {
@@ -79,6 +80,17 @@ public class GridPlayerAnimationController : MonoBehaviour
     private void OnDestroy()
     {
         Unsubscribe();
+    }
+
+    private void Update()
+    {
+        if (_isDead || !_isSubscribed || _player == null || _player.Movement == null) return;
+        if (!_isMoveVisualActive || _player.Movement.IsMoving) return;
+
+        // 고속 홀드 이동 중에는 이동 코루틴 사이 한 프레임에 Idle로 튀지 않게 유지한다.
+        // 단, 키를 놓았거나 다음 칸이 벽이면 즉시 Idle로 되돌려 걷기 모션이 남지 않게 한다.
+        if (!_player.Movement.ShouldKeepMoveAnimationAfterMove())
+            OnMoveFinished();
     }
 
     private void TrySubscribe()
@@ -119,6 +131,7 @@ public class GridPlayerAnimationController : MonoBehaviour
         UpdateHorizontalFacing(direction);
         ResetTriggerIfConfigured(moveTriggerName);
         SetBoolIfConfigured(isMovingBoolName, true);
+        _isMoveVisualActive = true;
 
         // Trigger가 남아서 늦게 재생되는 문제를 막기 위해 이동 상태는 직접 재생한다.
         PlayStateIfConfigured(runStateName, keepCurrentRunTime: true);
@@ -128,6 +141,9 @@ public class GridPlayerAnimationController : MonoBehaviour
     {
         ResetTriggerIfConfigured(moveTriggerName);
         SetBoolIfConfigured(isMovingBoolName, false);
+        _isMoveVisualActive = false;
+        if (_animator != null)
+            _animator.speed = 1f;
 
         // 걷기 클립이 끝나길 기다리지 않고 도착 즉시 Idle로 자른다.
         PlayStateIfConfigured(idleStateName, keepCurrentRunTime: false);
@@ -137,7 +153,8 @@ public class GridPlayerAnimationController : MonoBehaviour
     {
         if (_isDead || _animator == null) return;
 
-        // 이동 시간이 짧아진 만큼 걷기 애니메이션도 빨라지게 맞춘다.
+        // GridPlayerMovement가 계산한 배속만 적용한다.
+        // MoveSpeed 5 이후 애니메이션 배속 고정 정책도 이동 스크립트에서 결정한다.
         _animator.speed = speedMultiplier;
     }
 

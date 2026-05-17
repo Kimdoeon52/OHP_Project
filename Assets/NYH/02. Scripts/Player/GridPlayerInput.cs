@@ -12,6 +12,37 @@ public class GridPlayerInput : MonoBehaviour
         _player = player;
     }
 
+    /// <summary>
+    /// 현재 누르고 있는 이동 방향을 한 칸 이동 기준으로 반환한다.
+    /// 이동과 애니메이션이 서로 다른 방향 우선순위를 쓰면 홀드 이동 중 끊김이 생길 수 있어 한 곳에 모았다.
+    /// </summary>
+    public bool TryGetHeldMoveDirection(out Vector2Int direction)
+    {
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+        {
+            direction = Vector2Int.up;
+            return true;
+        }
+        if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+        {
+            direction = Vector2Int.down;
+            return true;
+        }
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+        {
+            direction = Vector2Int.left;
+            return true;
+        }
+        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+        {
+            direction = Vector2Int.right;
+            return true;
+        }
+
+        direction = Vector2Int.zero;
+        return false;
+    }
+
     private void Update()
     {
         if (TurnManager.Instance == null || !TurnManager.Instance.IsPlayerTurn) return;
@@ -21,24 +52,9 @@ public class GridPlayerInput : MonoBehaviour
         if (!TimeSystem.Instance.IsRunning) return;
 
         // 이동 (단일 키 처리 — 동시 입력 시 위 우선)
-        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+        if (TryGetHeldMoveDirection(out Vector2Int moveDirection))
         {
-            _player.Movement.TryMove(Vector2Int.up);
-            return;
-        }
-        if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
-        {
-            _player.Movement.TryMove(Vector2Int.down);
-            return;
-        }
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-        {
-            _player.Movement.TryMove(Vector2Int.left);
-            return;
-        }
-        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-        {
-            _player.Movement.TryMove(Vector2Int.right);
+            _player.Movement.TryMove(moveDirection);
             return;
         }
 

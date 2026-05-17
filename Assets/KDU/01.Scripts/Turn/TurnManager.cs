@@ -62,6 +62,15 @@ public class TurnManager : MonoBehaviour
     /// </summary>
     public void OnPlayerActionCompleted(float timeCost)
     {
+        OnPlayerActionCompleted(timeCost, false);
+    }
+
+    /// <summary>
+    /// 플레이어 행동 완료 후 시간 소모와 적 턴을 처리한다.
+    /// skipEnemyTurnDelay가 true면 적 행동 자체는 유지하되, 고속 이동이 끊겨 보이지 않도록 턴 사이 대기만 생략한다.
+    /// </summary>
+    public void OnPlayerActionCompleted(float timeCost, bool skipEnemyTurnDelay)
+    {
         if (_processingTurn) return;
 
         GameEvents.OnPlayerActionCompleted?.Invoke(timeCost);
@@ -70,10 +79,10 @@ public class TurnManager : MonoBehaviour
         // 시간 소진으로 이미 게임오버 처리된 경우 적 턴 불필요
         if (!TimeSystem.Instance.IsRunning) return;
 
-        StartCoroutine(ProcessEnemyTurns());
+        StartCoroutine(ProcessEnemyTurns(skipEnemyTurnDelay));
     }
 
-    private IEnumerator ProcessEnemyTurns()
+    private IEnumerator ProcessEnemyTurns(bool skipEnemyTurnDelay)
     {
         _processingTurn = true;
         IsPlayerTurn = false;
@@ -84,7 +93,7 @@ public class TurnManager : MonoBehaviour
         {
             if (entity == null) continue;
             entity.OnTurnUpdate();
-            if (enemyTurnDelay > 0f)
+            if (!skipEnemyTurnDelay && enemyTurnDelay > 0f)
                 yield return new WaitForSeconds(enemyTurnDelay);
         }
 

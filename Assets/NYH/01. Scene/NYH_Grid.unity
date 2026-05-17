@@ -5901,11 +5901,11 @@ GameObject:
   - component: {fileID: 553153700}
   - component: {fileID: 553153699}
   - component: {fileID: 553153698}
+  - component: {fileID: 553153701}
   - component: {fileID: 553153697}
   - component: {fileID: 553153696}
   - component: {fileID: 553153695}
   - component: {fileID: 553153694}
-  - component: {fileID: 553153701}
   - component: {fileID: 553153702}
   - component: {fileID: 553153703}
   m_Layer: 0
@@ -6015,6 +6015,9 @@ MonoBehaviour:
   baseMoveDuration: 0.18
   moveSpeedDurationMultiplier: 0.15
   minMoveDuration: 0.06
+  basePostMoveDelay: 0
+  zeroPostMoveDelaySpeed: 10
+  animationSpeedCapMoveSpeed: 5
 --- !u!114 &553153698
 MonoBehaviour:
   m_ObjectHideFlags: 0

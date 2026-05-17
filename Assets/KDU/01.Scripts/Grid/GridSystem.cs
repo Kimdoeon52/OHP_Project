@@ -47,9 +47,16 @@ public class GridSystem : MonoBehaviour
     public bool IsWalkable(Vector2Int pos)
     {
         var cell = new Vector3Int(pos.x, pos.y, 0);
-        if (tilemaps.wall != null && tilemaps.wall.HasTile(cell)) return false;
+      /*  if (tilemaps.wall != null && tilemaps.wall.HasTile(cell)) return false;
+        return tilemaps.floor != null && tilemaps.floor.HasTile(cell);*/
+
         if (tilemaps.chasm != null && tilemaps.chasm.HasTile(cell)) return false;
-        return tilemaps.floor != null && tilemaps.floor.HasTile(cell);
+
+        bool hasFloor = tilemaps.floor != null && tilemaps.floor.HasTile(cell);
+        if (!hasFloor) return false;
+
+        return true;
+
     }
 
     /// <summary>
