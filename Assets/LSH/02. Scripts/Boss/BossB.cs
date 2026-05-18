@@ -1,5 +1,6 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using Mono.Cecil;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -25,7 +26,6 @@ public class BossB : BossBase
     //[SerializeField] private Tilemap floorTilemap;
 
     private Vector2Int gridPos;
-    private GridPlayer player;
     private bool isMove = false;
     private Animator anime;
     
@@ -39,9 +39,9 @@ public class BossB : BossBase
     {
         base.Start();
         currentHp = maxHp; // 보스 체력 설정
-        AddActionCase(BossAction.Pattern1, 50); // 랜덤 이동
-        AddActionCase(BossAction.Pattern2, 30); // 플레이어 추적
-        AddActionCase(BossAction.Pattern3, 20); // 패턴3 없음
+        AddActionCase(BossAction.Pattern1, 10); // 평타
+        AddActionCase(BossAction.Pattern2, 10); // 하늘
+        AddActionCase(BossAction.Pattern3, 80); // 이동
         anime = GetComponent<Animator>();
     }
 
@@ -52,7 +52,15 @@ public class BossB : BossBase
         isMove = false;
     }
 
+    private void DamagePlayerIfInCell(Vector2Int attackCell, int damage)
+    {
+        if (player == null || player.IsDead) return;
 
+        if (player.GridPosition == attackCell)
+        {
+            player.TakeDamage(damage);
+        }
+    }
     //========= 패턴1 : 일반 공격 ====================================================
     protected override async UniTask Phase1Pattern1()
     {
@@ -129,7 +137,7 @@ public class BossB : BossBase
         isMove = true;
         anime.SetBool("Walk", true);
         // 지정된 횟수(stepsPerPattern)만큼 멈추지 않고 연속 이동 연출
-        for (int i = 0; i < stepsPerPattern; i++)
+        for (int i = 0; i < 1; i++)
         {
             if (cancelToken.IsCancellationRequested) break;
 
@@ -153,6 +161,7 @@ public class BossB : BossBase
             {
                 await UniTask.Delay(stepDelayMs, cancellationToken: cancelToken.Token);
             }
+            bossMoveGridUpdate();
         }
         anime.SetBool("Walk", false);
         isMove = false;
@@ -233,5 +242,28 @@ public class BossB : BossBase
             int j = Random.Range(0, i + 1);
             (array[i], array[j]) = (array[j], array[i]);
         }
+    }
+
+    //========================================== 타격 범위 생성 ============================================
+    void CreateHitBox(Vector2Int bossPos, int range)
+    {
+        // 내 중심 좌표에서 range 범위 내의 격자 좌표를 순회
+        for (int x = -range; x <= range; x++)
+        {
+            for (int y = -range; y <= range; y++)
+            {
+                Vector2Int pos = bossPos + new Vector2Int(x, y);
+                if (GridSystem.Instance.IsWalkable(pos))
+                {
+                    Debug.Log($"보스 타격 범위 격자: {pos}");
+                }
+            }
+        }
+    }
+
+    void bossMoveGridUpdate()
+    {
+        var bossPos = GridSystem.Instance.WorldToGrid(transform.position);
+        CreateHitBox(bossPos, 3);
     }
 }

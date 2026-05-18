@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
@@ -35,6 +35,7 @@ public class BossBase : MonoBehaviour
     protected bool isBossAttacking; //보스가 공격 중인지 여부를 나타내는 변수
     protected Animator bossAnimation; //보스 애니메이션을 제어하기 위한
     protected CancellationTokenSource cancelToken;
+    protected GridPlayer player; //플레이어 참조
     protected virtual void Start()
     {
         //base.Start(); // EnemyBase: Player 찾기, 격자 스냅, TurnManager 등록
@@ -44,7 +45,8 @@ public class BossBase : MonoBehaviour
         bossLevel = 1; //보스 레벨 초기화
         bossAnimation = GetComponent<Animator>(); //보스 애니메이션 컴포넌트 가져오기
         patternDelay *= 1000; //초로 변환.
-        //각 보스 체력이나 레벨에 따른 패턴 확률 설정은 각 보스마다 다르게 구현
+        player = FindFirstObjectByType<GridPlayer>(); //씬에서 GridPlayer 참조 가져오기
+        //각 보스 체력이나 레벨에 따른 패턴 확률 설정은 각 보스마다 다르게 구현.
         WaitBossCoolTime().Forget(); //보스 패턴 행동 사이의 딜레이를 기다림.
     }
     protected async UniTask WaitBossCoolTime()
@@ -83,6 +85,7 @@ public class BossBase : MonoBehaviour
             cancelToken.Dispose();
         }
     }
+
     //====================================행동=====================================
     protected virtual void AddActionCase(BossAction bossAction, int chance) //보스별 행동 추가.
     {

@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3177df203bae85b4ab3515db0f4d12f1, type: 3}
   m_Name: GameConfig
   m_EditorClassIdentifier: 
-  startTime: 60
+  startTime: 1000
   lowTimeWarning: 10
   moveTimeCost: 0.3
   throwTimeCost: 0.5
   retrieveTimeCost: 0.3
   potionTimeCost: 1
+  meleeTimeCost: 0.3
   visionRadius: 5
