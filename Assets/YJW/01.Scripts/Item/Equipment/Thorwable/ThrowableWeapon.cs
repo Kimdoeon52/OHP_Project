@@ -20,16 +20,20 @@ public class ThrowableWeapon : ItemBase, IThrowable
         Vector2Int currentPos = GridSystem.Instance.WorldToGrid(GameManager.Instance.player.transform.position);
         Vector2Int? targetTile = FindTarget(currentPos, targetPos);
 
-        GameObject weapon = ObjectPool.Instance.Get(poolType);
-        weapon.transform.position = GameManager.Instance.player.transform.position;
+
+        GameObject projectile = ObjectPool.Instance.Get(poolType);
+		projectile.transform.position = GameManager.Instance.player.transform.position;
+
+
+        WeaponProjectile weapon = projectile.GetComponent<WeaponProjectile>();
 
         if (targetTile.HasValue)
         {
-
+            weapon.FlyEnemy(targetPos);
 		}
         else
         {
-            // 적 없으면 직선으로 날리기 등
+            weapon.FlyNoEnemy(targetPos);
         }
     }
 
