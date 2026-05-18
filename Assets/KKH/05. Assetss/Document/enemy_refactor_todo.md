@@ -3,6 +3,7 @@
 > [!NOTE]
 > GDD v1.0 기획 변경에 따른 작업 목록입니다.
 > 가이드 문서: [enemy_refactor_guide.md](file:///C:/Users/Administrator/.gemini/antigravity/brain/df345fba-b45a-4490-a7de-9cac267577f6/artifacts/enemy_refactor_guide.md)
+> 설정 가이드: [enemy_setup_guide.md](./enemy_setup_guide.md)
 
 ---
 
@@ -12,71 +13,75 @@
 > 이 단계를 완료해야 Phase 1~3의 개별 몬스터 구현이 가능합니다.
 
 ### EnemyData 확장
-- [ ] `attackDamage` → `attackMin` / `attackMax` (범위 데미지) 로 변경
-- [ ] `moveSpeed` (float, 초/칸) 필드 추가
-- [ ] `attackSpeed` (float, 회/s) 필드 추가
-- [ ] `defenseMin` / `defenseMax` (내구성 범위) 필드 추가
-- [ ] `evasion` (회피) 필드 추가
-- [ ] `accuracy` (정확도) 필드 추가
-- [ ] `expReward` (경험치) 필드 추가
-- [ ] `goldMin` / `goldMax` (골드 드롭 범위) 필드 추가
-- [ ] `grade` (EnemyGrade enum: Common, Elite, MiniBoss, Boss) 필드 추가
-- [ ] `moveType` (EnemyMoveType enum: Normal, WallPass, Stationary) 필드 추가
-- [ ] `displayName` (표시명) 필드 추가
-- [ ] `onHitEffect` (StatusEffectData 참조) 필드 추가 — 명중 시 상태이상
+- [x] `attackDamage` → `attackMin` / `attackMax` (범위 데미지) 로 변경
+- [x] `moveSpeed` (float, 초/칸) 필드 추가
+- [x] `attackSpeed` (float, 회/s) 필드 추가
+- [x] `defenseMin` / `defenseMax` (내구성 범위) 필드 추가
+- [x] `evasion` (회피) 필드 추가
+- [x] `accuracy` (정확도) 필드 추가
+- [x] `expReward` (경험치) 필드 추가
+- [x] `goldMin` / `goldMax` (골드 드롭 범위) 필드 추가
+- [x] `grade` (EnemyGrade enum: Common, Elite, MiniBoss, Boss) 필드 추가
+- [x] `moveType` (EnemyMoveType enum: Normal, WallPass, Stationary) 필드 추가
+- [x] `displayName` (표시명) 필드 추가
+- [x] `onHitEffect` (StatusEffectData 참조) 필드 추가 — 명중 시 상태이상
 - [ ] 기존 SO 인스턴스들 마이그레이션 (기존 `attackDamage` 값을 `attackMin`/`attackMax`로 분배)
 
 ### EnemyBase 확장
-- [ ] **공통 이동 로직 추출**: `TryStepTowardPlayer()` + `TryStep()` 을 EnemyBase로 이동
+- [x] **공통 이동 로직 추출**: `TryStepTowardPlayer()` + `TryStep()` 을 EnemyBase로 이동
   - 현재 Tracker/KingsGuard/Phantom/Wraith/Crawler에 복붙된 동일 코드
   - `TryStep()`은 `virtual`로 → 벽 통과 적이 override 가능
-- [ ] **템플릿 메서드 도입**: `OnTurnUpdate()`를 3단계로 분리
+- [x] **템플릿 메서드 도입**: `OnTurnUpdate()`를 3단계로 분리
   - `ExecutePendingAttack()` — 이전 턴 공격 발동
   - `PerformMovement()` — 이동 처리
   - `CheckAttackTelegraph()` — 공격 예고
-- [ ] `RollAttackDamage()` 메서드 추가 (min~max 랜덤)
-- [ ] `ApplyDefense(int rawDamage)` 메서드 추가
-- [ ] `RollHit(int targetEvasion)` 메서드 추가 (회피/정확도 판정)
-- [ ] `Die()` 확장: 경험치, 골드 드롭 이벤트 발행
+- [x] `RollAttackDamage()` 메서드 추가 (min~max 랜덤)
+- [x] `ApplyDefense(int rawDamage)` 메서드 추가
+- [x] `RollHit(int targetEvasion)` 메서드 추가 (회피/정확도 판정)
+- [x] `Die()` 확장: 경험치, 골드 드롭 이벤트 발행
 - [ ] `GetMoveCost()` / `GetAttackCost()` → TimeSystem 연동
-- [ ] `_pendingAttackCell` 을 EnemyBase로 올리기 (대부분의 적이 사용)
+- [x] `_pendingAttackCell` 을 EnemyBase로 올리기 (대부분의 적이 사용)
 
 ### StatusEffect 시스템 (신규)
-- [ ] `StatusEffectData` ScriptableObject 정의 (타입, 지속시간, 틱 데미지, 이동속도 감소 등)
-- [ ] `StatusEffectType` enum (Poison, Burn, Stun, Slow, Bleed)
-- [ ] `StatusEffectInstance` 클래스 (틱 관리, 지속시간 카운트)
-- [ ] `IStatusEffectable` 인터페이스 — 플레이어와 적 모두 적용 가능
-- [ ] EnemyBase에 상태이상 적용 훅 연결
+- [x] `StatusEffectData` ScriptableObject 정의 (타입, 지속시간, 틱 데미지, 이동속도 감소 등)
+- [x] `StatusEffectType` enum → 기존 NYH의 `StatusType` 재활용
+- [x] `StatusEffectInstance` → 기존 NYH의 `StatusController.ActiveStatus` 재활용
+- [x] `IStatusEffectable` → 기존 `StatusController` 컴포넌트로 대체 (자동 부착)
+- [x] EnemyBase에 상태이상 적용 훅 연결 (`TryApplyOnHitEffect`)
 
 ### GameEvents 확장
-- [ ] `OnEnemyKilled` 이벤트에 경험치 파라미터 추가
-- [ ] `OnGoldDropped` 이벤트 추가
-- [ ] `OnStatusEffectApplied` 이벤트 추가
+- [x] `OnEnemyKilled` 이벤트에 경험치 파라미터 → 별도 `OnExpDropped` 이벤트로 분리
+- [x] `OnGoldDropped` 이벤트 추가
+- [x] `OnStatusEffectApplied` 이벤트 추가
 
 ### 기존 코드 정리
 - [ ] KDU의 `GridEnemyBase.cs` — 사용처 확인 후 삭제 일정 결정
 - [ ] KKH의 기존 4파일(KingsGuard/Wraith/Phantom/Crawler) → `Deprecated` 폴더로 이동
 - [ ] KDU의 Tracker/Archer → 로직 추출 완료 후 `Deprecated` 폴더로 이동
 
+> [!NOTE]
+> 기존 4파일은 리팩토링 완료됨 (복붙 코드 제거, EnemyBase 템플릿 메서드 사용).
+> 파일 이동은 팀 회의 후 결정.
+
 ---
 
 ## Phase 1 — Area 1 몬스터 (하수구, 1~5층)
 
 ### 역병 쥐 [Common]
-- [ ] `EnemyPlagueRat.cs` 생성
-- [ ] 이동: 기본 추적 (`TryStepTowardPlayer()` 그대로 사용)
-- [ ] 공격: 근접 1칸, 텔레그래프
-- [ ] 특수: 명중 시 독 (5초간 1초당 1 데미지) — `onHitEffect` SO 연결
+- [x] `EnemyPlagueRat.cs` 생성
+- [x] 이동: 기본 추적 (`TryStepTowardPlayer()` 그대로 사용)
+- [x] 공격: 근접 1칸, 텔레그래프
+- [x] 특수: 명중 시 독 (5초간 1초당 1 데미지) — `onHitEffect` SO 연결
 - [ ] EnemyData SO 인스턴스 생성 (HP:8, ATK:2~4, 이동:1.0, 회피:5, 정확도:10, EXP:5, 시간:+3)
-- [ ] 난이도: ★☆☆ (Tracker 거의 그대로)
+- [x] 난이도: ★☆☆ (Tracker 거의 그대로)
 
 ### 거미 [Common]
-- [ ] `EnemySpider.cs` 생성
-- [ ] 이동: 기본 추적
-- [ ] 공격: 근접 1칸, 텔레그래프
-- [ ] 특수: 명중 시 독(5초) + 이동속도 -0.3 디버프(2초)
+- [x] `EnemySpider.cs` 생성
+- [x] 이동: 기본 추적
+- [x] 공격: 근접 1칸, 텔레그래프
+- [x] 특수: 명중 시 독(5초) + 이동속도 -0.3 디버프(2초)
 - [ ] EnemyData SO 인스턴스 생성 (HP:6, ATK:2~3, 이동:1.0, 회피:8, 정확도:12, EXP:5, 시간:+3)
-- [ ] 난이도: ★★☆ (StatusEffect 중첩 필요)
+- [x] 난이도: ★★☆ (StatusEffect 중첩 필요)
 
 ### 박쥐 [Common]
 - [ ] `EnemyBat.cs` 생성
@@ -187,12 +192,12 @@
 ```mermaid
 graph TD
     P0["Phase 0: 코어 확장"]
-    P0A["EnemyData 확장"]
-    P0B["EnemyBase 확장<br/>(공통 로직 추출)"]
-    P0C["StatusEffect 시스템"]
-    P0D["기존 코드 정리"]
+    P0A["EnemyData 확장 ✅"]
+    P0B["EnemyBase 확장<br/>(공통 로직 추출) ✅"]
+    P0C["StatusEffect 시스템 ✅"]
+    P0D["기존 코드 정리 🔄"]
 
-    P1["Phase 1: Area 1<br/>(역병쥐, 거미, 박쥐, 뱀)"]
+    P1["Phase 1: Area 1<br/>(역병쥐 ✅, 거미 ✅, 박쥐, 뱀)"]
     P2["Phase 2: Area 2<br/>(스켈레톤×2, 마법사×2, 고블린, 트롤)"]
     P3["Phase 3: Area 3<br/>(악마, 지렁이, 핑크트롤, 불정령, 골렘)"]
 

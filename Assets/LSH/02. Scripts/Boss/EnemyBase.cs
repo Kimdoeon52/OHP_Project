@@ -5,7 +5,13 @@ using UnityEngine;
 /// 모든 적의 공통 베이스 클래스.
 /// GridEnemyBase의 기능(HP, 시야, 텔레그래프, 턴 연동)과
 /// 기존 EnemyBase의 YJW 호환 필드(moveSpeed, isDetected)를 통합.
-/// 자식 클래스가 OnTurnUpdate()에서 AI를 구현한다.
+///
+/// Phase 0 확장:
+///   - 공통 이동 로직 (TryStepTowardPlayer / TryStep) 추출
+///   - 템플릿 메서드: ExecutePendingAttack → PerformMovement → CheckAttackTelegraph
+///   - 범위 데미지/방어/회피 판정 메서드
+///   - 경험치/골드 드롭 이벤트
+///   - _pendingAttackCell 공통화
 /// </summary>
 public abstract class EnemyBase : EntityBase, IDamageable
 {
@@ -25,7 +31,13 @@ public abstract class EnemyBase : EntityBase, IDamageable
     // ── 내부 참조 ──
     protected GridPlayer Player { get; private set; }
 
+    // ── 공통 공격 의도 셀 (대부분의 적이 사용) ──
+    protected Vector2Int? _pendingAttackCell;
+
     private readonly List<TelegraphIndicator> _activeTelegraphs = new();
+
+    // ── 데이터 접근 헬퍼 (자식 클래스 편의) ──
+    public EnemyData Data => data;
 
     // ══════════════ 라이프사이클 ══════════════
 
@@ -104,7 +116,16 @@ public abstract class EnemyBase : EntityBase, IDamageable
     {
         ClearTelegraphs();
         TurnManager.Instance.Unregister(this);
+
+        // 경험치/골드 드롭 이벤트
         GameEvents.OnEnemyKilled?.Invoke(GridPosition, data.timeBonus);
+        GameEvents.OnExpDropped?.Invoke(GridPosition, data.expReward);
+        if (data.goldMax > 0)
+        {
+            int gold = Random.Range(data.goldMin, data.goldMax + 1);
+            if (gold > 0) GameEvents.OnGoldDropped?.Invoke(GridPosition, gold);
+        }
+
         TimeSystem.Instance.AddTime(data.timeBonus);
         Destroy(gameObject);
     }
@@ -127,6 +148,153 @@ public abstract class EnemyBase : EntityBase, IDamageable
         foreach (var t in _activeTelegraphs)
             if (t != null) Destroy(t.gameObject);
         _activeTelegraphs.Clear();
+    }
+
+    // ══════════════ 공통 이동 로직 ══════════════
+
+    /// <summary>
+    /// 플레이어 방향으로 1칸 이동 시도.
+    /// 더 먼 축 우선, 차단 시 다른 축 시도.
+    /// </summary>
+    protected void TryStepTowardPlayer()
+    {
+        var diff = Player.GridPosition - GridPosition;
+
+        var dirX = diff.x != 0 ? new Vector2Int(System.Math.Sign(diff.x), 0) : Vector2Int.zero;
+        var dirY = diff.y != 0 ? new Vector2Int(0, System.Math.Sign(diff.y)) : Vector2Int.zero;
+
+        bool xPrimary = Mathf.Abs(diff.x) >= Mathf.Abs(diff.y);
+        var primary = xPrimary ? dirX : dirY;
+        var secondary = xPrimary ? dirY : dirX;
+
+        if (primary != Vector2Int.zero && TryStep(primary)) return;
+        if (secondary != Vector2Int.zero && TryStep(secondary)) return;
+    }
+
+    /// <summary>
+    /// 한 칸 이동 시도. virtual — 벽 통과 적이 override 가능.
+    /// </summary>
+    protected virtual bool TryStep(Vector2Int dir)
+    {
+        var next = GridPosition + dir;
+        if (!GridSystem.Instance.IsWalkable(next)) return false;
+        if (next == Player.GridPosition) return false;
+        if (TurnManager.Instance.GetEntityAt(next) != null) return false;
+
+        SetGridPosition(next);
+        UpdateVisibility();
+        return true;
+    }
+
+    // ══════════════ 전투 판정 메서드 ══════════════
+
+    /// <summary>
+    /// 공격력 범위 내 랜덤 데미지 산출
+    /// </summary>
+    protected int RollAttackDamage()
+    {
+        return Random.Range(data.attackMin, data.attackMax + 1);
+    }
+
+    /// <summary>
+    /// 방어력 적용 후 최종 데미지 반환 (최소 0)
+    /// </summary>
+    protected int ApplyDefense(int rawDamage)
+    {
+        int defense = Random.Range(data.defenseMin, data.defenseMax + 1);
+        return Mathf.Max(0, rawDamage - defense);
+    }
+
+    /// <summary>
+    /// 명중 판정: accuracy vs targetEvasion. true면 명중.
+    /// </summary>
+    protected bool RollHit(int targetEvasion)
+    {
+        // 간단한 판정: accuracy - evasion >= 0이면 기본 명중
+        // 차이가 클수록 명중률 상승. 최소 5% 명중, 최대 95% 명중.
+        float hitChance = Mathf.Clamp(0.5f + (data.accuracy - targetEvasion) * 0.05f, 0.05f, 0.95f);
+        return Random.value <= hitChance;
+    }
+
+    /// <summary>
+    /// 명중 시 상태이상 적용 (onHitEffect가 설정된 경우)
+    /// </summary>
+    protected void TryApplyOnHitEffect(IDamageable target)
+    {
+        if (data.onHitEffect == null) return;
+        if (target is not Component component) return;
+
+        var effectData = data.onHitEffect;
+
+        // StatusRequest를 통해 기존 StatusController와 통합
+        var request = new StatusRequest(
+            target as IGridEntity,
+            (target as IGridEntity)?.GridPosition ?? GridPosition,
+            effectData.statusType,
+            effectData.durationTurns,
+            effectData.power,
+            null // sourceTrap은 null (적이 원인)
+        );
+
+        StatusController controller = component.GetComponent<StatusController>();
+        if (controller == null)
+            controller = component.gameObject.AddComponent<StatusController>();
+        controller.ApplyStatus(request);
+
+        GameEvents.OnStatusEffectApplied?.Invoke(request);
+    }
+
+    // ══════════════ 템플릿 메서드 (자식 클래스 오버라이드용) ══════════════
+
+    /// <summary>
+    /// 기본 턴 흐름: 공격 발동 → 이동 → 공격 예고.
+    /// 자식 클래스는 이 메서드를 override하거나,
+    /// 세부 단계(ExecutePendingAttack / PerformMovement / CheckAttackTelegraph)만 override.
+    /// </summary>
+    public override void OnTurnUpdate()
+    {
+        if (IsDead || Player == null) return;
+        ExecutePendingAttack();
+        PerformMovement();
+        CheckAttackTelegraph();
+    }
+
+    /// <summary>
+    /// 이전 턴에 예고한 공격 발동
+    /// </summary>
+    protected virtual void ExecutePendingAttack()
+    {
+        if (_pendingAttackCell.HasValue && Player.GridPosition == _pendingAttackCell.Value)
+        {
+            int damage = RollAttackDamage();
+            Player.TakeDamage(damage);
+            TryApplyOnHitEffect(Player);
+        }
+        _pendingAttackCell = null;
+        ClearTelegraphs();
+    }
+
+    /// <summary>
+    /// 이동 처리. 기본: 시야 안이면 플레이어 방향 1칸 이동.
+    /// </summary>
+    protected virtual void PerformMovement()
+    {
+        if (SquaredDistanceToPlayer() <= data.visionRange * data.visionRange)
+        {
+            TryStepTowardPlayer();
+        }
+    }
+
+    /// <summary>
+    /// 공격 예고. 기본: 인접 시 다음 턴 공격 의도 표시.
+    /// </summary>
+    protected virtual void CheckAttackTelegraph()
+    {
+        if (IsAdjacentToPlayer())
+        {
+            _pendingAttackCell = Player.GridPosition;
+            ShowTelegraph(_pendingAttackCell.Value);
+        }
     }
 
     // ══════════════ 유틸리티 ══════════════

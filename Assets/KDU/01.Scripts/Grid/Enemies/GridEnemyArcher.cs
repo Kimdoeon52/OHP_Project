@@ -6,6 +6,8 @@ using UnityEngine;
 /// 턴 흐름:
 ///   1. 이전 턴 발사 라인에 플레이어 있으면 데미지
 ///   2. 직선상에 플레이어 있으면 라인 전체 텔레그래프 표시 (다음 턴 발사 예고)
+/// 
+/// 이동/인접 공격 대신 원거리 라인 공격을 사용하므로 OnTurnUpdate 전체 override.
 /// </summary>
 public class GridEnemyArcher : EnemyBase
 {
@@ -18,7 +20,9 @@ public class GridEnemyArcher : EnemyBase
         // 1. 이전 턴 라인 발동
         if (_pendingAttackLine != null && _pendingAttackLine.Contains(Player.GridPosition))
         {
-            Player.TakeDamage(data.attackDamage);
+            int damage = RollAttackDamage();
+            Player.TakeDamage(damage);
+            TryApplyOnHitEffect(Player);
         }
         _pendingAttackLine = null;
         ClearTelegraphs();
@@ -36,7 +40,7 @@ public class GridEnemyArcher : EnemyBase
     /// <summary>
     /// 4방향 직선상에 플레이어가 있고, 사이에 벽이 없으면 라인 셀 리스트 반환. 아니면 null.
     /// </summary>
-    private List<Vector2Int> ComputeLineToPlayer()
+    public List<Vector2Int> ComputeLineToPlayer()
     {
         var diff = Player.GridPosition - GridPosition;
 

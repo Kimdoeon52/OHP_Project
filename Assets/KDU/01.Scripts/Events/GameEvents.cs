@@ -18,6 +18,13 @@ public static class GameEvents
     public static Action<TrapSpawnRequest> OnTrapSpawnRequested;
     public static Action<TrapStubRequest> OnTrapStubRequested;
 
+    // 보상 드롭 (Phase 0 추가)
+    public static Action<Vector2Int, int> OnExpDropped;     // pos, exp
+    public static Action<Vector2Int, int> OnGoldDropped;    // pos, gold
+
+    // 상태이상 (Phase 0 추가)
+    public static Action<StatusRequest> OnStatusEffectApplied;
+
     // 시야
     public static Action<IReadOnlyCollection<Vector2Int>, IReadOnlyCollection<Vector2Int>> OnVisionUpdated; // visible, explored
 
@@ -41,6 +48,9 @@ public static class GameEvents
         OnTrapTerrainRequested = null;
         OnTrapSpawnRequested = null;
         OnTrapStubRequested = null;
+        OnExpDropped = null;
+        OnGoldDropped = null;
+        OnStatusEffectApplied = null;
         OnVisionUpdated = null;
         OnPlayerDied = null;
         OnLevelComplete = null;
