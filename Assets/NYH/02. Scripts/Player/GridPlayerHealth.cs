@@ -11,6 +11,11 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
     [SerializeField] private int maxHp = 100;
     [SerializeField] private int startPotionCount = 1;
 
+    [Header("Debug Damage")]
+    [SerializeField] private bool enableDebugDamageKey = true;
+    [SerializeField] private KeyCode debugDamageKey = KeyCode.H;
+    [SerializeField, Min(1)] private int debugDamageAmount = 10;
+
     [Header("포션 회복 곡선")]
     [Tooltip("X: 0~1 진행률 (0=사용 직후, 1=25초 후), Y: 0~1 누적 회복량 비율")]
     [SerializeField] private AnimationCurve potionRegenCurve = new AnimationCurve(
@@ -25,6 +30,7 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
     private Coroutine _regenCoroutine;
 
     public event Action OnHealthChanged;
+    public event Action<int> OnDamaged;
 
     /// <summary>
     /// 플레이어 체력이 0이 되어 사망이 확정됐을 때 호출된다.
@@ -36,6 +42,16 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
     public int MaxHp => _stats != null ? _stats.MaxHealth : maxHp;
     public bool IsDead => CurrentHp <= 0;
     public int PotionCount { get; private set; }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    private void Update()
+    {
+        if (!enableDebugDamageKey || IsDead) return;
+
+        if (Input.GetKeyDown(debugDamageKey))
+            TakeDamage(debugDamageAmount);
+    }
+#endif
 
     public void Init(GridPlayer player)
     {
@@ -59,6 +75,7 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
         if (finalDamage <= 0) return;
 
         CurrentHp = Mathf.Max(0, CurrentHp - finalDamage);
+        OnDamaged?.Invoke(finalDamage);
         GameEvents.OnPlayerDamaged?.Invoke(finalDamage);
         RaiseHealthChanged();
 

@@ -16,6 +16,7 @@ public class GridPlayerAnimationController : MonoBehaviour
     [Header("Animator Parameters")]
     [Tooltip("공격 성공 시 사용하는 Trigger 이름.")]
     [SerializeField] private string attackTriggerName = "Attack";
+    [SerializeField] private string hurtTriggerName = "Hurt";
 
     [Tooltip("사망 시 사용하는 Trigger 이름.")]
     [SerializeField] private string dieTriggerName = "Die";
@@ -108,6 +109,7 @@ public class GridPlayerAnimationController : MonoBehaviour
         _player.Movement.OnMoveFinished += OnMoveFinished;
         _player.Movement.OnMoveSpeedChanged += OnMoveSpeedChanged;
         _player.Combat.OnAttackPerformed += OnAttackPerformed;
+        _player.Health.OnDamaged += OnDamaged;
         _player.Health.OnDied += OnDied;
         _isSubscribed = true;
     }
@@ -120,6 +122,7 @@ public class GridPlayerAnimationController : MonoBehaviour
         _player.Movement.OnMoveFinished -= OnMoveFinished;
         _player.Movement.OnMoveSpeedChanged -= OnMoveSpeedChanged;
         _player.Combat.OnAttackPerformed -= OnAttackPerformed;
+        _player.Health.OnDamaged -= OnDamaged;
         _player.Health.OnDied -= OnDied;
         _isSubscribed = false;
     }
@@ -164,6 +167,13 @@ public class GridPlayerAnimationController : MonoBehaviour
 
         UpdateHorizontalFacing(direction);
         SetTriggerIfConfigured(attackTriggerName);
+    }
+
+    private void OnDamaged(int damage)
+    {
+        if (_isDead || _player.Health.IsDead) return;
+
+        SetTriggerIfConfigured(hurtTriggerName);
     }
 
     private void OnDied()
