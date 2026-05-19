@@ -1,6 +1,6 @@
-﻿using Cysharp.Threading.Tasks;
+﻿using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
-using Mono.Cecil;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -19,8 +19,15 @@ public class BossB : BossBase
 
     [Header("패턴2설정")]
     [SerializeField] private int rockMinDis = 1; // 보스로부터 최소 1칸 떨어진 곳
-    [SerializeField] private int rockMaxDis = 3; // 보스로부터 최대 3칸 떨어진 곳
+    [SerializeField] private int rockMaxDis = 5; // 보스로부터 최대 3칸 떨어진 곳
     [SerializeField] private int rockDelayMs = 500; //0.5초...?
+
+    [Header("패턴 1히트 판정")]
+    [SerializeField] private int attack1Damage = 1;   // 패턴1(평타) 데미지
+    [SerializeField] private int attack1Range = 3;    // 패턴1 휘두르기 사거리(보스 앞 칸 수)
+    [SerializeField] private int attack1Width = 1;    // 패턴1 휘두르기 폭(중심선 양옆 칸 수, 0=일자)
+    [SerializeField] private int rockDamage = 1;      // 패턴2(바위) 칸당 데미지
+    [SerializeField] private int rockWarnMs = 1000;    // 바위 낙하 전 경고 노출 시간
 
     //[Header("보스 씬 타일맵 (GridSystem 없는 씬에서 연결)")]
     //[SerializeField] private Tilemap floorTilemap;
@@ -39,10 +46,11 @@ public class BossB : BossBase
     {
         base.Start();
         currentHp = maxHp; // 보스 체력 설정
-        AddActionCase(BossAction.Pattern1, 10); // 평타
-        AddActionCase(BossAction.Pattern2, 10); // 하늘
-        AddActionCase(BossAction.Pattern3, 80); // 이동
+        AddActionCase(BossAction.Pattern1, 50); // 평타
+        AddActionCase(BossAction.Pattern2, 20); // 돌
+        AddActionCase(BossAction.Pattern3, 30); // 이동
         anime = GetComponent<Animator>();
+        gridPos = GridSystem.Instance.WorldToGrid(transform.position); //보스 시작 격자 좌표 초기화
     }
 
     protected void BossMove() //보스가 움직여요~
@@ -61,14 +69,97 @@ public class BossB : BossBase
             player.TakeDamage(damage);
         }
     }
-    //========= 패턴1 : 일반 공격 ====================================================
+    // 보스 → 플레이어의 4방향 주 방향 (가까운 축 우선). 플레이어 없으면 오른쪽.
+    private Vector2Int DirToPlayer()
+    {
+        if (player == null) return Vector2Int.right;
+
+        var diff = player.GridPosition - gridPos;
+        if (diff == Vector2Int.zero) return Vector2Int.right;
+
+        if (Mathf.Abs(diff.x) >= Mathf.Abs(diff.y))
+            return new Vector2Int(System.Math.Sign(diff.x), 0);
+        return new Vector2Int(0, System.Math.Sign(diff.y));
+    }
+
+    // 보스 앞쪽(dir 방향)으로 사거리만큼 뻗고 좌우 width만큼 퍼지는 휘두르기 칸 목록.
+    private List<Vector2Int> BuildSwingCells(Vector2Int origin, Vector2Int dir, int range, int width)
+    {
+        var cells = new List<Vector2Int>();
+        var perp = new Vector2Int(-dir.y, dir.x); // dir에 수직인 축 (좌우 퍼짐)
+
+        for (int d = 1; d <= range; d++)
+        {
+            for (int w = -width; w <= width; w++)
+            {
+                var pos = origin + dir * d + perp * w;
+                if (GridSystem.Instance.IsWalkable(pos))
+                    cells.Add(pos);
+            }
+        }
+        return cells;
+    }
+
+    // 수평 방향일 때만 스프라이트를 플레이어 쪽으로 뒤집음 (기본 우향 가정).
+    private void FaceDir(Vector2Int dir)
+    {
+        if (dir.x == 0) return;
+        var s = transform.localScale;
+        s.x = Mathf.Abs(s.x) * (dir.x < 0 ? -1f : 1f);
+        transform.localScale = s;
+    }
+
+    // 플레이어 좌/우 인접 칸으로 순간이동. 보스가 있던 쪽 우선, 막히면 반대쪽.
+    // 성공 시 휘두를 방향(플레이어 쪽) 반환, 양쪽 다 막히면 Vector2Int.zero.
+    private Vector2Int TeleportBesidePlayer()
+    {
+        if (player == null) return Vector2Int.zero;
+        var pPos = player.GridPosition;
+        int firstSign = (gridPos.x <= pPos.x) ? -1 : 1; // -1: 플레이어 왼쪽 칸, +1: 오른쪽 칸
+
+        foreach (int sign in new[] { firstSign, -firstSign })
+        {
+            var cell = pPos + new Vector2Int(sign, 0);
+            if (GridSystem.Instance.IsWalkable(cell))
+            {
+                gridPos = cell;
+                transform.position = GridSystem.Instance.GridToWorld(cell);
+                return new Vector2Int(-sign, 0); // 착지 칸에서 플레이어를 향하는 방향
+            }
+        }
+        return Vector2Int.zero; // 양쪽 다 막힘
+    }
+
+    //========= 패턴1 : 플레이어 옆 순간이동 → 휘두르기 ====================================================
     protected override async UniTask Phase1Pattern1()
     {
+        // 1) 사라지는 연출. Teleport 애니메이션이 끝나 보스가 보이지 않게 된 시점까지 대기.
+        anime.SetTrigger("Teleport");
+        await UniTask.Delay(1000, cancellationToken: cancelToken.Token); //텔레포트(사라짐) 애니메이션 1초
+
+        // 2) 사라진 동안(보이지 않을 때) 플레이어 옆 칸으로 실제 위치 점프. 양쪽 막히면 제자리에서 플레이어 방향으로 폴백.
+        var dir = TeleportBesidePlayer();
+        if (dir == Vector2Int.zero) dir = DirToPlayer();//두둥
+        FaceDir(dir);//플레이어 방향보기
+
+        // 3) 새 위치에서 등장 연출.
+        anime.SetTrigger("Appear");//등장!
+        await UniTask.Delay(500, cancellationToken: cancelToken.Token); //등장 애니메이션 0.5초
+
+        // 4) 휘두르기 칸 계산(데이터) → 경고 표시(시각). 셀은 여기서 고정 — 윈드업 중 재계산 X.
+        var hitCells = BuildSwingCells(gridPos, dir, attack1Range, attack1Width);
+        ShowWarning(hitCells);
+
+        // 5) 휘두르기 윈드업. 이 800ms가 플레이어가 빠져나가 피하는 유일한 창.
         anime.SetTrigger("Attack1");
-        //공격 로직 구현
         await UniTask.Delay(800, cancellationToken: cancelToken.Token); //1.2초+0.2초 1.4초가 그마나 공격 이펙트랑 맞는듯?
         GameObject Effect = Instantiate(attack1Effect, transform.position, Quaternion.identity); //공격 이펙트 생성
         Destroy(Effect, 1f); //이펙트 1초 후 제거 예약ㅇ미.
+
+        // 6) 임팩트 순간: 경고 칸 안에 플레이어가 있으면 데미지, 경고 제거.
+        DamagePlayerIfInCells(hitCells, attack1Damage);
+        ClearWarning(hitCells);
+
         await UniTask.Delay(200, cancellationToken: cancelToken.Token); //쩌정!!!!
         anime.SetTrigger("Attack1Fin");
         
@@ -107,12 +198,18 @@ public class BossB : BossBase
             // 만약 맵 밖이나 벽 안이라면 굳이 생성하지 않고 걸러내기 위해 IsWalkable을 체크해 주면 좋습니다.
             if (GridSystem.Instance.IsWalkable(targetPos))
             {
+                // 낙하 예고: 해당 칸에 경고 타일 표시 후 잠깐 노출 (플레이어 회피 기회)
+                ShowWarning(targetPos);
+                await UniTask.Delay(rockWarnMs, cancellationToken: cancelToken.Token);
+
                 Vector3 pos = GridSystem.Instance.GridToWorld(targetPos);
 
-                // 바위 프리팹 생성
+                // 바위 프리팹 생성 + 임팩트 판정
                 GameObject effect = Instantiate(fallingRock, pos, Quaternion.identity);
-
                 Destroy(effect, 1.5f);
+
+                DamagePlayerIfInCell(targetPos, rockDamage);
+                ClearWarning(targetPos);
             }
             else
             {
@@ -124,10 +221,10 @@ public class BossB : BossBase
             await UniTask.Delay(rockDelayMs, cancellationToken: cancelToken.Token);
         }
     }
-    //===============================임시 이동 패턴========================================
+    //=============================== 플레이어 추적 이동 패턴 ========================================
     protected override async UniTask Phase1Pattern3()
     {
-        await BossMoveStart(false);
+        await BossMoveStart(true);
         isBossAttacking = false;
     }
     //============================= 이동 로직 ==============================================
@@ -137,7 +234,7 @@ public class BossB : BossBase
         isMove = true;
         anime.SetBool("Walk", true);
         // 지정된 횟수(stepsPerPattern)만큼 멈추지 않고 연속 이동 연출
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < 10; i++)
         {
             if (cancelToken.IsCancellationRequested) break;
 
@@ -219,6 +316,7 @@ public class BossB : BossBase
         if (!GridSystem.Instance.IsWalkable(nextPos)) return false;
         if (player != null && nextPos == player.GridPosition) return false;
 
+        FaceDir(dir); // 이동 방향으로 스프라이트 반전 (좌우 이동만, 상하는 기존 방향 유지)
         gridPos = nextPos;
         return true;
     }
@@ -244,26 +342,8 @@ public class BossB : BossBase
         }
     }
 
-    //========================================== 타격 범위 생성 ============================================
-    void CreateHitBox(Vector2Int bossPos, int range)
-    {
-        // 내 중심 좌표에서 range 범위 내의 격자 좌표를 순회
-        for (int x = -range; x <= range; x++)
-        {
-            for (int y = -range; y <= range; y++)
-            {
-                Vector2Int pos = bossPos + new Vector2Int(x, y);
-                if (GridSystem.Instance.IsWalkable(pos))
-                {
-                    Debug.Log($"보스 타격 범위 격자: {pos}");
-                }
-            }
-        }
-    }
-
     void bossMoveGridUpdate()
     {
-        var bossPos = GridSystem.Instance.WorldToGrid(transform.position);
-        CreateHitBox(bossPos, 3);
+        gridPos = GridSystem.Instance.WorldToGrid(transform.position);
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public enum BossAction
 {
@@ -31,6 +32,10 @@ public class BossBase : MonoBehaviour
 
     [Header("보스 패턴 딜레이 (초)")]
     [SerializeField] protected int patternDelay; //보스 패턴 행동 사이의 딜레이 시간
+
+    [Header("경고 타일맵 (시각 표시 전용 — 판정 아님)")]
+    [SerializeField] protected Tilemap warningTilemap; //공격 예고를 칠할 전용 타일맵
+    [SerializeField] protected TileBase warningTile;   //예고 칸에 칠할 타일
 
     protected bool isBossAttacking; //보스가 공격 중인지 여부를 나타내는 변수
     protected Animator bossAnimation; //보스 애니메이션을 제어하기 위한
@@ -200,5 +205,52 @@ public class BossBase : MonoBehaviour
     {
         await UniTask.Delay(1000); //패턴1 행동 딜레이
         Debug.Log($"<color=red>[Phase2행동패턴3]</color> ");
+    }
+
+    //==================== 경고 표시 (렌더링) / 히트 판정 (데이터) 분리 헬퍼 ====================
+
+    /// <summary> 공격 예고 칸들을 경고 타일맵에 칠한다. 시각 표시 전용 — 판정에는 쓰지 말 것. </summary>
+    protected void ShowWarning(IEnumerable<Vector2Int> cells)
+    {
+        if (warningTilemap == null || warningTile == null) return;
+        foreach (var c in cells)
+            warningTilemap.SetTile(new Vector3Int(c.x, c.y, 0), warningTile);
+    }
+
+    protected void ShowWarning(Vector2Int cell)
+    {
+        if (warningTilemap == null || warningTile == null) return;
+        warningTilemap.SetTile(new Vector3Int(cell.x, cell.y, 0), warningTile);
+    }
+
+    /// <summary> 지정한 칸들의 경고 타일을 지운다. </summary>
+    protected void ClearWarning(IEnumerable<Vector2Int> cells)
+    {
+        if (warningTilemap == null) return;
+        foreach (var c in cells)
+            warningTilemap.SetTile(new Vector3Int(c.x, c.y, 0), null);
+    }
+
+    protected void ClearWarning(Vector2Int cell)
+    {
+        if (warningTilemap == null) return;
+        warningTilemap.SetTile(new Vector3Int(cell.x, cell.y, 0), null);
+    }
+
+    /// <summary>
+    /// 데이터 기반 히트 판정. 플레이어 격자 좌표가 공격 칸 집합에 들어 있으면 데미지.
+    /// 타일맵을 되읽지 않는다 (렌더링과 무관).
+    /// </summary>
+    protected void DamagePlayerIfInCells(IEnumerable<Vector2Int> cells, int damage)
+    {
+        if (player == null || player.IsDead) return;
+        foreach (var c in cells)
+        {
+            if (player.GridPosition == c)
+            {
+                player.TakeDamage(damage);
+                return;
+            }
+        }
     }
 }
