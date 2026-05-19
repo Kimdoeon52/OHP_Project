@@ -57,29 +57,30 @@ classDiagram
 ### Step 1: EnemyData SO 생성
 
 Unity 에디터에서:
+
 1. `Assets/KKH/04. SOData/` 폴더에서 **우클릭 → Create → 60s Dungeon → Enemy Data**
 2. 인스펙터에서 값 설정:
 
-| 필드 | 설명 | 예시 (역병 쥐) |
-|------|------|----------------|
-| `id` | 고유 식별자 | `plague_rat` |
-| `displayName` | 표시명 | `역병 쥐` |
-| `sprite` | 스프라이트 | (할당) |
-| `grade` | Common/Elite/MiniBoss/Boss | `Common` |
-| `moveType` | Normal/WallPass/Stationary | `Normal` |
-| `maxHp` | 최대 체력 | `8` |
-| `attackMin` / `attackMax` | 공격력 범위 | `2` / `4` |
-| `attackPattern` | Melee/Ranged | `Melee` |
-| `moveSpeed` | 이동 속도 (초/칸) | `1.0` |
-| `attackSpeed` | 공격 속도 (회/s) | `1.0` |
-| `defenseMin` / `defenseMax` | 방어력 범위 | `0` / `0` |
-| `evasion` | 회피 | `5` |
-| `accuracy` | 정확도 | `10` |
-| `timeBonus` | 처치 시간 보너스 | `3` |
-| `expReward` | 경험치 | `5` |
-| `goldMin` / `goldMax` | 골드 드롭 범위 | `0` / `0` |
-| `visionRange` | 감지 거리 | `6` |
-| `onHitEffect` | 명중 시 상태이상 SO | (Poison SO 할당) |
+| 필드                        | 설명                       | 예시 (역병 쥐)   |
+| --------------------------- | -------------------------- | ---------------- |
+| `id`                        | 고유 식별자                | `plague_rat`     |
+| `displayName`               | 표시명                     | `역병 쥐`        |
+| `sprite`                    | 스프라이트                 | (할당)           |
+| `grade`                     | Common/Elite/MiniBoss/Boss | `Common`         |
+| `moveType`                  | Normal/WallPass/Stationary | `Normal`         |
+| `maxHp`                     | 최대 체력                  | `8`              |
+| `attackMin` / `attackMax`   | 공격력 범위                | `2` / `4`        |
+| `attackPattern`             | Melee/Ranged               | `Melee`          |
+| `moveSpeed`                 | 이동 속도 (초/칸)          | `1.0`            |
+| `attackSpeed`               | 공격 속도 (회/s)           | `1.0`            |
+| `defenseMin` / `defenseMax` | 방어력 범위                | `0` / `0`        |
+| `evasion`                   | 회피                       | `5`              |
+| `accuracy`                  | 정확도                     | `10`             |
+| `timeBonus`                 | 처치 시간 보너스           | `3`              |
+| `expReward`                 | 경험치                     | `5`              |
+| `goldMin` / `goldMax`       | 골드 드롭 범위             | `0` / `0`        |
+| `visionRange`               | 감지 거리                  | `6`              |
+| `onHitEffect`               | 명중 시 상태이상 SO        | (Poison SO 할당) |
 
 ### Step 2: StatusEffectData SO 생성 (필요한 경우)
 
@@ -88,12 +89,12 @@ Unity 에디터에서:
 1. `Assets/KKH/04. SOData/` 에서 **우클릭 → Create → 60s Dungeon → Status Effect Data**
 2. 설정:
 
-| 필드 | 설명 | 예시 (독) |
-|------|------|-----------|
-| `statusType` | 기존 StatusType enum 사용 | `Poison` |
-| `durationTurns` | 지속 턴 수 | `5` |
-| `power` | 틱당 데미지/효과 강도 | `1` |
-| `moveSpeedPenalty` | 이동속도 패널티 (초) | `0` |
+| 필드               | 설명                      | 예시 (독) |
+| ------------------ | ------------------------- | --------- |
+| `statusType`       | 기존 StatusType enum 사용 | `Poison`  |
+| `durationTurns`    | 지속 턴 수                | `5`       |
+| `power`            | 틱당 데미지/효과 강도     | `1`       |
+| `moveSpeedPenalty` | 이동속도 패널티 (초)      | `0`       |
 
 3. 생성한 SO를 EnemyData의 `onHitEffect` 필드에 할당
 
@@ -190,9 +191,12 @@ public override void OnTurnUpdate()
    - (거미의 경우) `slowDebuffData` → StatusEffectData SO 할당
 5. `Assets/KKH/03. Prefab/` 에 프리팹으로 저장
 
-### Step 5: 스폰 테이블 등록
+### Step 5: 스폰 테이블 및 스파우너 등록
 
-`Assets/KKH/04. SOData/TestSpawnTable.asset` 또는 해당 Area의 스폰 테이블에 새 적의 프리팹/데이터를 등록합니다.
+1. TestSpawnTable.asset에 들어가서 해당 티어에 **새 적의 데이터(EnemyData)**를 등록합니다.
+2. 맵 생성기가 있는 씬의 EnemySpawner 컴포넌트를 열고, Prefab Mappings
+
+   리스트에 EnemyData ↔ 프리팹을 짝지어 추가해 줍니다.
 
 ---
 
@@ -200,21 +204,21 @@ public override void OnTurnUpdate()
 
 ### 기존 적 (리팩토링 완료)
 
-| 이름 | 클래스 | 위치 | 특수 능력 | override 항목 |
-|------|--------|------|-----------|---------------|
-| 추적자 | `GridEnemyTracker` | KDU | 없음 (기본 추적) | 없음 |
-| 사수 | `GridEnemyArcher` | KDU | 4방향 직선 사격 | `OnTurnUpdate` 전체 |
-| 근위병 | `GridEnemyKingsGuard` | KKH | 2턴 1행동, 피해감소 | `OnTurnUpdate` 전체 |
-| 망령 | `GridEnemyWraith` | KKH | 벽 통과 이동 | `TryStep` |
-| 팬텀 | `GridEnemyPhantom` | KKH | 사망 시 분열 | `Die` |
-| 크롤러 | `GridEnemyCrawler` | KKH | 한 턴 2칸 이동 | `PerformMovement` |
+| 이름   | 클래스                | 위치 | 특수 능력           | override 항목       |
+| ------ | --------------------- | ---- | ------------------- | ------------------- |
+| 추적자 | `GridEnemyTracker`    | KDU  | 없음 (기본 추적)    | 없음                |
+| 사수   | `GridEnemyArcher`     | KDU  | 4방향 직선 사격     | `OnTurnUpdate` 전체 |
+| 근위병 | `GridEnemyKingsGuard` | KKH  | 2턴 1행동, 피해감소 | `OnTurnUpdate` 전체 |
+| 망령   | `GridEnemyWraith`     | KKH  | 벽 통과 이동        | `TryStep`           |
+| 팬텀   | `GridEnemyPhantom`    | KKH  | 사망 시 분열        | `Die`               |
+| 크롤러 | `GridEnemyCrawler`    | KKH  | 한 턴 2칸 이동      | `PerformMovement`   |
 
 ### Phase 1 신규 적
 
-| 이름 | 클래스 | 등급 | 특수 능력 | override 항목 |
-|------|--------|------|-----------|---------------|
-| 역병 쥐 | `EnemyPlagueRat` | Common | 독 (onHitEffect SO) | 없음 |
-| 거미 | `EnemySpider` | Common | 독 + 이동속도 감소 | `ExecutePendingAttack` |
+| 이름    | 클래스           | 등급   | 특수 능력           | override 항목          |
+| ------- | ---------------- | ------ | ------------------- | ---------------------- |
+| 역병 쥐 | `EnemyPlagueRat` | Common | 독 (onHitEffect SO) | 없음                   |
+| 거미    | `EnemySpider`    | Common | 독 + 이동속도 감소  | `ExecutePendingAttack` |
 
 ---
 
@@ -222,34 +226,34 @@ public override void OnTurnUpdate()
 
 ### 이동 관련
 
-| 메서드 | 설명 | virtual |
-|--------|------|---------|
-| `TryStepTowardPlayer()` | 플레이어 방향 1칸 이동 | ✗ |
-| `TryStep(dir)` | 지정 방향 1칸 이동 (벽체크) | ✔ |
+| 메서드                  | 설명                        | virtual |
+| ----------------------- | --------------------------- | ------- |
+| `TryStepTowardPlayer()` | 플레이어 방향 1칸 이동      | ✗       |
+| `TryStep(dir)`          | 지정 방향 1칸 이동 (벽체크) | ✔       |
 
 ### 전투 관련
 
-| 메서드 | 설명 |
-|--------|------|
-| `RollAttackDamage()` | attackMin~attackMax 랜덤 데미지 |
-| `ApplyDefense(rawDamage)` | 방어력 적용 후 최종 데미지 |
-| `RollHit(targetEvasion)` | 명중 판정 (accuracy vs evasion) |
-| `TryApplyOnHitEffect(target)` | onHitEffect SO의 상태이상 적용 |
+| 메서드                        | 설명                            |
+| ----------------------------- | ------------------------------- |
+| `RollAttackDamage()`          | attackMin~attackMax 랜덤 데미지 |
+| `ApplyDefense(rawDamage)`     | 방어력 적용 후 최종 데미지      |
+| `RollHit(targetEvasion)`      | 명중 판정 (accuracy vs evasion) |
+| `TryApplyOnHitEffect(target)` | onHitEffect SO의 상태이상 적용  |
 
 ### 텔레그래프
 
-| 메서드 | 설명 |
-|--------|------|
+| 메서드                | 설명                     |
+| --------------------- | ------------------------ |
 | `ShowTelegraph(cell)` | 해당 셀에 공격 예고 표시 |
-| `ClearTelegraphs()` | 모든 텔레그래프 제거 |
+| `ClearTelegraphs()`   | 모든 텔레그래프 제거     |
 
 ### 유틸리티
 
-| 메서드 | 설명 |
-|--------|------|
-| `IsAdjacentToPlayer()` | 맨해튼 거리 1 여부 |
+| 메서드                      | 설명                    |
+| --------------------------- | ----------------------- |
+| `IsAdjacentToPlayer()`      | 맨해튼 거리 1 여부      |
 | `SquaredDistanceToPlayer()` | 제곱 거리 (시야 비교용) |
-| `UpdateVisibility()` | 시야 기반 렌더러 on/off |
+| `UpdateVisibility()`        | 시야 기반 렌더러 on/off |
 
 ---
 
@@ -345,11 +349,11 @@ moveSpeedPenalty: 0.3
 
 Phase 0에서 추가된 이벤트:
 
-| 이벤트 | 시그니처 | 발행 시점 |
-|--------|----------|-----------|
-| `OnExpDropped` | `Action<Vector2Int, int>` | 적 사망 시 (위치, 경험치) |
-| `OnGoldDropped` | `Action<Vector2Int, int>` | 적 사망 시 골드 > 0일 때 |
-| `OnStatusEffectApplied` | `Action<StatusRequest>` | 상태이상 적용 시 |
+| 이벤트                  | 시그니처                  | 발행 시점                 |
+| ----------------------- | ------------------------- | ------------------------- |
+| `OnExpDropped`          | `Action<Vector2Int, int>` | 적 사망 시 (위치, 경험치) |
+| `OnGoldDropped`         | `Action<Vector2Int, int>` | 적 사망 시 골드 > 0일 때  |
+| `OnStatusEffectApplied` | `Action<StatusRequest>`   | 상태이상 적용 시          |
 
 이 이벤트를 UI/사운드에서 구독하면 보상 드롭 연출 가능.
 
@@ -365,6 +369,7 @@ Phase 0에서 추가된 이벤트:
 Unity에서 열면 새 필드가 기본값(0)으로 나타납니다.
 
 **마이그레이션 절차:**
+
 1. 각 `.asset` 파일을 Unity 인스펙터에서 열기
 2. 기존 `attackDamage` 값을 `attackMin`/`attackMax`에 분배
    - 예: `attackDamage=10` → `attackMin=8`, `attackMax=12`
@@ -402,15 +407,19 @@ Assets/
 ## 9. 자주 묻는 질문
 
 ### Q: 상태이상은 어떻게 적용되나요?
+
 기존 NYH의 `StatusController` + `StatusType` 시스템을 그대로 재활용합니다.
 `TryApplyOnHitEffect()`가 대상에 `StatusController` 컴포넌트가 없으면 자동 추가합니다.
 
 ### Q: 기존 `data.attackDamage`를 쓰는 코드가 깨지나요?
+
 아닙니다. `attackDamage` 프로퍼티가 `(attackMin + attackMax) / 2`를 반환합니다.
 하지만 범위 데미지를 원하면 `RollAttackDamage()`를 사용하세요.
 
 ### Q: 새 적을 만들 때 코드를 꼭 짜야 하나요?
+
 기본 추적 + 근접 공격 적이면 빈 클래스 1개면 됩니다. 특수 능력은 SO로 처리.
 
 ### Q: Wraith처럼 벽을 통과하는 적을 추가하려면?
+
 `TryStep`만 override하여 `IsWalkable` 체크를 제거하면 됩니다. `moveType`을 `WallPass`로 설정.

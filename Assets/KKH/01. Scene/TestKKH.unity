@@ -16818,8 +16818,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnTable: {fileID: 11400000, guid: 6dd4229658de845489e7d9736499d5b0, type: 2}
   prefabMappings:
-  - enemyData: {fileID: 11400000, guid: 38c624b21ca52a540b954e08e5d08d62, type: 2}
-    prefab: {fileID: 5570546586574092517, guid: e48a3d083319d444ca6e06c8218c9fbf, type: 3}
+  - enemyData: {fileID: 11400000, guid: 4deeeeb4a4b6d2f4ea9867031dadf490, type: 2}
+    prefab: {fileID: 9029408503905317634, guid: c35c60213d812f247bcdda970a7b95dc, type: 3}
   - enemyData: {fileID: 11400000, guid: f69f9729e25928048a38c54cff613537, type: 2}
     prefab: {fileID: 2537672650221550757, guid: bd4c058ab9448d14ea68461d36840c32, type: 3}
   - enemyData: {fileID: 11400000, guid: be2c9cba2af97d943999d00935ab9e0b, type: 2}
@@ -23872,6 +23872,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackTriggerName: Attack
+  hurtTriggerName: Hurt
   dieTriggerName: Die
   moveTriggerName: Move
   isMovingBoolName: IsMoving
@@ -23929,6 +23930,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHp: 100
   startPotionCount: 1
+  enableDebugDamageKey: 1
+  debugDamageKey: 104
+  debugDamageAmount: 10
   potionRegenCurve:
     serializedVersion: 2
     m_Curve:
@@ -25288,7 +25292,7 @@ Sprite:
         format: 0
         dimension: 0
       m_DataSize: 80
-      _typelessdata: 000000bf0000003f000000000000003f0000003f00000000000000bf000000bf000000000000003f000000bf000000000000000000000000000000000000000000000000000000000000000000000000
+      _typelessdata: 000000bf0000003f000000000000003f0000003f00000000000000bf000000bf000000000000003f000000bf00000000000000000000803f0000803f0000803f00000000000000000000803f00000000
     m_Bindpose: []
     textureRect:
       serializedVersion: 2

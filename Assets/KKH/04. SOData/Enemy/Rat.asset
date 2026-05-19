@@ -10,12 +10,26 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 95ae69ab44fdc2f449301d0fbafbdcbf, type: 3}
-  m_Name: Wraith
+  m_Name: Rat
   m_EditorClassIdentifier: 
-  id: 1004
-  maxHp: 5
-  attackDamage: 10
-  timeBonus: 3
-  attackPattern: 0
-  visionRange: 8
+  id: 1001
+  displayName: "\uC5ED\uBCD1 \uC950"
   sprite: {fileID: 0}
+  grade: 0
+  moveType: 0
+  maxHp: 8
+  attackMin: 2
+  attackMax: 4
+  attackPattern: 0
+  moveSpeed: 1
+  attackSpeed: 1
+  defenseMin: 0
+  defenseMax: 0
+  evasion: 5
+  accuracy: 10
+  timeBonus: 3
+  expReward: 5
+  goldMin: 0
+  goldMax: 0
+  visionRange: 6
+  onHitEffect: {fileID: 11400000, guid: e295d397c1f97ea44b55bc93c83d09f9, type: 2}

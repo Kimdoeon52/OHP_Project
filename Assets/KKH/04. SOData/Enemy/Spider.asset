@@ -10,12 +10,26 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 95ae69ab44fdc2f449301d0fbafbdcbf, type: 3}
-  m_Name: Crawler
+  m_Name: Spider
   m_EditorClassIdentifier: 
-  id: 1003
-  maxHp: 10
-  attackDamage: 10
-  timeBonus: 3
+  id: 1002
+  displayName: "\uAC70\uBBF8"
+  sprite: {fileID: 0}
+  grade: 0
+  moveType: 0
+  maxHp: 6
+  attackMin: 2
+  attackMax: 3
   attackPattern: 0
+  moveSpeed: 1
+  attackSpeed: 1
+  defenseMin: 0
+  defenseMax: 0
+  evasion: 8
+  accuracy: 12
+  timeBonus: 3
+  expReward: 5
+  goldMin: 0
+  goldMax: 0
   visionRange: 6
-  sprite: {fileID: -7008412969330441016, guid: bc8421d33323470badde616a99843edb, type: 3}
+  onHitEffect: {fileID: 11400000, guid: e295d397c1f97ea44b55bc93c83d09f9, type: 2}

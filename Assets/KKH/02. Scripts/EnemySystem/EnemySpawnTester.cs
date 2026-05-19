@@ -2,13 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using EnemySystem;
 
-[System.Serializable]
-public class EnemyPrefabMapping
-{
-    public EnemyData enemyData;
-    public GameObject prefab;
-}
-
 /// <summary>
 /// RoomSpawnRule 로직을 테스트하기 위한 헬퍼 스크립트.
 /// 에디터 Inspector에서 ContextMenu "스폰 테스트 실행"을 통해 작동.
