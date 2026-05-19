@@ -9,7 +9,7 @@ public class ThrowingAxe : ThrowableWeapon, IHitEffect
 
     void ApplyEffect(EnemyBase enemy)
     {
-        enemy.TakeDamage(damage);
+        enemy.TakeDamage(GetDamage());
 
         for (int i = 0; i < duration; i++)
         {

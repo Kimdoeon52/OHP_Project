@@ -7,7 +7,7 @@ public class Noose : ThrowableWeapon, IHitEffect
     [SerializeField] int effectDuration;
     void ApplyEffect(EnemyBase enemy)
     {
-        enemy.TakeDamage(damage);
+        enemy.TakeDamage(GetDamage());
         enemy.moveSpeed *= 0.5f;
         ReleaseEffect(enemy).Forget();
     }

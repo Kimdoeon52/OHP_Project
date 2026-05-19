@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using UnityEngine;
 
 public enum StatType
@@ -6,6 +6,7 @@ public enum StatType
     Hp,
     Strength,
     MoveSpeed,
+    AttackPower,
     AttackSpeed,
     Defense,
     Level
@@ -16,6 +17,7 @@ public class PlayerStats : PersistentSingleton<PlayerStats>
     private int maxHp = 100;
     private int maxStrength = 99;
     private int maxMoveSpeed = 99;
+    private int maxAttackPower = 99;
     private int maxAttackSpeed = 99;
     private int maxDefense = 99;
     private int maxLevel = 100;
@@ -23,12 +25,14 @@ public class PlayerStats : PersistentSingleton<PlayerStats>
     private int _hp;
     private int _strength;
     private int _moveSpeed;
+    private int _baseAttackPower = 1;
+    private int _attackPower;
     private int _attackSpeed;
     private int _defense;
     private int _level;
 
 
-    public event Action<StatType, int> OnStatChanged; // Ω∫≈» ∫Ø∞Ê ¿Ã∫•∆Æ
+    public event Action<StatType, int> OnStatChanged; // Ïä§ÌÉØ Î≥ÄÍ≤Ω Ïù¥Î≤§Ìä∏
 
     public int Hp
     {
@@ -44,6 +48,11 @@ public class PlayerStats : PersistentSingleton<PlayerStats>
     {
         get => _moveSpeed;
         set => _moveSpeed = Mathf.Clamp(value, 0, maxMoveSpeed);
+    }
+    public int AttackPower
+    {
+        get => _attackPower;
+        set => _attackPower = Mathf.Clamp(value, _baseAttackPower, maxAttackPower);
     }
     public int AttackSpeed
     {
@@ -61,6 +70,7 @@ public class PlayerStats : PersistentSingleton<PlayerStats>
         Hp = maxHp;
         Strength = 10;
         MoveSpeed = 5;
+        AttackPower = _baseAttackPower;
         AttackSpeed = 5;
         Defense = 0;
     }
@@ -82,6 +92,6 @@ public class PlayerStats : PersistentSingleton<PlayerStats>
             case StatType.Defense: Defense += amount; break;
         }
 
-        OnStatChanged?.Invoke(type, amount); // Ω∫≈» πŸ≤Ó∏È æÀ∏≤
+        OnStatChanged?.Invoke(type, amount); // Ïä§ÌÉØ Î∞îÎÄåÎ©¥ ÏïåÎ¶º
     }
 }

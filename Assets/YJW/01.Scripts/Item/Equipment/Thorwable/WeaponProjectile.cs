@@ -57,7 +57,7 @@ public class WeaponProjectile : MonoBehaviour
             }
             else
             {
-                collision.gameObject.GetComponent<EnemyBase>().TakeDamage(weapon.damage);
+                collision.gameObject.GetComponent<EnemyBase>().TakeDamage(weapon.GetDamage());
             }
         }
 

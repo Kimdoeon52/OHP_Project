@@ -12,13 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24546455f488342479ae12a74c883f28, type: 3}
   m_Name: FirePotion
   m_EditorClassIdentifier: 
-  itemName: Fire Potion
+  itemName: "\uD654\uC5FC \uD3EC\uC158"
   description: 
   icon: {fileID: 0}
   itemType: 1
-  width: 0
-  height: 0
+  width: 1
+  height: 1
   potionType: 4
   value: 0
-  projectilePrefab: {fileID: 625510827754343967, guid: 8ee5df1c125358c4fbf1f37c89c6f599, type: 3}
-  effectPrefab: {fileID: 5927046907972571616, guid: 70a05416dd220fe4cb9468d2b0f633e0, type: 3}

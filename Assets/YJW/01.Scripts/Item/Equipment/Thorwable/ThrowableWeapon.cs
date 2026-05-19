@@ -5,9 +5,12 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "ThrowableWeapon", menuName = "Item/Equipment/Throwable/ThrowableWeapon")]
 public class ThrowableWeapon : ItemBase, IThrowable
 {
-    public int damage { get; private set; }
+    [SerializeField] private int minDamage;
+    [SerializeField] private int maxDamage;
     [SerializeField] protected int CanUseStrength;
     [SerializeField] private PoolType poolType;
+    [SerializeField] float attackSpeed;
+    [SerializeField] private int durability;
 
     public void Throw(Vector2Int targetPos)
     {
@@ -64,5 +67,10 @@ public class ThrowableWeapon : ItemBase, IThrowable
     {
         // 적 감지 로직
         return false;
+    }
+
+    public int GetDamage()
+    {
+        return Random.Range(minDamage, maxDamage + 1);
     }
 }
