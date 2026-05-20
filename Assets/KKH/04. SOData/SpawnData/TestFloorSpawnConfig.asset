@@ -12,6 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98741bb7b094adc42a67e84857459b53, type: 3}
   m_Name: TestFloorSpawnConfig
   m_EditorClassIdentifier: 
-  spawnTable: {fileID: 0}
+  spawnTable: {fileID: 11400000, guid: 18bd4ff2e74237a45993423228f964d7, type: 2}
   bossData: {fileID: 0}
-  prefabMappings: []
+  prefabMappings:
+  - enemyData: {fileID: 11400000, guid: 4deeeeb4a4b6d2f4ea9867031dadf490, type: 2}
+    prefab: {fileID: 9029408503905317634, guid: c35c60213d812f247bcdda970a7b95dc, type: 3}
+  - enemyData: {fileID: 11400000, guid: 6ce6f9aa8c93afd40849d76c0a151988, type: 2}
+    prefab: {fileID: 8475319111217402187, guid: 50aab3dbf59bef9428392aa52218f66d, type: 3}

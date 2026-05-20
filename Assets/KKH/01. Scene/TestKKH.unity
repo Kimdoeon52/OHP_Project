@@ -16782,6 +16782,7 @@ GameObject:
   m_Component:
   - component: {fileID: 227778858}
   - component: {fileID: 227778859}
+  - component: {fileID: 227778860}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -16811,7 +16812,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 227778857}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 81d52ede56bcc5f4aa92802f5219fbb7, type: 3}
   m_Name: 
@@ -16820,21 +16821,29 @@ MonoBehaviour:
   prefabMappings:
   - enemyData: {fileID: 11400000, guid: 4deeeeb4a4b6d2f4ea9867031dadf490, type: 2}
     prefab: {fileID: 9029408503905317634, guid: c35c60213d812f247bcdda970a7b95dc, type: 3}
-  - enemyData: {fileID: 11400000, guid: f69f9729e25928048a38c54cff613537, type: 2}
-    prefab: {fileID: 2537672650221550757, guid: bd4c058ab9448d14ea68461d36840c32, type: 3}
-  - enemyData: {fileID: 11400000, guid: be2c9cba2af97d943999d00935ab9e0b, type: 2}
-    prefab: {fileID: 7409686244963002317, guid: cafe7f40c72df9642afee274c301763f, type: 3}
-  - enemyData: {fileID: 11400000, guid: 42492307303ddea4681e8c737bea24b5, type: 2}
-    prefab: {fileID: 2493901957273684215, guid: bb4d7ee8501aa4f4fa63aebc3659de08, type: 3}
-  - enemyData: {fileID: 11400000, guid: 94f9e0f2c13360340b7a19611e5fdac6, type: 2}
-    prefab: {fileID: 5650348339080852241, guid: a4fa5cec1d3e0af4f9806667dc2277b3, type: 3}
-  - enemyData: {fileID: 11400000, guid: 1f7d9e2f43270fa4ba1463fa239101ad, type: 2}
-    prefab: {fileID: 7409686244963002317, guid: cafe7f40c72df9642afee274c301763f, type: 3}
+  - enemyData: {fileID: 11400000, guid: 6ce6f9aa8c93afd40849d76c0a151988, type: 2}
+    prefab: {fileID: 8475319111217402187, guid: 50aab3dbf59bef9428392aa52218f66d, type: 3}
   testBossData: {fileID: 0}
   testRoomType: 1
   distanceFromSafe: 2
   roomSize: {x: 5, y: 5}
   roomPosition: {x: 0, y: 0}
+--- !u!114 &227778860
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 227778857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a938798b33b8efe449c546e7738e3a9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  floorConfigs:
+  - minDepth: 1
+    maxDepth: 5
+    config: {fileID: 11400000, guid: a4c455a1ee478c6498314503e1bc86e6, type: 2}
 --- !u!1 &252802052
 GameObject:
   m_ObjectHideFlags: 0
@@ -24574,6 +24583,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1337177893}
   - component: {fileID: 1337177894}
+  - component: {fileID: 1337177895}
   m_Layer: 0
   m_Name: GridSystem
   m_TagString: Untagged
@@ -24614,6 +24624,27 @@ MonoBehaviour:
     water: {fileID: 1107523111}
     grass: {fileID: 0}
     chasm: {fileID: 0}
+--- !u!114 &1337177895
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1337177892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de487be1ddc6b024c83acb43768dc4a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tilemaps:
+    floor: {fileID: 933698159}
+    wall: {fileID: 1107523111}
+    water: {fileID: 100559588}
+    grass: {fileID: 0}
+    chasm: {fileID: 0}
+  config: {fileID: 11400000, guid: 706cd18c73d52d64f8a7eb78768a3403, type: 2}
+  spawner: {fileID: 227778860}
+  bossDepthInterval: 5
 --- !u!1 &1424518467
 GameObject:
   m_ObjectHideFlags: 0

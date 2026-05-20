@@ -26,6 +26,11 @@ namespace EnemySystem
         private readonly List<GameObject> _spawned = new List<GameObject>();
 
         /// <summary>
+        /// 스폰 수량 보정치 (FloorFeeling 등에서 조절할 수 있습니다)
+        /// </summary>
+        public int SpawnCountModifier { get; set; } = 0;
+
+        /// <summary>
         /// IEnemySpawner 구현 - MapGenerator에서 맵 빌드 및 타일 배치가 완료된 후 호출됩니다.
         /// </summary>
         public void Spawn(List<RoomData> rooms, int depth, DungeonRandom rng)
@@ -57,11 +62,14 @@ namespace EnemySystem
                 if (rule == null) continue;
 
                 // 룰에 따른 몬스터 목록 및 그리드 스폰 위치 반환 후 생성
-                foreach (var entry in rule.Generate(room, currentConfig.spawnTable, rng))
+                foreach (var entry in rule.Generate(room, currentConfig.spawnTable, rng, SpawnCountModifier))
                 {
                     InstantiateOne(entry, currentConfig);
                 }
             }
+
+            // 다음 생성을 위해 보정치 초기화
+            SpawnCountModifier = 0;
         }
 
         /// <summary>
