@@ -33,6 +33,10 @@ public class BossBase : MonoBehaviour
     [Header("보스 패턴 딜레이 (초)")]
     [SerializeField] protected int patternDelay; //보스 패턴 행동 사이의 딜레이 시간
 
+    [Header("페이즈 전환")]
+    [SerializeField] protected int phase2HpThreshold = 50;          //HP가 이 값 이하가 되면 Phase 2 진입
+    [SerializeField, Range(0.05f, 1f)] protected float phase2DelayMultiplier = 0.3f; //Phase 2 진입 시 patternDelay에 곱하는 배율
+
     [Header("경고 타일맵 (시각 표시 전용 — 판정 아님)")]
     [SerializeField] protected Tilemap warningTilemap; //공격 예고를 칠할 전용 타일맵
     [SerializeField] protected TileBase warningTile;   //예고 칸에 칠할 타일
@@ -89,6 +93,24 @@ public class BossBase : MonoBehaviour
             cancelToken.Cancel();
             cancelToken.Dispose();
         }
+    }
+
+    //==================== 데미지 / 페이즈 전환 ====================
+    // 보스가 데미지를 받을 때 호출. HP가 phase2HpThreshold 이하로 떨어지면 EnterPhase2가 한 번 발동.
+    public virtual void TakeDamage(int amount)
+    {
+        if (amount <= 0 || currentHp <= 0) return;
+        currentHp -= amount;
+
+        if (bossLevel == 1 && currentHp <= phase2HpThreshold)
+            EnterPhase2();
+    }
+
+    protected virtual void EnterPhase2()
+    {
+        bossLevel = 2;
+        patternDelay = Mathf.Max(50, Mathf.RoundToInt(patternDelay * phase2DelayMultiplier));
+        Debug.Log($"<color=orange>[보스 Phase 2 진입]</color> patternDelay={patternDelay}ms");
     }
 
     //====================================행동=====================================
@@ -209,7 +231,7 @@ public class BossBase : MonoBehaviour
 
     //==================== 경고 표시 (렌더링) / 히트 판정 (데이터) 분리 헬퍼 ====================
 
-    /// <summary> 공격 예고 칸들을 경고 타일맵에 칠한다. 시각 표시 전용 — 판정에는 쓰지 말 것. </summary>
+    //공격 예고
     protected void ShowWarning(IEnumerable<Vector2Int> cells)
     {
         if (warningTilemap == null || warningTile == null) return;
@@ -223,7 +245,7 @@ public class BossBase : MonoBehaviour
         warningTilemap.SetTile(new Vector3Int(cell.x, cell.y, 0), warningTile);
     }
 
-    /// <summary> 지정한 칸들의 경고 타일을 지운다. </summary>
+    //지정한 칸들의 경고 타일을 지움
     protected void ClearWarning(IEnumerable<Vector2Int> cells)
     {
         if (warningTilemap == null) return;
@@ -237,10 +259,7 @@ public class BossBase : MonoBehaviour
         warningTilemap.SetTile(new Vector3Int(cell.x, cell.y, 0), null);
     }
 
-    /// <summary>
-    /// 데이터 기반 히트 판정. 플레이어 격자 좌표가 공격 칸 집합에 들어 있으면 데미지.
-    /// 타일맵을 되읽지 않는다 (렌더링과 무관).
-    /// </summary>
+    // 데이터 기반 히트 판정. 플레이어 격자 좌표가 공격 칸 집합에 들어 있으면 데미지.
     protected void DamagePlayerIfInCells(IEnumerable<Vector2Int> cells, int damage)
     {
         if (player == null || player.IsDead) return;
