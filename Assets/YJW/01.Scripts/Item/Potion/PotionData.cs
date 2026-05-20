@@ -8,7 +8,8 @@ public enum PotionType
     sight,
     experience,
     fire,
-    ice
+    ice,
+    moveSpeed
 }
 
 [CreateAssetMenu(fileName = "NewPotion", menuName = "Item/Potion/NewPotion")]
@@ -32,6 +33,9 @@ public class PotionData : ItemBase
                 break;
             case PotionType.experience:
                 AddNYHStat(NYHStatType.Level);
+                break;
+            case PotionType.moveSpeed:
+                AddNYHStat(NYHStatType.MoveSpeed);
                 break;
         }
     }
