@@ -4,7 +4,9 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class BossB : BossBase
+//IGridEntitiy : TurnManager에 현재 그리드 위치를 알려주기 위한 인터페이스
+//IDamageable : 플레이어 공격 시스템이 이 보스를 데미지 받을 수 있는 대상으로 인식하기 위한 인터페이스
+public class BossB : BossBase, IGridEntity, IDamageable 
 {
     [Header("이동 설정")]
     [SerializeField] private float moveTime = 0.25f; //이동하는데 걸리는 시간
@@ -35,7 +37,82 @@ public class BossB : BossBase
     private Vector2Int gridPos;
     private bool isMove = false;
     private Animator anime;
-    
+
+    #region 플레이어 이동공격 대상 등록 프록시
+    // 이 region은 NYH 플레이어의 "이동하려는 칸에 적이 있으면 이동 대신 공격" 기능과 연결하기 위한 구간입니다.
+    // BossB는 원래 자기 내부 gridPos만 알고 있고, TurnManager에는 자신을 등록하지 않았습니다.
+    // 그래서 플레이어 쪽에서 TurnManager.GetEntityAt(target)을 호출해도 보스를 찾을 수 없었습니다.
+    //
+    // 해결 방식:
+    // 1. BossB가 IGridEntity를 구현해서 "내가 어느 격자 칸에 있는지" 외부에 알려줍니다.
+    // 2. BossB가 IDamageable을 구현해서 플레이어 공격 코드가 TakeDamage를 호출할 수 있게 합니다.
+    // 3. Start에서 TurnManager에 등록하고, OnDisable에서 해제합니다.
+    //
+    // 주의:
+    // 현재 구현은 BossB가 한 칸짜리 보스라는 가정입니다.
+    // 보스가 2x2 이상을 차지하게 되면 GridPosition 하나만으로는 부족하므로,
+    // 보스가 점유하는 모든 칸을 반환하거나 별도 충돌 판정 목록을 만들어야 합니다.
+
+    public Vector2Int GridPosition => gridPos;
+    public int CurrentHp => currentHp;
+    public int MaxHp => maxHp;
+    public bool IsDead => currentHp <= 0;
+
+    // IDamageable 인터페이스 요구사항입니다.
+    // 플레이어 공격 시스템은 TakeDamage 이름으로 피해를 주므로,
+    // BossB 내부의 기존 보스 피해 처리 함수인 BossTakeDamage로 연결합니다.
+    public void TakeDamage(int amount)
+    {
+        BossTakeDamage(amount);
+    }
+
+    // IDamageable 인터페이스 요구사항입니다.
+    // BossBase에는 BossTakeDamage가 이미 있으므로, 피해 처리는 TakeDamage에서 BossTakeDamage로 연결합니다.
+    public virtual void Heal(int amount)
+    {
+        if (amount <= 0 || IsDead) return;
+        currentHp = Mathf.Min(maxHp, currentHp + amount);
+    }
+
+    // IGridEntity 인터페이스 요구사항입니다.
+    // BossB는 BossBase의 Update/UniTask 패턴으로 독립 행동하므로, 턴 매니저가 호출해도 여기서는 아무것도 하지 않습니다.
+    public void OnTurnUpdate()
+    {
+    }
+
+    //Boss를 TurnManager의 엔티티 목록에 등록하는 함수.
+    // 플레이어는 이동하려는 칸의 대상을 TurnManager.GetEntityAt()으로 찾기 때문에,
+    //이 등록이 빠지면 보스가 실제로 그 칸에 있어도 이동공격 대상으로 인식되지 않습니다.
+    private void RegisterBossGridTarget()
+    {
+        if (TurnManager.Instance == null)
+        {
+            Debug.LogWarning("BossB: TurnManager가 없어 플레이어 이동공격 대상으로 등록하지 못했습니다.");
+            return;
+        }
+
+        TurnManager.Instance.Register(this);
+    }
+
+    // BossB를 TurnManager의 그리드 엔티티 목록에서 제거합니다.
+    // 보스가 죽거나 비활성화된 뒤에도 목록에 남아 있으면,
+    // 플레이어가 없는 대상을 공격하려 하거나 파괴된 참조가 남을 수 있어서 정리합니다.
+    // ?. 연산자는 TurnManager가 이미 사라진 상황에서는 아무것도 하지 않도록 막아줍니다.
+    private void UnregisterBossGridTarget()
+    {
+        TurnManager.Instance?.Unregister(this);
+    }
+
+    // Unity 생명주기 함수입니다.
+    // BossB 오브젝트가 비활성화되거나 파괴될 때 자동으로 호출됩니다.
+    // 이때 TurnManager 목록에서 BossB를 제거해서,
+    // 사라진 보스가 플레이어 이동공격 대상으로 계속 남지 않게 합니다.
+    private void OnDisable()
+    {
+        UnregisterBossGridTarget();
+    }
+    #endregion
+
     // 4방향 이동을 위한 벡터 배열임
     private static Vector2Int[] Dirs =
     {
@@ -51,6 +128,7 @@ public class BossB : BossBase
         AddActionCase(BossAction.Pattern3, 30); // 이동
         anime = GetComponent<Animator>();
         gridPos = GridSystem.Instance.WorldToGrid(transform.position); //보스 시작 격자 좌표 초기화
+        RegisterBossGridTarget(); // 플레이어가 이동공격 대상으로 보스를 찾을 수 있도록 TurnManager에 등록
         Debug.Log($"보스 시작 위치: {gridPos}"); //디버그용
     }
 

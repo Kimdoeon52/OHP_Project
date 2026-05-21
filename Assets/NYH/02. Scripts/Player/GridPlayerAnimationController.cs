@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -44,9 +45,21 @@ public class GridPlayerAnimationController : MonoBehaviour
     [Tooltip("원본 스프라이트가 오른쪽을 보고 있으면 true, 왼쪽을 보고 있으면 false.")]
     [SerializeField] private bool faceRightByDefault = true;
 
+    [Header("공격 애니메이션 속도")]
+    [Tooltip("AttackSpeed 1당 공격 애니메이션 배속을 올리는 비율입니다.")]
+    [SerializeField, Min(0f)] private float attackSpeedAnimationMultiplier = 0.12f;
+
+    [Tooltip("공격 애니메이션 배속이 이 값보다 높아지지 않게 제한합니다.")]
+    [SerializeField, Min(1f)] private float maxAttackAnimationSpeed = 2.5f;
+
+    [Tooltip("공격 후 Animator speed를 기본값으로 되돌리기까지 기다리는 시간입니다.")]
+    [SerializeField, Min(0.01f)] private float attackSpeedResetDelay = 0.25f;
+
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
     private GridPlayer _player;
+    private NYHPlayerStats _stats;
+    private Coroutine _attackSpeedCoroutine;
     private bool _isDead;
     private bool _isFacingRight;
     private bool _isSubscribed;
@@ -57,6 +70,9 @@ public class GridPlayerAnimationController : MonoBehaviour
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _player = GetComponent<GridPlayer>();
+        _stats = GetComponent<NYHPlayerStats>();
+        if (_stats == null)
+            _stats = NYHPlayerStats.Instance;
         _isFacingRight = faceRightByDefault;
         ApplyFacing();
     }
@@ -74,6 +90,12 @@ public class GridPlayerAnimationController : MonoBehaviour
     private void OnDisable()
     {
         Unsubscribe();
+        if (_attackSpeedCoroutine != null)
+        {
+            StopCoroutine(_attackSpeedCoroutine);
+            _attackSpeedCoroutine = null;
+        }
+
         if (_animator != null)
             _animator.speed = 1f;
     }
@@ -166,6 +188,7 @@ public class GridPlayerAnimationController : MonoBehaviour
         if (_isDead) return;
 
         UpdateHorizontalFacing(direction);
+        ApplyAttackAnimationSpeed();
         SetTriggerIfConfigured(attackTriggerName);
     }
 
@@ -202,6 +225,42 @@ public class GridPlayerAnimationController : MonoBehaviour
     {
         // 원본 스프라이트가 오른쪽을 본다는 전제로 flipX만 뒤집어 좌우 리소스 중복을 줄인다.
         _spriteRenderer.flipX = faceRightByDefault ? !_isFacingRight : _isFacingRight;
+    }
+
+    private void ApplyAttackAnimationSpeed()
+    {
+        if (_animator == null) return;
+
+        if (_attackSpeedCoroutine != null)
+            StopCoroutine(_attackSpeedCoroutine);
+
+        _animator.speed = GetAttackAnimationSpeed();
+        _attackSpeedCoroutine = StartCoroutine(RestoreAnimatorSpeedAfterAttack());
+    }
+
+    private IEnumerator RestoreAnimatorSpeedAfterAttack()
+    {
+        yield return new WaitForSeconds(attackSpeedResetDelay);
+
+        if (_animator != null && !_isDead)
+            _animator.speed = _isMoveVisualActive ? _animator.speed : 1f;
+
+        _attackSpeedCoroutine = null;
+    }
+
+    private float GetAttackAnimationSpeed()
+    {
+        int attackSpeed = GetAttackSpeed();
+        float speed = 1f + Mathf.Max(0, attackSpeed) * attackSpeedAnimationMultiplier;
+        return Mathf.Min(maxAttackAnimationSpeed, speed);
+    }
+
+    private int GetAttackSpeed()
+    {
+        if (_stats == null)
+            _stats = NYHPlayerStats.Instance;
+
+        return _stats != null ? _stats.AttackSpeed : 0;
     }
 
     private void PlayStateIfConfigured(string stateName, bool keepCurrentRunTime)

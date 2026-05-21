@@ -32,6 +32,7 @@ public class ItemBase : ScriptableObject
     public string Description { get => description; set => description = value; }
     public Sprite Icon { get => icon; set => icon = value; }
     public ItmeType ItemType { get => itemType; set => itemType = value; }
+    public EquipmentSlot Slot => slot;
     public int Width { get => width; set => width = value; }
     public int Height { get => height; set => height = value; }
 

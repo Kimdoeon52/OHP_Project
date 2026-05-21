@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Dagger
   m_EditorClassIdentifier: 
   id: 5501
-  damage: 1
+  damage: 5
   maxDurability: 5
   startCount: 3
   sprite: {fileID: -220729229975464070, guid: 437efdc184344bd4693c91afad4d4938, type: 3}

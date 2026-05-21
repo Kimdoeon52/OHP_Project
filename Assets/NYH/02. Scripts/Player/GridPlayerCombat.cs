@@ -18,6 +18,23 @@ public class GridPlayerCombat : MonoBehaviour
     [SerializeField] private GridDagger daggerPrefab;
     [SerializeField] private int meleeDamage = 1;
 
+    [Header("Attack Speed")]
+    [Tooltip("AttackSpeed가 0일 때 근접 공격을 다시 할 수 있기까지 기다리는 기본 시간입니다.")]
+    [SerializeField, Min(0.01f)] private float baseMeleeCooldown = 0.45f;
+
+    [Tooltip("AttackSpeed 1당 근접 공격 쿨다운과 시간 비용을 줄이는 비율입니다.")]
+    [SerializeField, Min(0f)] private float attackSpeedCooldownMultiplier = 0.12f;
+
+    [Tooltip("AttackSpeed가 높아져도 근접 공격 쿨다운이 이 값보다 짧아지지 않게 막습니다.")]
+    [SerializeField, Min(0.01f)] private float minMeleeCooldown = 0.12f;
+
+    [Tooltip("AttackSpeed가 높아져도 근접 공격 시간 비용이 이 값보다 낮아지지 않게 막습니다.")]
+    [SerializeField, Min(0.01f)] private float minMeleeTimeCost = 0.08f;
+
+    [Header("Debug")]
+    [Tooltip("켜면 플레이어가 공격으로 준 피해량을 Console에 출력합니다.")]
+    [SerializeField] private bool logDamageDealt = true;
+
     // 인벤토리: 각 단검의 현재 내구도 리스트
     private readonly List<int> _inventory = new();
 
@@ -25,6 +42,8 @@ public class GridPlayerCombat : MonoBehaviour
     private readonly Dictionary<Vector2Int, GridDagger> _thrownDaggers = new();
 
     private GridPlayer _player;
+    private NYHPlayerStats _stats;
+    private float _nextMeleeAttackTime;
 
     public int InventoryCount => _inventory.Count;
     public IReadOnlyList<int> InventoryDurabilities => _inventory;
@@ -32,6 +51,9 @@ public class GridPlayerCombat : MonoBehaviour
     public void Init(GridPlayer player)
     {
         _player = player;
+        _stats = GetComponent<NYHPlayerStats>();
+        if (_stats == null)
+            _stats = NYHPlayerStats.Instance;
 
         if (daggerData == null)
         {
@@ -50,6 +72,9 @@ public class GridPlayerCombat : MonoBehaviour
     /// </summary>
     public void TryMeleeAt(Vector2Int clickedCell)
     {
+        if (!CanMeleeAttack())
+            return;
+
         var diff = clickedCell - _player.GridPosition;
         if (diff == Vector2Int.zero) return;
 
@@ -67,9 +92,13 @@ public class GridPlayerCombat : MonoBehaviour
         var entity = TurnManager.Instance.GetEntityAt(target);
         if (entity is IDamageable damageable && (UnityEngine.Object)damageable != _player)
         {
-            damageable.TakeDamage(GetModifiedOutgoingDamage(meleeDamage));
+            int damage = GetModifiedOutgoingDamage(meleeDamage);
+            int beforeHp = damageable.CurrentHp;
+            damageable.TakeDamage(damage);
+            LogDamageDealt("근접 공격", damageable, damage, beforeHp);
+            StartMeleeCooldown();
             OnAttackPerformed?.Invoke(dir);
-            TurnManager.Instance.OnPlayerActionCompleted(_player.Config.meleeTimeCost);
+            TurnManager.Instance.OnPlayerActionCompleted(GetModifiedMeleeTimeCost());
         }
         // 적 없으면 빈 휘두름 — 시간 소모 X (회전만 함)
     }
@@ -94,7 +123,10 @@ public class GridPlayerCombat : MonoBehaviour
         // 데미지는 즉시 적용 (비행은 순수 시각 효과)
         if (hitTarget != null)
         {
-            hitTarget.TakeDamage(GetModifiedOutgoingDamage(daggerData.damage));
+            int damage = GetModifiedOutgoingDamage(daggerData.damage);
+            int beforeHp = hitTarget.CurrentHp;
+            hitTarget.TakeDamage(damage);
+            LogDamageDealt("단검 투척", hitTarget, damage, beforeHp);
         }
 
         // facing 갱신 — 8방향 sign으로 정규화
@@ -186,5 +218,49 @@ public class GridPlayerCombat : MonoBehaviour
     {
         StatusController statusController = _player.GetComponent<StatusController>();
         return statusController != null ? statusController.ModifyOutgoingDamage(baseDamage) : baseDamage;
+    }
+
+    private bool CanMeleeAttack()
+    {
+        return Time.time >= _nextMeleeAttackTime;
+    }
+
+    private void StartMeleeCooldown()
+    {
+        _nextMeleeAttackTime = Time.time + GetMeleeCooldown();
+    }
+
+    private float GetMeleeCooldown()
+    {
+        return Mathf.Max(minMeleeCooldown, baseMeleeCooldown / GetAttackSpeedFactor());
+    }
+
+    private float GetModifiedMeleeTimeCost()
+    {
+        return Mathf.Max(minMeleeTimeCost, _player.Config.meleeTimeCost / GetAttackSpeedFactor());
+    }
+
+    private float GetAttackSpeedFactor()
+    {
+        int attackSpeed = GetAttackSpeed();
+        return 1f + Mathf.Max(0, attackSpeed) * attackSpeedCooldownMultiplier;
+    }
+
+    private int GetAttackSpeed()
+    {
+        if (_stats == null)
+            _stats = NYHPlayerStats.Instance;
+
+        return _stats != null ? _stats.AttackSpeed : 0;
+    }
+
+    private void LogDamageDealt(string attackName, IDamageable target, int requestedDamage, int beforeHp)
+    {
+        if (!logDamageDealt || target == null) return;
+
+        int hpDelta = Mathf.Max(0, beforeHp - target.CurrentHp);
+        string targetName = target is UnityEngine.Object targetObject ? targetObject.name : target.GetType().Name;
+
+        Debug.Log($"[PlayerAttack] {attackName} -> {targetName}, 요청 피해 {requestedDamage}, 실제 HP 감소 {hpDelta}, HP {target.CurrentHp}/{target.MaxHp}");
     }
 }

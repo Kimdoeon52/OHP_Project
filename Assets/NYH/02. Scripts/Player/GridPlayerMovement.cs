@@ -128,9 +128,16 @@ public class GridPlayerMovement : MonoBehaviour
         Facing = direction;
 
         Vector2Int target = _player.GridPosition + direction;
+
+        // 그리드 이동 중 공격 가능 entity가 있다면 이동을 안하고 target을 공격 한다.
+        IGridEntity entity = TurnManager.Instance.GetEntityAt(target);
+        if (entity is IDamageable damageable && (UnityEngine.Object)damageable != _player)
+        {
+            _player.Combat.TryMeleeAt(target);
+            return;
+        }
         if (!GridSystem.Instance.IsWalkable(target))
             return;
-
         float totalCost = _player.Config.moveTimeCost;
         StatusController statusController = _player.GetComponent<StatusController>();
         if (statusController != null)
