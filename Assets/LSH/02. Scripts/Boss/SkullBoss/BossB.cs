@@ -10,7 +10,7 @@ public class BossB : BossBase
     [SerializeField] private float moveTime = 0.25f; //이동하는데 걸리는 시간
     [SerializeField] private Ease moveEase = Ease.Linear; //스르륵 미끄러지게 끝나는 두트윈임.
     [SerializeField] private int stepsPerPattern = 4; //이동 횟수
-    [SerializeField] private int stepDelayMs = 1000; //이동 딜레이
+    //[SerializeField] private int stepDelayMs = 1000; //이동 딜레이
 
     [Header("보스 공격 이펙트")]
     [SerializeField] private GameObject attack1Effect; //쿵!
@@ -44,8 +44,8 @@ public class BossB : BossBase
 
     protected override void Start()
     {
+        currentHp = maxHp; // 보스 체력 설정먼저 해야 체력 업데이트가 보임
         base.Start();
-        currentHp = maxHp; // 보스 체력 설정
         AddActionCase(BossAction.Pattern1, 50); // 평타
         AddActionCase(BossAction.Pattern2, 20); // 돌
         AddActionCase(BossAction.Pattern3, 30); // 이동
