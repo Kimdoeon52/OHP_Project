@@ -9,12 +9,22 @@ public enum ItmeType
     Others,
     Relic
 }
+public enum EquipmentSlot
+{
+    None,          // 장착 불가
+    Weapon,        // 무기
+    Armor,         // 갑옷
+    Ring,          // 반지
+    Artifact,      // 유물
+    Rune           // 룬
+}
 public class ItemBase : ScriptableObject
 {
     [SerializeField] protected string itemName;
     [SerializeField] protected string description;
     [SerializeField] protected Sprite icon;
     [SerializeField] protected ItmeType itemType;
+    [SerializeField] protected EquipmentSlot slot;
     [SerializeField] protected int width;
     [SerializeField] protected int height;
 
