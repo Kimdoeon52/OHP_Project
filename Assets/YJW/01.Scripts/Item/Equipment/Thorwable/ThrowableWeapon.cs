@@ -11,6 +11,8 @@ public class ThrowableWeapon : ItemBase, IThrowable
     [SerializeField] private PoolType poolType;
     [SerializeField] float attackSpeed;
     [SerializeField] private int durability;
+    [SerializeField] public int grade;
+    [SerializeField] public bool isAnalyzed;
 
     public void Throw(Vector2Int targetPos)
     {

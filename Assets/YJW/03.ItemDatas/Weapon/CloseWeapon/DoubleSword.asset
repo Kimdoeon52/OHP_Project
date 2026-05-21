@@ -16,9 +16,12 @@ MonoBehaviour:
   description: 
   icon: {fileID: 0}
   itemType: 0
+  slot: 1
   width: 2
   height: 2
   minDamage: 3
   maxDamage: 16
   CanUseStrength: 14
   attackSpeed: 0.7
+  grade: 0
+  isAnalyzed: 0

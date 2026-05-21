@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,7 +12,7 @@ namespace PrototypeRT
     public class InventoryItem : MonoBehaviour
     {
         /// <summary>이 UI가 표시하는 아이템 데이터입니다.</summary>
-        public ItemData ItemData { get; private set; }
+        public ItemBase ItemData { get; private set; }
 
         /// <summary>아이템이 배치된 좌상단 칸의 X 좌표입니다.</summary>
         public int OnGridPositionX { get; set; }
@@ -26,7 +27,7 @@ namespace PrototypeRT
             _image = GetComponent<Image>();
         }
 
-        public void Set(ItemData itemData, InventoryController inventoryController)
+        public void Set(ItemBase itemData, InventoryController inventoryController)
         {
             ItemData = itemData;
 
@@ -34,8 +35,8 @@ namespace PrototypeRT
 
             // ItemData의 아이콘을 그대로 UI Image에 연결합니다.
             // 아이콘이 아직 없는 테스트 데이터라면 이미지를 비활성화해서 빈 사각형 노출을 피합니다.
-            _image.sprite = itemData.ItemIcon;
-            _image.enabled = itemData.ItemIcon != null;
+            _image.sprite = itemData.Icon;
+            _image.enabled = itemData.Icon != null;
             _image.raycastTarget = true;
 
             // ItemData의 칸 크기와 UI 크기를 맞춰 배치 계산이 어긋나지 않게 합니다.

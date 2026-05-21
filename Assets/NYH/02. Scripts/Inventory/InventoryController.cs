@@ -13,7 +13,7 @@ namespace PrototypeRT
     {
         [Header("디버그 아이템")]
         [Tooltip("테스트용으로 인벤토리에 넣을 아이템 목록입니다. 실제 플레이 드랍 테이블과는 별개입니다.")]
-        [SerializeField] private List<ItemData> debugItems = new();
+        [SerializeField] private List<ItemBase> debugItems = new();
 
         [Tooltip("켜두면 R 키로 debugItems 중 하나를 인벤토리에 넣습니다. 테스트 전용이므로 빌드 전에는 끄는 것을 권장합니다.")]
         [SerializeField] private bool enableDebugInsertKey;
@@ -129,7 +129,7 @@ namespace PrototypeRT
             UpdateHighlight();
         }
 
-        public bool TryAddItem(ItemData itemData)
+        public bool TryAddItem(ItemBase itemData)
         {
             if (_selectedGrid == null)
                 SelectedGrid = ResolveItemGrid();
@@ -182,13 +182,13 @@ namespace PrototypeRT
             return true;
         }
 
-        public InventoryItem CreateItemView(ItemData itemData, Transform parent, bool playerOwned)
+        public InventoryItem CreateItemView(ItemBase itemData, Transform parent, bool playerOwned)
         {
             if (itemPrefab == null || itemData == null || parent == null)
             {
                 Debug.LogError("InventoryController: 아이템 UI 뷰를 만들기 위한 Prefab, ItemData, Parent 연결을 확인해야 합니다.");
                 return null;
-            }
+            }   
 
             InventoryItem item = Instantiate(itemPrefab, parent);
 
@@ -227,7 +227,7 @@ namespace PrototypeRT
         /// <summary>
         /// 플레이어 소유 인벤토리에 넣을 아이템 UI를 Canvas 아래에 생성합니다.
         /// </summary>
-        private InventoryItem CreateInventoryItem(ItemData itemData)
+        private InventoryItem CreateInventoryItem(ItemBase itemData)
         {
             return CreateItemView(itemData, canvasTransform, true);
         }

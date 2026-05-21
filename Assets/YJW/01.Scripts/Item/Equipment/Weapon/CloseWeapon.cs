@@ -7,6 +7,8 @@ public class CloseWeapon : ItemBase
     [SerializeField] private int maxDamage;
     [SerializeField] private int CanUseStrength;
     [SerializeField] private float attackSpeed;
+    [SerializeField] public int grade;
+    [SerializeField] public bool isAnalyzed;
 
     public int GetDamage()
     {
