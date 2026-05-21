@@ -5,6 +5,9 @@ using UnityEngine;
 public class GridTrap : MonoBehaviour
 {
     [SerializeField] private TrapData data;
+    [Tooltip("트랩 위치를 자동 계산할지 정하는 옵션" +
+        "키면 GridPosition 값을 사용 하여 그 위치에 생성" +
+        "꺼두면 트랩의 씬에서의 월드위치를 보고 자동으로 계산 하여 설치함 ")]
     [SerializeField] private bool overrideGridPosition;
     [SerializeField] private Vector2Int gridPosition;
 
