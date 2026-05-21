@@ -19,8 +19,8 @@ namespace EnemySystem
         [Header("스폰 규칙 및 난이도 곡선")]
         public EnemySpawnTable spawnTable;
 
-        [Tooltip("보스방이 있을 경우 출현할 보스 데이터")]
-        public EnemyData bossData;
+        //  [Tooltip("보스방이 있을 경우 출현할 보스 데이터")]
+        //  public EnemyData bossData;
 
         [Header("EnemyData ↔ 프리팹 매핑 리스트")]
         public List<EnemyPrefabMapping> prefabMappings = new List<EnemyPrefabMapping>();

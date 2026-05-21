@@ -30,6 +30,58 @@ namespace EnemySystem
         /// </summary>
         public int SpawnCountModifier { get; set; } = 0;
 
+
+        private void Start()
+        {
+            // 씬이 시작할 때 자동으로 타일맵 기반 스폰 실행
+            SpawnFromTilemap();
+        }
+
+        [ContextMenu("타일맵 기반 적 자동 스폰")]
+        public void SpawnFromTilemap()
+        {
+            if (GridSystem.Instance == null)
+            {
+                Debug.LogWarning("EnemySpawner: 씬에 GridSystem이 없어 스폰할 수 없습니다.");
+                return;
+            }
+
+            // 1. GridSystem에 배치된 모든 Walkable 셀 수집
+            var walkableCells = new List<Vector2Int>(GridSystem.Instance.GetAllWalkableCells());
+            if (walkableCells.Count == 0)
+            {
+                Debug.LogWarning("EnemySpawner: 스폰 가능한 바닥 타일(Walkable)이 존재하지 않습니다.");
+                return;
+            }
+
+            // 2. 수집된 타일들로 가상의 RoomData 구축 (바닥 타일 통째로 하나의 큰 방으로 취급)
+            RoomData mockRoom = new RoomData
+            {
+                type = RoomType.Normal,
+                sizeCategory = SizeCategory.Normal,
+                distanceFromSafe = 2, // 스폰 테이블의 난이도 결정을 위한 거리 값 (원하는 티어로 조정 가능)
+            };
+            mockRoom.floorCells.AddRange(walkableCells);
+
+            // 가상의 방 전체 범위를 감싸는 Bounds 계산
+            int minX = int.MaxValue, maxX = int.MinValue;
+            int minY = int.MaxValue, maxY = int.MinValue;
+            foreach (var cell in walkableCells)
+            {
+                if (cell.x < minX) minX = cell.x;
+                if (cell.x > maxX) maxX = cell.x;
+                if (cell.y < minY) minY = cell.y;
+                if (cell.y > maxY) maxY = cell.y;
+            }
+            mockRoom.bounds = new RectInt(minX, minY, maxX - minX + 1, maxY - minY + 1);
+
+            // 3. 임시 난수 생성기(Rng)와 1층 설정 가져와서 스폰 수행
+            DungeonRandom rng = new DungeonRandom();
+            rng.Init(Random.Range(0, 100000));
+
+            // 1층(depth = 1)의 설정을 가져옵니다.
+            Spawn(new List<RoomData> { mockRoom }, 1, rng);
+        }
         /// <summary>
         /// IEnemySpawner 구현 - MapGenerator에서 맵 빌드 및 타일 배치가 완료된 후 호출됩니다.
         /// </summary>
@@ -58,7 +110,7 @@ namespace EnemySystem
                 if (room.type == RoomType.Tunnel) continue;
 
                 // 방 타입별 스폰 규칙 설정 (Safe, Normal, Exit, Boss 등)
-                RoomSpawnRule rule = ResolveRule(room.type, currentConfig.bossData);
+                RoomSpawnRule rule = ResolveRule(room.type); //currentConfig.bossData);
                 if (rule == null) continue;
 
                 // 룰에 따른 몬스터 목록 및 그리드 스폰 위치 반환 후 생성
@@ -90,14 +142,14 @@ namespace EnemySystem
         /// <summary>
         /// 방 타입에 따른 스폰 규칙 클래스를 매핑합니다.
         /// </summary>
-        private RoomSpawnRule ResolveRule(RoomType type, EnemyData bossData)
+        private RoomSpawnRule ResolveRule(RoomType type)//, EnemyData bossData)
         {
             switch (type)
             {
                 case RoomType.Safe: return new SafeRoomSpawnRule();
                 case RoomType.Normal: return new NormalRoomSpawnRule();
                 case RoomType.Exit: return new ExitRoomSpawnRule();
-                case RoomType.Boss: return new BossRoomSpawnRule(bossData);
+                case RoomType.Boss: return new BossRoomSpawnRule(); //bossData);
                 case RoomType.Special:
                 case RoomType.Secret:
                     return new NormalRoomSpawnRule(); // 임시 폴백

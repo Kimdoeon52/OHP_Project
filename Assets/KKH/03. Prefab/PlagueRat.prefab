@@ -124,6 +124,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   data: {fileID: 11400000, guid: 4deeeeb4a4b6d2f4ea9867031dadf490, type: 2}
-  telegraphPrefab: {fileID: 6650546338721390145, guid: fc684c7a9e25aa641ab9f283ab1a7450, type: 3}
+  telegraphPrefab: {fileID: 0}
   moveSpeed: 1
   isDetected: 0

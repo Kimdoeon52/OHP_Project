@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: TestFloorSpawnConfig
   m_EditorClassIdentifier: 
   spawnTable: {fileID: 11400000, guid: 18bd4ff2e74237a45993423228f964d7, type: 2}
-  bossData: {fileID: 0}
   prefabMappings:
   - enemyData: {fileID: 11400000, guid: 4deeeeb4a4b6d2f4ea9867031dadf490, type: 2}
     prefab: {fileID: 9029408503905317634, guid: c35c60213d812f247bcdda970a7b95dc, type: 3}

@@ -24584,6 +24584,7 @@ GameObject:
   - component: {fileID: 1337177893}
   - component: {fileID: 1337177894}
   - component: {fileID: 1337177895}
+  - component: {fileID: 1337177896}
   m_Layer: 0
   m_Name: GridSystem
   m_TagString: Untagged
@@ -24645,6 +24646,24 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: 706cd18c73d52d64f8a7eb78768a3403, type: 2}
   spawner: {fileID: 227778860}
   bossDepthInterval: 5
+--- !u!114 &1337177896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1337177892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1efdcee7c53268a418826ac564345a48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  generator: {fileID: 1337177895}
+  builder: {fileID: 11400000, guid: 56aa2fec0ae155447989f14a5bfe5bc7, type: 2}
+  painter: {fileID: 11400000, guid: 34bbfddc4e621da4da0c56321b3042d7, type: 2}
+  runSeed: 12345
+  depth: 1
+  stressTestCount: 100
 --- !u!1 &1424518467
 GameObject:
   m_ObjectHideFlags: 0
