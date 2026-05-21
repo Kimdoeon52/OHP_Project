@@ -46,6 +46,7 @@ public class BossBase : EnemyNormalBASE
     protected GridPlayer player; //플레이어 참조
 
     [SerializeField] protected BossHpBar hpBar;
+    
     protected virtual void Start()
     {
         //base.Start(); // EnemyBase: Player 찾기, 격자 스냅, TurnManager 등록

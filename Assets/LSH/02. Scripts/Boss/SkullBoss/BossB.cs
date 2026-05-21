@@ -295,6 +295,55 @@ public class BossB : BossBase, IGridEntity, IDamageable
             await UniTask.Delay(rockDelayMs, cancellationToken: cancelToken.Token);
         }
     }
+    //=============================== 분노패턴1 ==========================================================
+    protected override async UniTask Phase2Pattern1()
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            if (cancelToken.IsCancellationRequested) break;
+            // 1) 사라지는 연출. Teleport 애니메이션이 끝나 보스가 보이지 않게 된 시점까지 대기.
+            anime.SetTrigger("Teleport");
+            await UniTask.Delay(1000, cancellationToken: cancelToken.Token); //텔레포트(사라짐) 애니메이션 1초
+
+            // 2) 사라진 동안(보이지 않을 때) 플레이어 옆 칸으로 실제 위치 점프. 양쪽 막히면 제자리에서 플레이어 방향으로 폴백.
+            var dir = TeleportBesidePlayer();
+            if (dir == Vector2Int.zero) dir = DirToPlayer();//두둥
+            FaceDir(dir);//플레이어 방향보기
+
+            // 3) 새 위치에서 등장 연출.
+            anime.SetTrigger("Appear");//등장!
+            await UniTask.Delay(500, cancellationToken: cancelToken.Token); //등장 애니메이션 0.5초
+
+            // 4) 휘두르기 칸 계산(데이터) → 경고 표시(시각). 셀은 여기서 고정 — 윈드업 중 재계산 X.
+            var hitCells = BuildSwingCells(gridPos, dir, attack1Range, attack1Width);
+            ShowWarning(hitCells);
+
+            // 5) 휘두르기 윈드업. 이 800ms가 플레이어가 빠져나가 피하는 유일한 창.
+            anime.SetTrigger("Attack1");
+            await UniTask.Delay(800, cancellationToken: cancelToken.Token); //0.8초가 그마나 공격 이펙트랑 맞는듯?
+            GameObject Effect = Instantiate(attack1Effect, transform.position, Quaternion.identity); //공격 이펙트 생성
+            Destroy(Effect, 1f); //이펙트 1초 후 제거 예약ㅇ미.
+
+            // 6) 임팩트 순간: 경고 칸 안에 플레이어가 있으면 데미지, 경고 제거.
+            DamagePlayerIfInCells(hitCells, attack1Damage);
+            ClearWarning(hitCells);
+
+            await UniTask.Delay(200, cancellationToken: cancelToken.Token); //쩌정!!!!
+            anime.SetTrigger("Attack1Fin");
+
+            await UniTask.Delay(2000, cancellationToken: cancelToken.Token); //공격 애니메이션이 끝날 때까지 대기
+        }
+        isBossAttacking = false;
+    }
+
+    protected override async UniTask Phase2Pattern2()
+    {
+        isBossAttacking = false;
+    }
+    protected override async UniTask Phase2Pattern3()
+    {
+        isBossAttacking = false;
+    }
     //=============================== 플레이어 추적 이동 패턴 ========================================
     protected override async UniTask Phase1Pattern3()
     {
