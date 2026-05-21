@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e454c61580eb2d4f90a9dfe9e9873d5, type: 3}
   m_Name: DefaultPainter
   m_EditorClassIdentifier: 
-  floorTile: {fileID: 11400000, guid: a21b1c492a04f9a4483b0334d47a0fe3, type: 2}
-  wallTile: {fileID: 11400000, guid: 8660e8f9a5924274881e43d99eee78bd, type: 2}
+  floorTile: {fileID: 11400000, guid: 8588b7a9355d5964d88f8d13e6665a58, type: 2}
+  wallTile: {fileID: 11400000, guid: 1c8081c80b4e7794dbcff7e10b7545da, type: 2}
