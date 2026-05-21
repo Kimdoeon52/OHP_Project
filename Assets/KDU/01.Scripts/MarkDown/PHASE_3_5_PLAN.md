@@ -130,10 +130,24 @@ public abstract class RoomSpawnRule : ScriptableObject {
 - 스폰 제외: 각 doorCell 의 4방향 인접 셀까지 (안전 완충)
 - Safe Room 경계 cell 도 제외 (Safe Room 자체는 RoomType.Safe 로 처리되지만, 인접 Normal 방의 입구도 제외)
 
+#### Q6. 아이템 랜덤 스폰 — 방 타입별 규칙
+- `IItemSpawner` — 단순 1메서드 진입점 (`Spawn(List<RoomData> rooms, int depth, DungeonRandom rng)`)
+- `ItemSpawnPool` SO — depth 기반 아이템 풀 (GDD 9장 전체 종류: 포션/스크롤/생명 파편/투척무기/장착장비/저주/마법)
+  - 아이템마다 `minDepth`/`maxDepth`/`weight` 필드 → depth 구간별 등장 빈도 제어
+- `RoomItemRule` 추상 SO + 방 타입별 구현:
+  - `SafeRoomItemRule` — no-op (상점이 1/6/11층에 있음, Safe Room 바닥 아이템 X)
+  - `NormalRoomItemRule` — 방 크기에 비례 0~2개, distanceFromSafe 클수록 좋은 등급 가중치↑
+  - `ExitRoomItemRule` — no-op (압박감 유지)
+  - `SpecialRoomItemRule` — Phase 5 에서 콘텐츠 연동 (고대 골렘 방 등)
+  - `SecretRoomItemRule` — Phase 5 에서 연동 (숨겨진 방 보상)
+- **배치 셀 조건**: `floorCells` 중 hazardCells 제외 + doorCell 인접 제외 → 나머지에서 Random Pick
+- **적/아이템 셀 충돌 방지**: `usedCells HashSet` 공유 — EnemySpawner → ItemSpawner 순 호출, 선점 셀 재사용 X
+
 ### 의존성
 
 - **Phase 3 ApplyToSpawn 활성화** — Feeling 이 EnemySpawner 의 spawnDensity 등을 변경 (TrapsFeeling: 몬스터 -1)
 - **기존 적 prefab 인스턴스화 메커니즘** — GDD 10장 로스터의 적들이 prefab 인지 SO 인지 확인 필요. 현재 Resources.Load 또는 직접 참조 둘 중 어느 방식인지 점검 후 통일
+- **아이템 prefab 인스턴스화 메커니즘** — GDD 9장 아이템들이 prefab 인지 SO 인지 점검 후 통일 (적과 동일 방식 권장)
 
 ### 검증 기준
 
@@ -142,22 +156,31 @@ public abstract class RoomSpawnRule : ScriptableObject {
 - [ ] 마법사 스켈레톤이 배치된 셀에서 4방향 LOS 카운트 시 최소 1방향 ≥3 셀 (실패 0건)
 - [ ] distanceFromSafe ≥ 4 인 방에 강한 몬스터 출현 비율 ≥ 50%
 - [ ] Feeling 통합: TrapsFeeling 발동 층에서 몬스터 수 평소 대비 -1
+- [ ] Safe Room / Exit Room 에 바닥 아이템 0개 (100 시드)
+- [ ] 아이템이 hazardCell 또는 doorCell 인접 셀에 배치되지 않음
+- [ ] 동일 셀에 적과 아이템 중복 배치 0건
+- [ ] 같은 (runSeed, depth) → 동일 아이템 위치 (결정론)
 
 ### Phase 4 출력물
 
 | 파일 | 위치 | 비고 |
 |------|------|------|
 | `IEnemySpawner.cs` | `Map/` | **수정** — placeholder 채움 |
-| `EnemySpawner.cs` | `Spawning/` | 메인 진입점 |
+| `EnemySpawner.cs` | `Spawning/` | 적 스폰 메인 진입점 |
 | `RoomSpawnRule.cs` | `Spawning/Rules/` | 추상 SO |
 | `SafeRoomRule.cs` | `Spawning/Rules/` | no-op |
 | `NormalRoomRule.cs` | `Spawning/Rules/` | 크기/거리 가중치 |
-| `ExitRoomRule.cs` | `Spawning/Rules/` | 가볍게 |
+| `ExitRoomRule.cs` | `Spawning/Rules/` | no-op |
 | `EnemySpawnPool.cs` | `Data/` | depth × tier 매트릭스 SO (GDD 10장) |
 | `GridSystem.cs` | `Grid/` | **수정** — LOS 헬퍼 추가 |
-| `MapGenerator.cs` | `Map/` | **수정** — Spawn 단계 호출 |
+| `MapGenerator.cs` | `Map/` | **수정** — Spawn 단계 호출 (EnemySpawner → ItemSpawner 순) |
 | `TrapsFeeling.cs` | `Feelings/` | Phase 3 미완료 시 여기서 마무리 |
-| (선택) `ItemSpawner.cs` | `Spawning/` | GDD 의 아이템 배치 — 후순위 |
+| `IItemSpawner.cs` | `Map/` | 아이템 스폰 인터페이스 |
+| `ItemSpawner.cs` | `Spawning/` | 아이템 스폰 메인 진입점 |
+| `RoomItemRule.cs` | `Spawning/Rules/` | 추상 SO |
+| `NormalRoomItemRule.cs` | `Spawning/Rules/` | 0~2개, distanceFromSafe 품질 가중치 |
+| `SafeRoomItemRule.cs` | `Spawning/Rules/` | no-op |
+| `ItemSpawnPool.cs` | `Data/` | depth × weight SO (GDD 9장) |
 
 ---
 
@@ -184,15 +207,34 @@ public abstract class RoomSpawnRule : ScriptableObject {
 - **권장**: 공통 골격은 DefaultPainter 유지, 영역 특색(Hazard 연출 등)만 영역 페인터로 분기. 컨셉마다 알고리즘 전면 신규작성은 피함.
 
 #### Q3. Special Room 처리 (GDD 6.2.1)
-- RoomType.Special 은 enum 에 있음. Special 방은 **열쇠로 열고 입장**(1초), 종류별 고유 보상.
-- 종류: 랜덤 상자 방 / 몬스터 방(고대 골렘) / 반지 상자 방 / 골드 상자 방 / 스크롤 방 — 랜덤 1개 등장.
-- 옵션 B: `SpecialRoomContent` SO 풀 (각 종류별 SO) → 페인터/스포너가 종류 보고 배치. 새 종류 추가 = SO 1개 + 풀 등록.
+- RoomType.Special 은 enum 에 있음. Special 방은 **스페셜 방 열쇠로 열고 입장**(1초), 종류별 고유 보상.
+- **종류 5가지 — 랜덤 1개 등장** (GDD 6.2.1):
+
+| 종류 | 배치 내용 | 비고 |
+|------|-----------|------|
+| 랜덤 상자 방 | 랜덤 상자 2~3개 | 상자 시스템(GDD 9.14) |
+| 몬스터 방 | 고대 골렘 1마리 | GDD 10장 미니보스 |
+| 반지 상자 방 | 반지 상자 2개 | 상자 열쇠 1개로 1개만 개방 |
+| 골드 상자 방 | 골드 상자 3개 | 각 100~125골드 |
+| 스크롤 방 | 스크롤 2~3개 | 강화 스크롤 제외 |
+
+- `SpecialRoomContent` SO 풀 (각 종류별 SO) → 스포너가 종류 보고 배치. 새 종류 추가 = SO 1개 + 풀 등록.
+- 열쇠(스페셜 방 열쇠)는 해당 층의 Normal/Exit 방에서 등장, 해당 층에서만 사용 가능 (GDD 9.15).
 
 #### Q4. Secret Room 메커니즘 (GDD 6.2.2)
 - 숨겨진 문(**열쇠 불필요**), 입구가 wallTilemap 으로 위장.
 - 발견 트리거: **탐색 확률 기반** (이동/접촉 시 확률 발견. GDD 8.6 "조심스러운 발걸음" 특성이 탐색 확률↑).
-- 종류: 포션 방 / 장비 상자 방 / 골드 방 / 인챈트 방 — 랜덤 1개 등장.
+- **종류 4가지 — 랜덤 1개 등장** (GDD 6.2.2):
+
+| 종류 | 배치 내용 | 비고 |
+|------|-----------|------|
+| 포션 방 | 랜덤 포션 2개 | 힘 포션 제외 |
+| 장비 상자 방 | 장비 상자 1개 | 무기 또는 방어구 (GDD 9.14) |
+| 골드 방 | 골드 뭉치 3~5개 | 뭉치당 50~75골드 랜덤 |
+| 인챈트 방 | 마법 부여 기능 | GDD 9.16 마법 목록 중 랜덤 1개 부여 (공허 발걸음/마지막 질주/탐욕의 초침/혈시계/흡혈 등) |
+
 - 데이터: `RoomData.type == Secret` 인 방의 doorCells 에 wallTile 페인트.
+- `SecretRoomContent` SO 풀 (각 종류별 SO) → SpecialRoomContent 와 동일 패턴.
 - (지도 스크롤이 시크릿 방을 표시하는지는 GDD 9.1 확인 필요 — 지도 스크롤은 "지형+함정"만 공개로 명시됨. 현재는 탐색 확률만 구현, 지도 스크롤 연동은 GDD 확정 후.)
 
 #### Q5. 빌더/페인터 풀
@@ -218,7 +260,8 @@ public abstract class RoomSpawnRule : ScriptableObject {
 | `SewerPainter.cs` | `Painters/` | 하수구 (Area 1) |
 | `DungeonPainter.cs` | `Painters/` | 던전 (Area 2) |
 | `HellPainter.cs` | `Painters/` | 지옥 (Area 3) |
-| `SpecialRoomContent.cs` (+ 종류별 SO) | `Painters/` 또는 `Spawning/` | GDD 6.2.1 5종 |
+| `SpecialRoomContent.cs` (+ 5종 SO) | `Spawning/` | GDD 6.2.1: 랜덤상자방/몬스터방/반지상자방/골드상자방/스크롤방 |
+| `SecretRoomContent.cs` (+ 4종 SO) | `Spawning/` | GDD 6.2.2: 포션방/장비상자방/골드방/인챈트방 |
 | `SecretRoomMechanic.cs` | `Rooms/` | 위장 입구 + 탐색 확률 발견 |
 | `BuilderPool.cs`, `PainterPool.cs` | `Data/` | SO 풀 |
 | `MapGenerator.cs` | `Map/` | **수정** — 풀에서 빌더/페인터 선택 (보스층 제외) |
@@ -267,6 +310,9 @@ public abstract class RoomSpawnRule : ScriptableObject {
    - Step 3: GridSystem LOS 헬퍼 + 마법사 스켈레톤 검증
    - Step 4: EnemySpawnPool + 거리 기반 차등
    - Step 5: TrapsFeeling 마무리 + ApplyToSpawn 활성화
+   - Step 6: IItemSpawner + ItemSpawner 골격 (usedCells 공유 연동)
+   - Step 7: ItemSpawnPool SO + NormalRoomItemRule (0~2개, distanceFromSafe 가중치)
+   - Step 8: 배치 셀 필터링 (hazardCells/doorCell 인접 제외) + 결정론 검증
 4. **Phase 5**:
    - Step 1: BuilderUtils 추출 (LoopBuilder 리팩토링)
    - Step 2: FigureEightBuilder
