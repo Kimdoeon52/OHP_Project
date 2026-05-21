@@ -17,12 +17,11 @@ public class ActionCases
     public BossAction action;
     [Range(0, 100)] public int patternChance;
 }
-public class BossBase : MonoBehaviour
+public class BossBase : EnemyNormalBASE
 {
-    [Header("보스 데이터")]
-    [SerializeField] protected int maxHp;
-    [SerializeField] protected int currentHp;
-    
+    //[Header("보스 데이터")]
+    //[SerializeField] protected int maxHp;
+    //[SerializeField] protected int currentHp;
 
     [Header("보스 레벨")] //레벨에 따라서 보스 패턴이나 보스의 능력치가 달라질 수 있음
     [SerializeField] protected int bossLevel;
@@ -45,10 +44,12 @@ public class BossBase : MonoBehaviour
     protected Animator bossAnimation; //보스 애니메이션을 제어하기 위한
     protected CancellationTokenSource cancelToken;
     protected GridPlayer player; //플레이어 참조
+
+    [SerializeField] protected BossHpBar hpBar;
     protected virtual void Start()
     {
         //base.Start(); // EnemyBase: Player 찾기, 격자 스냅, TurnManager 등록
-
+        hpBar.Init(this);
         cancelToken = new CancellationTokenSource();
         actionCases.Clear();
         bossLevel = 1; //보스 레벨 초기화
@@ -71,6 +72,11 @@ public class BossBase : MonoBehaviour
 
     protected virtual void Update()
     {
+        if (Input.GetKeyDown(KeyCode.P)) //디버그용 패턴 강제 실행
+        {
+            Debug.Log($"<color=yellow>[디버그]  아야!!!!!!!!</color>");
+            BossTakeDamage(10); //디버그용 데미지
+        }
         if (isBossAttacking)
             return;
         PhaseState().Forget();
@@ -97,11 +103,12 @@ public class BossBase : MonoBehaviour
 
     //==================== 데미지 / 페이즈 전환 ====================
     // 보스가 데미지를 받을 때 호출. HP가 phase2HpThreshold 이하로 떨어지면 EnterPhase2가 한 번 발동.
-    public virtual void TakeDamage(int amount)
+    public virtual void BossTakeDamage(int amount)
     {
         if (amount <= 0 || currentHp <= 0) return;
         currentHp -= amount;
-
+        Debug.Log($"<color=red>[보스 데미지]</color> 보스가 {amount}만큼 데미지를 받음. 현재 HP: {currentHp}");
+        hpBar.UpdateBar(); //HP바 업뎃
         if (bossLevel == 1 && currentHp <= phase2HpThreshold)
             EnterPhase2();
     }
@@ -122,7 +129,7 @@ public class BossBase : MonoBehaviour
     {
         isBossAttacking = true; //보스가 공격 중임을 나타냄
         BossAction bossAction = BossPatternPer();
-        await UniTask.Delay(patternDelay); //패턴 선택 후 딜레이
+        await UniTask.Delay(patternDelay, cancellationToken: cancelToken.Token); //패턴 선택 후 딜레이
         switch(bossAction)
         {
             case BossAction.Pattern1:
@@ -144,7 +151,7 @@ public class BossBase : MonoBehaviour
     {
         isBossAttacking = true; //보스가 공격 중임을 나타냄
         BossAction bossAction = BossPatternPer();
-        await UniTask.Delay(patternDelay); //패턴 선택 후 행동 시작까지의 딜레이
+        await UniTask.Delay(patternDelay, cancellationToken: cancelToken.Token); //패턴 선택 후 행동 시작까지의 딜레이
         switch (bossAction)
         {
             case BossAction.Pattern1:
@@ -229,7 +236,7 @@ public class BossBase : MonoBehaviour
         Debug.Log($"<color=red>[Phase2행동패턴3]</color> ");
     }
 
-    //==================== 경고 표시 (렌더링) / 히트 판정 (데이터) 분리 헬퍼 ====================
+    //==================== 경고 표시  ====================
 
     //공격 예고
     protected void ShowWarning(IEnumerable<Vector2Int> cells)
@@ -267,6 +274,7 @@ public class BossBase : MonoBehaviour
         {
             if (player.GridPosition == c)
             {
+                Debug.Log($"<color=red>[보스 공격 히트]</color> 플레이어가 공격 칸 {c}에 있음. 데미지: {damage}");
                 player.TakeDamage(damage);
                 return;
             }
