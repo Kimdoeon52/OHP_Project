@@ -17,7 +17,19 @@ public class VisionSystem : MonoBehaviour
     public IReadOnlyCollection<Vector2Int> Visible => _visible;
     public IReadOnlyCollection<Vector2Int> Explored => _explored;
 
-    private int VisionRadius => config != null ? config.visionRadius : 5;
+    /// <summary>
+    /// 시야 반경 보정치 (DarkFeeling 등 외부에서 조절). Generate 호출마다 0 으로 리셋되어야 함.
+    /// </summary>
+    public int VisionRadiusDelta { get; set; } = 0;
+
+    private int VisionRadius
+    {
+        get
+        {
+            int baseRadius = config != null ? config.visionRadius : 5;
+            return Mathf.Max(1, baseRadius + VisionRadiusDelta);
+        }
+    }
 
     private void Awake()
     {

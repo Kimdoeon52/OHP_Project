@@ -1,17 +1,18 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
-/// 층별 테마 (물/풀/낭떨어지/함정/어둠 등) 추상 베이스.
-/// Initialize / Paint / Spawn 각 단계에 훅을 제공해 한 곳에서 층 전체 변형을 관리한다.
-/// 새 Feeling 추가 = 이 클래스 상속 + FloorFeelingPool.asset 에 등록 (기존 코드 수정 X).
+/// 층별 테마 (Hazard/Traps/Dark — GDD 6.3 3종 고정) 추상 베이스.
+/// Initialize / Spawn 단계에 훅을 제공하며, Paint 단계는 페인터가 인자로 받은 feeling 을 직접 읽어 처리한다
+/// (PHASE_3_5_PLAN.md Q1 결정 A — ApplyToPaint 제거).
+/// 새 Feeling 추가 = 이 클래스 상속 + [CreateAssetMenu] + FloorFeelingPool.asset 에 등록 (기존 코드 수정 X).
 /// </summary>
-public abstract class FloorFeeling
+public abstract class FloorFeeling : ScriptableObject
 {
     public abstract string Id { get; }
 
     // 각 훅은 가상 no-op. 영향이 없는 단계는 오버라이드 안 해도 됨.
     public virtual void ApplyToInit(List<RoomData> rooms) { }
-    public virtual void ApplyToPaint(IRegionPainter painter) { }
     public virtual void ApplyToSpawn(IEnemySpawner spawner) { }
 }
 

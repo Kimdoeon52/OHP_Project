@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cc6bcde53aa11344b60d2bbe58c592c, type: 3}
+  m_Name: FloorFeelingPool
+  m_EditorClassIdentifier: 
+  entries:
+  - feeling: {fileID: 11400000, guid: 67cb3b7577f2bf84aa1c35b73a638304, type: 2}
+    weightArea1: 0
+    weightArea2: 40
+    weightArea3: 30
+  - feeling: {fileID: 11400000, guid: 25156e060f531224a8db00af7935f149, type: 2}
+    weightArea1: 100
+    weightArea2: 40
+    weightArea3: 30
+  triggerChance: 1
