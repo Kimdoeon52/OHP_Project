@@ -1,0 +1,1079 @@
+fileFormatVersion: 2
+guid: d0d1366a09c91a14ba81a0ac9985dcff
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 1800791491299459222
+    second: SmallGhost_0
+  - first:
+      213: 2912295867489620391
+    second: SmallGhost_1
+  - first:
+      213: -9152642280957104484
+    second: SmallGhost_2
+  - first:
+      213: -7592712152691851928
+    second: SmallGhost_3
+  - first:
+      213: -2297836667258516808
+    second: SmallGhost_4
+  - first:
+      213: -3294510343907473201
+    second: SmallGhost_5
+  - first:
+      213: 4971997825559153222
+    second: SmallGhost_6
+  - first:
+      213: -4672512540331311247
+    second: SmallGhost_7
+  - first:
+      213: 665257648865135502
+    second: SmallGhost_8
+  - first:
+      213: 8137929450325844734
+    second: SmallGhost_9
+  - first:
+      213: 2303184135097284499
+    second: SmallGhost_10
+  - first:
+      213: 8723120176520999909
+    second: SmallGhost_11
+  - first:
+      213: -464554156289344320
+    second: SmallGhost_12
+  - first:
+      213: -7360715982696871596
+    second: SmallGhost_13
+  - first:
+      213: 1896619167650689594
+    second: SmallGhost_14
+  - first:
+      213: 4857133482174820888
+    second: SmallGhost_15
+  - first:
+      213: 2980899514191429630
+    second: SmallGhost_16
+  - first:
+      213: -5825613377349382887
+    second: SmallGhost_17
+  - first:
+      213: 839404384808004722
+    second: SmallGhost_18
+  - first:
+      213: 8775167592867072150
+    second: SmallGhost_19
+  - first:
+      213: 3737087436996520565
+    second: SmallGhost_20
+  - first:
+      213: 7336588085246667007
+    second: SmallGhost_21
+  - first:
+      213: -1956938042446780523
+    second: SmallGhost_22
+  - first:
+      213: 3836215769797923856
+    second: SmallGhost_23
+  - first:
+      213: -208000211537506875
+    second: SmallGhost_24
+  - first:
+      213: 2350593977228438644
+    second: SmallGhost_25
+  - first:
+      213: 2454066294851653928
+    second: SmallGhost_26
+  - first:
+      213: 242681801341889907
+    second: SmallGhost_27
+  - first:
+      213: -1131065372038931729
+    second: SmallGhost_28
+  - first:
+      213: 4774875269133518378
+    second: SmallGhost_29
+  - first:
+      213: 7860323744459097818
+    second: SmallGhost_30
+  - first:
+      213: 7638716688224547670
+    second: SmallGhost_31
+  - first:
+      213: -5157728995995163815
+    second: SmallGhost_32
+  - first:
+      213: 6358540514944495162
+    second: SmallGhost_33
+  - first:
+      213: 2272140991520815484
+    second: SmallGhost_34
+  - first:
+      213: -8852477634972924124
+    second: SmallGhost_35
+  - first:
+      213: -1653217453947120918
+    second: SmallGhost_36
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: SmallGhost_0
+      rect:
+        serializedVersion: 2
+        x: 360
+        y: 178
+        width: 20
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 69043710252bdf810800000000000000
+      internalID: 1800791491299459222
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_1
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 138
+        width: 28
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7a19e8659ad8a6820800000000000000
+      internalID: 2912295867489620391
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_2
+      rect:
+        serializedVersion: 2
+        x: 222
+        y: 117
+        width: 17
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c9ea45796584bf080800000000000000
+      internalID: -9152642280957104484
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_3
+      rect:
+        serializedVersion: 2
+        x: 284
+        y: 123
+        width: 10
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 86db209668441a690800000000000000
+      internalID: -7592712152691851928
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_4
+      rect:
+        serializedVersion: 2
+        x: 322
+        y: 84
+        width: 46
+        height: 60
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ba4030c9b17c10e0800000000000000
+      internalID: -2297836667258516808
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_5
+      rect:
+        serializedVersion: 2
+        x: 363
+        y: 141
+        width: 11
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fc88b8a1c4c8742d0800000000000000
+      internalID: -3294510343907473201
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_6
+      rect:
+        serializedVersion: 2
+        x: 405
+        y: 131
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 64ac778fda5100540800000000000000
+      internalID: 4971997825559153222
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_7
+      rect:
+        serializedVersion: 2
+        x: 539
+        y: 122
+        width: 11
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17f7ef0c996e72fb0800000000000000
+      internalID: -4672512540331311247
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_8
+      rect:
+        serializedVersion: 2
+        x: 114
+        y: 61
+        width: 31
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8bc7b49e487b3900800000000000000
+      internalID: 665257648865135502
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_9
+      rect:
+        serializedVersion: 2
+        x: 199
+        y: 87
+        width: 14
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef2acdde7bbbfe070800000000000000
+      internalID: 8137929450325844734
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_10
+      rect:
+        serializedVersion: 2
+        x: 249
+        y: 72
+        width: 40
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 397f9c0a4cd86ff10800000000000000
+      internalID: 2303184135097284499
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_11
+      rect:
+        serializedVersion: 2
+        x: 381
+        y: 66
+        width: 25
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e3b39e559fbe0970800000000000000
+      internalID: 8723120176520999909
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_12
+      rect:
+        serializedVersion: 2
+        x: 413
+        y: 42
+        width: 49
+        height: 69
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0cc3177c4729d89f0800000000000000
+      internalID: -464554156289344320
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_13
+      rect:
+        serializedVersion: 2
+        x: 483
+        y: 92
+        width: 20
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 45900deffcb79d990800000000000000
+      internalID: -7360715982696871596
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_14
+      rect:
+        serializedVersion: 2
+        x: 572
+        y: 73
+        width: 25
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a3234029515225a10800000000000000
+      internalID: 1896619167650689594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_15
+      rect:
+        serializedVersion: 2
+        x: 167
+        y: 28
+        width: 28
+        height: 51
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 812bfa7fa21086340800000000000000
+      internalID: 4857133482174820888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_16
+      rect:
+        serializedVersion: 2
+        x: 299
+        y: 11
+        width: 93
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: effb38e80584e5920800000000000000
+      internalID: 2980899514191429630
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_17
+      rect:
+        serializedVersion: 2
+        x: 478
+        y: 66
+        width: 7
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91d835caf73472fa0800000000000000
+      internalID: -5825613377349382887
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_18
+      rect:
+        serializedVersion: 2
+        x: 513
+        y: 34
+        width: 37
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 27ce26337d926ab00800000000000000
+      internalID: 839404384808004722
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_19
+      rect:
+        serializedVersion: 2
+        x: 613
+        y: 52
+        width: 10
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6988c51de68a7c970800000000000000
+      internalID: 8775167592867072150
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_20
+      rect:
+        serializedVersion: 2
+        x: 619
+        y: 16
+        width: 25
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 57aa0c8593dccd330800000000000000
+      internalID: 3737087436996520565
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_21
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 11
+        width: 16
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ff8ad7c1efbc0d560800000000000000
+      internalID: 7336588085246667007
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_22
+      rect:
+        serializedVersion: 2
+        x: 134
+        y: 11
+        width: 31
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 597e28cf73f87d4e0800000000000000
+      internalID: -1956938042446780523
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_23
+      rect:
+        serializedVersion: 2
+        x: 202
+        y: 11
+        width: 31
+        height: 51
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0149e80eae9fc3530800000000000000
+      internalID: 3836215769797923856
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_24
+      rect:
+        serializedVersion: 2
+        x: 276
+        y: 34
+        width: 10
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5cdc91ed8e80d1df0800000000000000
+      internalID: -208000211537506875
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_25
+      rect:
+        serializedVersion: 2
+        x: 278
+        y: 11
+        width: 24
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 47cafdfa4ccfe9020800000000000000
+      internalID: 2350593977228438644
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_26
+      rect:
+        serializedVersion: 2
+        x: 425
+        y: 11
+        width: 25
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82154effa489e0220800000000000000
+      internalID: 2454066294851653928
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_27
+      rect:
+        serializedVersion: 2
+        x: 461
+        y: 11
+        width: 42
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 37d6f6200dd2e5300800000000000000
+      internalID: 242681801341889907
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_28
+      rect:
+        serializedVersion: 2
+        x: 569
+        y: 11
+        width: 40
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: feadfd96906ad40f0800000000000000
+      internalID: -1131065372038931729
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_29
+      rect:
+        serializedVersion: 2
+        x: 659
+        y: 28
+        width: 17
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a26408742c3c34240800000000000000
+      internalID: 4774875269133518378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_30
+      rect:
+        serializedVersion: 2
+        x: 55
+        y: 11
+        width: 11
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad68d00ccca751d60800000000000000
+      internalID: 7860323744459097818
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_31
+      rect:
+        serializedVersion: 2
+        x: 185
+        y: 11
+        width: 16
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 653f8753b5c220a60800000000000000
+      internalID: 7638716688224547670
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_32
+      rect:
+        serializedVersion: 2
+        x: 234
+        y: 11
+        width: 28
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 953e9f11ec01c68b0800000000000000
+      internalID: -5157728995995163815
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_33
+      rect:
+        serializedVersion: 2
+        x: 399
+        y: 11
+        width: 25
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a3e223bc8e21e3850800000000000000
+      internalID: 6358540514944495162
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_34
+      rect:
+        serializedVersion: 2
+        x: 492
+        y: 11
+        width: 26
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c79b3378134488f10800000000000000
+      internalID: 2272140991520815484
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_35
+      rect:
+        serializedVersion: 2
+        x: 531
+        y: 11
+        width: 33
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42749515e7ea52580800000000000000
+      internalID: -8852477634972924124
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SmallGhost_36
+      rect:
+        serializedVersion: 2
+        x: 689
+        y: 11
+        width: 16
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ae291091c779e09e0800000000000000
+      internalID: -1653217453947120918
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      SmallGhost_0: 1800791491299459222
+      SmallGhost_1: 2912295867489620391
+      SmallGhost_10: 2303184135097284499
+      SmallGhost_11: 8723120176520999909
+      SmallGhost_12: -464554156289344320
+      SmallGhost_13: -7360715982696871596
+      SmallGhost_14: 1896619167650689594
+      SmallGhost_15: 4857133482174820888
+      SmallGhost_16: 2980899514191429630
+      SmallGhost_17: -5825613377349382887
+      SmallGhost_18: 839404384808004722
+      SmallGhost_19: 8775167592867072150
+      SmallGhost_2: -9152642280957104484
+      SmallGhost_20: 3737087436996520565
+      SmallGhost_21: 7336588085246667007
+      SmallGhost_22: -1956938042446780523
+      SmallGhost_23: 3836215769797923856
+      SmallGhost_24: -208000211537506875
+      SmallGhost_25: 2350593977228438644
+      SmallGhost_26: 2454066294851653928
+      SmallGhost_27: 242681801341889907
+      SmallGhost_28: -1131065372038931729
+      SmallGhost_29: 4774875269133518378
+      SmallGhost_3: -7592712152691851928
+      SmallGhost_30: 7860323744459097818
+      SmallGhost_31: 7638716688224547670
+      SmallGhost_32: -5157728995995163815
+      SmallGhost_33: 6358540514944495162
+      SmallGhost_34: 2272140991520815484
+      SmallGhost_35: -8852477634972924124
+      SmallGhost_36: -1653217453947120918
+      SmallGhost_4: -2297836667258516808
+      SmallGhost_5: -3294510343907473201
+      SmallGhost_6: 4971997825559153222
+      SmallGhost_7: -4672512540331311247
+      SmallGhost_8: 665257648865135502
+      SmallGhost_9: 8137929450325844734
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
