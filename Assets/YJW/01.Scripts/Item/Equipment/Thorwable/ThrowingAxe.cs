@@ -1,26 +1,27 @@
 ﻿using Cysharp.Threading.Tasks;
 using UnityEngine;
 
+[CreateAssetMenu(fileName = "ThrowingAxe", menuName = "Item/Equipment/Throwable/ThrowingAxe")]
 public class ThrowingAxe : ThrowableWeapon, IHitEffect
 {
     [SerializeField] int duration;
-    [SerializeField] int minDamage;
-    [SerializeField] int maxDamage;
+    [SerializeField] int minBleedingDamage;
+    [SerializeField] int maxBleedingDamage;
 
-    void ApplyEffect(EnemyBase enemy)
+    public void ApplyEffect(EnemyBase enemy)
     {
         enemy.TakeDamage(GetDamage());
 
-        for (int i = 0; i < duration; i++)
-        {
-            BleedingDamgae(enemy).Forget();
-        }
+        BleedingDamgae(enemy).Forget();
     }
 
     private async UniTask BleedingDamgae(EnemyBase enemy)
     {
-        int bleedingDamage = Random.Range(minDamage, maxDamage + 1);
-        enemy.TakeDamage(bleedingDamage);
-        await UniTask.Delay(1000);
+        for (int i = 0; i < duration; i++)
+        {
+            int bleedingDamage = Random.Range(minBleedingDamage, maxBleedingDamage + 1);
+            enemy.TakeDamage(bleedingDamage);
+            await UniTask.Delay(1000);
+        }
     }
 }

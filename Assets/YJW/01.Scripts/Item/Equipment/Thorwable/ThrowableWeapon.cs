@@ -1,6 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
-using UnityEditor.U2D.Aseprite;
-using UnityEngine;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "ThrowableWeapon", menuName = "Item/Equipment/Throwable/ThrowableWeapon")]
 public class ThrowableWeapon : ItemBase, IThrowable

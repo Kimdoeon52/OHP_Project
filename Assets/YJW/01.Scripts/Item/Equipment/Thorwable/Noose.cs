@@ -5,16 +5,16 @@ using UnityEngine;
 public class Noose : ThrowableWeapon, IHitEffect
 {
     [SerializeField] int effectDuration;
-    void ApplyEffect(EnemyBase enemy)
+    public void ApplyEffect(EnemyBase enemy)
     {
         enemy.TakeDamage(GetDamage());
-        enemy.moveSpeed *= 0.5f;
+        enemy.moveSpeed *= 2f;
         ReleaseEffect(enemy).Forget();
     }
 
     async UniTask ReleaseEffect(EnemyBase enemy)
     {
         await UniTask.Delay(effectDuration * 1000);
-        enemy.moveSpeed /= 0.5f;
+        enemy.moveSpeed /= 2f;
     }
 }

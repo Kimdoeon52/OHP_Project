@@ -13,4 +13,13 @@ public class ArmorData : ItemBase
     {
         return Random.Range(minMinusDamage, maxMinusDamage + 1);
     }
+
+    public override string GetToolTipStats()
+    {
+        return $"{itemName}\n" +
+            "----------\n" +
+            $"{description}\n" +
+            $"착용 힘: {canUseStrength}\n" +
+            $"피해 감소: {minMinusDamage}~{maxMinusDamage}";
+    }
 }

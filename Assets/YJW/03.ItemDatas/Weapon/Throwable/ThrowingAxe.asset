@@ -9,13 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 851f0b3775e87d14c8070b97734d7dd7, type: 3}
+  m_Script: {fileID: 11500000, guid: c0ded16faf743944399040bbf569e0e0, type: 3}
   m_Name: ThrowingAxe
   m_EditorClassIdentifier: 
   itemName: "\uD22C\uCC99\uC6A9 \uB3C4\uB07C"
   description: 
   icon: {fileID: 0}
   itemType: 0
+  slot: 0
   width: 1
   height: 1
   minDamage: 6
@@ -24,3 +25,8 @@ MonoBehaviour:
   poolType: 10
   attackSpeed: 1
   durability: 10
+  grade: 0
+  isAnalyzed: 0
+  duration: 3
+  minBleedingDamage: 3
+  maxBleedingDamage: 6
