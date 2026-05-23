@@ -2262,6 +2262,9 @@ MonoBehaviour:
   idleStateName: warrior idle
   runStateName: warrior run
   faceRightByDefault: 1
+  attackSpeedAnimationMultiplier: 0.12
+  maxAttackAnimationSpeed: 2.5
+  attackSpeedResetDelay: 0.25
 --- !u!95 &666734892
 Animator:
   serializedVersion: 7
@@ -2372,6 +2375,11 @@ MonoBehaviour:
   daggerData: {fileID: 11400000, guid: 4bd54afd48bbb6b499670f633e1a26ee, type: 2}
   daggerPrefab: {fileID: 7796981772736433693, guid: 998ee0674d00d4849bd46ca2c58d7017, type: 3}
   meleeDamage: 1
+  baseMeleeCooldown: 0.45
+  attackSpeedCooldownMultiplier: 0.12
+  minMeleeCooldown: 0.12
+  minMeleeTimeCost: 0.08
+  logDamageDealt: 1
 --- !u!114 &666734896
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9346,7 +9354,7 @@ MonoBehaviour:
   fallingRock: {fileID: 8334909061003502288, guid: 91e964234cbfa3f4997372c385a3b341, type: 3}
   swordGround: {fileID: 6793405847708951032, guid: 1d3f598b44e42ac4f9ae01682401ce07, type: 3}
   rockMinDis: 1
-  rockMaxDis: 3
+  rockMaxDis: 6
   rockDelayMs: 200
   attack1Damage: 1
   attack1Range: 3

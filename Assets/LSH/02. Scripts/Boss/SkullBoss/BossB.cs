@@ -245,57 +245,90 @@ public class BossB : BossBase, IGridEntity, IDamageable
     protected override async UniTask Phase1Pattern2()
     {
         anime.SetTrigger("Attack2");
-        await UniTask.Delay(2300, cancellationToken: cancelToken.Token); //2.3초가 이펙트랑 맞는듯?
-        GameObject Effect = Instantiate(swordGround, transform.position, Quaternion.identity); //공격 이펙트 생성
-        //공격 로직 구현
-        RockFalling().Forget(); //바위 떨어져유~
-        await UniTask.Delay(6000, cancellationToken: cancelToken.Token); //애니메이션이 끝날 때까지 대기
-        Destroy(Effect); //이펙트 제거
+        await UniTask.Delay(2300, cancellationToken: cancelToken.Token);
+
+        GameObject Effect = Instantiate(swordGround, transform.position, Quaternion.identity);
+
+        // 보스 위치를 고정된 좌표로 저장 (안전장치임 호오오옥시 몰라서)
+        Vector2Int patternStartPos = this.gridPos;
+
+        RockFalling(patternStartPos).Forget();
+
+        await UniTask.Delay(8000, cancellationToken: cancelToken.Token);
+        Destroy(Effect);
+
         anime.SetTrigger("Attack2Fin");
-        await UniTask.Delay(2000, cancellationToken: cancelToken.Token); //애니메이션이 끝날 때까지 대기
+        await UniTask.Delay(2000, cancellationToken: cancelToken.Token);
         isBossAttacking = false;
     }
-    private async UniTaskVoid RockFalling()
+
+    private async UniTask RockFalling(Vector2Int centerPos)
     {
-        for (int i = 0; i < 12; i++) //12번은 떨어져야제~~~
+        for (int i = 0; i < 20; i++)
         {
-            // 취소 토큰임
             if (cancelToken.IsCancellationRequested) return;
 
-            // 보스 주변 격자 범위 내에서 랜덤 오프셋 계산
-            int ranX = Random.Range(rockMinDis, rockMaxDis + 1) * (Random.Range(0, 2) == 0 ? 1 : -1);
-            int ranY = Random.Range(rockMinDis, rockMaxDis + 1) * (Random.Range(0, 2) == 0 ? 1 : -1);
+            Vector2Int targetPos = Vector2Int.zero;
+            bool isValidPosition = false;
+            int safetyCounter = 0; // 혹시 모를 무한루프 방지용 안전 장치
 
-            Vector2Int targetPos = gridPos + new Vector2Int(ranX, ranY);
-
-            // GridSystem을 사용하여 격자 좌표를 월드 좌표로 변환
-            // 만약 맵 밖이나 벽 안이라면 굳이 생성하지 않고 걸러내기 위해 IsWalkable을 체크해 주면 좋습니다.
-            if (GridSystem.Instance.IsWalkable(targetPos))
+            while (!isValidPosition && safetyCounter < 10)
             {
-                // 낙하 예고: 해당 칸에 경고 타일 표시 후 잠깐 노출 (플레이어 회피 기회)
-                ShowWarning(targetPos);
-                await UniTask.Delay(rockWarnMs, cancellationToken: cancelToken.Token);
+                safetyCounter++;
+                int ranX = Random.Range(rockMinDis, rockMaxDis + 1) * (Random.Range(0, 2) == 0 ? 1 : -1);
+                int ranY = Random.Range(rockMinDis, rockMaxDis + 1) * (Random.Range(0, 2) == 0 ? 1 : -1);
 
-                Vector3 pos = GridSystem.Instance.GridToWorld(targetPos);
+                targetPos = centerPos + new Vector2Int(ranX, ranY);
 
-                // 바위 프리팹 생성 + 임팩트 판정
-                GameObject effect = Instantiate(fallingRock, pos, Quaternion.identity);
-                Destroy(effect, 1.5f);
+                if (GridSystem.Instance.IsWalkable(targetPos))
+                {
+                    isValidPosition = true;
+                }
+            }
 
-                DamagePlayerIfInCell(targetPos, rockDamage);
-                ClearWarning(targetPos);
+            // 유효한 좌표를 찾은 경우에만 바위 투하 및 딜레이 작동
+            if (isValidPosition)
+            {
+                FallSingleRockAsync(targetPos).Forget();
+
+                // 바위와 바위 사이의 생성 간격 딜레이 (정상적인 좌표 생성 시에만 대기)
+                await UniTask.Delay(rockDelayMs, cancellationToken: cancelToken.Token);
             }
             else
             {
-                // 만약 선택된 좌표가 맵 밖이라 생성을 건너뛰었다면, 횟수를 메꾸기 위해 index를 하나 되돌림
+                // 10번 시도했는데도 자리를 못 찾았다면 이번 루프는 그냥 패스 (우르르 나오는 현상 방지)
                 i--;
+                await UniTask.Yield(cancellationToken: cancelToken.Token); // 한 프레임 쉬고 다음 시도
             }
-
-            // 바위와 바위 사이의 생성 간격 딜레이 (예: 0.5초씩 6번 = 총 3초 동안 떨어짐)
-            await UniTask.Delay(rockDelayMs, cancellationToken: cancelToken.Token);
         }
     }
-    //=============================== 분노패턴1 ==========================================================
+
+    private async UniTaskVoid FallSingleRockAsync(Vector2Int targetPos)
+    {
+        try
+        {
+            // 1. 매개변수로 안전하게 전달받은 targetPos 고정 사용
+            ShowWarning(targetPos);
+            Vector3 pos = GridSystem.Instance.GridToWorld(targetPos);
+            GameObject effect = Instantiate(fallingRock, pos, Quaternion.identity);
+
+            // 2. 경고 시간 대기
+            await UniTask.Delay(rockWarnMs, cancellationToken: cancelToken.Token);
+
+            // 3. 판정 및 경고 제거 (여전히 동일한 targetPos 유지)
+            DamagePlayerIfInCell(targetPos, rockDamage);
+            ClearWarning(targetPos);
+
+            // 4. 이펙트 제거
+            Destroy(effect, 1.5f);
+        }
+        catch (System.OperationCanceledException)
+        {
+            // 취소 처리
+        }
+    }
+
+    //===========================================페이즈2 패턴 1 ============================================================
     protected override async UniTask Phase2Pattern1()
     {
         for (int i = 0; i < 10; i++)
