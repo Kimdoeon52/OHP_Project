@@ -13,9 +13,24 @@ MonoBehaviour:
   m_Name: Tracker
   m_EditorClassIdentifier: 
   id: 1001
-  maxHp: 1
-  attackDamage: 10
-  timeBonus: 3
-  attackPattern: 0
-  visionRange: 6
+  displayName: "추적자"
   sprite: {fileID: -697763020151794088, guid: ab91f218b8f4f2c4e83a2cfad8d848d8, type: 3}
+  grade: 0
+  moveType: 0
+  hasShield: 0
+  maxHp: 15
+  attackMin: 8
+  attackMax: 12
+  attackPattern: 0
+  moveSpeed: 1
+  attackSpeed: 1
+  defenseMin: 0
+  defenseMax: 0
+  evasion: 5
+  accuracy: 10
+  timeBonus: 3
+  expReward: 5
+  goldMin: 0
+  goldMax: 0
+  visionRange: 6
+  onHitEffect: {fileID: 0}

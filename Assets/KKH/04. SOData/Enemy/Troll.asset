@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95ae69ab44fdc2f449301d0fbafbdcbf, type: 3}
+  m_Name: Troll
+  m_EditorClassIdentifier: 
+  id: troll
+  displayName: "트롤"
+  sprite: {fileID: 0}
+  grade: 1
+  moveType: 0
+  hasShield: 0
+  maxHp: 45
+  attackMin: 12
+  attackMax: 18
+  attackPattern: 0
+  moveSpeed: 0.75
+  attackSpeed: 0.6667
+  defenseMin: 2
+  defenseMax: 4
+  evasion: 8
+  accuracy: 16
+  timeBonus: 5
+  expReward: 20
+  goldMin: 150
+  goldMax: 225
+  visionRange: 6
+  onHitEffect: {fileID: 11400000, guid: a0150d33e3f97ea44b55bc93c83d09f3, type: 2}

@@ -17,6 +17,7 @@ public class TurnManager : MonoBehaviour
     private bool _processingTurn;
 
     public bool IsPlayerTurn { get; private set; } = true;
+    public float LastPlayerActionTimeCost { get; private set; } = 1.0f;
 
     private void Awake()
     {
@@ -72,6 +73,8 @@ public class TurnManager : MonoBehaviour
     public void OnPlayerActionCompleted(float timeCost, bool skipEnemyTurnDelay)
     {
         if (_processingTurn) return;
+
+        LastPlayerActionTimeCost = timeCost;
 
         GameEvents.OnPlayerActionCompleted?.Invoke(timeCost);
         TimeSystem.Instance.ConsumeTime(timeCost);

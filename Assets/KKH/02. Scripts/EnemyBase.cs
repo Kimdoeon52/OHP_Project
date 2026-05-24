@@ -34,6 +34,10 @@ public abstract class EnemyBase : EntityBase, IDamageable
     // ── 공통 공격 의도 셀 (대부분의 적이 사용) ──
     protected Vector2Int? _pendingAttackCell;
 
+    // ── 액션 포인트 (TimeSystem 연동) ──
+    protected float _moveActionPoints = 0f;
+    protected float _attackActionPoints = 0f;
+
     private readonly List<TelegraphIndicator> _activeTelegraphs = new();
 
     // ── 데이터 접근 헬퍼 (자식 클래스 편의) ──
@@ -102,7 +106,8 @@ public abstract class EnemyBase : EntityBase, IDamageable
     {
         if (IsDead || amount <= 0) return;
 
-        CurrentHp -= amount;
+        int finalDamage = ApplyDefense(amount);
+        CurrentHp -= finalDamage;
         if (CurrentHp <= 0) Die();
     }
 
@@ -217,6 +222,22 @@ public abstract class EnemyBase : EntityBase, IDamageable
     }
 
     /// <summary>
+    /// 이동 비용 (초/칸)
+    /// </summary>
+    public float GetMoveCost()
+    {
+        return data != null ? data.moveSpeed : 1.0f;
+    }
+
+    /// <summary>
+    /// 공격 비용 (초/회)
+    /// </summary>
+    public float GetAttackCost()
+    {
+        return (data != null && data.attackSpeed > 0f) ? (1f / data.attackSpeed) : 1.0f;
+    }
+
+    /// <summary>
     /// 명중 시 상태이상 적용 (onHitEffect가 설정된 경우)
     /// </summary>
     protected void TryApplyOnHitEffect(IDamageable target)
@@ -254,9 +275,34 @@ public abstract class EnemyBase : EntityBase, IDamageable
     public override void OnTurnUpdate()
     {
         if (IsDead || Player == null) return;
+
+        // 턴 시작 시 직전 플레이어 행동 비용만큼 액션 포인트(초) 충전
+        float elapsedSeconds = TurnManager.Instance != null ? TurnManager.Instance.LastPlayerActionTimeCost : 1.0f;
+        _moveActionPoints += elapsedSeconds;
+        _attackActionPoints += elapsedSeconds;
+
+        // 1단계: 이전 턴 공격 발동
         ExecutePendingAttack();
-        PerformMovement();
-        CheckAttackTelegraph();
+
+        // 2단계: 이동 처리 (이동 비용이 충족될 때 실행)
+        float moveCost = GetMoveCost();
+        while (_moveActionPoints >= moveCost)
+        {
+            PerformMovement();
+            _moveActionPoints -= moveCost;
+
+            // moveCost가 1.0초 이상인 보통/느린 적은 한 턴에 최대 한 칸만 이동하도록 제어
+            if (moveCost >= 1.0f)
+                break;
+        }
+
+        // 3단계: 공격 예고 (공격 비용이 충족될 때 실행)
+        float attackCost = GetAttackCost();
+        if (_attackActionPoints >= attackCost)
+        {
+            CheckAttackTelegraph();
+            _attackActionPoints -= attackCost;
+        }
     }
 
     /// <summary>

@@ -23,6 +23,7 @@ public class EnemyData : ScriptableObject
     [Header("등급/이동 타입")]
     public EnemyGrade grade = EnemyGrade.Common;
     public EnemyMoveType moveType = EnemyMoveType.Normal;
+    public bool hasShield = false;
 
     [Header("체력")]
     public int maxHp = 1;

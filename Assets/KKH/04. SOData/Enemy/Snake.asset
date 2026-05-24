@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95ae69ab44fdc2f449301d0fbafbdcbf, type: 3}
+  m_Name: Snake
+  m_EditorClassIdentifier: 
+  id: snake
+  displayName: "뱀"
+  sprite: {fileID: 0}
+  grade: 1
+  moveType: 0
+  hasShield: 0
+  maxHp: 20
+  attackMin: 5
+  attackMax: 8
+  attackPattern: 0
+  moveSpeed: 1
+  attackSpeed: 0.6667
+  defenseMin: 0
+  defenseMax: 1
+  evasion: 10
+  accuracy: 15
+  timeBonus: 5
+  expReward: 15
+  goldMin: 100
+  goldMax: 125
+  visionRange: 6
+  onHitEffect: {fileID: 11400000, guid: d0150d33e3f97ea44b55bc93c83d09f3, type: 2}
