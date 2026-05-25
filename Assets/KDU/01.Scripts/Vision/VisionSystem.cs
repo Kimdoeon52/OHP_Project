@@ -77,6 +77,15 @@ public class VisionSystem : MonoBehaviour
     public bool IsVisible(Vector2Int pos) => _visible.Contains(pos);
     public bool IsExplored(Vector2Int pos) => _explored.Contains(pos);
 
+    /// <summary>층 전환 시 시야/탐험 기록 초기화. 호출 직후 UpdateVision 으로 새 위치 기준 갱신.</summary>
+    public void ResetForNewFloor()
+    {
+        _visible.Clear();
+        _explored.Clear();
+        VisionRadiusDelta = 0;
+        GameEvents.OnVisionUpdated?.Invoke(_visible, _explored);
+    }
+
     /// <summary>
     /// 브레젠험 직선 LOS 체크.
     /// 중간 경로에 벽(비통행 셀)이 있으면 차단. 목적지 셀 자체는 허용(벽도 보임).

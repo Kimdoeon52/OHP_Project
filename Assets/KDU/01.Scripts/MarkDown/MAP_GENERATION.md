@@ -35,6 +35,28 @@ if (IsBossDepth(depth)) {           // depth == 5 || 10 || 15
 // 그 외 층만 Initialize → Build → Paint → Spawn
 ```
 
+### 1.2 보스 prefab 규격
+
+```
+Root (GameObject)
+├── Floor       (Tilemap)        — 바닥 타일
+├── Wall        (Tilemap)        — 벽 타일
+├── Hazard      (Tilemap, 옵션)   — 위험 바닥
+└── SafeAnchor  (빈 Transform)   — 플레이어 스폰 셀 1개
+```
+
+- 자식 이름은 정확히 `Floor` / `Wall` / `Hazard` / `SafeAnchor` (BossRoomLoader 가 이름으로 탐색).
+- `BossRoomLoader` 는 Tilemap **데이터만 복사** 하고 prefab 인스턴스는 destroy. 그래서 prefab Root 에 GridExit/보스 게임오브젝트를 박아도 같이 사라짐 — 보스/Exit 인스턴스화는 별도 시스템(전투 종료 트리거 등) 에서 처리할 것.
+- `SafeAnchor` 는 보스층의 플레이어 스폰 지점 한 셀을 가리킨다. `BossRoomLoader` 가 그 셀로 `RoomData(type=Safe).floorCells = [anchor cell]` 을 추가 생성하여 반환. `FloorTransitionController` 가 그 셀로 플레이어 텔레포트.
+
+#### Safe 영역을 "단일 셀" 로 두는 이유 (출품 빌드 결정)
+
+보스층 한정으로는 영역 분리 대신 **앵커 1셀 = Safe RoomData 1셀** 방식을 택한다.
+
+- 보스층은 보스 처치 흐름이 단순(Spawn 즉시 교전) — Safe 영역 안에서 적 회피 등 *영역* 의미가 거의 없음.
+- 일반 층의 Safe Room 정식 동작(GDD 11.1: 한 번 나가면 재입장 불가) 은 문 시스템 도입 시 같이 처리되므로, 보스층도 그때 **flood fill 영역 인식 방식** 으로 마이그레이션 가능.
+- 출품 빌드까지 문 시스템 미도입 결정 — 상세는 `BACKLOG.md` "문 시스템" 항목.
+
 ### 영감
 Shattered Pixel Dungeon v0.6.0+ "room-first" 방식.
 **SPD 코드는 절대 가져오지 말 것** (GPLv3). 디자인 원리만 차용.

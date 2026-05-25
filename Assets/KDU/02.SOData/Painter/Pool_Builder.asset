@@ -12,4 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b69078418a84f6418fc92f96ac2c3d9, type: 3}
   m_Name: Pool_Builder
   m_EditorClassIdentifier: 
-  builders: []
+  builders:
+  - {fileID: 11400000, guid: 56aa2fec0ae155447989f14a5bfe5bc7, type: 2}
+  - {fileID: 11400000, guid: 3ee0677631e415e47ac5a43c708363fa, type: 2}

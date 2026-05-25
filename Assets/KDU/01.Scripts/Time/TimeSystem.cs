@@ -28,6 +28,14 @@ public class TimeSystem : MonoBehaviour
     public void StartTimer() => IsRunning = true;
     public void StopTimer() => IsRunning = false;
 
+    /// <summary>층 전환 시 시간 풀로 채우고 정지 상태로. 호출자가 StartTimer 로 재시작.</summary>
+    public void ResetForNewFloor()
+    {
+        TimeRemaining = config != null ? config.startTime : 60f;
+        IsRunning = false;
+        GameEvents.OnTimeChanged?.Invoke(TimeRemaining);
+    }
+
     private void Update()
     {
         if (!IsRunning) return;

@@ -12,4 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0d4bf1542965544cb7e05c8855086e9, type: 3}
   m_Name: BossRoomLoader
   m_EditorClassIdentifier: 
-  entries: []
+  entries:
+  - depth: 5
+    prefab: {fileID: 0}
+  - depth: 10
+    prefab: {fileID: 0}
+  - depth: 15
+    prefab: {fileID: 0}
