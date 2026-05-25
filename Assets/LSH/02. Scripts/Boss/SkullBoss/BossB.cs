@@ -24,6 +24,17 @@ public class BossB : BossBase, IGridEntity, IDamageable
     [SerializeField] private int rockMaxDis = 5; // 보스로부터 최대 3칸 떨어진 곳
     [SerializeField] private int rockDelayMs = 500; //0.5초...?
 
+    [Header("Phase 2 바위 비 (HP ≤ phase2HpThreshold)")]
+    [SerializeField] private int rainTickMs = 300;        // 한 틱 간격(ms). 작을수록 빽빽함
+    [SerializeField] private int rainCellsPerTick = 3;    // 한 틱에 동시에 떨어지는 칸 수
+
+    [Header("Phase 2 연출 / 패턴")]
+    [SerializeField] private Color phase2Tint = new Color(1f, 0.45f, 0.45f, 1f); // 보스 스프라이트 붉은 틴트
+    [SerializeField] private float phase2AnimSpeed = 2f;  // Phase 2 진입 시 애니메이터 speed
+    [SerializeField] private GameObject miniSkullPrefab;  // Phase2Pattern2에서 소환할 미니해골 프리팹
+    [SerializeField] private int miniSkullCount = 2;      // 한 번에 소환할 미니해골 수
+    [SerializeField] private int miniSkullLifetimeMs = 10000; // 패턴2 대기 시간 (미니해골 lifetime과 맞출 것)
+
     [Header("패턴 1히트 판정")]
     [SerializeField] private int attack1Damage = 1;   // 패턴1(평타) 데미지
     [SerializeField] private int attack1Range = 3;    // 패턴1 휘두르기 사거리(보스 앞 칸 수)
@@ -37,6 +48,9 @@ public class BossB : BossBase, IGridEntity, IDamageable
     private Vector2Int gridPos;
     private bool isMove = false;
     private Animator anime;
+    private bool rainActive = false;                  // Phase 2 바위 비가 이미 돌고 있는지 (중복 시작 방지)
+    private List<Vector2Int> walkableCellsCache;      // GetAllWalkableCells 결과 캐시 (매 틱 재조회 방지)
+    private SpriteRenderer bossSprite;                // Phase 2 색 변경용
 
     #region 플레이어 이동공격 대상 등록 프록시
     // 이 region은 NYH 플레이어의 "이동하려는 칸에 적이 있으면 이동 대신 공격" 기능과 연결하기 위한 구간입니다.
@@ -127,6 +141,7 @@ public class BossB : BossBase, IGridEntity, IDamageable
         AddActionCase(BossAction.Pattern2, 20); // 돌
         AddActionCase(BossAction.Pattern3, 30); // 이동
         anime = GetComponent<Animator>();
+        bossSprite = GetComponentInChildren<SpriteRenderer>(); //Phase 2 색 변경용 (자식 포함 검색)
         gridPos = GridSystem.Instance.WorldToGrid(transform.position); //보스 시작 격자 좌표 초기화
         RegisterBossGridTarget(); // 플레이어가 이동공격 대상으로 보스를 찾을 수 있도록 TurnManager에 등록
         Debug.Log($"보스 시작 위치: {gridPos}"); //디버그용
@@ -329,49 +344,93 @@ public class BossB : BossBase, IGridEntity, IDamageable
     }
 
     //===========================================페이즈2 패턴 1 ============================================================
+    // 2배속 순간이동 + 내려치기. EnterPhase2에서 anime.speed = 2로 미리 가속됐으므로 여기 딜레이도 모두 절반.
     protected override async UniTask Phase2Pattern1()
     {
         for (int i = 0; i < 10; i++)
         {
             if (cancelToken.IsCancellationRequested) break;
-            // 1) 사라지는 연출. Teleport 애니메이션이 끝나 보스가 보이지 않게 된 시점까지 대기.
+            // 1) 사라지는 연출 (2배속이라 500ms).
             anime.SetTrigger("Teleport");
-            await UniTask.Delay(1000, cancellationToken: cancelToken.Token); //텔레포트(사라짐) 애니메이션 1초
+            await UniTask.Delay(500, cancellationToken: cancelToken.Token);
 
-            // 2) 사라진 동안(보이지 않을 때) 플레이어 옆 칸으로 실제 위치 점프. 양쪽 막히면 제자리에서 플레이어 방향으로 폴백.
+            // 2) 사라진 동안 플레이어 옆 칸으로 위치 점프.
             var dir = TeleportBesidePlayer();
-            if (dir == Vector2Int.zero) dir = DirToPlayer();//두둥
-            FaceDir(dir);//플레이어 방향보기
+            if (dir == Vector2Int.zero) dir = DirToPlayer();
+            FaceDir(dir);
 
-            // 3) 새 위치에서 등장 연출.
-            anime.SetTrigger("Appear");//등장!
-            await UniTask.Delay(500, cancellationToken: cancelToken.Token); //등장 애니메이션 0.5초
+            // 3) 등장 연출 (250ms).
+            anime.SetTrigger("Appear");
+            await UniTask.Delay(250, cancellationToken: cancelToken.Token);
 
-            // 4) 휘두르기 칸 계산(데이터) → 경고 표시(시각). 셀은 여기서 고정 — 윈드업 중 재계산 X.
+            // 4) 휘두르기 칸 계산 → 경고 표시.
             var hitCells = BuildSwingCells(gridPos, dir, attack1Range, attack1Width);
             ShowWarning(hitCells);
 
-            // 5) 휘두르기 윈드업. 이 800ms가 플레이어가 빠져나가 피하는 유일한 창.
+            // 5) 휘두르기 윈드업 (400ms). 플레이어 회피 창도 절반이라 더 빡빡함.
             anime.SetTrigger("Attack1");
-            await UniTask.Delay(800, cancellationToken: cancelToken.Token); //0.8초가 그마나 공격 이펙트랑 맞는듯?
-            GameObject Effect = Instantiate(attack1Effect, transform.position, Quaternion.identity); //공격 이펙트 생성
-            Destroy(Effect, 1f); //이펙트 1초 후 제거 예약ㅇ미.
+            await UniTask.Delay(400, cancellationToken: cancelToken.Token);
+            GameObject Effect = Instantiate(attack1Effect, transform.position, Quaternion.identity);
+            Destroy(Effect, 1f);
 
-            // 6) 임팩트 순간: 경고 칸 안에 플레이어가 있으면 데미지, 경고 제거.
+            // 6) 임팩트 판정.
             DamagePlayerIfInCells(hitCells, attack1Damage);
             ClearWarning(hitCells);
 
-            await UniTask.Delay(200, cancellationToken: cancelToken.Token); //쩌정!!!!
+            await UniTask.Delay(100, cancellationToken: cancelToken.Token);
             anime.SetTrigger("Attack1Fin");
 
-            await UniTask.Delay(2000, cancellationToken: cancelToken.Token); //공격 애니메이션이 끝날 때까지 대기
+            await UniTask.Delay(1000, cancellationToken: cancelToken.Token); //공격 마무리 (2배속 1초)
         }
         isBossAttacking = false;
     }
 
+    //=========================================== 페이즈2 패턴 2 : MiniSkull 소환 ============================================================
+    // 보스 주변 walkable 셀에 miniSkullCount만큼 미니해골 소환. miniSkullLifetimeMs 동안 배회 후 자연 소멸(미니해골 자체 lifetime).
     protected override async UniTask Phase2Pattern2()
     {
+        if (miniSkullPrefab == null)
+        {
+            Debug.LogWarning("BossB.Phase2Pattern2: miniSkullPrefab이 비어 있어 패턴 스킵.");
+            isBossAttacking = false;
+            return;
+        }
+
+        // 보스 주변 walkable 셀 중 무작위로 N개 선택 (중복 없이).
+        var spawnCells = PickRandomNearbyWalkable(miniSkullCount, searchRadius: 4);
+        foreach (var cell in spawnCells)
+        {
+            var world = GridSystem.Instance.GridToWorld(cell);
+            Instantiate(miniSkullPrefab, world, Quaternion.identity);
+        }
+
+        // 미니해골이 배회하는 동안 보스는 다음 패턴 못 함 (isBossAttacking 유지).
+        await UniTask.Delay(miniSkullLifetimeMs, cancellationToken: cancelToken.Token);
         isBossAttacking = false;
+    }
+
+    // 보스 현재 위치 기준 searchRadius 안의 walkable 셀에서 최대 count개 무작위 선택 (보스 칸 제외, 중복 제외).
+    private List<Vector2Int> PickRandomNearbyWalkable(int count, int searchRadius)
+    {
+        var candidates = new List<Vector2Int>();
+        for (int dx = -searchRadius; dx <= searchRadius; dx++)
+        {
+            for (int dy = -searchRadius; dy <= searchRadius; dy++)
+            {
+                if (dx == 0 && dy == 0) continue;
+                var c = gridPos + new Vector2Int(dx, dy);
+                if (GridSystem.Instance.IsWalkable(c)) candidates.Add(c);
+            }
+        }
+
+        var picked = new List<Vector2Int>();
+        for (int i = 0; i < count && candidates.Count > 0; i++)
+        {
+            int idx = Random.Range(0, candidates.Count);
+            picked.Add(candidates[idx]);
+            candidates.RemoveAt(idx);
+        }
+        return picked;
     }
     protected override async UniTask Phase2Pattern3()
     {
@@ -501,5 +560,45 @@ public class BossB : BossBase, IGridEntity, IDamageable
     void bossMoveGridUpdate()
     {
         gridPos = GridSystem.Instance.WorldToGrid(transform.position);
+    }
+
+    //=============================== Phase 2 진입 / 바위 비 ==========================================
+    // 베이스의 EnterPhase2(bossLevel=2, patternDelay 감소) 후에 맵 전체에 지속 바위 비 시작.
+    // 추가로 Phase 2 시각 연출: 보스 스프라이트 붉은 틴트 + 애니메이터 speed 가속.
+    protected override void EnterPhase2()
+    {
+        base.EnterPhase2();
+
+        // 보스 외형 변화
+        if (bossSprite != null) bossSprite.color = phase2Tint;
+        if (anime != null) anime.speed = phase2AnimSpeed;
+
+        if (rainActive) return;
+        rainActive = true;
+        walkableCellsCache = new List<Vector2Int>(GridSystem.Instance.GetAllWalkableCells());
+        RockRain().Forget();
+    }
+
+    // Phase 2가 시작된 시점부터 보스가 살아있는 동안(=cancelToken 살아있는 동안) 무한 반복.
+    // 매 틱마다 walkableCellsCache에서 rainCellsPerTick개를 골라 FallSingleRockAsync로 비동기 투하.
+    // 기존 패턴2 RockFalling과 독립적으로 돌기 때문에 보스가 다른 패턴을 쓰는 중에도 비가 계속 내림.
+    private async UniTaskVoid RockRain()
+    {
+        try
+        {
+            while (!cancelToken.IsCancellationRequested)
+            {
+                if (walkableCellsCache != null && walkableCellsCache.Count > 0)
+                {
+                    for (int i = 0; i < rainCellsPerTick; i++)
+                    {
+                        var cell = walkableCellsCache[Random.Range(0, walkableCellsCache.Count)];
+                        FallSingleRockAsync(cell).Forget();
+                    }
+                }
+                await UniTask.Delay(rainTickMs, cancellationToken: cancelToken.Token);
+            }
+        }
+        catch (System.OperationCanceledException) { /* 보스 파괴 시 정상 취소 */ }
     }
 }

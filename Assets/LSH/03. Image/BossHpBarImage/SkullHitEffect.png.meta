@@ -1,0 +1,472 @@
+fileFormatVersion: 2
+guid: 42b111901f4a00b4184931b7cd1a8bcf
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 4513658613216392847
+    second: SkullHitEffect_0
+  - first:
+      213: -7161733931535377671
+    second: SkullHitEffect_1
+  - first:
+      213: -6233009304700494271
+    second: SkullHitEffect_2
+  - first:
+      213: -6269463643558690737
+    second: SkullHitEffect_3
+  - first:
+      213: -4924927998219516326
+    second: SkullHitEffect_4
+  - first:
+      213: 7046762091188865781
+    second: SkullHitEffect_5
+  - first:
+      213: 8931369540463107027
+    second: SkullHitEffect_6
+  - first:
+      213: -8915741458137364577
+    second: SkullHitEffect_7
+  - first:
+      213: -4022029705348497783
+    second: SkullHitEffect_8
+  - first:
+      213: -1485612061497848377
+    second: SkullHitEffect_9
+  - first:
+      213: 7447047312087156607
+    second: SkullHitEffect_10
+  - first:
+      213: -1377250337988044821
+    second: SkullHitEffect_11
+  - first:
+      213: -7863424250123606931
+    second: SkullHitEffect_12
+  - first:
+      213: 6470929113318396893
+    second: SkullHitEffect_13
+  - first:
+      213: 2282513553281220946
+    second: SkullHitEffect_14
+  - first:
+      213: -2781710398268181514
+    second: SkullHitEffect_15
+  - first:
+      213: 1194192698328749416
+    second: SkullHitEffect_16
+  - first:
+      213: 2765218831755481434
+    second: SkullHitEffect_17
+  - first:
+      213: 2023659886336557764
+    second: SkullHitEffect_18
+  - first:
+      213: -4715670648959315593
+    second: SkullHitEffect_19
+  - first:
+      213: -8815302316905721696
+    second: SkullHitEffect_20
+  - first:
+      213: -4599375636218105191
+    second: SkullHitEffect_21
+  - first:
+      213: 3312095031548394262
+    second: SkullHitEffect_22
+  - first:
+      213: 4880934678356789673
+    second: SkullHitEffect_23
+  - first:
+      213: -5445019957000319010
+    second: SkullHitEffect_24
+  - first:
+      213: 6208478475941706347
+    second: SkullHitEffect_25
+  - first:
+      213: -4873789613300027546
+    second: SkullHitEffect_26
+  - first:
+      213: -9190494526946107710
+    second: SkullHitEffect_27
+  - first:
+      213: 5205543206574491919
+    second: SkullHitEffect_28
+  - first:
+      213: -2551368005410985545
+    second: SkullHitEffect_29
+  - first:
+      213: -6752373136992384405
+    second: SkullHitEffect_30
+  - first:
+      213: -660926841346800210
+    second: SkullHitEffect_31
+  - first:
+      213: -6957997714773946216
+    second: SkullHitEffect_32
+  - first:
+      213: -6711933743183046721
+    second: SkullHitEffect_33
+  - first:
+      213: 597968668996753425
+    second: SkullHitEffect_34
+  - first:
+      213: 4053961680407562259
+    second: SkullHitEffect_35
+  - first:
+      213: -4826129853079874931
+    second: SkullHitEffect_36
+  - first:
+      213: -2923814304943432014
+    second: SkullHitEffect_37
+  - first:
+      213: 5061243059615237286
+    second: SkullHitEffect_38
+  - first:
+      213: 7502164839340800050
+    second: SkullHitEffect_39
+  - first:
+      213: -4750668114455333646
+    second: SkullHitEffect_40
+  - first:
+      213: 5063921588585917192
+    second: SkullHitEffect_41
+  - first:
+      213: -2980532727535630418
+    second: SkullHitEffect_42
+  - first:
+      213: 2278086596682589208
+    second: SkullHitEffect_43
+  - first:
+      213: -3080910036195832739
+    second: SkullHitEffect_44
+  - first:
+      213: -5932950187209016414
+    second: SkullHitEffect_45
+  - first:
+      213: -5902065231767427212
+    second: SkullHitEffect_46
+  - first:
+      213: 3537751811712443202
+    second: SkullHitEffect_47
+  - first:
+      213: 1601082547594123946
+    second: SkullHitEffect_48
+  - first:
+      213: 5342991936444291287
+    second: SkullHitEffect_49
+  - first:
+      213: -4054161794675449181
+    second: SkullHitEffect_50
+  - first:
+      213: 7137829242785847885
+    second: SkullHitEffect_51
+  - first:
+      213: -7061844837577165678
+    second: SkullHitEffect_52
+  - first:
+      213: -3326624390024213537
+    second: SkullHitEffect_53
+  - first:
+      213: -6685090005552251178
+    second: SkullHitEffect_54
+  - first:
+      213: 3974946911094887877
+    second: SkullHitEffect_55
+  - first:
+      213: 468675405793603962
+    second: SkullHitEffect_56
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 32
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: SkullHitEffect_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f863526289cb3ae30800000000000000
+      internalID: 4513658613216392847
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkullHitEffect_1
+      rect:
+        serializedVersion: 2
+        x: 100
+        y: 0
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9fad8fa0fe86c9c90800000000000000
+      internalID: -7161733931535377671
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkullHitEffect_2
+      rect:
+        serializedVersion: 2
+        x: 200
+        y: 0
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14e5f9faf07ef79a0800000000000000
+      internalID: -6233009304700494271
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkullHitEffect_3
+      rect:
+        serializedVersion: 2
+        x: 300
+        y: 0
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f40457188046ef8a0800000000000000
+      internalID: -6269463643558690737
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkullHitEffect_4
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 0
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a5600c9341427abb0800000000000000
+      internalID: -4924927998219516326
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkullHitEffect_5
+      rect:
+        serializedVersion: 2
+        x: 500
+        y: 0
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5fa400e59c02bc160800000000000000
+      internalID: 7046762091188865781
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkullHitEffect_6
+      rect:
+        serializedVersion: 2
+        x: 600
+        y: 0
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3db1c01d64992fb70800000000000000
+      internalID: 8931369540463107027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkullHitEffect_7
+      rect:
+        serializedVersion: 2
+        x: 700
+        y: 0
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f97cf76a16ce44480800000000000000
+      internalID: -8915741458137364577
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 3b84a4805f52ce44688ef12f233808cb
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      SkullHitEffect_0: 4513658613216392847
+      SkullHitEffect_1: -7161733931535377671
+      SkullHitEffect_2: -6233009304700494271
+      SkullHitEffect_3: -6269463643558690737
+      SkullHitEffect_4: -4924927998219516326
+      SkullHitEffect_5: 7046762091188865781
+      SkullHitEffect_6: 8931369540463107027
+      SkullHitEffect_7: -8915741458137364577
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
