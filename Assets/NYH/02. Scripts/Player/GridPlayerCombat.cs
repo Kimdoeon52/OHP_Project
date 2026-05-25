@@ -14,8 +14,14 @@ public class GridPlayerCombat : MonoBehaviour
     /// </summary>
     public event Action<Vector2Int> OnAttackPerformed;
 
+    [Header("기본 무기")]
+    [Tooltip("플레이어가 던지고 회수할 단검 데이터입니다. 시작 개수, 내구도, 피해량, 스프라이트를 여기서 읽습니다.")]
     [SerializeField] private WeaponData daggerData;
+
+    [Tooltip("던지기 성공 시 맵 위에 생성할 단검 엔티티 프리팹입니다.")]
     [SerializeField] private GridDagger daggerPrefab;
+
+    [Tooltip("인접한 적을 근접 공격할 때 사용하는 기본 피해량입니다. 실제 피해는 대상 방어 계산을 거칠 수 있습니다.")]
     [SerializeField] private int meleeDamage = 1;
 
     [Header("Attack Speed")]
@@ -48,6 +54,10 @@ public class GridPlayerCombat : MonoBehaviour
     public int InventoryCount => _inventory.Count;
     public IReadOnlyList<int> InventoryDurabilities => _inventory;
 
+    /// <summary>
+    /// GridPlayer에서 호출하는 초기화 진입점입니다.
+    /// 시작 단검을 인벤토리에 넣고, 전투 계산에 필요한 플레이어 참조를 보관합니다.
+    /// </summary>
     public void Init(GridPlayer player)
     {
         _player = player;
@@ -103,6 +113,10 @@ public class GridPlayerCombat : MonoBehaviour
         // 적 없으면 빈 휘두름 — 시간 소모 X (회전만 함)
     }
 
+    /// <summary>
+    /// 현재 바라보는 방향으로 단검을 던집니다.
+    /// 단검이 없거나 배치할 칸이 막혀 있으면 실패하고, 성공 시 행동 비용을 TurnManager에 전달합니다.
+    /// </summary>
     public void TryThrow()
     {
         if (_inventory.Count == 0) return;
@@ -225,6 +239,10 @@ public class GridPlayerCombat : MonoBehaviour
         return Time.time >= _nextMeleeAttackTime;
     }
 
+    /// <summary>
+    /// AttackSpeed 스탯을 반영해 다음 근접 공격 가능 시각을 계산합니다.
+    /// 값이 높을수록 쿨다운이 짧아지지만 minMeleeCooldown 아래로는 내려가지 않습니다.
+    /// </summary>
     private void StartMeleeCooldown()
     {
         _nextMeleeAttackTime = Time.time + GetMeleeCooldown();
@@ -254,6 +272,10 @@ public class GridPlayerCombat : MonoBehaviour
         return _stats != null ? _stats.AttackSpeed : 0;
     }
 
+    /// <summary>
+    /// 요청 피해량과 실제 HP 감소량을 비교해서 디버그 로그로 남깁니다.
+    /// 방어/회피 때문에 실제 피해가 달라지는 상황을 확인할 때 씁니다.
+    /// </summary>
     private void LogDamageDealt(string attackName, IDamageable target, int requestedDamage, int beforeHp)
     {
         if (!logDamageDealt || target == null) return;

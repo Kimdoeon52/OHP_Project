@@ -1,38 +1,38 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
+/// <summary>
+/// íŠ¸ë© ë°œë™ ì‹œ ëŒ€ìƒì—ê²Œ í”¼í•´ë§Œ ì ìš©í•˜ëŠ” ê¸°ë³¸ í”¼í•´ íš¨ê³¼ì…ë‹ˆë‹¤.
+/// affectAreaê°€ êº¼ì ¸ ìˆìœ¼ë©´ ë°œë™ ëŒ€ìƒ 1ëª…, ì¼œì ¸ ìˆìœ¼ë©´ íŠ¸ë© ìœ„ì¹˜ ê¸°ì¤€ ë°˜ê²½ ì•ˆì˜ ëŒ€ìƒë“¤ì—ê²Œ í”¼í•´ë¥¼ ì¤ë‹ˆë‹¤.
+/// </summary>
 public class DamageTrapEffect : MonoBehaviour, ITrapEffect
 {
-    [Tooltip("¹üÀ§°ø°İ »ç¿ë ¿©ºÎ")]
+    [Header("í”¼í•´ ë²”ìœ„")]
+    [Tooltip("ì¼œë©´ íŠ¸ë© ìœ„ì¹˜ë¥¼ ì¤‘ì‹¬ìœ¼ë¡œ ë°˜ê²½ ì•ˆì˜ ëª¨ë“  ëŒ€ìƒì—ê²Œ í”¼í•´ë¥¼ ì¤ë‹ˆë‹¤. ë„ë©´ íŠ¸ë©ì„ ë°œë™í•œ ëŒ€ìƒì—ê²Œë§Œ í”¼í•´ë¥¼ ì¤ë‹ˆë‹¤.")]
     [SerializeField] private bool affectArea;
-    [Tooltip("È¿°ú ¹üÀ§ ÁöÁ¤ " +
-        " -1 = TrapData.Radius »ç¿ë" +
-        " 0 = Áß½ÉÄ­ ¸¸" +
-        " 1ÀÌ»ó = ±× °ª¸¸Å­ Ä­ ¹üÀ§")]
+
+    [Tooltip("íš¨ê³¼ ë²”ìœ„ ì§€ì •ê°’ì…ë‹ˆë‹¤. -1ì€ TrapData.Radius ì‚¬ìš©, 0ì€ ì¤‘ì‹¬ì¹¸ë§Œ, 1 ì´ìƒì€ í•´ë‹¹ ì¹¸ ë°˜ê²½ì„ ëœ»í•©ë‹ˆë‹¤.")]
     [SerializeField] private int radiusOverride = -1;
 
-
+    /// <summary>
+    /// íŠ¸ë© ì»¨í…ìŠ¤íŠ¸ì˜ ìœ„ì¹˜/ë°ì´í„°ë¥¼ ê¸°ì¤€ìœ¼ë¡œ í”¼í•´ë¥¼ ì¤„ ëŒ€ìƒì„ ê²°ì •í•©ë‹ˆë‹¤.
+    /// ì‹¤ì œ í”¼í•´ëŸ‰ ê³„ì‚°ì€ TrapDataì™€ TrapEffectUtilityê°€ ì²˜ë¦¬í•©ë‹ˆë‹¤.
+    /// </summary>
     public void Execute(TrapContext context)
     {
-        // ¹üÀ§ ÇÇÇØ ¹İ°æÀ» °áÁ¤ÇÑ´Ù. radiusOverride°¡ 0 ÀÌ»óÀÌ¸é ÀÌ ÄÄÆ÷³ÍÆ® °ªÀ» ¿ì¼± »ç¿ëÇÏ°í,
-        // -1ÀÌ¸é TrapData¿¡ ¼³Á¤µÈ radius °ªÀ» ±×´ë·Î »ç¿ëÇÑ´Ù.
         int radius = radiusOverride >= 0 ? radiusOverride : context.Data.radius;
-         // ¹üÀ§ ÇÇÇØ°¡ ²¨Á® ÀÖ°Å³ª ¹İ°æÀÌ 0 ÀÌÇÏ¶ó¸é, Æ®·¦À» ¹âÀº ´ë»ó¿¡°Ô¸¸ ÇÇÇØ¸¦ ÁØ´Ù.
+
         if (!affectArea || radius <= 0)
         {
             DealDamage(context.Activator, context);
             return;
         }
 
-        // ¹üÀ§ ÇÇÇØ°¡ ÄÑÁ® ÀÖÀ¸¸é Æ®·¦ À§Ä¡ ±âÁØ ¹İ°æ ¾ÈÀÇ ¸ğµç °İÀÚ¸¦ °Ë»çÇÏ°í,
-        // °¢ Ä­¿¡ ÀÖ´Â ÇÇÇØ °¡´É ´ë»ó¿¡°Ô µ¥¹ÌÁö¸¦ Àû¿ëÇÑ´Ù.
         foreach (Vector2Int cell in TrapEffectUtility.CellsInRadius(context.Position, radius))
             DealDamage(TrapEffectUtility.GetEntityAt(cell, context.Activator), context);
     }
 
     private static void DealDamage(IGridEntity entity, TrapContext context)
     {
-        // ½ÇÁ¦ µ¥¹ÌÁö °è»ê°ú Àû¿ëÀº °ø¿ë À¯Æ¿¿¡ ¸Ã±ä´Ù.
-        // DamageTrapEffect´Â "´©±¸¿¡°Ô ÇÇÇØ¸¦ ÁÙÁö"¸¸ °áÁ¤ÇÑ´Ù.
         TrapEffectUtility.DealDamage(entity, context.Data);
     }
 }

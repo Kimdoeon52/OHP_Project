@@ -1,6 +1,10 @@
 using System.Collections;
 using UnityEngine;
 
+/// <summary>
+/// 플레이어가 피해를 받았을 때 SpriteRenderer 알파를 짧게 깜빡여 피격 피드백을 보여줍니다.
+/// GridPlayerHealth.OnDamaged 이벤트를 구독하며, 사망 상태에서는 피격 연출을 새로 시작하지 않습니다.
+/// </summary>
 [RequireComponent(typeof(SpriteRenderer))]
 [RequireComponent(typeof(GridPlayer))]
 public class PlayerDamageFeedback : MonoBehaviour
@@ -57,6 +61,10 @@ public class PlayerDamageFeedback : MonoBehaviour
         Unsubscribe();
     }
 
+    /// <summary>
+    /// GridPlayer 초기화 순서 때문에 OnEnable 시점에 Health가 아직 없을 수 있어,
+    /// OnEnable과 Start 양쪽에서 안전하게 한 번만 구독을 시도합니다.
+    /// </summary>
     private void TrySubscribe()
     {
         if (_isSubscribed) return;
@@ -71,6 +79,9 @@ public class PlayerDamageFeedback : MonoBehaviour
         _isSubscribed = true;
     }
 
+    /// <summary>
+    /// 오브젝트 비활성화/파괴 시 이벤트 구독을 해제해 중복 호출과 누수 가능성을 막습니다.
+    /// </summary>
     private void Unsubscribe()
     {
         if (!_isSubscribed || _player == null || _player.Health == null) return;
@@ -94,7 +105,7 @@ public class PlayerDamageFeedback : MonoBehaviour
         Color hitColor = _baseColor;
         hitColor.a = hitAlpha;
 
-        // 짧은 알파 변화만 사용해 피격 인지는 주되 조작 흐름을 방해하지 않는다.
+        // 알파만 바꿔서 피격 인지는 주되, 위치/조작/애니메이션 흐름은 건드리지 않습니다.
         for (int i = 0; i < blinkCount; i++)
         {
             _spriteRenderer.color = hitColor;

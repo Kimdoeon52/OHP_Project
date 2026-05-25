@@ -63,14 +63,23 @@ public class DebugPlayer : MonoBehaviour
     [SerializeField] private ItemBase itemToEquip;
 
     [Header("단축키")]
+    [Tooltip("켜면 Update에서 아래 단축키 입력을 받아 디버그 기능을 실행합니다.")]
     [SerializeField] private bool enableHotkeys = true;
+    [Tooltip("플레이어에게 damageAmount만큼 피해를 주는 키입니다.")]
     [SerializeField] private KeyCode damageKey = KeyCode.Alpha1;
+    [Tooltip("플레이어를 healAmount만큼 회복시키는 키입니다.")]
     [SerializeField] private KeyCode healKey = KeyCode.Alpha2;
+    [Tooltip("플레이어에게 매우 큰 피해를 줘 사망 흐름을 확인하는 키입니다.")]
     [SerializeField] private KeyCode killKey = KeyCode.Alpha3;
+    [Tooltip("PlayerLevelSystem에 expAmount만큼 경험치를 추가하는 키입니다.")]
     [SerializeField] private KeyCode addExpKey = KeyCode.Alpha4;
+    [Tooltip("itemToAdd를 인벤토리에 추가하는 키입니다.")]
     [SerializeField] private KeyCode addItemKey = KeyCode.Alpha5;
+    [Tooltip("itemToEquip를 장비 슬롯에 장착해보는 키입니다.")]
     [SerializeField] private KeyCode equipItemKey = KeyCode.Alpha6;
+    [Tooltip("힘/이속/공속/회피를 각각 1씩 올리는 키입니다.")]
     [SerializeField] private KeyCode upgradeKey = KeyCode.Alpha7;
+    [Tooltip("힘/이속/공속/회피를 각각 1씩 내리는 키입니다.")]
     [SerializeField] private KeyCode downgradeKey = KeyCode.Alpha8;
 
     private void Awake()
@@ -180,33 +189,44 @@ public class DebugPlayer : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// 전투/이동 체감 확인용으로 주요 전투 스탯을 한 번에 1씩 올립니다.
+    /// 디버그 전용이므로 레벨업 보상 계산과는 분리되어 있습니다.
+    /// </summary>
     public void PlayerUpgrade()
     {
         NYHPlayerStats stats = NYHPlayerStats.Instance;
-        if(stats == null)return;
+        if (stats == null) return;
 
-            stats.AddStat(NYHStatType.Strength, 1);
-            stats.AddStat(NYHStatType.MoveSpeed, 1);
-            stats.AddStat(NYHStatType.AttackSpeed, 1);
-            stats.AddStat(NYHStatType.Evasion, 1);
+        stats.AddStat(NYHStatType.Strength, 1);
+        stats.AddStat(NYHStatType.MoveSpeed, 1);
+        stats.AddStat(NYHStatType.AttackSpeed, 1);
+        stats.AddStat(NYHStatType.Evasion, 1);
 
-            RefreshStatsUI();
+        RefreshStatsUI();
     }
 
+    /// <summary>
+    /// PlayerUpgrade로 올린 주요 전투 스탯을 한 번에 1씩 낮춥니다.
+    /// NYHPlayerStats.AddStat 내부 Clamp 덕분에 음수로 내려가지 않습니다.
+    /// </summary>
     public void PlayerDowngrade()
     {
         NYHPlayerStats stats = NYHPlayerStats.Instance;
-        if(stats == null)return;
+        if (stats == null) return;
 
-            stats.AddStat(NYHStatType.Strength, -1);
-            stats.AddStat(NYHStatType.MoveSpeed, -1);
-            stats.AddStat(NYHStatType.AttackSpeed, -1);
-            stats.AddStat(NYHStatType.Evasion, -1);
+        stats.AddStat(NYHStatType.Strength, -1);
+        stats.AddStat(NYHStatType.MoveSpeed, -1);
+        stats.AddStat(NYHStatType.AttackSpeed, -1);
+        stats.AddStat(NYHStatType.Evasion, -1);
 
-            RefreshStatsUI();
+        RefreshStatsUI();
     }
 
 
+    /// <summary>
+    /// damageAmount만큼 플레이어에게 피해를 줘 피격/사망/HP UI 갱신 흐름을 확인합니다.
+    /// </summary>
     [ContextMenu("Debug/Damage Player")]
     public void DamagePlayer()
     {
@@ -217,6 +237,9 @@ public class DebugPlayer : MonoBehaviour
         RefreshStatsUI();
     }
 
+    /// <summary>
+    /// healAmount만큼 플레이어를 회복시켜 HP 회복과 UI 갱신을 확인합니다.
+    /// </summary>
     [ContextMenu("Debug/Heal Player")]
     public void HealPlayer()
     {
@@ -227,6 +250,9 @@ public class DebugPlayer : MonoBehaviour
         RefreshStatsUI();
     }
 
+    /// <summary>
+    /// 플레이어 HP보다 큰 피해를 줘 사망 처리와 사망 애니메이션 흐름을 확인합니다.
+    /// </summary>
     [ContextMenu("Debug/Kill Player")]
     public void KillPlayer()
     {
@@ -237,6 +263,9 @@ public class DebugPlayer : MonoBehaviour
         RefreshStatsUI();
     }
 
+    /// <summary>
+    /// 포션 개수를 늘려 인벤토리 없이 포션 UI/사용 흐름을 확인합니다.
+    /// </summary>
     [ContextMenu("Debug/Add Potion")]
     public void AddPotion()
     {
@@ -247,6 +276,9 @@ public class DebugPlayer : MonoBehaviour
         RefreshStatsUI();
     }
 
+    /// <summary>
+    /// 현재 포션을 1개 사용해 즉시 회복과 지속 회복 흐름을 확인합니다.
+    /// </summary>
     [ContextMenu("Debug/Use Potion")]
     public void UsePotion()
     {
@@ -257,6 +289,9 @@ public class DebugPlayer : MonoBehaviour
         RefreshStatsUI();
     }
 
+    /// <summary>
+    /// PlayerLevelSystem에 경험치를 직접 넣어 경험치 저장, 레벨업, 스탯뷰 갱신을 확인합니다.
+    /// </summary>
     [ContextMenu("Debug/Add Exp")]
     public void AddExp()
     {
@@ -267,6 +302,9 @@ public class DebugPlayer : MonoBehaviour
         RefreshStatsUI();
     }
 
+    /// <summary>
+    /// 설정한 상태이상을 플레이어 위치에 강제로 적용해 상태 컨트롤러 흐름을 확인합니다.
+    /// </summary>
     [ContextMenu("Debug/Apply Status")]
     public void ApplyStatus()
     {
@@ -280,6 +318,9 @@ public class DebugPlayer : MonoBehaviour
         RefreshStatsUI();
     }
 
+    /// <summary>
+    /// itemToAdd에 연결한 아이템 데이터를 인벤토리에 직접 추가합니다.
+    /// </summary>
     [ContextMenu("Debug/Add Debug Item")]
     public void AddDebugItem()
     {
@@ -295,6 +336,9 @@ public class DebugPlayer : MonoBehaviour
         RefreshStatsUI();
     }
 
+    /// <summary>
+    /// itemToEquip에 연결한 장비 데이터를 장착 컨트롤러에 직접 전달합니다.
+    /// </summary>
     [ContextMenu("Debug/Equip Debug Item")]
     public void EquipDebugItem()
     {
