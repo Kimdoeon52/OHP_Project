@@ -27,6 +27,8 @@ public class FloorTransitionController : MonoBehaviour
     [SerializeField] private float fadeDuration = 0.4f;
     [Tooltip("Fade out 끝나고 fade in 시작 전 검은 화면 유지 시간. 맵 생성 체감 안정용.")]
     [SerializeField] private float blackHoldSeconds = 0.1f;
+    [Tooltip("Safe Room 안에 있는 동안 타이머 정지 + 첫 이탈 시 시작. 없으면 텔레포트 즉시 타이머 시작.")]
+    [SerializeField] private SafeRoomTimerGate safeRoomGate;
 
     [Header("게임 시작 시 1층 자동 생성")]
     [Tooltip("켜면 Start() 에서 RunState.CurrentDepth 기준 1회 BuildFloor — 페이드 아웃은 스킵하고 fade in 만 수행. " +
@@ -111,7 +113,8 @@ public class FloorTransitionController : MonoBehaviour
         }
 
         // Safe Room 중앙 셀로 플레이어 텔레포트. 폴백: Safe 없으면 첫 번째 방의 중앙.
-        var spawnRoom = rooms.Find(r => r.type == RoomType.Safe);
+        var safeRoom = rooms.Find(r => r.type == RoomType.Safe);
+        var spawnRoom = safeRoom;
         if (spawnRoom == null)
         {
             Debug.LogWarning($"[FloorTransition] depth={runState.CurrentDepth} Safe Room 없음 — 첫 방으로 폴백");
@@ -125,9 +128,14 @@ public class FloorTransitionController : MonoBehaviour
         var spawnCell = PickCenterCell(spawnRoom.floorCells);
         player.SetGridPosition(spawnCell);
 
-        // 시야 갱신 + 타이머 재시작 (GridPlayer.Start 가 먼저 시작해뒀어도 ResetForNewFloor 로 덮어쓰여 정확함)
+        // 시야 갱신 (GridPlayer.Start 가 먼저 갱신해뒀어도 ResetForNewFloor 로 덮어쓰여 정확함)
         VisionSystem.Instance?.UpdateVision(spawnCell);
-        TimeSystem.Instance?.StartTimer();
+
+        // 타이머: Safe Room 이 있으면 게이트가 첫 이탈 시 시작, 없으면 즉시 시작.
+        if (safeRoomGate != null && safeRoom != null)
+            safeRoomGate.Arm(safeRoom);
+        else
+            TimeSystem.Instance?.StartTimer();
     }
 
     private static Vector2Int PickCenterCell(List<Vector2Int> cells)
