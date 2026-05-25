@@ -112,6 +112,11 @@ public class FloorTransitionController : MonoBehaviour
             yield break;
         }
 
+        // 안개 생성 
+        FogRenderer fogRenderer = FindFirstObjectByType<FogRenderer>();
+        if (fogRenderer != null)
+            fogRenderer.RebuildFogForCurrentMap();
+
         // Safe Room 중앙 셀로 플레이어 텔레포트. 폴백: Safe 없으면 첫 번째 방의 중앙.
         var safeRoom = rooms.Find(r => r.type == RoomType.Safe);
         var spawnRoom = safeRoom;
