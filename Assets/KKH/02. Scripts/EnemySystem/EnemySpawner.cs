@@ -4,66 +4,88 @@ using UnityEngine;
 namespace EnemySystem
 {
     /// <summary>
-    /// 층별로 적을 실제 격자 위치에 배치하고 인스턴스화하는 스포너.
-    /// FloorSpawnConfig를 활용하여 층별(구역별) 설정의 유지보수성을 극대화합니다.
+    /// 던전 맵 생성 흐름(MapGenerator) 완료 후 각 방에 몬스터를 소환하는 총괄 스포너.
+    ///
+    /// 처리 흐름:
+    ///   MapGenerator.Build 완료
+    ///   → IEnemySpawner.Spawn(rooms, depth, rng) 호출
+    ///   → 이전 층 몬스터 전부 Destroy
+    ///   → depth에 맞는 FloorSpawnConfig 검색
+    ///   → 방마다 RoomSpawnRule.Generate() 실행 → EnemySpawnEntry 목록 획득
+    ///   → InstantiateOne으로 프리팹 소환 + EntityBase 초기화
+    ///
+    /// 인스펙터 설정 방법:
+    ///   floorConfigs 리스트에 (minDepth, maxDepth, FloorSpawnConfig) 쌍 등록.
+    ///   층 범위가 겹치면 첫 번째 일치 항목이 선택됨.
     /// </summary>
     public class EnemySpawner : MonoBehaviour, IEnemySpawner
     {
+        /// <summary>
+        /// 층 범위 구간과 해당 스폰 설정을 묶는 에디터 노출용 구조체.
+        /// </summary>
         [System.Serializable]
         public struct FloorConfigEntry
         {
-            [Tooltip("시작 층 (포함)")]
+            [Tooltip("이 설정이 적용되는 던전 깊이 최솟값 (포함)")]
             public int minDepth;
-            [Tooltip("끝 층 (포함)")]
+            
+            [Tooltip("이 설정이 적용되는 던전 깊이 최댓값 (포함)")]
             public int maxDepth;
-            [Tooltip("해당 층 범위에서 적용할 스폰 설정")]
+            
+            [Tooltip("해당 깊이 범위에서 사용할 FloorSpawnConfig SO")]
             public FloorSpawnConfig config;
         }
 
-        [Header("층별 스폰 설정 범위 목록")]
+        [Header("층 범위 구간별 스폰 설정 목록")]
         [SerializeField] private List<FloorConfigEntry> floorConfigs = new List<FloorConfigEntry>();
 
+        /// <summary> 현재 층에 생성된 몬스터 오브젝트 관리 목록. 층 이동 시 전부 Destroy. </summary>
         private readonly List<GameObject> _spawned = new List<GameObject>();
 
         /// <summary>
-        /// 스폰 수량 보정치 (FloorFeeling 등에서 조절할 수 있습니다)
+        /// 외부(FloorFeeling 등)에서 마릿수를 임시 조정할 수 있는 보정값.
+        /// Spawn() 완료 후 자동으로 0으로 리셋됨.
+        /// 예: TrapsFeeling에서 SpawnCountModifier = -1 하면 각 방 마릿수 1 감소.
         /// </summary>
         public int SpawnCountModifier { get; set; } = 0;
 
-
         private void Start()
         {
-            // 씬이 시작할 때 자동으로 타일맵 기반 스폰 실행
+            // MapGenerator 없는 단순 테스트 씬에서 자동으로 타일맵 기반 스폰 시도
             SpawnFromTilemap();
         }
 
+        /// <summary>
+        /// GridSystem의 모든 Walkable 셀을 하나의 가상 Normal 방으로 묶어 적을 스폰하는 유틸리티.
+        /// 에디터 ContextMenu에서도 실행 가능 (우클릭 → "타일맵 기반 적 자동 스폰").
+        /// </summary>
         [ContextMenu("타일맵 기반 적 자동 스폰")]
         public void SpawnFromTilemap()
         {
             if (GridSystem.Instance == null)
             {
-                Debug.LogWarning("EnemySpawner: 씬에 GridSystem이 없어 스폰할 수 없습니다.");
+                Debug.LogWarning("EnemySpawner: GridSystem 없음 → 스폰 불가.");
                 return;
             }
 
-            // 1. GridSystem에 배치된 모든 Walkable 셀 수집
+            // 1. Walkable 셀 전체 수집
             var walkableCells = new List<Vector2Int>(GridSystem.Instance.GetAllWalkableCells());
             if (walkableCells.Count == 0)
             {
-                Debug.LogWarning("EnemySpawner: 스폰 가능한 바닥 타일(Walkable)이 존재하지 않습니다.");
+                Debug.LogWarning("EnemySpawner: Walkable 타일 없음 → 스폰 불가.");
                 return;
             }
 
-            // 2. 수집된 타일들로 가상의 RoomData 구축 (바닥 타일 통째로 하나의 큰 방으로 취급)
+            // 2. 수집된 셀로 가상 Normal 방 구성 (거리 2 = 2티어 난이도)
             RoomData mockRoom = new RoomData
             {
-                type = RoomType.Normal,
+                type         = RoomType.Normal,
                 sizeCategory = SizeCategory.Normal,
-                distanceFromSafe = 2, // 스폰 테이블의 난이도 결정을 위한 거리 값 (원하는 티어로 조정 가능)
+                distanceFromSafe = 2,
             };
             mockRoom.floorCells.AddRange(walkableCells);
 
-            // 가상의 방 전체 범위를 감싸는 Bounds 계산
+            // 방 경계 계산
             int minX = int.MaxValue, maxX = int.MinValue;
             int minY = int.MaxValue, maxY = int.MinValue;
             foreach (var cell in walkableCells)
@@ -75,57 +97,69 @@ namespace EnemySystem
             }
             mockRoom.bounds = new RectInt(minX, minY, maxX - minX + 1, maxY - minY + 1);
 
-            // 3. 임시 난수 생성기(Rng)와 1층 설정 가져와서 스폰 수행
+            // 3. 1층 규칙으로 스폰
             DungeonRandom rng = new DungeonRandom();
             rng.Init(Random.Range(0, 100000));
-
-            // 1층(depth = 1)의 설정을 가져옵니다.
             Spawn(new List<RoomData> { mockRoom }, 1, rng);
         }
+
         /// <summary>
-        /// IEnemySpawner 구현 - MapGenerator에서 맵 빌드 및 타일 배치가 완료된 후 호출됩니다.
+        /// IEnemySpawner 인터페이스 구현.
+        /// MapGenerator가 맵 조각 조립 + 타일 페인팅 완료 후 최종 호출.
+        ///
+        /// 순서:
+        ///   1. 이전 층 몬스터 전부 Destroy
+        ///   2. depth로 FloorSpawnConfig 검색
+        ///   3. 각 방에 RoomSpawnRule.Generate() 실행
+        ///   4. 결과(EnemySpawnEntry) 목록을 InstantiateOne으로 소환
+        ///   5. SpawnCountModifier 리셋
         /// </summary>
+        /// <param name="rooms">던전 방 목록</param>
+        /// <param name="depth">현재 층 깊이</param>
+        /// <param name="rng">시드 기반 결정론적 난수 생성기</param>
         public void Spawn(List<RoomData> rooms, int depth, DungeonRandom rng)
         {
             ClearPreviousSpawns();
 
             if (rooms == null || rng == null) return;
 
+            // 현재 층의 FloorSpawnConfig 검색
             FloorSpawnConfig currentConfig = GetConfigForDepth(depth);
             if (currentConfig == null)
             {
-                Debug.LogWarning($"EnemySpawner: {depth}층에 대한 FloorSpawnConfig가 설정되지 않았습니다.");
+                Debug.LogWarning($"EnemySpawner: {depth}층에 FloorSpawnConfig 미설정.");
                 return;
             }
 
             if (currentConfig.spawnTable == null)
             {
-                Debug.LogWarning($"EnemySpawner: FloorSpawnConfig '{currentConfig.name}'에 스폰 테이블이 지정되지 않았습니다.");
+                Debug.LogWarning($"EnemySpawner: '{currentConfig.name}' SpawnTable 미할당.");
                 return;
             }
 
+            // 방별로 스폰 규칙 적용
             foreach (var room in rooms)
             {
-                // 통로(Tunnel) 구조체엔 적 스폰 안 함
-                if (room.type == RoomType.Tunnel) continue;
+                if (room.type == RoomType.Tunnel) continue; // 복도는 스킵
 
-                // 방 타입별 스폰 규칙 설정 (Safe, Normal, Exit, Boss 등)
-                RoomSpawnRule rule = ResolveRule(room.type); //currentConfig.bossData);
+                // 방 타입에 맞는 RoomSpawnRule 결정
+                RoomSpawnRule rule = ResolveRule(room.type);
                 if (rule == null) continue;
 
-                // 룰에 따른 몬스터 목록 및 그리드 스폰 위치 반환 후 생성
+                // RoomSpawnRule이 계산한 (EnemyData, 좌표) 튜플을 하나씩 소환
                 foreach (var entry in rule.Generate(room, currentConfig.spawnTable, rng, SpawnCountModifier))
                 {
                     InstantiateOne(entry, currentConfig);
                 }
             }
 
-            // 다음 생성을 위해 보정치 초기화
+            // 다음 층 스폰을 위해 보정값 초기화
             SpawnCountModifier = 0;
         }
 
         /// <summary>
-        /// 주어진 깊이(depth)에 알맞은 FloorSpawnConfig를 탐색합니다.
+        /// depth 값이 floorConfigs의 minDepth~maxDepth 범위에 속하는 항목을 검색.
+        /// 일치 항목 없으면 null 반환.
         /// </summary>
         private FloorSpawnConfig GetConfigForDepth(int depth)
         {
@@ -140,25 +174,33 @@ namespace EnemySystem
         }
 
         /// <summary>
-        /// 방 타입에 따른 스폰 규칙 클래스를 매핑합니다.
+        /// 방 타입에 맞는 RoomSpawnRule 인스턴스 반환.
+        /// Special / Secret은 임시로 NormalRoomSpawnRule 폴백 사용.
         /// </summary>
-        private RoomSpawnRule ResolveRule(RoomType type)//, EnemyData bossData)
+        private RoomSpawnRule ResolveRule(RoomType type)
         {
             switch (type)
             {
-                case RoomType.Safe: return new SafeRoomSpawnRule();
-                case RoomType.Normal: return new NormalRoomSpawnRule();
-                case RoomType.Exit: return new ExitRoomSpawnRule();
-                case RoomType.Boss: return new BossRoomSpawnRule(); //bossData);
+                case RoomType.Safe:    return new SafeRoomSpawnRule();
+                case RoomType.Normal:  return new NormalRoomSpawnRule();
+                case RoomType.Exit:    return new ExitRoomSpawnRule();
+                case RoomType.Boss:    return new BossRoomSpawnRule();
                 case RoomType.Special:
                 case RoomType.Secret:
-                    return new NormalRoomSpawnRule(); // 임시 폴백
+                    return new NormalRoomSpawnRule(); // TODO: 전용 룰로 교체 예정
                 default: return null;
             }
         }
 
         /// <summary>
-        /// 몬스터를 인스턴스화하고 격자 위치에 등록합니다.
+        /// 단일 EnemySpawnEntry를 읽어 프리팹 소환 + EntityBase 격자 초기화 수행.
+        ///
+        /// 순서:
+        ///   1. FloorSpawnConfig에서 프리팹 검색
+        ///   2. 격자 좌표 → 월드 좌표 변환
+        ///   3. Instantiate
+        ///   4. EntityBase.Initialize(GridPos) 호출
+        ///   5. _spawned 목록에 등록
         /// </summary>
         private void InstantiateOne(EnemySpawnEntry entry, FloorSpawnConfig config)
         {
@@ -167,10 +209,11 @@ namespace EnemySystem
             GameObject prefab = config.GetPrefab(entry.enemyData);
             if (prefab == null)
             {
-                Debug.LogWarning($"EnemySpawner: '{config.name}' 설정에서 {entry.enemyData.displayName} 에 해당하는 프리팹을 찾을 수 없습니다.");
+                Debug.LogWarning($"EnemySpawner: '{config.name}'에서 {entry.enemyData.displayName} 프리팹 없음.");
                 return;
             }
 
+            // 격자 → 월드 좌표 변환
             Vector3 worldPos = GridSystem.Instance != null
                 ? GridSystem.Instance.GridToWorld(entry.position)
                 : new Vector3(entry.position.x, entry.position.y, 0);
@@ -178,7 +221,7 @@ namespace EnemySystem
             GameObject go = Instantiate(prefab, worldPos, Quaternion.identity);
             go.name = $"{entry.enemyData.id}_{_spawned.Count}";
 
-            // EntityBase 기반 몬스터일 경우 격자 내부 위치 초기화
+            // EntityBase 격자 스냅 초기화
             var entity = go.GetComponent<EntityBase>();
             if (entity != null)
             {
@@ -189,7 +232,8 @@ namespace EnemySystem
         }
 
         /// <summary>
-        /// 이전 층의 생성되었던 몬스터들을 일괄 소멸합니다.
+        /// _spawned 목록의 모든 몬스터 게임오브젝트를 Destroy하고 목록 초기화.
+        /// 층 이동(Spawn 호출) 시 자동 실행.
         /// </summary>
         private void ClearPreviousSpawns()
         {

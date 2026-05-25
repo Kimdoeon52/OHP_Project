@@ -1,18 +1,19 @@
 using UnityEngine;
 
 /// <summary>
-/// 뱀 [Elite] — Area 1 (하수구, 1~5층)
-/// 
-/// 이동: 기본 추적 (EnemyBase 기본 TryStepTowardPlayer 사용)
-/// 공격: 독니 물기 (1.5초 공격 비용)
-/// 특수: 명중 시 독 (3초간 2~4 데미지) — EnemyData.onHitEffect SO 연결
-/// 
-/// EnemyBase의 기본 OnTurnUpdate 템플릿을 그대로 사용합니다.
-/// 공격 비용과 독 효과는 ScriptableObject(EnemyData) 설정을 기반으로 
-/// EnemyBase 코어에서 자동으로 처리됩니다.
+/// 뱀 (EnemySnake) [Elite] — Area 1 (하수구, 1~5층)
+///
+/// 행동 패턴:
+///   1. 이동: 기본 1칸 추적 (EnemyBase.TryStepTowardPlayer 사용)
+///   2. 공격: 독니 물기, 공격 비용 1.5초 (attackSpeed = 0.67 → 보통 몬스터보다 딜레이 큼)
+///   3. 특수: 명중 시 강한 독 (3초간 매초 2~4 데미지)
+///
+/// 코드가 비어있는 이유:
+///   공격 비용(attackSpeed)과 독 상태이상은 EnemyData SO 인스펙터에서 전부 설정 가능.
+///   EnemyBase AP 누적기 및 TryApplyOnHitEffect가 자동 구동.
+///   벽 통과나 도주 등 추가 특수 행동이 필요할 때만 이 클래스를 override로 확장.
 /// </summary>
 public class EnemySnake : EnemyBase
 {
-    // 추가적인 오버라이드가 필요 없는 간결한 구현체입니다.
-    // 템플릿 메서드에 의해 이동, 공격, 텔레그래프가 구동됩니다.
+    // 추가 override 없음 — 순수 데이터 기반 구현체.
 }

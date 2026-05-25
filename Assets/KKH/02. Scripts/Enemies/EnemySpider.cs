@@ -1,27 +1,26 @@
 using UnityEngine;
 
 /// <summary>
-/// 거미 [Common] — Area 1 (하수구, 1~5층)
-/// 
-/// 이동: 기본 추적 (EnemyBase 기본 TryStepTowardPlayer)
-/// 공격: 근접 1칸, 텔레그래프
-/// 특수: 명중 시 독(5초) + 이동속도 -0.3 디버프(2초)
-/// 
-/// 독은 EnemyData.onHitEffect로 적용.
-/// 이동속도 감소는 별도 Cripple 상태이상으로 추가 적용.
-/// 
-/// 난이도: ★★☆ (StatusEffect 중첩 필요)
+/// 거미 (EnemySpider) [Common] — Area 1 (하수구, 1~5층)
+///
+/// 핵심 메커니즘:
+///   1. 기본 추적 + 근접 1칸 공격 (EnemyBase 기본 템플릿 사용)
+///   2. 공격 명중 시 상태이상 2종 동시 발동:
+///      - 독(Poison)      : EnemyData.onHitEffect SO 설정 → EnemyBase.TryApplyOnHitEffect 자동 처리
+///      - 이속 감소(Cripple): slowDebuffData SO를 직접 읽어 TryApplySlowDebuff로 수동 추가 부여
+///
+/// override 목록:
+///   ExecutePendingAttack()  → 기본 공격 + TryApplySlowDebuff 추가 호출
 /// </summary>
 public class EnemySpider : EnemyBase
 {
     [Header("거미 추가 디버프 설정")]
-    [Tooltip("이동속도 감소 상태이상 SO (Cripple 등)")]
+    [Tooltip("플레이어 적중 시 추가로 부여할 이속 감소(Cripple) 상태이상 데이터. 인스펙터에서 할당.")]
     [SerializeField] private StatusEffectData slowDebuffData;
 
     /// <summary>
-    /// 공격 발동 시 독 + 이동속도 감소 중첩 적용.
-    /// 독은 EnemyBase의 TryApplyOnHitEffect (onHitEffect SO)로 처리.
-    /// 이동속도 감소는 여기서 추가 적용.
+    /// 공격 발동 override.
+    /// 데미지 처리 후 독(TryApplyOnHitEffect) + 이속감소(TryApplySlowDebuff) 순서로 2중 상태이상 적용.
     /// </summary>
     protected override void ExecutePendingAttack()
     {
@@ -30,36 +29,43 @@ public class EnemySpider : EnemyBase
             int damage = RollAttackDamage();
             Player.TakeDamage(damage);
 
-            // 1. 독 적용 (onHitEffect SO — EnemyBase에서 처리)
+            // 1. 독 상태이상 (EnemyData.onHitEffect 기반, EnemyBase 공통 로직)
             TryApplyOnHitEffect(Player);
 
-            // 2. 이동속도 감소 추가 적용 (Cripple)
+            // 2. 이속 감소 디버프 추가 (slowDebuffData 직접 참조)
             TryApplySlowDebuff(Player);
         }
         _pendingAttackCell = null;
         ClearTelegraphs();
     }
 
+    /// <summary>
+    /// slowDebuffData를 기반으로 Cripple 상태이상을 대상에게 안전하게 부여.
+    /// slowDebuffData가 null이거나 대상이 사망이면 아무것도 안 함.
+    /// </summary>
     private void TryApplySlowDebuff(IDamageable target)
     {
         if (slowDebuffData == null) return;
         if (target == null || target.IsDead) return;
         if (target is not Component component) return;
 
+        // 상태이상 요청 구축
         var request = new StatusRequest(
             target as IGridEntity,
             (target as IGridEntity)?.GridPosition ?? GridPosition,
             slowDebuffData.statusType,
             slowDebuffData.durationTurns,
             slowDebuffData.power,
-            null
+            null // trapSource: 적 본인 공격이므로 null
         );
 
+        // StatusController 없으면 자동 부착 후 상태 적용
         StatusController controller = component.GetComponent<StatusController>();
         if (controller == null)
             controller = component.gameObject.AddComponent<StatusController>();
         controller.ApplyStatus(request);
 
+        // 상태이상 발동 전역 이벤트 알림 (UI / 사운드 구독자용)
         GameEvents.OnStatusEffectApplied?.Invoke(request);
     }
 }
