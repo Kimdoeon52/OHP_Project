@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class BossHpBar : MonoBehaviour
 {
     [Header("체력이미지")]
+    public GameObject allHpBar;
     public Image fillimage; // HP 바의 Fill 이미지
     private BossBase boss;
     //public Text text;
@@ -23,6 +24,10 @@ public class BossHpBar : MonoBehaviour
         originalLocalPos = fillimage.rectTransform.localPosition;
     }
 
+    private void OnEnable()
+    {
+        allHpBar.SetActive(true);
+    }
     public void Init(BossBase target)
     {
         boss = target;
