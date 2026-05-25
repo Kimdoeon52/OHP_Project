@@ -137,9 +137,9 @@ public class BossB : BossBase, IGridEntity, IDamageable
     {
         currentHp = maxHp; // 보스 체력 설정먼저 해야 체력 업데이트가 보임
         base.OnEnable();
-        AddActionCase(BossAction.Pattern1, 50); // 평타
-        AddActionCase(BossAction.Pattern2, 20); // 돌
-        AddActionCase(BossAction.Pattern3, 30); // 이동
+        AddActionCase(BossAction.Pattern1, 60); // 평타
+        AddActionCase(BossAction.Pattern2, 30); // 돌
+        AddActionCase(BossAction.Pattern3, 10); // 이동
         anime = GetComponent<Animator>();
         bossSprite = GetComponentInChildren<SpriteRenderer>(); //Phase 2 색 변경용 (자식 포함 검색)
         gridPos = GridSystem.Instance.WorldToGrid(transform.position); //보스 시작 격자 좌표 초기화
@@ -167,6 +167,17 @@ public class BossB : BossBase, IGridEntity, IDamageable
         transform.localScale = s;
     }
 
+    // 공격 이펙트를 보스 현재 방향에 맞춰 스폰. transform.localScale.x 부호로 플립 판정 (FaceDir과 같은 규약).
+    private GameObject SpawnAttackEffectFacingBoss(GameObject prefab, Vector3 pos)
+    {
+        if (prefab == null) return null;
+        var go = Instantiate(prefab, pos, Quaternion.identity);
+        var s = go.transform.localScale;
+        s.x = Mathf.Abs(s.x) * Mathf.Sign(transform.localScale.x);
+        go.transform.localScale = s;
+        return go;
+    }
+
     //========= 패턴1 : 플레이어 옆 순간이동 → 휘두르기 ====================================================
     protected override async UniTask Phase1Pattern1()
     {
@@ -186,21 +197,27 @@ public class BossB : BossBase, IGridEntity, IDamageable
         // 4) 휘두르기 칸 계산(데이터) → 경고 표시(시각). 셀은 여기서 고정 — 윈드업 중 재계산 X.
         var hitCells = BuildSwingCells(gridPos, dir, attack1Range, attack1Width);
         ShowWarning(hitCells);
+        try
+        {
+            // 5) 휘두르기 윈드업. 이 800ms가 플레이어가 빠져나가 피하는 유일한 창.
+            anime.SetTrigger("Attack1");
+            await UniTask.Delay(800, cancellationToken: cancelToken.Token);
+            GameObject Effect = SpawnAttackEffectFacingBoss(attack1Effect, transform.position);
+            if (Effect != null) Destroy(Effect, 1f);
 
-        // 5) 휘두르기 윈드업. 이 800ms가 플레이어가 빠져나가 피하는 유일한 창.
-        anime.SetTrigger("Attack1");
-        await UniTask.Delay(800, cancellationToken: cancelToken.Token); //1.2초+0.2초 1.4초가 그마나 공격 이펙트랑 맞는듯?
-        GameObject Effect = Instantiate(attack1Effect, transform.position, Quaternion.identity); //공격 이펙트 생성
-        Destroy(Effect, 1f); //이펙트 1초 후 제거 예약ㅇ미.
+            // 6) 임팩트 순간: 경고 칸 안에 플레이어가 있으면 데미지.
+            DamagePlayerIfInCells(hitCells, attack1Damage);
+        }
+        finally
+        {
+            // 취소되더라도 워닝은 반드시 해제 (안 그러면 워닝 타일 영구 잔존)
+            ClearWarning(hitCells);
+        }
 
-        // 6) 임팩트 순간: 경고 칸 안에 플레이어가 있으면 데미지, 경고 제거.
-        DamagePlayerIfInCells(hitCells, attack1Damage);
-        ClearWarning(hitCells);
-
-        await UniTask.Delay(200, cancellationToken: cancelToken.Token); //쩌정!!!!
+        await UniTask.Delay(200, cancellationToken: cancelToken.Token);
         anime.SetTrigger("Attack1Fin");
-        
-        await UniTask.Delay(2000, cancellationToken: cancelToken.Token); //공격 애니메이션이 끝날 때까지 대기
+
+        await UniTask.Delay(2000, cancellationToken: cancelToken.Token);
         isBossAttacking = false;
     }
 
@@ -320,26 +337,23 @@ public class BossB : BossBase, IGridEntity, IDamageable
 
     private async UniTaskVoid FallSingleRockAsync(Vector2Int targetPos)
     {
+        ShowWarning(targetPos);
+        Vector3 pos = GridSystem.Instance.GridToWorld(targetPos);
+        GameObject effect = Instantiate(fallingRock, pos, Quaternion.identity);
         try
         {
-            // 1. 매개변수로 안전하게 전달받은 targetPos 고정 사용
-            ShowWarning(targetPos);
-            Vector3 pos = GridSystem.Instance.GridToWorld(targetPos);
-            GameObject effect = Instantiate(fallingRock, pos, Quaternion.identity);
-
-            // 2. 경고 시간 대기
             await UniTask.Delay(rockWarnMs, cancellationToken: cancelToken.Token);
-
-            // 3. 판정 및 경고 제거 (여전히 동일한 targetPos 유지)
             DamagePlayerIfInCell(targetPos, rockDamage);
-            ClearWarning(targetPos);
-
-            // 4. 이펙트 제거
-            Destroy(effect, 1.5f);
         }
         catch (System.OperationCanceledException)
         {
-            // 취소 처리
+            // 취소: 데미지 판정만 건너뛰고 워닝/이펙트는 아래 finally에서 정리.
+        }
+        finally
+        {
+            // 워닝과 이펙트는 무조건 정리 (취소 시에도 잔존 방지)
+            ClearWarning(targetPos);
+            if (effect != null) Destroy(effect, 1.5f);
         }
     }
 
@@ -366,16 +380,21 @@ public class BossB : BossBase, IGridEntity, IDamageable
             // 4) 휘두르기 칸 계산 → 경고 표시.
             var hitCells = BuildSwingCells(gridPos, dir, attack1Range, attack1Width);
             ShowWarning(hitCells);
+            try
+            {
+                // 5) 휘두르기 윈드업 (400ms). 플레이어 회피 창도 절반이라 더 빡빡함.
+                anime.SetTrigger("Attack1");
+                await UniTask.Delay(400, cancellationToken: cancelToken.Token);
+                GameObject Effect = SpawnAttackEffectFacingBoss(attack1Effect, transform.position);
+                if (Effect != null) Destroy(Effect, 1f);
 
-            // 5) 휘두르기 윈드업 (400ms). 플레이어 회피 창도 절반이라 더 빡빡함.
-            anime.SetTrigger("Attack1");
-            await UniTask.Delay(400, cancellationToken: cancelToken.Token);
-            GameObject Effect = Instantiate(attack1Effect, transform.position, Quaternion.identity);
-            Destroy(Effect, 1f);
-
-            // 6) 임팩트 판정.
-            DamagePlayerIfInCells(hitCells, attack1Damage);
-            ClearWarning(hitCells);
+                // 6) 임팩트 판정.
+                DamagePlayerIfInCells(hitCells, attack1Damage);
+            }
+            finally
+            {
+                ClearWarning(hitCells);
+            }
 
             await UniTask.Delay(100, cancellationToken: cancelToken.Token);
             anime.SetTrigger("Attack1Fin");

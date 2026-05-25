@@ -72,6 +72,16 @@ public class BossBase : EnemyNormalBASE
         if (hpBar != null) hpBar.Init(this);
         else Debug.LogWarning("BossBase.OnEnable: BossHpBar를 찾지 못함. HP바 표시가 동작하지 않습니다.");
 
+        // 3) 인스펙터 미스매치 감지: warningTilemap이 GridSystem의 wall 타일맵과 같으면 경고.
+        //    (자주 일어나는 실수 — 워닝 타일이 WallTilemap에 칠해지는 원인)
+        if (warningTilemap != null && GridSystem.Instance != null
+            && GridSystem.Instance.Tilemaps != null
+            && warningTilemap == GridSystem.Instance.Tilemaps.wall)
+        {
+            Debug.LogError($"BossBase: warningTilemap이 GridSystem의 WallTilemap과 동일합니다. " +
+                           $"인스펙터에서 별도의 WarningTilemap을 지정해 주세요. (현재 충돌 중)");
+        }
+
         WaitBossCoolTime().Forget();
     }
     protected async UniTask WaitBossCoolTime()
@@ -104,6 +114,7 @@ public class BossBase : EnemyNormalBASE
             cancelToken.Cancel(); //보스가 파괴될 때 취소 토큰을 취소하여 모든 비동기 작업을 중단
             cancelToken.Dispose(); //취소 토큰 소멸
         }
+        ClearAllWarnings(); //취소된 패턴이 남긴 워닝 타일 정리
     }
 
     protected virtual void PatternStop()
@@ -256,34 +267,70 @@ public class BossBase : EnemyNormalBASE
         Debug.Log($"<color=red>[Phase2행동패턴3]</color> ");
     }
 
-    //==================== 경고 표시  ====================
+    //==================== 경고 표시 (참조 카운트 방식) ====================
+    // 같은 셀을 여러 패턴이 동시에 워닝할 수 있으므로 카운터로 관리.
+    // ShowWarning이 +1, ClearWarning이 -1. 0이 될 때만 실제 타일 제거.
+    // 이렇게 안 하면 한 쪽이 ClearWarning 호출 시 다른 쪽의 활성 워닝까지 지워버림.
+    private readonly Dictionary<Vector2Int, int> _warningRefCount = new Dictionary<Vector2Int, int>();
 
-    //공격 예고
     protected void ShowWarning(IEnumerable<Vector2Int> cells)
     {
-        if (warningTilemap == null || warningTile == null) return;
-        foreach (var c in cells)
-            warningTilemap.SetTile(new Vector3Int(c.x, c.y, 0), warningTile);
+        if (warningTilemap == null || warningTile == null || cells == null) return;
+        foreach (var c in cells) ShowWarningInternal(c);
     }
 
     protected void ShowWarning(Vector2Int cell)
     {
         if (warningTilemap == null || warningTile == null) return;
-        warningTilemap.SetTile(new Vector3Int(cell.x, cell.y, 0), warningTile);
+        ShowWarningInternal(cell);
     }
 
-    //지정한 칸들의 경고 타일을 지움
     protected void ClearWarning(IEnumerable<Vector2Int> cells)
     {
-        if (warningTilemap == null) return;
-        foreach (var c in cells)
-            warningTilemap.SetTile(new Vector3Int(c.x, c.y, 0), null);
+        if (warningTilemap == null || cells == null) return;
+        foreach (var c in cells) ClearWarningInternal(c);
     }
 
     protected void ClearWarning(Vector2Int cell)
     {
         if (warningTilemap == null) return;
-        warningTilemap.SetTile(new Vector3Int(cell.x, cell.y, 0), null);
+        ClearWarningInternal(cell);
+    }
+
+    private void ShowWarningInternal(Vector2Int cell)
+    {
+        if (_warningRefCount.TryGetValue(cell, out int count))
+        {
+            _warningRefCount[cell] = count + 1;
+        }
+        else
+        {
+            _warningRefCount[cell] = 1;
+            warningTilemap.SetTile(new Vector3Int(cell.x, cell.y, 0), warningTile);
+        }
+    }
+
+    private void ClearWarningInternal(Vector2Int cell)
+    {
+        if (!_warningRefCount.TryGetValue(cell, out int count)) return;
+        if (count <= 1)
+        {
+            _warningRefCount.Remove(cell);
+            warningTilemap.SetTile(new Vector3Int(cell.x, cell.y, 0), null);
+        }
+        else
+        {
+            _warningRefCount[cell] = count - 1;
+        }
+    }
+
+    // 보스 파괴/리셋 시 남은 워닝 강제 정리 (취소된 패턴이 ClearWarning을 못 부른 경우 대비).
+    protected void ClearAllWarnings()
+    {
+        if (warningTilemap == null) return;
+        foreach (var kv in _warningRefCount)
+            warningTilemap.SetTile(new Vector3Int(kv.Key.x, kv.Key.y, 0), null);
+        _warningRefCount.Clear();
     }
 
     // 데이터 기반 히트 판정. 플레이어 격자 좌표가 공격 칸 집합에 들어 있으면 데미지.
