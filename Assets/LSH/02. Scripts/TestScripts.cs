@@ -31,7 +31,7 @@ public class TestScripts : MonoBehaviour
         if (triggered) return;
         if (bossObject == null || triggerObject == null || player == null) return;
 
-        if (player.position.y > triggerObject.position.y)
+        if (Input.GetKeyDown(KeyCode.F9))
         {
             ActivateBoss();
         }
