@@ -18,7 +18,7 @@ MonoBehaviour:
     weightArea2: 40
     weightArea3: 30
   - feeling: {fileID: 11400000, guid: 25156e060f531224a8db00af7935f149, type: 2}
-    weightArea1: 100
+    weightArea1: 0
     weightArea2: 40
     weightArea3: 30
-  triggerChance: 1
+  triggerChance: 0

@@ -8003,6 +8003,7 @@ MonoBehaviour:
   tilemaps:
     floor: {fileID: 262466322}
     wall: {fileID: 1847170266}
+    hazard: {fileID: 0}
     water: {fileID: 0}
     grass: {fileID: 0}
     chasm: {fileID: 0}
@@ -8189,6 +8190,9 @@ MonoBehaviour:
   idleStateName: warrior idle
   runStateName: warrior run
   faceRightByDefault: 1
+  attackSpeedAnimationMultiplier: 0.12
+  maxAttackAnimationSpeed: 2.5
+  attackSpeedResetDelay: 0.25
 --- !u!95 &1658363714
 Animator:
   serializedVersion: 7
@@ -8299,6 +8303,11 @@ MonoBehaviour:
   daggerData: {fileID: 11400000, guid: 4bd54afd48bbb6b499670f633e1a26ee, type: 2}
   daggerPrefab: {fileID: 7796981772736433693, guid: 998ee0674d00d4849bd46ca2c58d7017, type: 3}
   meleeDamage: 1
+  baseMeleeCooldown: 0.45
+  attackSpeedCooldownMultiplier: 0.12
+  minMeleeCooldown: 0.12
+  minMeleeTimeCost: 0.08
+  logDamageDealt: 1
 --- !u!114 &1658363718
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8334,8 +8343,18 @@ MonoBehaviour:
   moveSpeed: 10
   attackSpeed: 1
   level: 1
+  accuracy: 0
   defense: 0
   evasion: 0
+  hungry: 0
+  isStarvation: 0
+  isPoison: 0
+  isBurn: 0
+  isFrozen: 0
+  isBleeding: 0
+  isCold: 0
+  isWounds: 0
+  isSpeed: 0
 --- !u!114 &1658363720
 MonoBehaviour:
   m_ObjectHideFlags: 0

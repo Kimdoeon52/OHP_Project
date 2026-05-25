@@ -6,8 +6,6 @@ public class ArmorData : ItemBase
     [SerializeField] private int minMinusDamage;
     [SerializeField] private int maxMinusDamage;
     [SerializeField] private int canUseStrength;
-    [SerializeField] public int grade;
-    [SerializeField] public bool isAnalyzed;
 
     public int GetMinusDamage()
     {
