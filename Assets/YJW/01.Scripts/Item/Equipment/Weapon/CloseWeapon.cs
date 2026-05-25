@@ -8,7 +8,7 @@ public class CloseWeapon : ItemBase
     [SerializeField] private int CanUseStrength;
     [SerializeField] private float attackSpeed;
 
-    public int GetDamage()
+    public int GetBaseDamage()
     {
         return Random.Range(minDamage, maxDamage + 1);
     }
