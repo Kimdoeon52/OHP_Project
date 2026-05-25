@@ -28,51 +28,89 @@ public class FloorTransitionController : MonoBehaviour
     [Tooltip("Fade out 끝나고 fade in 시작 전 검은 화면 유지 시간. 맵 생성 체감 안정용.")]
     [SerializeField] private float blackHoldSeconds = 0.1f;
 
+    [Header("게임 시작 시 1층 자동 생성")]
+    [Tooltip("켜면 Start() 에서 RunState.CurrentDepth 기준 1회 BuildFloor — 페이드 아웃은 스킵하고 fade in 만 수행. " +
+             "ScreenFader 의 initialAlpha 를 1 로 두고 시작하면 깜빡임 없이 자연스럽게 진입.")]
+    [SerializeField] private bool generateOnStart = true;
+    [Tooltip("Start 후 1층 생성 전 대기 프레임. 다른 컴포넌트 Awake/Start 완료 보장용. 보통 1.")]
+    [SerializeField] private int startDelayFrames = 1;
+
     private bool _transitioning;
 
     private void OnEnable()  => GameEvents.OnLevelComplete += OnLevelComplete;
     private void OnDisable() => GameEvents.OnLevelComplete -= OnLevelComplete;
 
+    private void Start()
+    {
+        if (!generateOnStart) return;
+        if (!ValidateDeps()) return;
+        _transitioning = true;
+        StartCoroutine(InitialFloorCoroutine());
+    }
+
     private void OnLevelComplete()
     {
         if (_transitioning) return;
-        if (mapGenerator == null || runState == null || player == null)
-        {
-            Debug.LogError("[FloorTransition] 의존성 미할당 — MapGenerator/RunState/GridPlayer 인스펙터에서 연결 필요");
-            return;
-        }
+        if (!ValidateDeps()) return;
         _transitioning = true;
         StartCoroutine(TransitionCoroutine());
     }
 
+    private bool ValidateDeps()
+    {
+        if (mapGenerator == null || runState == null || player == null)
+        {
+            Debug.LogError("[FloorTransition] 의존성 미할당 — MapGenerator/RunState/GridPlayer 인스펙터에서 연결 필요");
+            return false;
+        }
+        return true;
+    }
+
+    /// <summary>층 전환: fade out → depth++ → BuildFloor → fade in.</summary>
     private IEnumerator TransitionCoroutine()
     {
-        // 0. fade out
         if (fader != null) yield return fader.FadeOut(fadeDuration);
-
-        // 1. depth ++
         runState.AdvanceDepth();
+        yield return BuildFloorCoroutine();
+        if (blackHoldSeconds > 0f) yield return new WaitForSecondsRealtime(blackHoldSeconds);
+        if (fader != null) yield return fader.FadeIn(fadeDuration);
+        _transitioning = false;
+    }
 
-        // 2. 단검 정리 — 씬에 떨어진 모든 GridDagger 파괴.
+    /// <summary>게임 시작: 다른 컴포넌트 초기화 대기 → BuildFloor → fade in (이미 검은 화면이라 fade out 스킵).</summary>
+    private IEnumerator InitialFloorCoroutine()
+    {
+        for (int i = 0; i < startDelayFrames; i++) yield return null;
+        yield return BuildFloorCoroutine();
+        if (blackHoldSeconds > 0f) yield return new WaitForSecondsRealtime(blackHoldSeconds);
+        if (fader != null) yield return fader.FadeIn(fadeDuration);
+        _transitioning = false;
+    }
+
+    /// <summary>
+    /// 공통 — 단검 정리 → 시스템 리셋 → MapGenerator.Generate → Safe Room 텔레포트 → 시야/타이머 시작.
+    /// depth 증가는 호출자가 결정 (TransitionCoroutine 만 AdvanceDepth, InitialFloorCoroutine 은 현재 depth 사용).
+    /// </summary>
+    private IEnumerator BuildFloorCoroutine()
+    {
+        // 단검 정리 — 씬에 떨어진 모든 GridDagger 파괴.
         // (적은 EnemySpawner.Spawn 가 ClearPreviousSpawns 호출, Exit 은 MapGenerator 가 자체 정리)
         foreach (var d in FindObjectsByType<GridDagger>(FindObjectsSortMode.None))
             Destroy(d.gameObject);
 
-        // 3. 시스템 리셋 — 시야/탐험 기록, 시간 풀, Feeling 보정치 (Generate 안에서도 VisionRadiusDelta 리셋되긴 함)
+        // 시스템 리셋 — 시야/탐험 기록, 시간 풀, Feeling 보정치
         VisionSystem.Instance?.ResetForNewFloor();
         TimeSystem.Instance?.ResetForNewFloor();
 
-        // 4. 새 층 맵 생성. builder/painter/feeling 은 MapGenerator 의 풀에서 자동 픽.
+        // 새 층 맵 생성. builder/painter/feeling 은 MapGenerator 의 풀에서 자동 픽.
         var rooms = mapGenerator.Generate(runState.RunSeed, runState.CurrentDepth);
         if (rooms == null)
         {
             Debug.LogError($"[FloorTransition] depth={runState.CurrentDepth} 맵 생성 실패");
-            _transitioning = false;
             yield break;
         }
 
-        // 5. Safe Room 중앙 셀로 플레이어 텔레포트. 보스 층은 BossRoomLoader 가 Safe 를 어떻게 두는지에
-        //    따라 다를 수 있어 폴백: Safe 없으면 첫 번째 방의 중앙.
+        // Safe Room 중앙 셀로 플레이어 텔레포트. 폴백: Safe 없으면 첫 번째 방의 중앙.
         var spawnRoom = rooms.Find(r => r.type == RoomType.Safe);
         if (spawnRoom == null)
         {
@@ -82,21 +120,14 @@ public class FloorTransitionController : MonoBehaviour
         if (spawnRoom == null || spawnRoom.floorCells == null || spawnRoom.floorCells.Count == 0)
         {
             Debug.LogError($"[FloorTransition] depth={runState.CurrentDepth} 텔레포트 가능한 셀 없음");
-            _transitioning = false;
             yield break;
         }
         var spawnCell = PickCenterCell(spawnRoom.floorCells);
         player.SetGridPosition(spawnCell);
 
-        // 6. 시야 갱신 + 타이머 재시작
+        // 시야 갱신 + 타이머 재시작 (GridPlayer.Start 가 먼저 시작해뒀어도 ResetForNewFloor 로 덮어쓰여 정확함)
         VisionSystem.Instance?.UpdateVision(spawnCell);
         TimeSystem.Instance?.StartTimer();
-
-        // 7. fade in
-        if (blackHoldSeconds > 0f) yield return new WaitForSecondsRealtime(blackHoldSeconds);
-        if (fader != null) yield return fader.FadeIn(fadeDuration);
-
-        _transitioning = false;
     }
 
     private static Vector2Int PickCenterCell(List<Vector2Int> cells)

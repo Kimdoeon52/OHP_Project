@@ -12,6 +12,10 @@ public class ScreenFader : MonoBehaviour
 
     [SerializeField] private float defaultDuration = 0.4f;
 
+    [Tooltip("씬 진입 직후 알파. 게임 시작 시 1층 생성을 위해 검은 화면으로 시작하려면 1, 평소엔 0.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float initialAlpha = 0f;
+
     private CanvasGroup _group;
 
     private void Awake()
@@ -23,8 +27,8 @@ public class ScreenFader : MonoBehaviour
         }
         Instance = this;
         _group = GetComponent<CanvasGroup>();
-        _group.alpha = 0f;
-        _group.blocksRaycasts = false;
+        _group.alpha = initialAlpha;
+        _group.blocksRaycasts = initialAlpha > 0.001f;
         _group.interactable = false;
     }
 
