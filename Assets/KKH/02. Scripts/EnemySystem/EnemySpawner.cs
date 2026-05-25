@@ -4,7 +4,7 @@ using UnityEngine;
 namespace EnemySystem
 {
     /// <summary>
-    /// 층별로 적을 실제 격자 위치에 배치하고 인스턴스화하는 스파우너.
+    /// 층별로 적을 실제 격자 위치에 배치하고 인스턴스화하는 스포너.
     /// FloorSpawnConfig를 활용하여 층별(구역별) 설정의 유지보수성을 극대화합니다.
     /// </summary>
     public class EnemySpawner : MonoBehaviour, IEnemySpawner

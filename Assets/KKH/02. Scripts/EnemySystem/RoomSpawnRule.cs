@@ -75,10 +75,14 @@ namespace EnemySystem
         /// </summary>
         protected static List<Vector2Int> GetValidSpawnPositions(RoomData room)
         {
+            var player = UnityEngine.Object.FindFirstObjectByType<GridPlayer>();
+            Vector2Int? playerPos = player != null ? player.GridPosition : null;
+
             return room.floorCells
                 .Where(pos => !IsTooCloseToDoor(pos, room))
                 .Where(pos => GridSystem.Instance == null || GridSystem.Instance.IsWalkable(pos))
                 .Where(pos => TurnManager.Instance == null || TurnManager.Instance.GetEntityAt(pos) == null)
+                .Where(pos => !playerPos.HasValue || pos != playerPos.Value)
                 .ToList();
         }
 
