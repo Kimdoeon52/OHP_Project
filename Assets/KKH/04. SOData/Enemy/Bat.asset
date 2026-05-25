@@ -23,7 +23,7 @@ MonoBehaviour:
   attackMax: 5
   attackPattern: 0
   moveSpeed: 0.5
-  attackSpeed: 1
+  attackSpeed: 0.7
   defenseMin: 0
   defenseMax: 0
   evasion: 12
@@ -32,5 +32,5 @@ MonoBehaviour:
   expReward: 8
   goldMin: 0
   goldMax: 0
-  visionRange: 6
+  visionRange: 4
   onHitEffect: {fileID: 0}
