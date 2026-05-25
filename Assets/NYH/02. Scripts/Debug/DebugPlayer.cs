@@ -1,0 +1,360 @@
+#if UNITY_EDITOR
+
+using PrototypeRT;
+using UnityEngine;
+
+/// <summary>
+/// 플레이어 기능을 강제로 테스트하기 위한 에디터 전용 디버그 리모컨.
+/// ContextMenu 또는 단축키로 체력, 경험치, 상태이상, 인벤토리, 장비 기능을 확인한다.
+/// </summary>
+public class DebugPlayer : MonoBehaviour
+{
+    [Header("대상 참조")]
+    [Tooltip("디버그 명령을 적용할 플레이어입니다. 비워두면 씬에서 자동으로 찾습니다.")]
+    [SerializeField] private GridPlayer player;
+
+    [Tooltip("플레이어 체력 컴포넌트입니다. 비워두면 player 또는 씬에서 자동으로 찾습니다.")]
+    [SerializeField] private GridPlayerHealth health;
+
+    [Tooltip("플레이어 레벨/경험치 시스템입니다. 비워두면 player 또는 씬에서 자동으로 찾습니다.")]
+    [SerializeField] private PlayerLevelSystem levelSystem;
+
+    [Tooltip("플레이어 상태이상 컨트롤러입니다. 비워두면 player 또는 씬에서 자동으로 찾습니다.")]
+    [SerializeField] private StatusController statusController;
+
+    [Tooltip("인벤토리 컨트롤러입니다. 비워두면 씬에서 자동으로 찾습니다.")]
+    [SerializeField] private InventoryController inventoryController;
+
+    [Tooltip("장비 컨트롤러입니다. 비워두면 씬에서 자동으로 찾습니다.")]
+    [SerializeField] private NYHEquipmentController equipmentController;
+
+    [Tooltip("스탯/체력/경험치 Text를 새로고침할 UI입니다. 비활성 패널 안에 있으면 직접 연결하는 것이 가장 안전합니다.")]
+    [SerializeField] private PlayerStatsView playerStatsView;
+
+    [Header("체력 디버그")]
+    [Tooltip("Damage Player 실행 시 줄 피해량입니다.")]
+    [SerializeField, Min(1)] private int damageAmount = 10;
+
+    [Tooltip("Heal Player 실행 시 회복할 체력량입니다.")]
+    [SerializeField, Min(1)] private int healAmount = 10;
+
+    [Tooltip("Add Potion 실행 시 추가할 포션 개수입니다.")]
+    [SerializeField, Min(1)] private int potionAmount = 1;
+
+    [Header("경험치 디버그")]
+    [Tooltip("Add Exp 실행 시 추가할 경험치량입니다.")]
+    [SerializeField, Min(1)] private int expAmount = 10;
+
+    [Header("상태이상 디버그")]
+    [Tooltip("Apply Status 실행 시 적용할 상태이상 종류입니다.")]
+    [SerializeField] private StatusType statusType = StatusType.Poison;
+
+    [Tooltip("상태이상이 유지될 플레이어 행동 턴 수입니다.")]
+    [SerializeField, Min(1)] private int statusDurationTurns = 3;
+
+    [Tooltip("상태이상의 피해량 또는 강도 값입니다.")]
+    [SerializeField, Min(1)] private int statusPower = 1;
+
+    [Header("아이템 / 장비 디버그")]
+    [Tooltip("Add Debug Item 실행 시 인벤토리에 넣을 아이템 데이터입니다.")]
+    [SerializeField] private ItemBase itemToAdd;
+
+    [Tooltip("Equip Debug Item 실행 시 장착할 장비 데이터입니다. ItemBase의 Slot이 None이면 장착되지 않습니다.")]
+    [SerializeField] private ItemBase itemToEquip;
+
+    [Header("단축키")]
+    [SerializeField] private bool enableHotkeys = true;
+    [SerializeField] private KeyCode damageKey = KeyCode.Alpha1;
+    [SerializeField] private KeyCode healKey = KeyCode.Alpha2;
+    [SerializeField] private KeyCode killKey = KeyCode.Alpha3;
+    [SerializeField] private KeyCode addExpKey = KeyCode.Alpha4;
+    [SerializeField] private KeyCode addItemKey = KeyCode.Alpha5;
+    [SerializeField] private KeyCode equipItemKey = KeyCode.Alpha6;
+    [SerializeField] private KeyCode upgradeKey = KeyCode.Alpha7;
+
+    private void Awake()
+    {
+        ResolveReferences();
+    }
+
+    private void Reset()
+    {
+        ResolveReferences();
+    }
+
+    private void Update()
+    {
+        if (!enableHotkeys) return;
+
+        if (Input.GetKeyDown(damageKey))
+            DamagePlayer();
+
+        if (Input.GetKeyDown(healKey))
+            HealPlayer();
+
+        if (Input.GetKeyDown(killKey))
+            KillPlayer();
+
+        if (Input.GetKeyDown(addExpKey))
+            AddExp();
+
+        if (Input.GetKeyDown(addItemKey))
+            AddDebugItem();
+
+        if (Input.GetKeyDown(equipItemKey))
+            EquipDebugItem();
+        if (Input.GetKeyDown(upgradeKey))
+            PlayerUpgrade();
+    }
+
+    /// <summary>
+    /// 씬 배치가 바뀌었거나 참조가 비어 있을 때 다시 대상을 찾는다.
+    /// </summary>
+    [ContextMenu("Debug/Refresh References")]
+    public void ResolveReferences()
+    {
+        if (player == null)
+            player = FindAnyObjectByType<GridPlayer>();
+
+        if (health == null && player != null)
+            health = player.Health != null ? player.Health : player.GetComponent<GridPlayerHealth>();
+
+        if (health == null)
+            health = FindAnyObjectByType<GridPlayerHealth>();
+
+        if (levelSystem == null)
+            levelSystem = player != null ? player.GetComponent<PlayerLevelSystem>() : FindAnyObjectByType<PlayerLevelSystem>();
+
+        if (statusController == null && player != null)
+            statusController = player.GetComponent<StatusController>();
+
+        if (statusController == null && player == null)
+            statusController = FindAnyObjectByType<StatusController>();
+
+        if (inventoryController == null)
+            inventoryController = FindAnyObjectByType<InventoryController>();
+
+        if (equipmentController == null)
+            equipmentController = FindAnyObjectByType<NYHEquipmentController>();
+
+        if (playerStatsView == null)
+            playerStatsView = FindStatsView();
+    }
+
+    /// <summary>
+    /// 스탯 UI를 강제로 새로고침한다.
+    /// 비활성 인벤토리 패널 안의 PlayerStatsView도 찾아본다.
+    /// </summary>
+    [ContextMenu("Debug/Refresh Stats UI")]
+    public void RefreshStatsUI()
+    {
+        if (playerStatsView == null)
+            playerStatsView = FindStatsView();
+
+        if (playerStatsView == null)
+        {
+            Debug.LogWarning("[DebugPlayer] PlayerStatsView를 찾지 못했습니다. 비활성 UI라면 인스펙터에 직접 연결하세요.");
+            return;
+        }
+
+        playerStatsView.Refresh();
+    }
+
+    private PlayerStatsView FindStatsView()
+    {
+        PlayerStatsView activeView = FindAnyObjectByType<PlayerStatsView>();
+        if (activeView != null) return activeView;
+
+        PlayerStatsView[] allViews = Resources.FindObjectsOfTypeAll<PlayerStatsView>();
+        for (int i = 0; i < allViews.Length; i++)
+        {
+            PlayerStatsView view = allViews[i];
+            if (view != null && view.gameObject.scene.IsValid())
+                return view;
+        }
+
+        return null;
+    }
+
+    public void PlayerUpgrade()
+    {
+        NYHPlayerStats stats = NYHPlayerStats.Instance;
+        if(stats == null)return;
+
+            stats.AddStat(NYHStatType.Strength, 1);
+            stats.AddStat(NYHStatType.MoveSpeed, 1);
+            stats.AddStat(NYHStatType.AttackSpeed, 1);
+            stats.AddStat(NYHStatType.Evasion, 1);
+
+            RefreshStatsUI();
+
+    }
+
+    [ContextMenu("Debug/Damage Player")]
+    public void DamagePlayer()
+    {
+        if (!TryGetHealth(out GridPlayerHealth targetHealth)) return;
+
+        targetHealth.TakeDamage(damageAmount);
+        Debug.Log($"[DebugPlayer] 플레이어 피해: {damageAmount}, HP {targetHealth.CurrentHp}/{targetHealth.MaxHp}");
+        RefreshStatsUI();
+    }
+
+    [ContextMenu("Debug/Heal Player")]
+    public void HealPlayer()
+    {
+        if (!TryGetHealth(out GridPlayerHealth targetHealth)) return;
+
+        targetHealth.Heal(healAmount);
+        Debug.Log($"[DebugPlayer] 플레이어 회복: {healAmount}, HP {targetHealth.CurrentHp}/{targetHealth.MaxHp}");
+        RefreshStatsUI();
+    }
+
+    [ContextMenu("Debug/Kill Player")]
+    public void KillPlayer()
+    {
+        if (!TryGetHealth(out GridPlayerHealth targetHealth)) return;
+
+        targetHealth.TakeDamage(targetHealth.MaxHp + 999999);
+        Debug.Log($"[DebugPlayer] 플레이어 사망 테스트 실행, HP {targetHealth.CurrentHp}/{targetHealth.MaxHp}");
+        RefreshStatsUI();
+    }
+
+    [ContextMenu("Debug/Add Potion")]
+    public void AddPotion()
+    {
+        if (!TryGetHealth(out GridPlayerHealth targetHealth)) return;
+
+        targetHealth.AddPotion(potionAmount);
+        Debug.Log($"[DebugPlayer] 포션 추가: {potionAmount}, 현재 포션 {targetHealth.PotionCount}");
+        RefreshStatsUI();
+    }
+
+    [ContextMenu("Debug/Use Potion")]
+    public void UsePotion()
+    {
+        if (!TryGetHealth(out GridPlayerHealth targetHealth)) return;
+
+        targetHealth.TryUsePotion();
+        Debug.Log($"[DebugPlayer] 포션 사용 시도, HP {targetHealth.CurrentHp}/{targetHealth.MaxHp}, 포션 {targetHealth.PotionCount}");
+        RefreshStatsUI();
+    }
+
+    [ContextMenu("Debug/Add Exp")]
+    public void AddExp()
+    {
+        if (!TryGetLevelSystem(out PlayerLevelSystem targetLevel)) return;
+
+        targetLevel.AddExp(expAmount);
+        Debug.Log($"[DebugPlayer] 경험치 추가: {expAmount}, Lv {targetLevel.Level}, EXP {targetLevel.CurrentExp}/{targetLevel.RequiredExp}");
+        RefreshStatsUI();
+    }
+
+    [ContextMenu("Debug/Apply Status")]
+    public void ApplyStatus()
+    {
+        if (!TryGetStatusController(out StatusController targetStatus)) return;
+
+        IGridEntity targetEntity = player != null ? player : FindAnyObjectByType<GridPlayer>();
+        Vector2Int targetPosition = targetEntity != null ? targetEntity.GridPosition : Vector2Int.zero;
+        targetStatus.ApplyStatus(new StatusRequest(targetEntity, targetPosition, statusType, statusDurationTurns, statusPower, null));
+
+        Debug.Log($"[DebugPlayer] 상태이상 적용: {statusType}, {statusDurationTurns}턴, 강도 {statusPower}");
+        RefreshStatsUI();
+    }
+
+    [ContextMenu("Debug/Add Debug Item")]
+    public void AddDebugItem()
+    {
+        if (!TryGetInventory(out InventoryController targetInventory)) return;
+        if (itemToAdd == null)
+        {
+            Debug.LogWarning("[DebugPlayer] itemToAdd가 비어 있습니다.");
+            return;
+        }
+
+        bool added = targetInventory.TryAddItem(itemToAdd);
+        Debug.Log($"[DebugPlayer] 인벤토리 아이템 추가: {itemToAdd.Name}, 성공 {added}");
+        RefreshStatsUI();
+    }
+
+    [ContextMenu("Debug/Equip Debug Item")]
+    public void EquipDebugItem()
+    {
+        if (!TryGetEquipment(out NYHEquipmentController targetEquipment)) return;
+        if (itemToEquip == null)
+        {
+            Debug.LogWarning("[DebugPlayer] itemToEquip이 비어 있습니다.");
+            return;
+        }
+
+        bool equipped = targetEquipment.TryEquip(itemToEquip);
+        Debug.Log($"[DebugPlayer] 장비 장착: {itemToEquip.Name}, 성공 {equipped}");
+        RefreshStatsUI();
+    }
+
+    private bool TryGetHealth(out GridPlayerHealth targetHealth)
+    {
+        ResolveReferences();
+        targetHealth = health;
+
+        if (targetHealth != null) return true;
+
+        Debug.LogWarning("[DebugPlayer] GridPlayerHealth를 찾지 못했습니다.");
+        return false;
+    }
+
+    private bool TryGetLevelSystem(out PlayerLevelSystem targetLevel)
+    {
+        ResolveReferences();
+        targetLevel = levelSystem;
+
+        if (targetLevel != null) return true;
+
+        Debug.LogWarning("[DebugPlayer] PlayerLevelSystem을 찾지 못했습니다.");
+        return false;
+    }
+
+    private bool TryGetStatusController(out StatusController targetStatus)
+    {
+        ResolveReferences();
+        targetStatus = statusController;
+
+        if (targetStatus != null) return true;
+
+        if (player != null)
+        {
+            targetStatus = player.gameObject.AddComponent<StatusController>();
+            statusController = targetStatus;
+            Debug.Log("[DebugPlayer] 플레이어에 StatusController가 없어 디버그용으로 추가했습니다.");
+            return true;
+        }
+
+        Debug.LogWarning("[DebugPlayer] StatusController를 찾지 못했습니다.");
+        return false;
+    }
+
+    private bool TryGetInventory(out InventoryController targetInventory)
+    {
+        ResolveReferences();
+        targetInventory = inventoryController;
+
+        if (targetInventory != null) return true;
+
+        Debug.LogWarning("[DebugPlayer] InventoryController를 찾지 못했습니다.");
+        return false;
+    }
+
+    private bool TryGetEquipment(out NYHEquipmentController targetEquipment)
+    {
+        ResolveReferences();
+        targetEquipment = equipmentController;
+
+        if (targetEquipment != null) return true;
+
+        Debug.LogWarning("[DebugPlayer] NYHEquipmentController를 찾지 못했습니다.");
+        return false;
+    }
+}
+
+#endif

@@ -43,7 +43,7 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
     public bool IsDead => CurrentHp <= 0;
     public int PotionCount { get; private set; }
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
+#if UNITY_EDITOR
     private void Update()
     {
         if (!enableDebugDamageKey || IsDead) return;

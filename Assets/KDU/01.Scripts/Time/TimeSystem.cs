@@ -52,8 +52,8 @@ public class TimeSystem : MonoBehaviour
     }
 
     /// <summary>
-    /// 행동 실행 시 시간 소모 (이동 0.3s, 던지기 0.5s 등)
-    /// </summary>
+    /// 행동 실행 시 시간 소모 (이동 0.3s, 던지기 0.5s 등) - 기획에 따라 사라질 수도 있음
+    /// </summary> 
     public void ConsumeTime(float seconds)
     {
         if (!IsRunning) return;

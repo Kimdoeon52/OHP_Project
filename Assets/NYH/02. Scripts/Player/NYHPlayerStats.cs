@@ -1,80 +1,84 @@
 using System;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public enum NYHStatType
 {
+    // 최대 체력. 레벨업/장비/보상으로 영구 증가할 수 있다.
     Health,
+
+    // 근접 공격, 투척 무기 등 플레이어가 주는 기본 피해량 보정.
     Strength,
+
+    // 격자 이동 속도. GridPlayerMovement의 이동 시간/후딜 계산에 사용된다.
     MoveSpeed,
+
+    // 공격 애니메이션 속도와 공격 관련 시간 계산에 사용된다.
     AttackSpeed,
+
+    // 받는 피해를 고정값으로 감소시키는 방어 스탯.
     Defense,
+
+    // 피격을 확률로 완전히 무시하는 회피율. 0~100%.
     Evasion,
+
+    // 이전 데이터 호환용. 실제 레벨/경험치는 PlayerLevelSystem에서 관리한다.
     Level
 }
 
+/// <summary>
+/// 플레이어의 영구/기본 스탯을 관리한다.
+/// 레벨과 경험치 진행도는 PlayerLevelSystem, 독/화상/둔화 같은 임시 상태이상은 StatusController가 담당한다.
+/// </summary>
 public class NYHPlayerStats : MonoBehaviour
 {
     public static NYHPlayerStats Instance { get; private set; }
 
     [Header("기본 스탯")]
-    [Tooltip("최대 체력")]
+    [Tooltip("플레이어 최대 체력입니다. GridPlayerHealth의 MaxHp 계산에 사용됩니다.")]
     [SerializeField, Min(1)] private int maxHealth = 100;
-    [Tooltip("힘")]
-    [SerializeField, Min(0)] private int strength = 1;
-    [Tooltip("이동 속도")]
-    [SerializeField, Min(0)] private int moveSpeed = 1;
-    [Tooltip("공격 속도")]
-    [SerializeField, Min(0)] private int attackSpeed = 1;
-    [Tooltip("레벨")]
-    [SerializeField, Min(1)] private int level = 1;
-    [Tooltip("정확도")]
-    [SerializeField, Range(0, 100)] private int accuracy;
-    
 
+    [Tooltip("플레이어의 기본 공격력 보정값입니다. 근접 공격과 일부 무기 피해 계산에 사용됩니다.")]
+    [SerializeField, Min(0)] private int strength = 1;
+
+    [Tooltip("플레이어 이동 속도입니다. 값이 높을수록 한 칸 이동 시간이 짧아집니다.")]
+    [SerializeField, Min(0)] private int moveSpeed = 1;
+
+    [Tooltip("플레이어 공격 속도입니다. 값이 높을수록 공격 애니메이션 속도가 빨라집니다.")]
+    [SerializeField, Min(0)] private int attackSpeed = 1;
+
+    [Tooltip("플레이어 명중률 보정값입니다. 현재는 확장용 스탯이며, 명중 판정 시스템에서 사용할 수 있습니다.")]
+    [SerializeField, Range(0, 100)] private int accuracy;
 
     [Header("방어 스탯")]
-    [Tooltip("방어력")]
+    [Tooltip("받는 피해를 고정값으로 감소시키는 방어력입니다. 최종 피해는 최소 0까지 내려갑니다.")]
     [SerializeField, Min(0)] private int defense;
-    [Tooltip("회피")]
+
+    [Tooltip("피격을 완전히 회피할 확률입니다. 0이면 회피 없음, 100이면 항상 회피합니다.")]
     [SerializeField, Range(0, 100)] private int evasion;
-    [Tooltip("배고픔")]
-    //배고픔 수치는 던전에서 보내는 시간 10초에 1씩 감소한다.
-    //배고픔 수치의 최대치는 10, 최소치는 0이다.
-    [SerializeField, Range(0, 10)] private int hungry;
 
-
-    //상태이상 종류들 굶주림,독,화상,둔화,출혈,냉기,부유,신속
-    [Header("상태 이상")]
-    [Tooltip("굶주림")]
-    [SerializeField] private bool isStarvation; // 굶주림: 체력 감소(시간이 갈때만 세이프 룸에서는 체력 안닳음) + 이동속도 감소
-    [Tooltip("독")] // 독과 화상 출혈은 데미지 들어가는 방식은 같음 1 ~ n 사이의 데미지를 랜덤으로 초마다 받음
-    [SerializeField] private bool isPoison;     // 독: 일정 시간동안 체력 감소 , 정화 포션 사용시 제거 , 정화 포션 사용중엔 안걸림
-    [Tooltip("화상")]
-    [SerializeField] private bool isBurn;       // 화상: 서리 포션 사용 시 해제
-    [Tooltip("둔화")]
-    [SerializeField] private bool isFrozen;     // 둔화:  이동 속도 감소
-    [Tooltip("출혈")]
-    [SerializeField] private bool isBleeding;   // 출혈: 풀 수 잇는 방법이 없음 대신 지속시간이 짧음
-    [Tooltip("냉기")]
-    [SerializeField] private bool isCold;     // 냉기: 이동 쿨타임 및 공격 쿨타임 증가
-    [Tooltip("부유")]
-    [SerializeField] private bool isWounds;   // 부유: Hazard 효과 무시
-    [Tooltip("신속")]
-    [SerializeField] private bool isSpeed;   // 신속: 이동 속도 증가
-
-
+    /// <summary>
+    /// 스탯 값이 변경됐을 때 호출된다.
+    /// UI, 장비 조건 갱신, 파생 능력치 갱신 등에 사용한다.
+    /// </summary>
     public event Action OnStatsChanged;
+
+    /// <summary>
+    /// 특정 스탯이 증가/감소했을 때 호출된다.
+    /// GridPlayerHealth는 Health 증가 이벤트를 받아 최대 체력 증가분만큼 회복한다.
+    /// </summary>
     public event Action<NYHStatType, int> OnStatAdded;
 
     public int MaxHealth => maxHealth;
     public int Strength => strength;
     public int MoveSpeed => moveSpeed;
     public int AttackSpeed => attackSpeed;
-    public int Level => level;
+    public int Accuracy => accuracy;
     public int Defense => defense;
     public int Evasion => evasion;
 
+    /// <summary>
+    /// 씬에서 전역 접근할 플레이어 스탯 인스턴스를 등록한다.
+    /// </summary>
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -86,18 +90,27 @@ public class NYHPlayerStats : MonoBehaviour
         Instance = this;
     }
 
+    /// <summary>
+    /// 현재 인스턴스가 파괴될 때 싱글톤 참조를 정리한다.
+    /// </summary>
     private void OnDestroy()
     {
         if (Instance == this)
             Instance = null;
     }
 
+    /// <summary>
+    /// 지정한 스탯을 amount만큼 변경한다.
+    /// Health는 최대 체력을 변경하고, 실제 현재 체력 반영은 OnStatAdded 구독자가 처리한다.
+    /// </summary>
     public void AddStat(NYHStatType type, int amount)
     {
         switch (type)
         {
             case NYHStatType.Health:
+                maxHealth = Mathf.Max(1, maxHealth + amount);
                 OnStatAdded?.Invoke(type, amount);
+                OnStatsChanged?.Invoke();
                 return;
             case NYHStatType.Strength:
                 strength = Mathf.Max(0, strength + amount);
@@ -115,30 +128,36 @@ public class NYHPlayerStats : MonoBehaviour
                 evasion = Mathf.Clamp(evasion + amount, 0, 100);
                 break;
             case NYHStatType.Level:
-                level = Mathf.Max(1, level + amount);
-                break;
+                Debug.LogWarning("NYHPlayerStats: Level은 PlayerLevelSystem에서 관리합니다.");
+                return;
         }
 
         OnStatAdded?.Invoke(type, amount);
         OnStatsChanged?.Invoke();
     }
 
+    /// <summary>
+    /// 방어력과 회피율을 적용해 최종 받는 피해량을 계산한다.
+    /// 회피가 성공하면 0, 실패하면 방어력만큼 감소한 값을 반환한다.
+    /// </summary>
     public int CalculateIncomingDamage(int rawDamage)
     {
         if (rawDamage <= 0) return 0;
         if (evasion > 0 && UnityEngine.Random.value < evasion / 100f) return 0;
 
-        // 초반 밸런싱이 쉽도록 방어력은 고정 피해 감소로만 처리
         return Mathf.Max(0, rawDamage - defense);
     }
 
+    /// <summary>
+    /// 인스펙터에서 잘못된 값이 들어가지 않도록 범위를 보정한다.
+    /// </summary>
     private void OnValidate()
     {
         maxHealth = Mathf.Max(1, maxHealth);
         strength = Mathf.Max(0, strength);
         moveSpeed = Mathf.Max(0, moveSpeed);
         attackSpeed = Mathf.Max(0, attackSpeed);
-        level = Mathf.Max(1, level);
+        accuracy = Mathf.Clamp(accuracy, 0, 100);
         defense = Mathf.Max(0, defense);
         evasion = Mathf.Clamp(evasion, 0, 100);
     }

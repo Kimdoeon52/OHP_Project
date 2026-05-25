@@ -7,6 +7,7 @@ using UnityEngine;
 [RequireComponent(typeof(GridPlayerMovement))]
 [RequireComponent(typeof(GridPlayerCombat))]
 [RequireComponent(typeof(GridPlayerHealth))]
+[RequireComponent(typeof(PlayerLevelSystem))]
 public class GridPlayer : EntityBase, IDamageable
 {
     [SerializeField] private GameConfig config;
