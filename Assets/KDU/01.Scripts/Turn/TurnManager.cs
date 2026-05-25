@@ -31,7 +31,7 @@ public class TurnManager : MonoBehaviour
 
     private void Start()
     {
-        // 플레이어 캐릭터 생성 대기 후 이동 완료 이벤트 구독함
+        // 플레이어 캐릭터 생성 대기 후 이동 성공(시작) 이벤트 구독함
         StartCoroutine(SetupPlayerMovementSubscription());
     }
 
@@ -41,7 +41,7 @@ public class TurnManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 플레이어 캐릭터의 이동 컴포넌트를 탐색하여 완료 이벤트를 동적으로 구독함.
+    /// 플레이어 캐릭터의 이동 컴포넌트를 탐색하여 이동 성공(시작) 이벤트를 동적으로 구독함.
     /// </summary>
     private IEnumerator SetupPlayerMovementSubscription()
     {
@@ -54,19 +54,35 @@ public class TurnManager : MonoBehaviour
 
         if (player.Movement != null)
         {
-            player.Movement.OnMoveFinished += OnPlayerMoveFinished;
+            player.Movement.OnMoveSucceeded += OnPlayerMoveSucceeded;
         }
     }
 
     /// <summary>
-    /// 플레이어가 이동을 마쳤을 때 실행되는 콜백 함수임.
-    /// 이동 속도와 능력치 버프에 따른 시간 비용을 계산하여 턴을 완료시킴.
+    /// 플레이어가 이동을 시작했을 때 호출되는 콜백임.
+    /// 동시성 충돌을 방지하기 위해 즉시 실행하지 않고 도착할 때까지 기다리는 코루틴을 시작함.
     /// </summary>
-    private void OnPlayerMoveFinished()
+    private void OnPlayerMoveSucceeded(Vector2Int direction)
+    {
+        StartCoroutine(WaitAndCompletePlayerMove());
+    }
+
+    /// <summary>
+    /// 플레이어가 물리적으로 목표 셀에 안착할 때까지 대기한 후 턴 마감 처리를 완료시킴.
+    /// </summary>
+    private IEnumerator WaitAndCompletePlayerMove()
     {
         var player = FindFirstObjectByType<GridPlayer>();
-        if (player == null) return;
+        if (player == null) yield break;
 
+        // 플레이어 이동 보간 시간(CurrentMoveDuration)만큼 대기함
+        float duration = player.Movement.CurrentMoveDuration;
+        if (duration > 0f)
+        {
+            yield return new WaitForSeconds(duration);
+        }
+
+        // 이동 완료 후 시간 비용 계산
         float totalCost = player.Config.moveTimeCost;
         var status = player.GetComponent<StatusController>();
         if (status != null)
