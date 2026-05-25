@@ -111,7 +111,7 @@ MonoBehaviour:
   phase2HpThreshold: 50
   phase2DelayMultiplier: 0.3
   warningTilemap: {fileID: 0}
-  warningTile: {fileID: 11400000, guid: 3849cd8774671a24791523fc23bce5c7, type: 2}
+  warningTile: {fileID: 11400000, guid: 149945ecfe1ad424fb7862e16697d6ba, type: 2}
   hpBar: {fileID: 4276940115015315207}
   moveTime: 0.25
   moveEase: 1

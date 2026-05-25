@@ -32,7 +32,7 @@ public class MiniSkull : MonoBehaviour
     private CancellationTokenSource cts;
     private float lastDamageTime = -999f;
 
-    private void Start()
+    private void OnEnable()
     {
         cts = new CancellationTokenSource();
         player = FindFirstObjectByType<GridPlayer>();
