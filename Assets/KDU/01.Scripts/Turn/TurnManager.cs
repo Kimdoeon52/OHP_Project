@@ -29,15 +29,57 @@ public class TurnManager : MonoBehaviour
         Instance = this;
     }
 
+    private void Start()
+    {
+        // 플레이어 캐릭터 생성 대기 후 이동 완료 이벤트 구독함
+        StartCoroutine(SetupPlayerMovementSubscription());
+    }
+
     private void OnDestroy()
     {
         if (Instance == this) Instance = null;
     }
 
+    /// <summary>
+    /// 플레이어 캐릭터의 이동 컴포넌트를 탐색하여 완료 이벤트를 동적으로 구독함.
+    /// </summary>
+    private IEnumerator SetupPlayerMovementSubscription()
+    {
+        GridPlayer player = null;
+        while (player == null)
+        {
+            player = FindFirstObjectByType<GridPlayer>();
+            yield return null;
+        }
+
+        if (player.Movement != null)
+        {
+            player.Movement.OnMoveFinished += OnPlayerMoveFinished;
+        }
+    }
+
+    /// <summary>
+    /// 플레이어가 이동을 마쳤을 때 실행되는 콜백 함수임.
+    /// 이동 속도와 능력치 버프에 따른 시간 비용을 계산하여 턴을 완료시킴.
+    /// </summary>
+    private void OnPlayerMoveFinished()
+    {
+        var player = FindFirstObjectByType<GridPlayer>();
+        if (player == null) return;
+
+        float totalCost = player.Config.moveTimeCost;
+        var status = player.GetComponent<StatusController>();
+        if (status != null)
+        {
+            totalCost = status.ModifyMoveTimeCost(totalCost);
+        }
+
+        bool skipEnemyTurnDelay = player.Movement.ShouldSkipEnemyTurnDelay();
+        OnPlayerActionCompleted(totalCost, skipEnemyTurnDelay);
+    }
+
     public void Register(IGridEntity entity)
     {
-        if (!IsEntityAlive(entity)) return;
-
         if (!_entities.Contains(entity))
             _entities.Add(entity);
     }
@@ -55,8 +97,7 @@ public class TurnManager : MonoBehaviour
         for (int i = 0; i < _entities.Count; i++)
         {
             var e = _entities[i];
-            if (!IsEntityAlive(e)) continue;
-            if (e.GridPosition == pos) return e;
+            if (e != null && e.GridPosition == pos) return e;
         }
         return null;
     }
@@ -80,10 +121,10 @@ public class TurnManager : MonoBehaviour
         LastPlayerActionTimeCost = timeCost;
 
         GameEvents.OnPlayerActionCompleted?.Invoke(timeCost);
-        TimeSystem.Instance.ConsumeTime(timeCost);
+        TimeSystem.Instance?.ConsumeTime(timeCost);
 
-        // 시간 소진으로 이미 게임오버 처리된 경우 적 턴 불필요
-        if (!TimeSystem.Instance.IsRunning) return;
+        // 시간 소진으로 이미 게임오버 처리된 경우 적 턴 차단함 (세이프룸/테스트씬 등 타이머 정지 중에도 적 행동 허용)
+        if (TimeSystem.Instance != null && TimeSystem.Instance.TimeRemaining <= 0f) return;
 
         StartCoroutine(ProcessEnemyTurns(skipEnemyTurnDelay));
     }
@@ -97,26 +138,18 @@ public class TurnManager : MonoBehaviour
         var snapshot = new List<IGridEntity>(_entities);
         foreach (var entity in snapshot)
         {
-            if (!IsEntityAlive(entity)) continue;
+            if (entity == null) continue;
             entity.OnTurnUpdate();
-            if (!skipEnemyTurnDelay && enemyTurnDelay > 0f)
-                yield return new WaitForSeconds(enemyTurnDelay);
         }
 
+        // 개별 대기 대신, 전체 적의 행동 업데이트가 끝난 뒤 단 한 번만 대기하여 렉 방지함
+        if (!skipEnemyTurnDelay && enemyTurnDelay > 0f)
+            yield return new WaitForSeconds(enemyTurnDelay);
+
         // 죽은 엔티티 정리
-        _entities.RemoveAll(e => !IsEntityAlive(e));
+        _entities.RemoveAll(e => e == null);
 
         _processingTurn = false;
         IsPlayerTurn = true;
-    }
-
-    private static bool IsEntityAlive(IGridEntity entity)
-    {
-        if (entity == null) return false;
-
-        if (entity is Object unityObject)
-            return unityObject != null;
-
-        return true;
     }
 }
