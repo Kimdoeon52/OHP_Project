@@ -2,14 +2,8 @@ using UnityEngine;
 
 public enum AttackPattern { Melee, Ranged }
 
-/// <summary>
-/// 적 등급: 스폰 빈도와 밸런싱에 사용
-/// </summary>
 public enum EnemyGrade { Common, Elite, MiniBoss, Boss }
 
-/// <summary>
-/// 이동 타입: 벽 통과 여부 등 결정
-/// </summary>
 public enum EnemyMoveType { Normal, WallPass, Stationary }
 
 [CreateAssetMenu(fileName = "EnemyData", menuName = "60s Dungeon/Enemy Data")]
@@ -48,19 +42,17 @@ public class EnemyData : ScriptableObject
     public int accuracy = 10;
 
     [Header("보상")]
-    public float timeBonus = 3f;        // 처치 시 추가 시간 (초)
+    public float timeBonus = 3f;
     public int expReward = 5;
     public int goldMin = 0;
     public int goldMax = 0;
 
     [Header("시야")]
-    public float visionRange = 6f;      // 플레이어 감지 거리
+    public float visionRange = 6f;
 
     [Header("명중 시 상태이상 (선택)")]
     [Tooltip("null이면 상태이상 없음")]
     public StatusEffectData onHitEffect;
 
-    // ── 하위호환 프로퍼티 ──
-    // 기존 코드에서 data.attackDamage를 참조하던 곳 호환
     public int attackDamage => (attackMin + attackMax) / 2;
 }

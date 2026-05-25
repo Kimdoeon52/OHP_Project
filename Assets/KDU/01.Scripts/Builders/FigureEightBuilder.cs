@@ -2,10 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 8자 빌더 — 두 루프가 하나의 공유 방(pinch)을 통해 연결되는 토폴로지.
-/// 공유 방은 4방향 터널이 모이는 허브가 되어 SPD의 figure-eight 분위기 재현.
-/// Safe 는 루프 A 에, Exit (+ Boss) 는 루프 B 에 배치 → 두 갈래 동선 선택지 제공.
-/// SPD 디자인 참고, 코드는 자체 작성.
+/// 8자 빌더 — 두 루프가 하나의 공유 방(pinch)을 통해 연결
+/// Safe 는 루프 A 에, Exit (+ Boss) 는 루프 B 에 배치 -> 두 갈래 동선 선택지 제공
 /// </summary>
 [CreateAssetMenu(fileName = "FigureEightBuilder", menuName = "60s Dungeon/Builders/Figure Eight Builder")]
 public class FigureEightBuilder : ScriptableObject, ILayoutBuilder
@@ -47,7 +45,7 @@ public class FigureEightBuilder : ScriptableObject, ILayoutBuilder
             return null;
         }
 
-        // 공유 방은 마지막 Normal 을 빼서 사용. Large 로 강제(허브 역할).
+        // 공유 방은 마지막 Normal 을 빼서 사용. Large 로 강제
         var shared = normals[normals.Count - 1];
         normals.RemoveAt(normals.Count - 1);
         shared.sizeCategory = sharedRoomSize;
@@ -71,8 +69,8 @@ public class FigureEightBuilder : ScriptableObject, ILayoutBuilder
         int radiusB = BuilderUtils.ComputeLoopRadius(loopB, interRoomGap, minLoopRadius);
 
         // 4. 위치: 공유 방을 원점에 두기 위해 두 루프 중심을 X 축 좌우로 배치.
-        // 루프 A 중심 = (-radiusA - loopSeparationGap/2, 0), index 0 (shared) 가 angle 0 (동쪽) → world (0,0)
-        // 루프 B 중심 = (+radiusB + loopSeparationGap/2, 0), index 0 (shared) 가 angle π (서쪽) → world (0,0)
+        // 루프 A 중심 = (-radiusA - loopSeparationGap/2, 0), index 0 (shared) 가 angle 0 (동쪽) -> world (0,0)
+        // 루프 B 중심 = (+radiusB + loopSeparationGap/2, 0), index 0 (shared) 가 angle π (서쪽) -> world (0,0)
         int gapHalf = Mathf.Max(0, loopSeparationGap) / 2;
         var centerA = new Vector2Int(-(radiusA + gapHalf), 0);
         var centerB = new Vector2Int(+(radiusB + gapHalf), 0);
@@ -83,7 +81,7 @@ public class FigureEightBuilder : ScriptableObject, ILayoutBuilder
         foreach (var r in rooms) r.floorCells = BuilderUtils.CellsInRect(r.bounds);
 
         // 6. 두 루프 cycle 연결.
-        // 공유 방은 두 루프의 index 0 이므로 양쪽 사이클에서 각각 2개씩, 총 4개 터널이 모임 (figure-8 pinch).
+        // 공유 방은 두 루프의 index 0 이므로 양쪽 사이클에서 각각 2개씩, 총 4개 터널이 모임
         var allRooms = new List<RoomData>(rooms);
         ConnectLoop(loopA, allRooms, rng);
         ConnectLoop(loopB, allRooms, rng);

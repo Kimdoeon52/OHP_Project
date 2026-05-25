@@ -8,6 +8,5 @@ public enum TerrainType
     Floor,   // 일반 floor — 기본 통행 가능, 효과 없음
     Hazard,  // Floor Feeling 의 Hazard 바닥 (오염수/함정바닥/용암) — 이동 시간 2배 + 데미지, 통과 가능
     Water,   // 이동 슬로우, 일부 포션과 상호작용
-    Grass,   // 시야 차단, 이슬 드롭
     Chasm    // 통과 불가, 추락
 }

@@ -4,7 +4,6 @@ using UnityEngine;
 /// <summary>
 /// Floor Feeling 풀 (Hazard/Traps/Dark 3종 고정 — GDD 6.3).
 /// 영역별 가중치(GDD 5.2)로 발동 시 1개 선택, 미발동 시 null 반환.
-/// 새 Feeling 추가 = 이 풀의 entries 에 SO 드래그-드롭 (기존 코드 수정 X).
 /// </summary>
 [CreateAssetMenu(fileName = "FloorFeelingPool", menuName = "60s Dungeon/Map/Floor Feeling Pool")]
 public class FloorFeelingPool : ScriptableObject

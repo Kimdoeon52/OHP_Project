@@ -1,11 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// ILayoutBuilder SO 풀. MapGenerator 가 builder 인자 null 일 때 Pick(rng) 로 무작위 선택.
-/// 새 빌더 추가 = SO 1개 + 이 풀의 entries 에 드래그-드롭 (기존 코드 수정 X).
-/// 풀에는 ILayoutBuilder 를 구현한 ScriptableObject 만 등록 — 캐스팅 실패 시 경고.
-/// </summary>
 [CreateAssetMenu(fileName = "BuilderPool", menuName = "60s Dungeon/Map/Builder Pool")]
 public class BuilderPool : ScriptableObject
 {
@@ -20,7 +15,7 @@ public class BuilderPool : ScriptableObject
         foreach (var so in builders)
         {
             if (so is ILayoutBuilder lb) valid.Add(lb);
-            else if (so != null) Debug.LogWarning($"[BuilderPool] '{so.name}' 가 ILayoutBuilder 미구현 — 무시");
+            else if (so != null) Debug.LogWarning($"[BuilderPool] {so.name}");
         }
         if (valid.Count == 0) return null;
         return rng.Pick(valid);

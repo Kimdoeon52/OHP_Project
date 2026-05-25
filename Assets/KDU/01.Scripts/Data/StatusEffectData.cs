@@ -1,10 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// 상태이상 효과 정의 SO.
-/// 적의 onHitEffect에 할당하거나, 함정/아이템에서 사용.
-/// 기존 NYH의 StatusType enum과 StatusController를 재활용.
-/// </summary>
 [CreateAssetMenu(fileName = "StatusEffectData", menuName = "60s Dungeon/Status Effect Data")]
 public class StatusEffectData : ScriptableObject
 {

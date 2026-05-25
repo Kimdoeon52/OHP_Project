@@ -1,9 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// 한 런(run) 의 메타 상태 — 시드와 현재 층. MapGenerator 는 매 호출마다 (seed, depth) 를 받지만
-/// 누가 그 값을 들고 있을지가 따로 있어야 해서 분리. 층 전환 시 AdvanceDepth 로 깊이 증가.
-/// </summary>
 public class RunState : MonoBehaviour
 {
     public static RunState Instance { get; private set; }

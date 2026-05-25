@@ -25,7 +25,7 @@ public class GridSystem : MonoBehaviour
     }
 
     /// <summary>
-    /// 격자 좌표 → 월드 좌표 (셀 중심점)
+    /// 격자 좌표 -> 월드 좌표 (셀 중심점)
     /// </summary>
     public Vector3 GridToWorld(Vector2Int pos)
     {
@@ -33,7 +33,7 @@ public class GridSystem : MonoBehaviour
     }
 
     /// <summary>
-    /// 월드 좌표 → 격자 좌표
+    /// 월드 좌표 -> 격자 좌표
     /// </summary>
     public Vector2Int WorldToGrid(Vector3 worldPos)
     {
@@ -42,7 +42,7 @@ public class GridSystem : MonoBehaviour
     }
 
     /// <summary>
-    /// 해당 격자 셀이 이동 가능한지 (바닥 타일 있고, 벽/낭떨어지 타일 없음)
+    /// 해당 격자 셀이 이동 가능한지
     /// </summary>
     public bool IsWalkable(Vector2Int pos)
     {
@@ -76,7 +76,7 @@ public class GridSystem : MonoBehaviour
     }
 
     /// <summary>
-    /// 맵에 존재하는 모든 통행 가능 셀 반환 (VisionSystem 초기화 등에 사용)
+    /// 맵에 존재하는 모든 통행 가능 셀 반환 
     /// </summary>
     public System.Collections.Generic.IEnumerable<Vector2Int> GetAllWalkableCells()
     {

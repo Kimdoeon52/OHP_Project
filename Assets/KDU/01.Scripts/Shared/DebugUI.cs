@@ -1,10 +1,6 @@
 using TMPro;
 using UnityEngine;
 
-/// <summary>
-/// 프로토타입용 디버그 UI. 시간/HP/단검/포션/상태 표시.
-/// 풀 폴리시는 본 개발에서.
-/// </summary>
 public class DebugUI : MonoBehaviour
 {
     [SerializeField] private TMP_Text timeText;

@@ -1,10 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 플레이어 중심 원형 시야 + 브레젠험 직선 차단 계산.
-/// 렌더링(안개 타일맵)은 구독자(FogRenderer 등)가 OnVisionUpdated 이벤트로 처리.
-/// </summary>
 public class VisionSystem : MonoBehaviour
 {
     public static VisionSystem Instance { get; private set; }
@@ -17,9 +13,6 @@ public class VisionSystem : MonoBehaviour
     public IReadOnlyCollection<Vector2Int> Visible => _visible;
     public IReadOnlyCollection<Vector2Int> Explored => _explored;
 
-    /// <summary>
-    /// 시야 반경 보정치 (DarkFeeling 등 외부에서 조절). Generate 호출마다 0 으로 리셋되어야 함.
-    /// </summary>
     public int VisionRadiusDelta { get; set; } = 0;
 
     private int VisionRadius
@@ -46,9 +39,6 @@ public class VisionSystem : MonoBehaviour
         if (Instance == this) Instance = null;
     }
 
-    /// <summary>
-    /// 플레이어 이동 후 호출. 시야 갱신 및 이벤트 발행.
-    /// </summary>
     public void UpdateVision(Vector2Int playerPos)
     {
         _visible.Clear();
@@ -77,7 +67,6 @@ public class VisionSystem : MonoBehaviour
     public bool IsVisible(Vector2Int pos) => _visible.Contains(pos);
     public bool IsExplored(Vector2Int pos) => _explored.Contains(pos);
 
-    /// <summary>층 전환 시 시야/탐험 기록 초기화. 호출 직후 UpdateVision 으로 새 위치 기준 갱신.</summary>
     public void ResetForNewFloor()
     {
         _visible.Clear();
@@ -86,10 +75,6 @@ public class VisionSystem : MonoBehaviour
         GameEvents.OnVisionUpdated?.Invoke(_visible, _explored);
     }
 
-    /// <summary>
-    /// 브레젠험 직선 LOS 체크.
-    /// 중간 경로에 벽(비통행 셀)이 있으면 차단. 목적지 셀 자체는 허용(벽도 보임).
-    /// </summary>
     private bool HasLineOfSight(Vector2Int from, Vector2Int to)
     {
         int x = from.x, y = from.y;
@@ -102,7 +87,6 @@ public class VisionSystem : MonoBehaviour
         {
             if (x == to.x && y == to.y) return true;
 
-            // 출발지 제외, 중간 경로에 비통행 셀이 있으면 차단
             if (!(x == from.x && y == from.y) && !GridSystem.Instance.IsWalkable(new Vector2Int(x, y)))
                 return false;
 

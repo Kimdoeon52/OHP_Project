@@ -1,11 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// IRegionPainter SO 풀 — depth 범위 기반 선택.
-/// 영역별 페인터(Sewer 1~5 / Dungeon 6~10 / Hell 11~15) 매핑에 사용.
-/// 한 depth 에 여러 entry 가 매치되면 그 중 무작위 — 같은 영역 안에서 다양성 확보.
-/// </summary>
 [CreateAssetMenu(fileName = "PainterPool", menuName = "60s Dungeon/Map/Painter Pool")]
 public class PainterPool : ScriptableObject
 {
@@ -34,7 +29,7 @@ public class PainterPool : ScriptableObject
             if (e == null || e.painter == null) continue;
             if (depth < e.minDepth || depth > e.maxDepth) continue;
             if (e.painter is IRegionPainter p) matches.Add(p);
-            else Debug.LogWarning($"[PainterPool] '{e.painter.name}' 가 IRegionPainter 미구현 — 무시");
+            else Debug.LogWarning($"[PainterPool] {e.painter.name}");
         }
         if (matches.Count == 0) return null;
         return rng.Pick(matches);

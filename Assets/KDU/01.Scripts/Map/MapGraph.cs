@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 
 /// <summary>
-/// RoomData 그래프 위에서 도는 BFS 유틸. 빌더 검증 / 디버그용.
+/// RoomData 그래프 위에서 도는 BFS 유틸
 /// </summary>
 public static class MapGraph
 {
-    /// <summary>모든 방이 Safe Room 에서 도달 가능한가.</summary>
+    // 모든 방이 Safe Room 에서 도달 가능한가
     public static bool IsConnected(List<RoomData> rooms)
     {
         if (rooms == null || rooms.Count == 0) return false;
@@ -25,14 +25,14 @@ public static class MapGraph
         return true;
     }
 
-    /// <summary>두 방 사이 경로 존재 여부.</summary>
+    // 두 방 사이 경로 존재 여부
     public static bool PathExists(RoomData from, RoomData to)
     {
         if (from == null || to == null) return false;
         return BFSDistances(from).ContainsKey(to);
     }
 
-    /// <summary>start 로부터의 그래프 거리 (간선 = connections).</summary>
+    // start 로부터의 그래프 거리
     public static Dictionary<RoomData, int> BFSDistances(RoomData start)
     {
         var distances = new Dictionary<RoomData, int>();

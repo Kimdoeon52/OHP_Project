@@ -18,11 +18,11 @@ public static class GameEvents
     public static Action<TrapSpawnRequest> OnTrapSpawnRequested;
     public static Action<TrapStubRequest> OnTrapStubRequested;
 
-    // 보상 드롭 (Phase 0 추가)
+    // 보상 드롭
     public static Action<Vector2Int, int> OnExpDropped;     // pos, exp
     public static Action<Vector2Int, int> OnGoldDropped;    // pos, gold
 
-    // 상태이상 (Phase 0 추가)
+    // 상태이상
     public static Action<StatusRequest> OnStatusEffectApplied;
 
     // 시야

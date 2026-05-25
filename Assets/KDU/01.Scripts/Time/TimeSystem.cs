@@ -13,7 +13,7 @@ public class TimeSystem : MonoBehaviour
     {
         if (Instance != null)
         {
-            Debug.LogError("TimeSystem이 씬에 두 개 이상 있습니다.");
+            Debug.LogError("TimeSystem이 씬에 두 개 이상 있음");
             return;
         }
         Instance = this;
@@ -28,7 +28,6 @@ public class TimeSystem : MonoBehaviour
     public void StartTimer() => IsRunning = true;
     public void StopTimer() => IsRunning = false;
 
-    /// <summary>층 전환 시 시간 풀로 채우고 정지 상태로. 호출자가 StartTimer 로 재시작.</summary>
     public void ResetForNewFloor()
     {
         TimeRemaining = config != null ? config.startTime : 60f;
@@ -51,9 +50,6 @@ public class TimeSystem : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 행동 실행 시 시간 소모 (이동 0.3s, 던지기 0.5s 등) - 기획에 따라 사라질 수도 있음
-    /// </summary> 
     public void ConsumeTime(float seconds)
     {
         if (!IsRunning) return;
@@ -68,9 +64,7 @@ public class TimeSystem : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 적 처치 보너스 등 시간 추가
-    /// </summary>
+    // 적 처치 보너스 등 시간 추가
     public void AddTime(float seconds)
     {
         TimeRemaining += seconds;

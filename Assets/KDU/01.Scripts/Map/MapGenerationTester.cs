@@ -3,10 +3,7 @@ using System.Text;
 using UnityEngine;
 
 /// <summary>
-/// Phase 2 통합 테스트 — Inspector 우클릭 ContextMenu 로 실행.
-/// 1) 단일 생성: runSeed/depth 로 한 층 생성 + 통계 로그
-/// 2) 결정론 테스트: 같은 시드 2회 → 결과 동일?
-/// 3) 100 시드 스트레스: 무작위 시드들 모두 entrance↔exit 연결성 통과?
+/// 맵 생성 실험용
 /// </summary>
 public class MapGenerationTester : MonoBehaviour
 {

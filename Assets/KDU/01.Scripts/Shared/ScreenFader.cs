@@ -12,7 +12,6 @@ public class ScreenFader : MonoBehaviour
 
     [SerializeField] private float defaultDuration = 0.4f;
 
-    [Tooltip("씬 진입 직후 알파. 게임 시작 시 1층 생성을 위해 검은 화면으로 시작하려면 1, 평소엔 0.")]
     [Range(0f, 1f)]
     [SerializeField] private float initialAlpha = 0f;
 
@@ -22,7 +21,7 @@ public class ScreenFader : MonoBehaviour
     {
         if (Instance != null)
         {
-            Debug.LogError("ScreenFader 가 씬에 두 개 이상 있습니다.");
+            Debug.LogError("ScreenFader 가 씬에 두 개 이상 있음");
             return;
         }
         Instance = this;

@@ -3,19 +3,8 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 
 /// <summary>
-/// 보스 층(5/10/15)의 미리 찍어둔 고정 맵 prefab 을 로드.
-/// 절차생성 파이프라인을 타지 않고 직접 그린 Tilemap 데이터를 MapGenerator 의 런타임 Tilemap 에 복사.
-///
-/// Prefab 규격 (사용자가 만들 prefab 구조):
-///   Root (GameObject — Grid 컴포넌트 권장, 자식 Tilemap 들의 부모)
-///   ├── Floor       (Tilemap 컴포넌트 — 바닥 타일 페인트)
-///   ├── Wall        (Tilemap — 벽 타일 페인트)
-///   ├── Hazard      (Tilemap — 옵션, 위험 바닥 페인트)
-///   └── SafeAnchor  (빈 Transform — 플레이어 스폰 셀 1개 위치)
-///
-/// 자식 이름은 정확히 "Floor"/"Wall"/"Hazard"/"SafeAnchor". 없으면 해당 항목 스킵.
-/// SafeAnchor 가 있으면 그 셀 1개를 floorCells 로 하는 RoomData(type=Safe) 가 추가로 반환됨
-/// (출품 빌드 결정 — MAP_GENERATION.md 1.2 참조).
+/// 보스 층(5/10/15)의 미리 찍어둔 고정 맵 prefab 을 로드
+/// 절차생성 파이프라인을 타지 않고 직접 그린 Tilemap 데이터를 MapGenerator 의 런타임 Tilemap 에 복사
 /// </summary>
 [CreateAssetMenu(fileName = "BossRoomLoader", menuName = "60s Dungeon/Map/Boss Room Loader")]
 public class BossRoomLoader : ScriptableObject
@@ -52,9 +41,6 @@ public class BossRoomLoader : ScriptableObject
 
         target.ClearAll();
 
-        // 임시 인스턴스화 → 자식 Tilemap 의 타일 데이터 + SafeAnchor 위치 추출 → destroy.
-        // Tilemap WorldToCell 은 prefab 의 Floor Tilemap 을 기준으로 계산 — 같은 Grid 안의 위치라
-        // CopyChildTilemap 이 셀 좌표를 그대로 옮기는 것과 좌표계가 정확히 일치한다.
         var tempRoot = Instantiate(entry.prefab);
         Vector2Int? safeCell = null;
         try
@@ -136,8 +122,6 @@ public class BossRoomLoader : ScriptableObject
 
         var result = new List<RoomData> { bossRoom };
 
-        // 출품 빌드: SafeAnchor 1셀 = Safe RoomData 1셀 (MAP_GENERATION.md 1.2).
-        // 영역 분리(flood fill) 로의 마이그레이션은 문 시스템 도입 시 — BACKLOG.md "문 시스템" 항목.
         if (safeCell.HasValue)
         {
             var s = safeCell.Value;

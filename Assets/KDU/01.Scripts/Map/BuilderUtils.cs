@@ -2,8 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 빌더(LoopBuilder / FigureEightBuilder 등) 공통 헬퍼.
-/// 방 사이즈 결정처럼 빌더 별 파라미터에 의존하는 로직은 제외 — 진짜 stateless 공용만 모음.
+/// 빌더 공통 사용
 /// </summary>
 public static class BuilderUtils
 {
@@ -87,8 +86,8 @@ public static class BuilderUtils
     }
 
     /// <summary>
-    /// 인접 방쌍이 겹치지 않을 만큼만 루프 반지름 확보. chord = 2R·sin(π/N) 식 역산.
-    /// 방 크기 합 + interRoomGap 을 인접쌍 거리 하한으로 잡고 가장 큰 케이스로 R 결정.
+    /// 인접 방쌍이 겹치지 않을 만큼만 루프 반지름 확보. chord = 2R·sin(π/N) 식 역산
+    /// 방 크기 합 + interRoomGap 을 인접쌍 거리 하한으로 잡고 가장 큰 케이스로 R 결정
     /// </summary>
     public static int ComputeLoopRadius(List<RoomData> loop, int interRoomGap, int minRadius)
     {
@@ -111,8 +110,8 @@ public static class BuilderUtils
     }
 
     /// <summary>
-    /// 루프 위에 방들을 배치 (center 중심 원).
-    /// startAngleRad 로 index 0 의 시작 각도 지정 (figure-8 처럼 두 루프가 공유 방을 같은 좌표에 두고 싶을 때).
+    /// 루프 위에 방들을 배치
+    /// startAngleRad 로 index 0 의 시작 각도 지정
     /// </summary>
     public static void PositionInLoop(List<RoomData> loop, Vector2Int center, int radius, float startAngleRad = 0f)
     {

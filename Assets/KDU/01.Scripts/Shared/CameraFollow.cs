@@ -1,8 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// 타겟을 따라가는 2D 카메라. Smoothing 0이면 즉시 스냅, 양수면 부드러운 추적.
-/// </summary>
 public class CameraFollow : MonoBehaviour
 {
     [SerializeField] private Transform target;

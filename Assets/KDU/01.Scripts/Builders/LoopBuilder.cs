@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// <summary>
 /// 메인 방을 원형 루프로 배치하고 인접쌍을 L-자 터널로 연결한다.
-/// Safe 와 Exit 는 루프의 반대편에 자동 배치 (Exit index ≈ N/2).
+/// Safe 와 Exit 는 루프의 반대편에 자동 배치
 /// SPD LoopBuilder 디자인 참고, 코드는 자체 작성.
 /// </summary>
 [CreateAssetMenu(fileName = "LoopBuilder", menuName = "60s Dungeon/Builders/Loop Builder")]
@@ -11,7 +11,7 @@ public class LoopBuilder : ScriptableObject, ILayoutBuilder
 {
     [Header("루프 배치")]
     [SerializeField] private int minLoopRadius = 8;     // 방이 작아도 이 이하로는 줄이지 않음
-    [SerializeField] private int interRoomGap = 3;      // 인접 방 사이 최소 여유 (벽 + 터널 폭 흡수)
+    [SerializeField] private int interRoomGap = 3;      // 인접 방 사이 최소 여유
 
     [Header("방 크기 범위 (셀 단위, min/max 모두 포함)")]
     [SerializeField] private Vector2Int normalSize = new Vector2Int(5, 7);
@@ -34,7 +34,7 @@ public class LoopBuilder : ScriptableObject, ILayoutBuilder
         int radius = BuilderUtils.ComputeLoopRadius(loopOrder, interRoomGap, minLoopRadius);
         BuilderUtils.PositionInLoop(loopOrder, Vector2Int.zero, radius);
 
-        // 방 자체의 floorCells (인테리어) 채우기
+        // 방 자체의 floorCells 채우기
         foreach (var r in rooms) r.floorCells = BuilderUtils.CellsInRect(r.bounds);
 
         // 인접쌍 cycle 연결 — 각 연결마다 Tunnel 한 개 생성
@@ -69,10 +69,6 @@ public class LoopBuilder : ScriptableObject, ILayoutBuilder
         room.bounds = new RectInt(0, 0, w, h);
     }
 
-    /// <summary>
-    /// Safe → 절반 Normal → (Boss) → Exit → 나머지 Normal 순서로 cycle 구성.
-    /// Boss 가 존재하면 Exit 바로 앞에 배치 — Safe 반대편(루프 N/2 지점 부근)에 위치하게 됨.
-    /// </summary>
     private List<RoomData> BuildLoopOrder(List<RoomData> rooms)
     {
         var safe = rooms.Find(r => r.type == RoomType.Safe);

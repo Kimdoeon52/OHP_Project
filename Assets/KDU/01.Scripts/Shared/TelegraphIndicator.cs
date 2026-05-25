@@ -1,8 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// 적의 다음 턴 공격 의도를 셀에 표시. 각 적이 인스턴스화하고 ClearTelegraphs로 정리.
-/// </summary>
 [RequireComponent(typeof(SpriteRenderer))]
 public class TelegraphIndicator : MonoBehaviour
 {
