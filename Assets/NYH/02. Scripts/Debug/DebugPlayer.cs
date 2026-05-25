@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+// #if UNITY_EDITOR || DEVELOPMENT_BUILD
 
 using PrototypeRT;
 using UnityEngine;
@@ -357,4 +357,4 @@ public class DebugPlayer : MonoBehaviour
     }
 }
 
-#endif
+// #endif

@@ -19,6 +19,7 @@ public class TurnManager : MonoBehaviour
     public bool IsPlayerTurn { get; private set; } = true;
     public float LastPlayerActionTimeCost { get; private set; } = 1.0f;
 
+
     private void Awake()
     {
         if (Instance != null)
@@ -94,10 +95,23 @@ public class TurnManager : MonoBehaviour
         OnPlayerActionCompleted(totalCost, skipEnemyTurnDelay);
     }
 
+    private static bool IsEntityAlive(IGridEntity entity)
+    {
+        if (entity == null) return false;
+
+        if(entity is UnityEngine.Object unityObject)
+        return unityObject != null;
+
+        return true;
+    }
+
     public void Register(IGridEntity entity)
     {
+        if(!IsEntityAlive(entity)) return;
+
+
         if (!_entities.Contains(entity))
-            _entities.Add(entity);
+            _entities.Add(entity);   
     }
 
     public void Unregister(IGridEntity entity)
@@ -113,7 +127,13 @@ public class TurnManager : MonoBehaviour
         for (int i = 0; i < _entities.Count; i++)
         {
             var e = _entities[i];
-            if (e != null && e.GridPosition == pos) return e;
+            if(!IsEntityAlive(e))
+            {
+                _entities.RemoveAt(i);
+                continue;
+            }
+            if (e != null && e.GridPosition == pos) 
+            return e;
         }
         return null;
     }
@@ -152,8 +172,11 @@ public class TurnManager : MonoBehaviour
 
         // 리스트 복사 — 턴 도중 Unregister가 일어나도 안전
         var snapshot = new List<IGridEntity>(_entities);
+
         foreach (var entity in snapshot)
         {
+            if (!IsEntityAlive(entity)) continue;
+            
             if (entity == null) continue;
             entity.OnTurnUpdate();
         }

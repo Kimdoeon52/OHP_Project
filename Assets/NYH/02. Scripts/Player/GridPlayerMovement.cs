@@ -196,7 +196,7 @@ public class GridPlayerMovement : MonoBehaviour
         }
 
         // 등록된 적 N마리 순회 해서 적 1마리마다 느려짐 그래서 없앰
-        // TurnManager.Instance.OnPlayerActionCompleted(totalCost, skipEnemyTurnDelay);
+        TurnManager.Instance.OnPlayerActionCompleted(totalCost, skipEnemyTurnDelay);
     }
 
     private float GetMoveDuration()
