@@ -133,10 +133,10 @@ public class BossB : BossBase, IGridEntity, IDamageable
         Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
     };
 
-    protected override void Start()
+    protected override void OnEnable()
     {
         currentHp = maxHp; // 보스 체력 설정먼저 해야 체력 업데이트가 보임
-        base.Start();
+        base.OnEnable();
         AddActionCase(BossAction.Pattern1, 50); // 평타
         AddActionCase(BossAction.Pattern2, 20); // 돌
         AddActionCase(BossAction.Pattern3, 30); // 이동

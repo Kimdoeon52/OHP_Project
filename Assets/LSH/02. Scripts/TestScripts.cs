@@ -1,37 +1,47 @@
 using UnityEngine;
 
-// 임시 보스 소환 트리거. 실제 게임에선 BossRoomLoader가 방 진입 시 호출하게 될 자리.
-// 지금은 P 키로 수동 소환만 함. 같은 보스가 두 번 생성되지 않도록 spawnedBoss를 들고 있다 살아있으면 무시.
+// 임시 보스 활성화 트리거.
+// 플레이어가 triggerObject의 Y값을 넘어서면 bossObject.SetActive(true).
+// 보스는 씬에 미리 비활성 상태로 배치돼 있어야 함 (인스펙터 SerializeField 참조를 살리기 위해서).
+// 실제 게임에선 BossRoomLoader가 방 진입 시 처리할 자리.
 public class TestScripts : MonoBehaviour
 {
-    [Header("소환할 보스")]
-    [SerializeField] private GameObject bossPrefab;           // BossB 프리팹 (인스펙터에서 드래그)
-    [SerializeField] private Transform spawnPoint;            // 소환 위치 (비워두면 이 오브젝트 위치 사용)
+    [Header("활성화할 보스")]
+    [SerializeField] private GameObject bossObject;          // 씬에 미리 배치한 비활성 보스 GameObject
 
-    [Header("키 설정")]
-    [SerializeField] private KeyCode spawnKey = KeyCode.P;    // 임시 소환 키
+    [Header("트리거 오브젝트 (이 Y값을 플레이어가 넘으면 발동)")]
+    [SerializeField] private Transform triggerObject;        // 임시 라인 오브젝트의 Transform
 
-    private GameObject spawnedBoss;
+    [Header("플레이어 (비우면 GridPlayer를 씬에서 자동 검색)")]
+    [SerializeField] private Transform player;
+
+    private bool triggered;                                  // 한 번만 발동하도록
+
+    void Start()
+    {
+        if (player == null)
+        {
+            var p = FindFirstObjectByType<GridPlayer>();
+            if (p != null) player = p.transform;
+        }
+    }
 
     void Update()
     {
-        if (!Input.GetKeyDown(spawnKey)) return;
-        if (spawnedBoss != null) return; // 이미 살아있으면 중복 소환 금지
+        if (triggered) return;
+        if (bossObject == null || triggerObject == null || player == null) return;
 
-        SpawnBoss();
+        if (player.position.y > triggerObject.position.y)
+        {
+            ActivateBoss();
+        }
     }
 
-    // 외부(보스방 진입 트리거 등)에서도 호출할 수 있도록 public.
-    public void SpawnBoss()
+    public void ActivateBoss()
     {
-        if (bossPrefab == null)
-        {
-            Debug.LogWarning("TestScripts: bossPrefab이 비어 있습니다.");
-            return;
-        }
-
-        Vector3 pos = spawnPoint != null ? spawnPoint.position : transform.position;
-        spawnedBoss = Instantiate(bossPrefab, pos, Quaternion.identity);
-        Debug.Log($"<color=cyan>[테스트]</color> 보스 소환 @ {pos}");
+        if (triggered) return;
+        triggered = true;
+        bossObject.SetActive(true);
+        Debug.Log($"<color=cyan>[테스트]</color> 플레이어가 라인을 넘음 → 보스 활성화");
     }
 }

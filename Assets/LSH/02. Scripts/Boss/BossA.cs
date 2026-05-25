@@ -31,9 +31,9 @@ public class BossA : BossBase
     private RectInt _bossRoomBounds;
     private bool _hasBossRoomBounds;
 
-    protected override void Start()
+    protected override void OnEnable()
     {
-        base.Start();
+        base.OnEnable();
         currentHp = maxHp; // 보스 체력 설정
         AddActionCase(BossAction.Pattern1, 30);
         AddActionCase(BossAction.Pattern2, 30);

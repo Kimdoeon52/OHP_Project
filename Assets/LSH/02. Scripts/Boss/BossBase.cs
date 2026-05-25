@@ -46,19 +46,33 @@ public class BossBase : EnemyNormalBASE
     protected GridPlayer player; //플레이어 참조
 
     [SerializeField] protected BossHpBar hpBar;
-    
-    protected virtual void Start()
+
+    private bool _patternDelayConverted; // patternDelay 초→ms 변환이 한 번만 일어나도록 가드
+
+    protected virtual void OnEnable()
     {
-        //base.Start(); // EnemyBase: Player 찾기, 격자 스냅, TurnManager 등록
-        hpBar.Init(this);
+        // 1) 핵심 시스템 초기화 — 이 블록은 절대 예외로 끊기면 안 됨 (이후 모든 패턴이 의존).
         cancelToken = new CancellationTokenSource();
         actionCases.Clear();
-        bossLevel = 1; //보스 레벨 초기화
-        bossAnimation = GetComponent<Animator>(); //보스 애니메이션 컴포넌트 가져오기
-        patternDelay *= 1000; //초로 변환.
-        player = FindFirstObjectByType<GridPlayer>(); //씬에서 GridPlayer 참조 가져오기
-        //각 보스 체력이나 레벨에 따른 패턴 확률 설정은 각 보스마다 다르게 구현.
-        WaitBossCoolTime().Forget(); //보스 패턴 행동 사이의 딜레이를 기다림.
+        bossLevel = 1;
+        bossAnimation = GetComponent<Animator>();
+
+        // patternDelay는 인스펙터 값(초)을 ms로 한 번만 변환. OnEnable이 재호출돼도 누적 안 됨.
+        if (!_patternDelayConverted)
+        {
+            patternDelay *= 1000;
+            _patternDelayConverted = true;
+        }
+
+        player = FindFirstObjectByType<GridPlayer>();
+
+        // 2) HP 바 연결. 프리팹으로 소환된 경우 인스펙터 참조가 끊겨 있을 수 있어,
+        //    null이면 씬에서 자동 검색하고, 그래도 없으면 경고만 띄우고 계속 진행.
+        if (hpBar == null) hpBar = FindFirstObjectByType<BossHpBar>();
+        if (hpBar != null) hpBar.Init(this);
+        else Debug.LogWarning("BossBase.OnEnable: BossHpBar를 찾지 못함. HP바 표시가 동작하지 않습니다.");
+
+        WaitBossCoolTime().Forget();
     }
     protected async UniTask WaitBossCoolTime()
     {
@@ -73,10 +87,10 @@ public class BossBase : EnemyNormalBASE
 
     protected virtual void Update()
     {
-        if (Input.GetKeyDown(KeyCode.P)) //디버그용 패턴 강제 실행
+        if (Input.GetKeyDown(KeyCode.K)) //디버그용 데미지 (P는 TestScripts 소환 키와 충돌)
         {
             Debug.Log($"<color=yellow>[디버그]  아야!!!!!!!!</color>");
-            BossTakeDamage(10); //디버그용 데미지
+            BossTakeDamage(10);
         }
         if (isBossAttacking)
             return;
@@ -106,10 +120,15 @@ public class BossBase : EnemyNormalBASE
     // 보스가 데미지를 받을 때 호출. HP가 phase2HpThreshold 이하로 떨어지면 EnterPhase2가 한 번 발동.
     public virtual void BossTakeDamage(int amount)
     {
-        if (amount <= 0 || currentHp <= 0) return;
+        if(amount <= 0) return; //음수나 0 데미지는 무시 (힐링이나 무효 공격 방지)
+        if (currentHp <= 0)
+        {
+            Destroy(gameObject); //HP가 0이하가 되면 보스 파괴
+            return;
+        }
         currentHp -= amount;
         Debug.Log($"<color=red>[보스 데미지]</color> 보스가 {amount}만큼 데미지를 받음. 현재 HP: {currentHp}");
-        hpBar.UpdateBar(); //HP바 업뎃
+        if (hpBar != null) hpBar.UpdateBar();
         if (bossLevel == 1 && currentHp <= phase2HpThreshold)
             EnterPhase2();
     }
