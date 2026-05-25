@@ -20,7 +20,7 @@ public class BossHpBar : MonoBehaviour
 
     private void Awake()
     {
-        originalLocalPos = transform.localPosition;
+        originalLocalPos = fillimage.rectTransform.localPosition;
     }
 
     public void Init(BossBase target)
@@ -49,10 +49,10 @@ public class BossHpBar : MonoBehaviour
         if (activeShakeTween != null && activeShakeTween.IsActive())
         {
             activeShakeTween.Kill();
-            transform.localPosition = originalLocalPos;
+            fillimage.rectTransform.localPosition = originalLocalPos;
         }
-        activeShakeTween = transform.DOShakePosition(
+        activeShakeTween = fillimage.rectTransform.DOShakePosition(
             shakeDuration, shakeStrength, shakeVibrato, shakeRandomness, fadeOut: true)
-            .OnComplete(() => transform.localPosition = originalLocalPos);
+            .OnComplete(() => fillimage.rectTransform.localPosition = originalLocalPos);
     }
 }
