@@ -204,9 +204,18 @@ public class GridPlayerAnimationController : MonoBehaviour
         if (_isDead) return;
 
         _isDead = true;
+        _isMoveVisualActive = false;
+        if (_attackSpeedCoroutine != null)
+        {
+            StopCoroutine(_attackSpeedCoroutine);
+            _attackSpeedCoroutine = null;
+        }
+
         if (_animator != null)
             _animator.speed = 1f;
 
+        ResetTriggerIfConfigured(attackTriggerName);
+        ResetTriggerIfConfigured(hurtTriggerName);
         ResetTriggerIfConfigured(moveTriggerName);
         SetBoolIfConfigured(isMovingBoolName, false);
         SetBoolIfConfigured(isDeadBoolName, true);

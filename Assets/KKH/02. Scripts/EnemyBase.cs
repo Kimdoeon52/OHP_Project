@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,6 +18,8 @@ public abstract class EnemyBase : EntityBase, IDamageable
 {
     [SerializeField] protected EnemyData data;
     [SerializeField] protected TelegraphIndicator telegraphPrefab;
+    [SerializeField] private string deathTriggerName = "Die";
+    [SerializeField, Min(0f)] private float deathDestroyDelay = 0.6f;
 
     // ── IDamageable ──
     public int CurrentHp { get; protected set; }
@@ -30,6 +33,8 @@ public abstract class EnemyBase : EntityBase, IDamageable
 
     // ── 내부 참조 ──
     protected GridPlayer Player { get; private set; }
+    private Animator _animator;
+    private bool _isDying;
 
     // ── 공통 공격 의도 셀 (대부분의 적이 사용) ──
     protected Vector2Int? _pendingAttackCell;
@@ -48,6 +53,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
     protected override void Awake()
     {
         base.Awake();
+        _animator = GetComponent<Animator>();
         if (data == null)
         {
             Debug.LogError($"{name}: EnemyData가 할당되지 않았습니다.");
@@ -119,6 +125,11 @@ public abstract class EnemyBase : EntityBase, IDamageable
 
     protected virtual void Die()
     {
+        if (_isDying) return;
+
+        _isDying = true;
+        CurrentHp = 0;
+        StopAllCoroutines();
         ClearTelegraphs();
         TurnManager.Instance.Unregister(this);
 
@@ -132,7 +143,8 @@ public abstract class EnemyBase : EntityBase, IDamageable
         }
 
         TimeSystem.Instance.AddTime(data.timeBonus);
-        Destroy(gameObject);
+        PlayDeathAnimation();
+        StartCoroutine(DestroyAfterDeath());
     }
 
     // ══════════════ 텔레그래프 ══════════════
@@ -243,6 +255,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
     protected void TryApplyOnHitEffect(IDamageable target)
     {
         if (data.onHitEffect == null) return;
+        if (target == null || target.IsDead) return;
         if (target is not Component component) return;
 
         var effectData = data.onHitEffect;
@@ -310,6 +323,8 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// </summary>
     protected virtual void ExecutePendingAttack()
     {
+        if (IsDead) return;
+
         if (_pendingAttackCell.HasValue && Player.GridPosition == _pendingAttackCell.Value)
         {
             int damage = RollAttackDamage();
@@ -325,6 +340,8 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// </summary>
     protected virtual void PerformMovement()
     {
+        if (IsDead) return;
+
         if (SquaredDistanceToPlayer() <= data.visionRange * data.visionRange)
         {
             TryStepTowardPlayer();
@@ -336,6 +353,8 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// </summary>
     protected virtual void CheckAttackTelegraph()
     {
+        if (IsDead) return;
+
         if (IsAdjacentToPlayer())
         {
             _pendingAttackCell = Player.GridPosition;
@@ -355,5 +374,35 @@ public abstract class EnemyBase : EntityBase, IDamageable
     {
         var diff = Player.GridPosition - GridPosition;
         return diff.x * diff.x + diff.y * diff.y;
+    }
+
+    private void PlayDeathAnimation()
+    {
+        if (_animator == null || string.IsNullOrEmpty(deathTriggerName)) return;
+        if (!HasAnimatorParameter(deathTriggerName, AnimatorControllerParameterType.Trigger)) return;
+
+        _animator.speed = 1f;
+        _animator.SetTrigger(deathTriggerName);
+    }
+
+    private IEnumerator DestroyAfterDeath()
+    {
+        if (deathDestroyDelay > 0f)
+            yield return new WaitForSeconds(deathDestroyDelay);
+
+        Destroy(gameObject);
+    }
+
+    private bool HasAnimatorParameter(string parameterName, AnimatorControllerParameterType parameterType)
+    {
+        if (_animator == null || _animator.runtimeAnimatorController == null) return false;
+
+        foreach (AnimatorControllerParameter parameter in _animator.parameters)
+        {
+            if (parameter.type == parameterType && parameter.name == parameterName)
+                return true;
+        }
+
+        return false;
     }
 }
