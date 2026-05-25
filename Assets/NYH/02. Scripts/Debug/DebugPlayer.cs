@@ -71,6 +71,7 @@ public class DebugPlayer : MonoBehaviour
     [SerializeField] private KeyCode addItemKey = KeyCode.Alpha5;
     [SerializeField] private KeyCode equipItemKey = KeyCode.Alpha6;
     [SerializeField] private KeyCode upgradeKey = KeyCode.Alpha7;
+    [SerializeField] private KeyCode downgradeKey = KeyCode.Alpha8;
 
     private void Awake()
     {
@@ -105,6 +106,9 @@ public class DebugPlayer : MonoBehaviour
             EquipDebugItem();
         if (Input.GetKeyDown(upgradeKey))
             PlayerUpgrade();
+        if (Input.GetKeyDown(downgradeKey))
+            PlayerDowngrade();
+    
     }
 
     /// <summary>
@@ -187,8 +191,21 @@ public class DebugPlayer : MonoBehaviour
             stats.AddStat(NYHStatType.Evasion, 1);
 
             RefreshStatsUI();
-
     }
+
+    public void PlayerDowngrade()
+    {
+        NYHPlayerStats stats = NYHPlayerStats.Instance;
+        if(stats == null)return;
+
+            stats.AddStat(NYHStatType.Strength, -1);
+            stats.AddStat(NYHStatType.MoveSpeed, -1);
+            stats.AddStat(NYHStatType.AttackSpeed, -1);
+            stats.AddStat(NYHStatType.Evasion, -1);
+
+            RefreshStatsUI();
+    }
+
 
     [ContextMenu("Debug/Damage Player")]
     public void DamagePlayer()
