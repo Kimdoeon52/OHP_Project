@@ -36,6 +36,8 @@ public class TurnManager : MonoBehaviour
 
     public void Register(IGridEntity entity)
     {
+        if (!IsEntityAlive(entity)) return;
+
         if (!_entities.Contains(entity))
             _entities.Add(entity);
     }
@@ -53,7 +55,8 @@ public class TurnManager : MonoBehaviour
         for (int i = 0; i < _entities.Count; i++)
         {
             var e = _entities[i];
-            if (e != null && e.GridPosition == pos) return e;
+            if (!IsEntityAlive(e)) continue;
+            if (e.GridPosition == pos) return e;
         }
         return null;
     }
@@ -94,16 +97,26 @@ public class TurnManager : MonoBehaviour
         var snapshot = new List<IGridEntity>(_entities);
         foreach (var entity in snapshot)
         {
-            if (entity == null) continue;
+            if (!IsEntityAlive(entity)) continue;
             entity.OnTurnUpdate();
             if (!skipEnemyTurnDelay && enemyTurnDelay > 0f)
                 yield return new WaitForSeconds(enemyTurnDelay);
         }
 
         // 죽은 엔티티 정리
-        _entities.RemoveAll(e => e == null);
+        _entities.RemoveAll(e => !IsEntityAlive(e));
 
         _processingTurn = false;
         IsPlayerTurn = true;
+    }
+
+    private static bool IsEntityAlive(IGridEntity entity)
+    {
+        if (entity == null) return false;
+
+        if (entity is Object unityObject)
+            return unityObject != null;
+
+        return true;
     }
 }
