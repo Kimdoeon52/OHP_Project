@@ -20,24 +20,9 @@ namespace EnemySystem
     /// </summary>
     public class EnemySpawner : MonoBehaviour, IEnemySpawner
     {
-        /// <summary>
-        /// 층 범위 구간과 해당 스폰 설정을 묶는 에디터 노출용 구조체.
-        /// </summary>
-        [System.Serializable]
-        public struct FloorConfigEntry
-        {
-            [Tooltip("이 설정이 적용되는 던전 깊이 최솟값 (포함)")]
-            public int minDepth;
-            
-            [Tooltip("이 설정이 적용되는 던전 깊이 최댓값 (포함)")]
-            public int maxDepth;
-            
-            [Tooltip("해당 깊이 범위에서 사용할 FloorSpawnConfig SO")]
-            public FloorSpawnConfig config;
-        }
-
         [Header("층 범위 구간별 스폰 설정 목록")]
-        [SerializeField] private List<FloorConfigEntry> floorConfigs = new List<FloorConfigEntry>();
+        [Tooltip("층별 스폰 규칙 정보들을 담은 FloorSpawnConfig SO 목록임.")]
+        [SerializeField] private List<FloorSpawnConfig> floorConfigs = new List<FloorSpawnConfig>();
 
         /// <summary> 현재 층에 생성된 몬스터 오브젝트 관리 목록. 층 이동 시 전부 Destroy. </summary>
         private readonly List<GameObject> _spawned = new List<GameObject>();
@@ -158,16 +143,16 @@ namespace EnemySystem
         }
 
         /// <summary>
-        /// depth 값이 floorConfigs의 minDepth~maxDepth 범위에 속하는 항목을 검색.
-        /// 일치 항목 없으면 null 반환.
+        /// 지정한 depth가 적용 범위에 맞는 FloorSpawnConfig SO를 검색하여 반환함.
+        /// 일치 항목 없으면 null 반환함.
         /// </summary>
         private FloorSpawnConfig GetConfigForDepth(int depth)
         {
-            foreach (var entry in floorConfigs)
+            foreach (var config in floorConfigs)
             {
-                if (depth >= entry.minDepth && depth <= entry.maxDepth)
+                if (config != null && config.IsDepthMatching(depth))
                 {
-                    return entry.config;
+                    return config;
                 }
             }
             return null;

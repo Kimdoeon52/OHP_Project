@@ -27,6 +27,16 @@ namespace EnemySystem
     [CreateAssetMenu(fileName = "FloorSpawnConfig", menuName = "60s Dungeon/Floor Spawn Config")]
     public class FloorSpawnConfig : ScriptableObject
     {
+        [Header("적용할 층 범위 설정")]
+        [Tooltip("이 설정이 적용되는 최소 층 (depth)임.")]
+        public int minDepth = 1;
+
+        [Tooltip("이 설정이 적용되는 최대 층 (depth)임.")]
+        public int maxDepth = 5;
+
+        [Tooltip("이 설정이 적용되는 특정 층 목록임 (비어 있지 않으면 min/max 범위보다 우선 적용됨).")]
+        public List<int> specificDepths = new List<int>();
+
         [Header("난이도 설정 테이블")]
         [Tooltip("이 구역의 방별 거리/확률 규칙을 갖는 SpawnTable")]
         public EnemySpawnTable spawnTable;
@@ -34,6 +44,18 @@ namespace EnemySystem
         [Header("몬스터 리소스 프리팹 매핑")]
         [Tooltip("이 구역에서 사용할 모든 (EnemyData, Prefab) 쌍 목록")]
         public List<EnemyPrefabMapping> prefabMappings = new List<EnemyPrefabMapping>();
+
+        /// <summary>
+        /// 지정한 깊이(depth)가 이 설정의 적용 범위에 속하는지 검사함.
+        /// </summary>
+        public bool IsDepthMatching(int depth)
+        {
+            if (specificDepths != null && specificDepths.Count > 0)
+            {
+                return specificDepths.Contains(depth);
+            }
+            return depth >= minDepth && depth <= maxDepth;
+        }
 
         /// <summary>
         /// 특정 EnemyData에 대응하는 프리팹을 반환.
