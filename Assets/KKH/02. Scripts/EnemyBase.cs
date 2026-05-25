@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,6 +18,8 @@ public abstract class EnemyBase : EntityBase, IDamageable
 {
     [SerializeField] protected EnemyData data;
     [SerializeField] protected TelegraphIndicator telegraphPrefab;
+    [SerializeField] private string deathTriggerName = "Die";
+    [SerializeField, Min(0f)] private float deathDestroyDelay = 0.6f;
 
     // ── IDamageable ──
     public int CurrentHp { get; protected set; }
@@ -30,6 +33,8 @@ public abstract class EnemyBase : EntityBase, IDamageable
 
     // ── 내부 참조 ──
     protected GridPlayer Player { get; private set; }
+    protected Animator _animator;
+    private bool _isDying;
 
     // ── 공통 공격 의도 셀 (대부분의 적이 사용) ──
     protected Vector2Int? _pendingAttackCell;
@@ -48,6 +53,8 @@ public abstract class EnemyBase : EntityBase, IDamageable
     protected override void Awake()
     {
         base.Awake();
+        _animator = GetComponent<Animator>();
+        if (_animator == null) _animator = GetComponentInChildren<Animator>();
         if (data == null)
         {
             Debug.LogError($"{name}: EnemyData가 할당되지 않았습니다.");
@@ -108,6 +115,12 @@ public abstract class EnemyBase : EntityBase, IDamageable
 
         int finalDamage = ApplyDefense(amount);
         CurrentHp -= finalDamage;
+
+        if (_animator != null && CurrentHp > 0)
+        {
+            _animator.SetTrigger("Hit");
+        }
+
         if (CurrentHp <= 0) Die();
     }
 
@@ -119,6 +132,11 @@ public abstract class EnemyBase : EntityBase, IDamageable
 
     protected virtual void Die()
     {
+        if (_isDying) return;
+
+        _isDying = true;
+        CurrentHp = 0;
+        StopAllCoroutines();
         ClearTelegraphs();
         TurnManager.Instance.Unregister(this);
 
@@ -132,7 +150,8 @@ public abstract class EnemyBase : EntityBase, IDamageable
         }
 
         TimeSystem.Instance.AddTime(data.timeBonus);
-        Destroy(gameObject);
+        PlayDeathAnimation();
+        StartCoroutine(DestroyAfterDeath());
     }
 
     // ══════════════ 텔레그래프 ══════════════
@@ -186,8 +205,11 @@ public abstract class EnemyBase : EntityBase, IDamageable
         if (next == Player.GridPosition) return false;
         if (TurnManager.Instance.GetEntityAt(next) != null) return false;
 
+        if (_animator != null) _animator.SetBool("Walk", true);
+
         SetGridPosition(next);
         UpdateVisibility();
+        UpdateSpriteDirection(next);
         return true;
     }
 
@@ -243,6 +265,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
     protected void TryApplyOnHitEffect(IDamageable target)
     {
         if (data.onHitEffect == null) return;
+        if (target == null || target.IsDead) return;
         if (target is not Component component) return;
 
         var effectData = data.onHitEffect;
@@ -286,10 +309,12 @@ public abstract class EnemyBase : EntityBase, IDamageable
 
         // 2단계: 이동 처리 (이동 비용이 충족될 때 실행)
         float moveCost = GetMoveCost();
+        bool moved = false;
         while (_moveActionPoints >= moveCost)
         {
             PerformMovement();
             _moveActionPoints -= moveCost;
+            moved = true;
 
             // moveCost가 1.0초 이상인 보통/느린 적은 한 턴에 최대 한 칸만 이동하도록 제어
             if (moveCost >= 1.0f)
@@ -303,6 +328,30 @@ public abstract class EnemyBase : EntityBase, IDamageable
             CheckAttackTelegraph();
             _attackActionPoints -= attackCost;
         }
+
+        // 이동 연출 제어
+        if (moved && !HasCustomMovementVisual())
+        {
+            StartCoroutine(ResetWalkAfterDelay(0.18f));
+        }
+        else if (!moved)
+        {
+            if (_animator != null) _animator.SetBool("Walk", false);
+        }
+    }
+
+    private IEnumerator ResetWalkAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (_animator != null) _animator.SetBool("Walk", false);
+    }
+
+    /// <summary>
+    /// 자식 클래스에서 SmoothMoveVisual 같은 별도 보간 이동 연출을 사용하는지 여부
+    /// </summary>
+    protected virtual bool HasCustomMovementVisual()
+    {
+        return false;
     }
 
     /// <summary>
@@ -310,11 +359,25 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// </summary>
     protected virtual void ExecutePendingAttack()
     {
-        if (_pendingAttackCell.HasValue && Player.GridPosition == _pendingAttackCell.Value)
+        if (IsDead) return;
+
+        if (_animator != null) _animator.SetBool("Walk", false);
+
+        if (_pendingAttackCell.HasValue)
         {
-            int damage = RollAttackDamage();
-            Player.TakeDamage(damage);
-            TryApplyOnHitEffect(Player);
+            UpdateSpriteDirection(_pendingAttackCell.Value);
+
+            if (_animator != null)
+            {
+                _animator.SetTrigger("Attack");
+            }
+
+            if (Player.GridPosition == _pendingAttackCell.Value)
+            {
+                int damage = RollAttackDamage();
+                Player.TakeDamage(damage);
+                TryApplyOnHitEffect(Player);
+            }
         }
         _pendingAttackCell = null;
         ClearTelegraphs();
@@ -325,6 +388,8 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// </summary>
     protected virtual void PerformMovement()
     {
+        if (IsDead) return;
+
         if (SquaredDistanceToPlayer() <= data.visionRange * data.visionRange)
         {
             TryStepTowardPlayer();
@@ -336,10 +401,29 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// </summary>
     protected virtual void CheckAttackTelegraph()
     {
+        if (IsDead) return;
+
+        if (_animator != null) _animator.SetBool("Walk", false);
+
         if (IsAdjacentToPlayer())
         {
             _pendingAttackCell = Player.GridPosition;
+            UpdateSpriteDirection(_pendingAttackCell.Value);
             ShowTelegraph(_pendingAttackCell.Value);
+        }
+    }
+
+    protected void UpdateSpriteDirection(Vector2Int targetPos)
+    {
+        if (SpriteRenderer == null) return;
+
+        if (targetPos.x < GridPosition.x)
+        {
+            SpriteRenderer.flipX = true;
+        }
+        else if (targetPos.x > GridPosition.x)
+        {
+            SpriteRenderer.flipX = false;
         }
     }
 
@@ -355,5 +439,37 @@ public abstract class EnemyBase : EntityBase, IDamageable
     {
         var diff = Player.GridPosition - GridPosition;
         return diff.x * diff.x + diff.y * diff.y;
+    }
+
+    private void PlayDeathAnimation()
+    {
+        if (_animator == null) return;
+        _animator.SetBool("Walk", false);
+        if (string.IsNullOrEmpty(deathTriggerName)) return;
+        if (!HasAnimatorParameter(deathTriggerName, AnimatorControllerParameterType.Trigger)) return;
+
+        _animator.speed = 1f;
+        _animator.SetTrigger(deathTriggerName);
+    }
+
+    private IEnumerator DestroyAfterDeath()
+    {
+        if (deathDestroyDelay > 0f)
+            yield return new WaitForSeconds(deathDestroyDelay);
+
+        Destroy(gameObject);
+    }
+
+    private bool HasAnimatorParameter(string parameterName, AnimatorControllerParameterType parameterType)
+    {
+        if (_animator == null || _animator.runtimeAnimatorController == null) return false;
+
+        foreach (AnimatorControllerParameter parameter in _animator.parameters)
+        {
+            if (parameter.type == parameterType && parameter.name == parameterName)
+                return true;
+        }
+
+        return false;
     }
 }

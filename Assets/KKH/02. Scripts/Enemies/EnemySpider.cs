@@ -43,6 +43,7 @@ public class EnemySpider : EnemyBase
     private void TryApplySlowDebuff(IDamageable target)
     {
         if (slowDebuffData == null) return;
+        if (target == null || target.IsDead) return;
         if (target is not Component component) return;
 
         var request = new StatusRequest(

@@ -51,13 +51,16 @@ public class EnemyBat : EnemyBase
 
     private IEnumerator SmoothMoveVisual(float delay)
     {
+        if (_animator != null) _animator.SetBool("Walk", true);
         for (int i = 1; i < _movePath.Count; i++)
         {
             Vector3 targetWorldPos = GridSystem.Instance.GridToWorld(_movePath[i]);
             transform.position = targetWorldPos;
             UpdateVisibility();
+            UpdateSpriteDirection(_movePath[i]);
             yield return new WaitForSeconds(delay);
         }
+        if (_animator != null) _animator.SetBool("Walk", false);
     }
 
     private Vector2Int GetNextStepDirection()
@@ -82,6 +85,11 @@ public class EnemyBat : EnemyBase
         if (!GridSystem.Instance.IsWalkable(pos)) return false;
         if (pos == Player.GridPosition) return false;
         if (TurnManager.Instance.GetEntityAt(pos) != null) return false;
+        return true;
+    }
+
+    protected override bool HasCustomMovementVisual()
+    {
         return true;
     }
 }

@@ -36,6 +36,11 @@ public class MapGenerator : MonoBehaviour
     [Tooltip("보스 층은 절차생성을 스킵하고 이 로더가 prefab 을 로드. null 이면 보스 층도 절차생성됨.")]
     [SerializeField] private BossRoomLoader bossRoomLoader;
 
+    [Header("Exit 마커 (옵션 — 미할당 시 출구 표식 없음)")]
+    [Tooltip("Exit 방 중앙 셀에 인스턴스화. Vision 으로 한 번 본 뒤에만 보임 (GridExit 내부 처리).")]
+    [SerializeField] private GridExit exitPrefab;
+    private GridExit _currentExit;
+
     public DungeonRandom Rng { get; } = new DungeonRandom();
     public List<RoomData> CurrentRooms { get; private set; }
     public int CurrentSeed { get; private set; }
@@ -86,6 +91,7 @@ public class MapGenerator : MonoBehaviour
         CurrentSeed = runSeed;
         CurrentDepth = depth;
         HazardCells.Clear();
+        DestroyCurrentExit();
         // 이전 층의 Feeling 효과 리셋 — DarkFeeling 의 VisionRadiusDelta 가 다음 층까지 새지 않게.
         if (VisionSystem.Instance != null) VisionSystem.Instance.VisionRadiusDelta = 0;
         Rng.Init(DungeonRandom.DeriveFloorSeed(runSeed, depth));
@@ -133,6 +139,9 @@ public class MapGenerator : MonoBehaviour
         // 3. Paint — TerrainTilemaps 각 레이어에 타일 배치.
         // 페인터가 feeling 인자를 직접 읽으므로 ApplyToPaint 별도 훅 불필요 (PHASE_3_5_PLAN.md Q1 결정 A).
         painter.Paint(rooms, tilemaps, feeling, Rng);
+
+        // 3.5 Exit 마커 인스턴스화 — Exit 방의 중앙 셀에. Vision 도달 전까지는 GridExit 가 자체적으로 숨김.
+        SpawnExitMarker(rooms);
 
         // 4. Spawn — Spawner 가 할당됐으면 호출. Feeling 의 ApplyToSpawn 으로 사전 파라미터 변경 가능.
         if (Spawner != null)
@@ -183,6 +192,38 @@ public class MapGenerator : MonoBehaviour
 
         rooms.Add(new RoomData { type = RoomType.Exit, sizeCategory = SizeCategory.Normal });
         return rooms;
+    }
+
+    private void SpawnExitMarker(List<RoomData> rooms)
+    {
+        if (exitPrefab == null) return;
+        var exitRoom = rooms.Find(r => r.type == RoomType.Exit);
+        if (exitRoom == null || exitRoom.floorCells == null || exitRoom.floorCells.Count == 0) return;
+
+        Vector2 center = Vector2.zero;
+        foreach (var c in exitRoom.floorCells) center += c;
+        center /= exitRoom.floorCells.Count;
+
+        Vector2Int best = exitRoom.floorCells[0];
+        float bestDist = float.MaxValue;
+        foreach (var c in exitRoom.floorCells)
+        {
+            float d = ((Vector2)c - center).sqrMagnitude;
+            if (d < bestDist) { bestDist = d; best = c; }
+        }
+
+        Vector3 worldPos = GridSystem.Instance != null
+            ? GridSystem.Instance.GridToWorld(best)
+            : new Vector3(best.x, best.y, 0);
+        _currentExit = Instantiate(exitPrefab, worldPos, Quaternion.identity);
+    }
+
+    private void DestroyCurrentExit()
+    {
+        if (_currentExit == null) return;
+        if (Application.isPlaying) Destroy(_currentExit.gameObject);
+        else DestroyImmediate(_currentExit.gameObject);
+        _currentExit = null;
     }
 
     private static SizeCategory PickNormalSize(DungeonRandom rng)

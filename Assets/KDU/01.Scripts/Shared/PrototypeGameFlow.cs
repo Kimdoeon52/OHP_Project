@@ -3,8 +3,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// 게임 종료(사망/시간초과/클리어) 감지 → 5초 후 씬 재시작.
+/// 게임 종료(사망/시간초과) 감지 → 5초 후 씬 재시작.
 /// 정적 GameEvents 구독 정리 후 SceneManager.LoadScene.
+/// 층 클리어(OnLevelComplete) 는 FloorTransitionController 가 처리하므로 여기서 구독하지 않음.
 /// </summary>
 public class PrototypeGameFlow : MonoBehaviour
 {
@@ -16,14 +17,12 @@ public class PrototypeGameFlow : MonoBehaviour
     {
         GameEvents.OnPlayerDied += OnGameEnd;
         GameEvents.OnTimeUp += OnGameEnd;
-        GameEvents.OnLevelComplete += OnGameEnd;
     }
 
     private void OnDisable()
     {
         GameEvents.OnPlayerDied -= OnGameEnd;
         GameEvents.OnTimeUp -= OnGameEnd;
-        GameEvents.OnLevelComplete -= OnGameEnd;
     }
 
     private void OnGameEnd()

@@ -118,13 +118,16 @@ public class EnemyGoblinThief : EnemyBase
 
     private IEnumerator SmoothMoveVisual(float delay)
     {
+        if (_animator != null) _animator.SetBool("Walk", true);
         for (int i = 1; i < _movePath.Count; i++)
         {
             Vector3 targetWorldPos = GridSystem.Instance.GridToWorld(_movePath[i]);
             transform.position = targetWorldPos;
             UpdateVisibility();
+            UpdateSpriteDirection(_movePath[i]);
             yield return new WaitForSeconds(delay);
         }
+        if (_animator != null) _animator.SetBool("Walk", false);
     }
 
     private Vector2Int GetNextStepDirection()
@@ -154,7 +157,7 @@ public class EnemyGoblinThief : EnemyBase
         if (primary != Vector2Int.zero && CanMoveTo(GridPosition + primary)) return primary;
         if (secondary != Vector2Int.zero && CanMoveTo(GridPosition + secondary)) return secondary;
         return Vector2Int.zero;
-      }
+    }
 
     private Vector2Int GetEscapeStepDirection()
     {
@@ -162,7 +165,7 @@ public class EnemyGoblinThief : EnemyBase
         float maxDist = (Player.GridPosition - GridPosition).sqrMagnitude;
 
         Vector2Int[] dirs = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
-        
+
         // 방향 무작위 셔플
         for (int i = 0; i < dirs.Length; i++)
         {
@@ -207,6 +210,11 @@ public class EnemyGoblinThief : EnemyBase
         if (!GridSystem.Instance.IsWalkable(pos)) return false;
         if (pos == Player.GridPosition) return false;
         if (TurnManager.Instance.GetEntityAt(pos) != null) return false;
+        return true;
+    }
+
+    protected override bool HasCustomMovementVisual()
+    {
         return true;
     }
 }

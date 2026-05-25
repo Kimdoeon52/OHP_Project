@@ -53,6 +53,16 @@ public class EnemyMageSkeleton : EnemyBase
     {
         if (_pendingAttackLine != null)
         {
+            if (_pendingAttackLine.Count > 0)
+            {
+                UpdateSpriteDirection(_pendingAttackLine[0]);
+            }
+
+            if (_animator != null)
+            {
+                _animator.SetTrigger("Attack");
+            }
+
             if (_pendingAttackLine.Contains(Player.GridPosition))
             {
                 int damage = RollAttackDamage();
@@ -88,6 +98,10 @@ public class EnemyMageSkeleton : EnemyBase
         if (line != null)
         {
             _pendingAttackLine = line;
+            if (line.Count > 0)
+            {
+                UpdateSpriteDirection(line[0]);
+            }
             foreach (var cell in line)
             {
                 ShowTelegraph(cell);
