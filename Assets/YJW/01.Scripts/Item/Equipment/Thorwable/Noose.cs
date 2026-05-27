@@ -5,9 +5,9 @@ using UnityEngine;
 public class Noose : ThrowableWeapon, IHitEffect
 {
     [SerializeField] int effectDuration;
-    public void ApplyEffect(EnemyBase enemy)
+    public void ApplyEffect(EnemyBase enemy, int damage)
     {
-        enemy.TakeDamage(GetDamage());
+        enemy.TakeDamage(damage);
         enemy.moveSpeed *= 2f;
         ReleaseEffect(enemy).Forget();
     }
