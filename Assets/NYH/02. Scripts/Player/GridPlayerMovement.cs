@@ -37,12 +37,12 @@ public class GridPlayerMovement : MonoBehaviour
     [Tooltip("MoveSpeed가 높아도 한 칸 이동 시간이 이 값보다 짧아지지 않게 한다.")]
     [SerializeField, Min(0.01f)] private float minMoveDuration = 0.06f;
 
-    [Header("Post Move Delay")]
-    [Tooltip("한 칸 도착 후 다음 행동까지 기다리는 추가 대기시간. 기본 0이면 현재 조작감을 유지한다.")]
-    [SerializeField, Min(0f)] private float basePostMoveDelay = 0f;
+    [Header("Move Action Delay")]
+    [Tooltip("GDD 기준 최소 이동 행동 딜레이입니다. 레벨/MoveSpeed가 높아져도 이 값보다 낮아지지 않습니다.")]
+    [SerializeField, Min(0.01f)] private float minMoveActionDelay = 0.3f;
 
-    [Tooltip("MoveSpeed가 이 값 이상이면 도착 후 추가 대기시간을 0으로 강제한다.")]
-    [SerializeField, Min(0)] private int zeroPostMoveDelaySpeed = 10;
+    [Tooltip("이 MoveSpeed에 도달하면 이동 행동 딜레이가 minMoveActionDelay에 도달합니다. 기본값 10은 GDD의 10레벨 0.3초 기준입니다.")]
+    [SerializeField, Min(1)] private int moveSpeedForMinActionDelay = 10;
 
     [Header("Animation Speed")]
     [Tooltip("걷기 애니메이션 배속 계산에 반영할 최대 MoveSpeed. 실제 이동속도는 이 값 이후에도 계속 오른다.")]
@@ -61,12 +61,6 @@ public class GridPlayerMovement : MonoBehaviour
     /// 디버그 UI나 이동감 튜닝 확인용으로 읽을 수 있다.
     /// </summary>
     public float CurrentMoveDuration { get; private set; }
-
-    /// <summary>
-    /// 현재 진행 중인 이동에 적용된 도착 후 추가 대기시간.
-    /// MoveSpeed 10 이상이면 0이 된다.
-    /// </summary>
-    public float CurrentPostMoveDelay { get; private set; }
 
     private GridPlayer _player;
     private NYHPlayerStats _stats;
@@ -91,22 +85,13 @@ public class GridPlayerMovement : MonoBehaviour
     }
 
     /// <summary>
-    /// MoveSpeed가 기준 이상이면 적 행동은 유지하되, 적 턴 사이 연출 대기만 생략한다.
-    /// 실제 한 칸 이동 시간은 GetMoveDuration()에서 계속 계산한다.
-    /// </summary>
-    public bool ShouldSkipEnemyTurnDelay()
-    {
-        return GetMoveSpeed() >= zeroPostMoveDelaySpeed;
-    }
-
-    /// <summary>
     /// 이동 종료 직후에도 걷기 애니메이션을 유지해도 되는지 판단한다.
     /// 키를 누르고 있어도 다음 칸이 벽이면 걷기 모션이 남지 않도록 walkable을 다시 확인한다.
     /// </summary>
     public bool ShouldKeepMoveAnimationAfterMove()
     {
-        if (!ShouldSkipEnemyTurnDelay()) return false;
         if (_player == null || _player.Input == null) return false;
+        if (_player.ActionDelay == null || !_player.ActionDelay.CanAct) return false;
         if (GridSystem.Instance == null) return false;
         if (!_player.Input.TryGetHeldMoveDirection(out Vector2Int heldDirection)) return false;
 
@@ -124,6 +109,7 @@ public class GridPlayerMovement : MonoBehaviour
         // 그리드 이동 중 입력 잠금은 여기서 1차로 걸린다.
         // GridPlayerInput에서도 IsMoving을 보고 입력 자체를 막아 중복 호출을 줄인다.
         if (IsMoving) return;
+        if (_player.ActionDelay != null && !_player.ActionDelay.CanAct) return;
 
         Facing = direction;
 
@@ -138,13 +124,13 @@ public class GridPlayerMovement : MonoBehaviour
         }
         if (!GridSystem.Instance.IsWalkable(target))
             return;
-        float totalCost = _player.Config.moveTimeCost;
+        float totalCost = GetMoveActionDelay();
         StatusController statusController = _player.GetComponent<StatusController>();
         if (statusController != null)
             totalCost = statusController.ModifyMoveTimeCost(totalCost);
 
         if (_player.Combat.TryRetrieveAt(target))
-            totalCost += _player.Config.retrieveTimeCost;
+            totalCost += _player.Config.retrieveTimeDealy;
 
         Vector3 startWorld = transform.position;
         _player.SetGridPosition(target);
@@ -160,7 +146,6 @@ public class GridPlayerMovement : MonoBehaviour
     {
         IsMoving = true;
         CurrentMoveDuration = GetMoveDuration();
-        CurrentPostMoveDelay = GetPostMoveDelay();
 
         OnMoveSpeedChanged?.Invoke(GetAnimationSpeedMultiplier());
         OnMoveSucceeded?.Invoke(direction);
@@ -180,23 +165,21 @@ public class GridPlayerMovement : MonoBehaviour
         TrapSystem.Instance?.TryTriggerAt(target, _player);
         VisionSystem.Instance.UpdateVision(_player.GridPosition);
 
-        if (CurrentPostMoveDelay > 0f)
-            yield return new WaitForSeconds(CurrentPostMoveDelay);
-
-        bool keepMoveAnimation = ShouldKeepMoveAnimationAfterMove();
-        bool skipEnemyTurnDelay = ShouldSkipEnemyTurnDelay();
+        const bool skipEnemyTurnDelay = false;
 
         IsMoving = false;
         _moveCoroutine = null;
 
+        _player.ActionDelay?.StartDelay(totalCost);
+
+        bool keepMoveAnimation = ShouldKeepMoveAnimationAfterMove();
         if (!keepMoveAnimation)
         {
             OnMoveFinished?.Invoke();
             OnMoveSpeedChanged?.Invoke(1f);
         }
 
-        // 행동 후 시간 감소 
-         TurnManager.Instance.OnPlayerActionCompleted(totalCost, skipEnemyTurnDelay);
+        TurnManager.Instance.OnPlayerActionCompleted(totalCost, skipEnemyTurnDelay);
     }
 
     private float GetMoveDuration()
@@ -209,19 +192,16 @@ public class GridPlayerMovement : MonoBehaviour
         return Mathf.Max(minMoveDuration, baseMoveDuration / speedFactor);
     }
 
-    private float GetPostMoveDelay()
+    private float GetMoveActionDelay()
     {
+        float baseDelay = _player.Config != null ? _player.Config.moveTimeDelay : 1f;
         int moveSpeed = GetMoveSpeed();
-        if (moveSpeed >= zeroPostMoveDelaySpeed)
-            return 0f;
 
-        if (basePostMoveDelay <= 0f)
-            return 0f;
+        float progress = moveSpeedForMinActionDelay <= 1
+            ? 1f
+            : Mathf.Clamp01((moveSpeed - 1f) / (moveSpeedForMinActionDelay - 1f));
 
-        // 도착 후 추가 대기시간 공식:
-        // MoveSpeed가 zeroPostMoveDelaySpeed에 가까워질수록 0에 가까워진다.
-        float normalizedSpeed = zeroPostMoveDelaySpeed <= 0 ? 1f : Mathf.Clamp01((float)moveSpeed / zeroPostMoveDelaySpeed);
-        return basePostMoveDelay * (1f - normalizedSpeed);
+        return Mathf.Lerp(baseDelay, minMoveActionDelay, progress);
     }
 
     private float GetAnimationSpeedMultiplier()

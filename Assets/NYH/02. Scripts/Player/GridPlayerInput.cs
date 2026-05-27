@@ -49,6 +49,7 @@ public class GridPlayerInput : MonoBehaviour
         if (_player.Health.IsDead) return;
         // 한 칸 이동 보간 중에는 다음 입력을 막아 턴 처리와 위치가 어긋나지 않게 한다.
         if (_player.Movement.IsMoving) return;
+        if (_player.ActionDelay != null && !_player.ActionDelay.CanAct) return;
         if (TimeSystem.Instance.TimeRemaining <= 0f) return;
 
         // 이동 (단일 키 처리 — 동시 입력 시 위 우선)

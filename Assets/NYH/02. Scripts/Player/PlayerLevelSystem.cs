@@ -22,10 +22,26 @@ public class PlayerLevelSystem : MonoBehaviour
     [Tooltip("레벨이 오를수록 다음 레벨 요구 경험치가 증가하는 배율입니다. 예: 1.25면 레벨마다 약 25% 증가합니다.")]
     [SerializeField, Min(1f)] private float requiredExpGrowth = 1.25f;
 
+    [Tooltip("GDD 기준 레벨업 필요 경험치입니다. index 0은 1->2레벨, index 1은 2->3레벨 요구량입니다.")]
+    [SerializeField] private int[] requiredExpByLevel =
+    {
+        30,
+        40,
+        50,
+        60,
+        70,
+        50,
+        50,
+        50,
+        100
+    };
+
     [Header("레벨업 보너스")]
     [Tooltip("레벨업할 때 증가하는 최대 체력입니다. 실제 적용은 NYHPlayerStats.AddStat(Health)로 전달됩니다.")]
     [SerializeField, Min(0)] private int healthPerLevel = 5;
 
+    [Tooltip("레벨업할 때 증가하는 이동 속도입니다. GDD의 레벨별 이동 쿨타임 감소에 사용됩니다.")]
+    [SerializeField, Min(0)] private int moveSpeedPerLevel = 1;
 
     /// <summary>
     /// 레벨이 하나 이상 올랐을 때 호출된다.
@@ -121,6 +137,9 @@ public class PlayerLevelSystem : MonoBehaviour
 
         if (healthPerLevel > 0)
             stats.AddStat(NYHStatType.Health, healthPerLevel);
+
+        if (moveSpeedPerLevel > 0)
+            stats.AddStat(NYHStatType.MoveSpeed, moveSpeedPerLevel);
     }
 
     /// <summary>
@@ -129,6 +148,10 @@ public class PlayerLevelSystem : MonoBehaviour
     /// </summary>
     private int CalculateRequiredExp(int targetLevel)
     {
+        int index = Mathf.Max(0, targetLevel - 1);
+        if (requiredExpByLevel != null && index < requiredExpByLevel.Length)
+            return Mathf.Max(1, requiredExpByLevel[index]);
+
         return Mathf.Max(1, Mathf.RoundToInt(baseRequiredExp * Mathf.Pow(requiredExpGrowth, targetLevel - 1)));
     }
 
@@ -150,5 +173,11 @@ public class PlayerLevelSystem : MonoBehaviour
         currentExp = Mathf.Max(0, currentExp);
         baseRequiredExp = Mathf.Max(1, baseRequiredExp);
         requiredExpGrowth = Mathf.Max(1f, requiredExpGrowth);
+        healthPerLevel = Mathf.Max(0, healthPerLevel);
+        moveSpeedPerLevel = Mathf.Max(0, moveSpeedPerLevel);
+
+        if (requiredExpByLevel == null) return;
+        for (int i = 0; i < requiredExpByLevel.Length; i++)
+            requiredExpByLevel[i] = Mathf.Max(1, requiredExpByLevel[i]);
     }
 }

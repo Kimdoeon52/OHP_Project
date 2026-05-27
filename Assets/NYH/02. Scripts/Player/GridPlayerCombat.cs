@@ -25,17 +25,17 @@ public class GridPlayerCombat : MonoBehaviour
     [SerializeField] private int meleeDamage = 1;
 
     [Header("Attack Speed")]
-    [Tooltip("AttackSpeed가 0일 때 근접 공격을 다시 할 수 있기까지 기다리는 기본 시간입니다.")]
-    [SerializeField, Min(0.01f)] private float baseMeleeCooldown = 0.45f;
+    [Tooltip("GDD 기준 근접 공격 기본 딜레이입니다. AttackSpeed 1일 때 이 값을 그대로 사용합니다.")]
+    [SerializeField, Min(0.01f)] private float baseMeleeCooldown = 1.0f;
 
-    [Tooltip("AttackSpeed 1당 근접 공격 쿨다운과 시간 비용을 줄이는 비율입니다.")]
+    [Tooltip("AttackSpeed가 1보다 높을 때, 1 증가당 근접 공격 쿨다운과 행동 딜레이를 줄이는 비율입니다.")]
     [SerializeField, Min(0f)] private float attackSpeedCooldownMultiplier = 0.12f;
 
     [Tooltip("AttackSpeed가 높아져도 근접 공격 쿨다운이 이 값보다 짧아지지 않게 막습니다.")]
-    [SerializeField, Min(0.01f)] private float minMeleeCooldown = 0.12f;
+    [SerializeField, Min(0.01f)] private float minMeleeCooldown = 0.1f;
 
     [Tooltip("AttackSpeed가 높아져도 근접 공격 시간 비용이 이 값보다 낮아지지 않게 막습니다.")]
-    [SerializeField, Min(0.01f)] private float minMeleeTimeCost = 0.08f;
+    [SerializeField, Min(0.01f)] private float minMeleeTimeCost = 0.1f;
 
     [Header("Debug")]
     [Tooltip("켜면 플레이어가 공격으로 준 피해량을 Console에 출력합니다.")]
@@ -82,6 +82,9 @@ public class GridPlayerCombat : MonoBehaviour
     /// </summary>
     public void TryMeleeAt(Vector2Int clickedCell)
     {
+        if (_player.ActionDelay != null && !_player.ActionDelay.CanAct)
+            return;
+
         if (!CanMeleeAttack())
             return;
 
@@ -108,7 +111,9 @@ public class GridPlayerCombat : MonoBehaviour
             LogDamageDealt("근접 공격", damageable, damage, beforeHp);
             StartMeleeCooldown();
             OnAttackPerformed?.Invoke(dir);
-            TurnManager.Instance.OnPlayerActionCompleted(GetModifiedMeleeTimeCost());
+            float actionDelay = GetModifiedMeleeTimeCost();
+            _player.ActionDelay?.StartDelay(actionDelay);
+            TurnManager.Instance.OnPlayerActionCompleted(actionDelay);
         }
         // 적 없으면 빈 휘두름 — 시간 소모 X (회전만 함)
     }
@@ -119,6 +124,9 @@ public class GridPlayerCombat : MonoBehaviour
     /// </summary>
     public void TryThrow()
     {
+        if (_player.ActionDelay != null && !_player.ActionDelay.CanAct)
+            return;
+
         if (_inventory.Count == 0) return;
 
         // 시야 안 모든 적 중 가장 가까운 타겟 (대각선 포함)
@@ -163,7 +171,9 @@ public class GridPlayerCombat : MonoBehaviour
 
         GameEvents.OnDaggerThrown?.Invoke(origin, landingCell);
         OnAttackPerformed?.Invoke(facingDir);
-        TurnManager.Instance.OnPlayerActionCompleted(_player.Config.throwTimeCost);
+        float actionDelay = _player.Config.throwTimeDelay;
+        _player.ActionDelay?.StartDelay(actionDelay);
+        TurnManager.Instance.OnPlayerActionCompleted(actionDelay);
     }
 
     /// <summary>
@@ -250,18 +260,22 @@ public class GridPlayerCombat : MonoBehaviour
 
     private float GetMeleeCooldown()
     {
-        return Mathf.Max(minMeleeCooldown, baseMeleeCooldown / GetAttackSpeedFactor());
+        float cooldown = Mathf.Max(minMeleeCooldown, baseMeleeCooldown / GetAttackSpeedFactor());
+        StatusController statusController = _player.GetComponent<StatusController>();
+        return statusController != null ? statusController.ModifyAttackCooldown(cooldown) : cooldown;
     }
 
     private float GetModifiedMeleeTimeCost()
     {
-        return Mathf.Max(minMeleeTimeCost, _player.Config.meleeTimeCost / GetAttackSpeedFactor());
+        float timeCost = Mathf.Max(minMeleeTimeCost, _player.Config.meleeTimeDealy / GetAttackSpeedFactor());
+        StatusController statusController = _player.GetComponent<StatusController>();
+        return statusController != null ? statusController.ModifyAttackCooldown(timeCost) : timeCost;
     }
 
     private float GetAttackSpeedFactor()
     {
         int attackSpeed = GetAttackSpeed();
-        return 1f + Mathf.Max(0, attackSpeed) * attackSpeedCooldownMultiplier;
+        return 1f + Mathf.Max(0, attackSpeed - 1) * attackSpeedCooldownMultiplier;
     }
 
     private int GetAttackSpeed()

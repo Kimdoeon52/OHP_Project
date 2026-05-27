@@ -8,11 +8,11 @@ public class GameConfig : ScriptableObject
     public float lowTimeWarning = 10f;
 
     [Header("행동별 시간 비용")]
-    public float moveTimeCost = 0.3f;
-    public float throwTimeCost = 0.5f;
-    public float retrieveTimeCost = 0.3f;
-    public float potionTimeCost = 1.0f;
-    public float meleeTimeCost = 0.3f;
+    public float moveTimeDelay = 0.5f;
+    public float throwTimeDelay = 1.0f;
+    public float retrieveTimeDealy = 0.3f;
+    public float potionTimeDealy = 1.0f;
+    public float meleeTimeDealy = 1.0f;
 
     [Header("시야")]
     public int visionRadius = 5;

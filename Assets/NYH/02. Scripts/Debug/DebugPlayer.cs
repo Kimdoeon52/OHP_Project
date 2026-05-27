@@ -81,6 +81,8 @@ public class DebugPlayer : MonoBehaviour
     [SerializeField] private KeyCode upgradeKey = KeyCode.Alpha7;
     [Tooltip("힘/이속/공속/회피를 각각 1씩 내리는 키입니다.")]
     [SerializeField] private KeyCode downgradeKey = KeyCode.Alpha8;
+    [Tooltip("상태이상을 확인하는 키입니다..")]
+    [SerializeField] private KeyCode effectKey = KeyCode.Alpha9;
 
     private void Awake()
     {
@@ -117,6 +119,8 @@ public class DebugPlayer : MonoBehaviour
             PlayerUpgrade();
         if (Input.GetKeyDown(downgradeKey))
             PlayerDowngrade();
+        if(Input.GetKeyDown(effectKey))
+            ApplyStatus();
     
     }
 

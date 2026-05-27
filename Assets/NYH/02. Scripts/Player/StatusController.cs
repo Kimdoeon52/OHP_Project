@@ -1,94 +1,110 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 독, 출혈, 화상, 둔화, 약화 같은 임시 상태이상을 관리한다.
-/// 영구 스탯은 NYHPlayerStats, 레벨/경험치는 PlayerLevelSystem이 담당하고,
-/// 이 클래스는 "몇 턴 동안 적용되는 효과"만 보관하고 처리한다.
+/// 플레이어/엔티티에게 걸린 시간제 상태이상을 관리합니다.
+/// 몬스터, 보스, 아이템, 트랩은 ApplyStatus로 요청만 보내고 실제 지속시간/틱 피해/이동 보정은 여기서 처리합니다.
 /// </summary>
 public class StatusController : MonoBehaviour
 {
-    // 현재 이 오브젝트에 걸려 있는 상태 목록.
-    // 같은 StatusType이 다시 들어오면 새로 추가하지 않고 지속시간/위력만 더 강한 값으로 갱신한다.
-    private readonly List<ActiveStatus> _statuses = new();
+    [Header("상태이상 기본값")]
+    [Tooltip("독, 화상, 출혈, 굶주림처럼 주기적으로 피해를 주는 상태의 기본 틱 간격입니다.")]
+    [SerializeField, Min(0.05f)] private float defaultDamageTickInterval = 1f;
 
-    // 독/화상/출혈처럼 턴마다 피해를 주는 상태에서 피해를 적용할 대상.
-    // 플레이어와 적 모두 IDamageable을 구현하면 이 컨트롤러를 재사용할 수 있다.
+    [Header("이동 쿨타임 배율")]
+    [Tooltip("둔화 상태일 때 이동 쿨타임에 곱할 배율입니다.")]
+    [SerializeField, Min(0.01f)] private float slowMoveMultiplier = 1.5f;
+
+    [Tooltip("냉기 상태일 때 이동 쿨타임에 곱할 배율입니다.")]
+    [SerializeField, Min(0.01f)] private float chillMoveMultiplier = 1.25f;
+
+    [Tooltip("굶주림 상태일 때 이동 쿨타임에 곱할 배율입니다.")]
+    [SerializeField, Min(0.01f)] private float hungerMoveMultiplier = 1.3f;
+
+    [Tooltip("신속 상태일 때 이동 쿨타임에 곱할 배율입니다. 1보다 작으면 빨라집니다.")]
+    [SerializeField, Min(0.01f)] private float hasteMoveMultiplier = 0.7f;
+
+    [Header("공격 쿨타임 배율")]
+    [Tooltip("냉기 상태일 때 공격 쿨타임과 공격 시간 비용에 곱할 배율입니다.")]
+    [SerializeField, Min(0.01f)] private float chillAttackMultiplier = 1.3f;
+
+    private readonly List<ActiveStatus> _statuses = new();
     private IDamageable _damageable;
 
-    /// <summary>이동 시간 증가 상태. GridPlayerMovement에서 이동 비용 계산 시 사용한다.</summary>
-    public bool IsCrippled => HasStatus(StatusType.Cripple);
+    /// <summary>
+    /// 상태 목록이 추가/갱신/삭제될 때 호출됩니다.
+    /// PlayerStatusVisual 같은 표시 전용 스크립트가 이 이벤트를 구독합니다.
+    /// </summary>
+    public event Action OnStatusChanged;
 
-    /// <summary>실명 상태. 공격 명중률/시야 패널티 등으로 확장할 수 있다.</summary>
-    public bool IsBlind => HasStatus(StatusType.Blind);
-
-    /// <summary>약화 상태. GridPlayerCombat에서 주는 피해를 감소시키는 데 사용한다.</summary>
-    public bool IsWeak => HasStatus(StatusType.Weakness);
-
-    /// <summary>냉기 상태. 이동 시간 증가 효과로 사용한다.</summary>
+    public bool IsPoisoned => HasStatus(StatusType.Poison);
+    public bool IsBurning => HasStatus(StatusType.Burn);
+    public bool IsBleeding => HasStatus(StatusType.Bleed);
+    public bool IsSlowed => HasStatus(StatusType.Slow) || HasStatus(StatusType.Cripple);
     public bool IsChilled => HasStatus(StatusType.Chill);
+    public bool IsHungry => HasStatus(StatusType.Hunger);
+    public bool IsFloating => HasStatus(StatusType.Float);
+    public bool IsHasted => HasStatus(StatusType.Haste);
 
-    /// <summary>마비 상태. 현재는 이동 시간 크게 증가로 처리한다.</summary>
+    // 기존 코드 호환용 별칭입니다.
+    public bool IsCrippled => IsSlowed;
+    public bool IsBlind => HasStatus(StatusType.Blind);
+    public bool IsWeak => HasStatus(StatusType.Weakness);
     public bool IsParalyzed => HasStatus(StatusType.Paralysis);
 
-    /// <summary>
-    /// 피해 적용이 필요한 상태를 위해 IDamageable 참조를 캐싱한다.
-    /// </summary>
     private void Awake()
     {
         _damageable = GetComponent<IDamageable>();
     }
 
-    /// <summary>
-    /// 플레이어가 행동을 완료할 때마다 상태 지속시간과 턴 피해를 처리한다.
-    /// </summary>
-    private void OnEnable()
+    private void Update()
     {
-        GameEvents.OnPlayerActionCompleted += OnPlayerActionCompleted;
+        if (TimeSystem.Instance != null && !TimeSystem.Instance.IsRunning)
+            return;
+
+        TickStatuses(Time.deltaTime);
     }
 
     /// <summary>
-    /// 비활성화 시 이벤트 구독을 해제해 중복 처리와 누수를 막는다.
-    /// </summary>
-    private void OnDisable()
-    {
-        GameEvents.OnPlayerActionCompleted -= OnPlayerActionCompleted;
-    }
-
-    /// <summary>
-    /// 상태이상을 적용한다.
-    /// 이미 같은 종류의 상태가 있다면 지속시간과 위력 중 더 큰 값을 유지한다.
+    /// 상태이상을 적용합니다.
+    /// 같은 상태가 이미 있으면 남은 시간과 위력 중 더 큰 값만 유지합니다.
     /// </summary>
     public void ApplyStatus(StatusRequest request)
     {
         if (request.DurationTurns <= 0 && request.Power <= 0) return;
 
+        float duration = Mathf.Max(0.1f, request.DurationTurns);
+        int power = Mathf.Max(1, request.Power);
+        float tickInterval = GetTickInterval(request.StatusType);
+
         for (int i = 0; i < _statuses.Count; i++)
         {
             ActiveStatus current = _statuses[i];
-            if (current.type != request.StatusType) continue;
+            if (current.Type != request.StatusType) continue;
 
-            current.remainingTurns = Mathf.Max(current.remainingTurns, Mathf.Max(1, request.DurationTurns));
-            current.power = Mathf.Max(current.power, Mathf.Max(1, request.Power));
+            current.RemainingTime = Mathf.Max(current.RemainingTime, duration);
+            current.Power = Mathf.Max(current.Power, power);
+            current.TickInterval = Mathf.Max(0.05f, tickInterval);
+            current.TickTimer = Mathf.Min(current.TickTimer, current.TickInterval);
             _statuses[i] = current;
+            RaiseStatusChanged();
             return;
         }
 
-        _statuses.Add(new ActiveStatus(
-            request.StatusType,
-            Mathf.Max(1, request.DurationTurns),
-            Mathf.Max(1, request.Power)));
+        _statuses.Add(new ActiveStatus(request.StatusType, duration, power, tickInterval));
+        RaiseStatusChanged();
     }
 
     /// <summary>
-    /// 지정한 상태가 현재 활성화되어 있는지 확인한다.
-    /// remainingTurns가 0 이하인 상태는 없는 것으로 취급한다.
+    /// 지정한 상태가 현재 활성화되어 있는지 확인합니다.
+    /// 남은 시간이 0 이하인 상태는 없는 상태로 취급합니다.
     /// </summary>
     public bool HasStatus(StatusType type)
     {
         for (int i = 0; i < _statuses.Count; i++)
         {
-            if (_statuses[i].type == type && _statuses[i].remainingTurns > 0)
+            if (_statuses[i].Type == type && _statuses[i].RemainingTime > 0f)
                 return true;
         }
 
@@ -96,21 +112,49 @@ public class StatusController : MonoBehaviour
     }
 
     /// <summary>
-    /// 이동 행동의 시간 비용을 상태이상에 따라 보정한다.
-    /// GridPlayerMovement.TryMove에서 이동 한 번의 totalCost를 계산할 때 호출한다.
+    /// 상태이상 비주얼/UI가 현재 상태 목록을 읽을 수 있게 복사본을 채워줍니다.
+    /// </summary>
+    public void GetActiveStatusTypes(List<StatusType> results)
+    {
+        if (results == null) return;
+
+        results.Clear();
+        for (int i = 0; i < _statuses.Count; i++)
+        {
+            if (_statuses[i].RemainingTime > 0f)
+                results.Add(_statuses[i].Type);
+        }
+    }
+
+    /// <summary>
+    /// 이동 한 번에 걸리는 시간을 상태이상에 맞게 보정합니다.
+    /// 둔화/냉기/굶주림은 느리게, 신속은 빠르게 만듭니다.
     /// </summary>
     public float ModifyMoveTimeCost(float baseCost)
     {
         float result = baseCost;
-        if (IsCrippled) result *= 1.5f;
-        if (IsChilled) result *= 1.25f;
+        if (IsSlowed) result *= slowMoveMultiplier;
+        if (IsChilled) result *= chillMoveMultiplier;
+        if (IsHungry) result *= hungerMoveMultiplier;
         if (IsParalyzed) result *= 2f;
-        return result;
+        if (IsHasted) result *= hasteMoveMultiplier;
+        return Mathf.Max(0.01f, result);
     }
 
     /// <summary>
-    /// 플레이어/적이 주는 피해량을 상태이상에 따라 보정한다.
-    /// 현재 Weakness는 최종 피해를 절반으로 줄인다.
+    /// 공격 쿨타임 또는 공격 시간 비용을 상태이상에 맞게 보정합니다.
+    /// 현재는 냉기만 공격을 느리게 만듭니다.
+    /// </summary>
+    public float ModifyAttackCooldown(float baseCooldown)
+    {
+        float result = baseCooldown;
+        if (IsChilled) result *= chillAttackMultiplier;
+        return Mathf.Max(0.01f, result);
+    }
+
+    /// <summary>
+    /// 플레이어가 주는 피해량을 상태이상에 맞게 보정합니다.
+    /// 기존 Weakness 호환용으로 절반 피해 처리를 남겨둡니다.
     /// </summary>
     public int ModifyOutgoingDamage(int baseDamage)
     {
@@ -120,62 +164,133 @@ public class StatusController : MonoBehaviour
     }
 
     /// <summary>
-    /// 플레이어 행동 완료 시 모든 상태를 한 턴 진행한다.
-    /// 먼저 턴 효과를 적용하고, 이후 지속시간을 1 감소시킨다.
+    /// 부유 상태가 Hazard 효과를 무시할 수 있는지 외부에서 확인하는 진입점입니다.
+    /// Hazard 쪽에서 이 값을 보고 피해/상태 적용을 건너뛰면 됩니다.
     /// </summary>
-    private void OnPlayerActionCompleted(float timeCost)
+    public bool ShouldIgnoreHazard()
     {
-        for (int i = _statuses.Count - 1; i >= 0; i--)
-        {
-            ActiveStatus status = _statuses[i];
-            ApplyTurnEffect(status);
-
-            status.remainingTurns--;
-            if (status.type == StatusType.Bleed)
-                status.power = Mathf.Max(1, status.power - 1);
-
-            if (status.remainingTurns <= 0)
-                _statuses.RemoveAt(i);
-            else
-                _statuses[i] = status;
-        }
+        return IsFloating;
     }
 
     /// <summary>
-    /// 턴마다 발동하는 상태 효과를 적용한다.
-    /// 독/출혈/화상/부식/점액은 power만큼 피해를 준다.
+    /// 정화 포션처럼 특정 상태를 강제로 지워야 할 때 사용하는 제거 함수입니다.
+    /// 출혈은 기획상 해제 불가라서 별도 허용값이 없으면 제거하지 않습니다.
     /// </summary>
-    private void ApplyTurnEffect(ActiveStatus status)
+    public bool TryRemoveStatus(StatusType type, bool allowUnremovable = false)
+    {
+        if (!allowUnremovable && IsUnremovable(type)) return false;
+
+        for (int i = _statuses.Count - 1; i >= 0; i--)
+        {
+            if (_statuses[i].Type != type) continue;
+
+            _statuses.RemoveAt(i);
+            RaiseStatusChanged();
+            return true;
+        }
+
+        return false;
+    }
+
+    private void TickStatuses(float deltaTime)
+    {
+        if (_statuses.Count == 0) return;
+
+        bool changed = false;
+
+        for (int i = _statuses.Count - 1; i >= 0; i--)
+        {
+            ActiveStatus status = _statuses[i];
+            status.RemainingTime -= deltaTime;
+
+            if (IsTickDamageStatus(status.Type))
+            {
+                status.TickTimer -= deltaTime;
+                if (status.TickTimer <= 0f)
+                {
+                    ApplyTickEffect(status);
+                    status.TickTimer += status.TickInterval;
+                }
+            }
+
+            if (status.RemainingTime <= 0f)
+            {
+                _statuses.RemoveAt(i);
+                changed = true;
+            }
+            else
+            {
+                _statuses[i] = status;
+            }
+        }
+
+        if (changed)
+            RaiseStatusChanged();
+    }
+
+    private void ApplyTickEffect(ActiveStatus status)
     {
         if (_damageable == null || _damageable.IsDead) return;
 
-        switch (status.type)
+        switch (status.Type)
         {
             case StatusType.Poison:
-            case StatusType.Bleed:
             case StatusType.Burn:
+            case StatusType.Bleed:
+            case StatusType.Hunger:
             case StatusType.Corrosion:
             case StatusType.Ooze:
-                _damageable.TakeDamage(Mathf.Max(1, status.power));
+                _damageable.TakeDamage(Mathf.Max(1, status.Power));
                 break;
         }
     }
 
-    /// <summary>
-    /// 런타임 중 활성화된 상태 하나의 데이터.
-    /// type은 상태 종류, remainingTurns는 남은 행동 턴 수, power는 피해량/강도 값이다.
-    /// </summary>
+    private bool IsTickDamageStatus(StatusType type)
+    {
+        switch (type)
+        {
+            case StatusType.Poison:
+            case StatusType.Burn:
+            case StatusType.Bleed:
+            case StatusType.Hunger:
+            case StatusType.Corrosion:
+            case StatusType.Ooze:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private bool IsUnremovable(StatusType type)
+    {
+        return type == StatusType.Bleed;
+    }
+
+    private float GetTickInterval(StatusType type)
+    {
+        return IsTickDamageStatus(type) ? defaultDamageTickInterval : 0f;
+    }
+
+    private void RaiseStatusChanged()
+    {
+        OnStatusChanged?.Invoke();
+    }
+
     private struct ActiveStatus
     {
-        public StatusType type;
-        public int remainingTurns;
-        public int power;
+        public StatusType Type;
+        public float RemainingTime;
+        public float TickTimer;
+        public float TickInterval;
+        public int Power;
 
-        public ActiveStatus(StatusType type, int remainingTurns, int power)
+        public ActiveStatus(StatusType type, float remainingTime, int power, float tickInterval)
         {
-            this.type = type;
-            this.remainingTurns = remainingTurns;
-            this.power = power;
+            Type = type;
+            RemainingTime = remainingTime;
+            TickInterval = Mathf.Max(0.05f, tickInterval);
+            TickTimer = TickInterval;
+            Power = power;
         }
     }
 }

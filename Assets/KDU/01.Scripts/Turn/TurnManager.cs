@@ -32,8 +32,8 @@ public class TurnManager : MonoBehaviour
 
     private void Start()
     {
-        // 플레이어 캐릭터 생성 대기 후 이동 성공(시작) 이벤트 구독함
-        StartCoroutine(SetupPlayerMovementSubscription());
+        // 플레이어 캐릭터 생성 대기 후 이동 성공(시작) 이벤트 구독함 - 구조가 바뀌면서 필요없어짐 혹시 몰라 일단 놔둠
+        // StartCoroutine(SetupPlayerMovementSubscription());
     }
 
     private void OnDestroy()
@@ -84,16 +84,17 @@ public class TurnManager : MonoBehaviour
         }
 
         // 이동 완료 후 시간 비용 계산
-        float totalCost = player.Config.moveTimeCost;
+        float totalCost = player.Config.moveTimeDelay;
         var status = player.GetComponent<StatusController>();
         if (status != null)
         {
             totalCost = status.ModifyMoveTimeCost(totalCost);
         }
 
-        bool skipEnemyTurnDelay = player.Movement.ShouldSkipEnemyTurnDelay();
-        OnPlayerActionCompleted(totalCost, skipEnemyTurnDelay);
+        bool skipEnemyTurnDelay = false;
+       //  OnPlayerActionCompleted(totalCost, skipEnemyTurnDelay);
     }
+
 
     private static bool IsEntityAlive(IGridEntity entity)
     {
@@ -139,7 +140,7 @@ public class TurnManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 플레이어 행동 완료 시 호출. 시간 소모 후 적 턴 시작.
+    /// 플레이어 행동 완료 시 호출. timeCost는 남은 시간 차감량이 아니라 다음 행동까지의 딜레이 값이다.
     /// </summary>
     public void OnPlayerActionCompleted(float timeCost)
     {
@@ -147,7 +148,7 @@ public class TurnManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 플레이어 행동 완료 후 시간 소모와 적 턴을 처리한다.
+    /// 플레이어 행동 완료 후 행동 딜레이 알림과 적 턴을 처리한다.
     /// skipEnemyTurnDelay가 true면 적 행동 자체는 유지하되, 고속 이동이 끊겨 보이지 않도록 턴 사이 대기만 생략한다.
     /// </summary>
     public void OnPlayerActionCompleted(float timeCost, bool skipEnemyTurnDelay)
@@ -157,7 +158,10 @@ public class TurnManager : MonoBehaviour
         LastPlayerActionTimeCost = timeCost;
 
         GameEvents.OnPlayerActionCompleted?.Invoke(timeCost);
-        TimeSystem.Instance?.ConsumeTime(timeCost);
+
+        // 행동 후 시간 감소 기획의도와 달라져 주석으로 처리함.
+        // timeCost는 이제 TimeSystem을 깎는 값이 아니라 플레이어 행동 딜레이로만 사용한다.
+        // TimeSystem.Instance?.ConsumeTime(timeCost);
 
         // 시간 소진으로 이미 게임오버 처리된 경우 적 턴 차단함 (세이프룸/테스트씬 등 타이머 정지 중에도 적 행동 허용)
         if (TimeSystem.Instance != null && TimeSystem.Instance.TimeRemaining <= 0f) return;
@@ -176,7 +180,7 @@ public class TurnManager : MonoBehaviour
         foreach (var entity in snapshot)
         {
             if (!IsEntityAlive(entity)) continue;
-            
+
             if (entity == null) continue;
             entity.OnTurnUpdate();
         }

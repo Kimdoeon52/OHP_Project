@@ -1,5 +1,6 @@
 using UnityEngine;
 
+
 public class TrapDebugEventLogger : MonoBehaviour
 {
     [SerializeField] private bool logStatusRequests = true;
