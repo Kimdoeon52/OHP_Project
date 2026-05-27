@@ -131,6 +131,7 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
     public void TryUsePotion()
     {
         if (PotionCount <= 0 || IsDead) return;
+        if (_player.ActionDelay != null && !_player.ActionDelay.CanAct) return;
 
         PotionCount--;
         RaiseHealthChanged();
@@ -142,7 +143,9 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
         if (_regenCoroutine != null) StopCoroutine(_regenCoroutine);
         _regenCoroutine = StartCoroutine(RegenOverTime());
 
-        TurnManager.Instance.OnPlayerActionCompleted(_player.Config.potionTimeCost);
+        float actionDelay = _player.Config.potionTimeDealy;
+        _player.ActionDelay?.StartDelay(actionDelay);
+        TurnManager.Instance.OnPlayerActionCompleted(actionDelay);
     }
 
     private IEnumerator RegenOverTime()

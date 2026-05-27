@@ -2,20 +2,24 @@ using UnityEngine;
 
 public enum StatusType
 {
-    Poison,
-    Bleed,
-    Cripple,
-    Blind,
-    Weakness,
-    Curse,
-    Ooze,
-    Chill,
-    Burn,
-    Shock,
-    Confusion,
-    Corrosion,
-    Paralysis,
-    Fall
+ Poison = 0,
+    Bleed = 1,
+    Cripple = 2,
+    Blind = 3,
+    Weakness = 4,
+    Curse = 5,
+    Ooze = 6,
+    Chill = 7,
+    Burn = 8,
+    Shock = 9,
+    Confusion = 10,
+    Corrosion = 11,
+    Paralysis = 12,
+    Fall = 13,
+    Slow = 14,
+    Hunger = 15,
+    Float = 16,
+    Haste = 17
 }
 
 public enum TrapTerrainType
