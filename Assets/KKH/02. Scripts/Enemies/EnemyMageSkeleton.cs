@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,7 +28,7 @@ public class EnemyMageSkeleton : EnemyBase
     /// CheckAttackTelegraph에서 설정, ExecutePendingAttack에서 소비.
     /// </summary>
     private List<Vector2Int> _pendingAttackLine;
-    
+
     /// <summary>
     /// 이번 피격을 흡수할 뼈 방패 활성화 플래그.
     /// OnTurnUpdate에서 50% 확률로 true가 되고, TakeDamage에서 소비 후 즉시 false로 리셋.
@@ -65,9 +66,9 @@ public class EnemyMageSkeleton : EnemyBase
         {
             int shieldReduction = Random.Range(0, 3); // 0~2 경감
             int rawDamageAfterShield = Mathf.Max(0, amount - shieldReduction);
-            
+
             Debug.Log($"{name} 방패 발동: 피해 {shieldReduction} 경감 (남은 피해: {rawDamageAfterShield})");
-            
+
             _shieldRaised = false; // 1회성
             base.TakeDamage(rawDamageAfterShield);
         }
@@ -82,8 +83,10 @@ public class EnemyMageSkeleton : EnemyBase
     /// _pendingAttackLine 상에 플레이어가 있으면 원거리 피해 + 상태이상 적용.
     /// 발동 후 _pendingAttackLine 초기화 + 텔레그래프 정리.
     /// </summary>
-    protected override void ExecutePendingAttack()
+    protected override IEnumerator ExecutePendingAttack(Vector2Int targetCell, float delaySeconds)
     {
+        _isAttacking = true;
+
         if (_pendingAttackLine != null)
         {
             // 발사 방향(라인 첫 번째 셀)으로 스프라이트 방향 전환
@@ -91,23 +94,26 @@ public class EnemyMageSkeleton : EnemyBase
             {
                 UpdateSpriteDirection(_pendingAttackLine[0]);
             }
-
-            if (_animator != null)
+            yield return new WaitForSeconds(delaySeconds);
+            if (!IsDead)
             {
-                _animator.SetTrigger("Attack");
-            }
+                if (_animator != null)
+                {
+                    _animator.SetTrigger("Attack");
+                }
 
-            // 발사 경로 위에 플레이어가 있으면 피해 적용
-            if (_pendingAttackLine.Contains(Player.GridPosition))
-            {
-                int damage = RollAttackDamage();
-                Player.TakeDamage(damage);
-                TryApplyOnHitEffect(Player);
+                // 발사 경로 위에 플레이어가 있으면 피해 적용
+                if (_pendingAttackLine.Contains(Player.GridPosition))
+                {
+                    int damage = RollAttackDamage();
+                    Player.TakeDamage(damage);
+                    TryApplyOnHitEffect(Player);
+                }
             }
-            
             _pendingAttackLine = null;
         }
         ClearTelegraphs();
+        _isAttacking = false;
     }
 
     /// <summary>
@@ -139,7 +145,7 @@ public class EnemyMageSkeleton : EnemyBase
     protected override void CheckAttackTelegraph()
     {
         // 이미 예약된 마법이 있으면 새 예고 차단
-        if (_pendingAttackLine != null) return;
+        if (IsDead || _isAttacking || _pendingAttackLine != null) return;
 
         var line = ComputeLineToPlayer();
         if (line != null)
@@ -149,12 +155,13 @@ public class EnemyMageSkeleton : EnemyBase
             {
                 UpdateSpriteDirection(line[0]);
             }
-            
+
             // 경로 전체에 붉은 타일 표시
             foreach (var cell in line)
             {
                 ShowTelegraph(cell);
             }
+            StartCoroutine(ExecutePendingAttack(_pendingAttackLine[0], 0.8f));
         }
     }
 
@@ -170,13 +177,13 @@ public class EnemyMageSkeleton : EnemyBase
 
         // 4방향 정렬 판별 (대각선이면 null)
         Vector2Int dir;
-        if      (diff.x == 0 && diff.y != 0) dir = new Vector2Int(0, System.Math.Sign(diff.y));
+        if (diff.x == 0 && diff.y != 0) dir = new Vector2Int(0, System.Math.Sign(diff.y));
         else if (diff.y == 0 && diff.x != 0) dir = new Vector2Int(System.Math.Sign(diff.x), 0);
         else return null; // 대각선 또는 동일 칸
 
         int maxRange = data != null ? (int)data.visionRange : 6;
-        var result   = new List<Vector2Int>();
-        var current  = GridPosition + dir;
+        var result = new List<Vector2Int>();
+        var current = GridPosition + dir;
 
         for (int step = 0; step < maxRange; step++)
         {

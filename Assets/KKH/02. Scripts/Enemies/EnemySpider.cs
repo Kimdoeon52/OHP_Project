@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 /// <summary>
 /// 거미 (EnemySpider) [Common] — Area 1 (하수구, 1~5층)
@@ -22,20 +23,31 @@ public class EnemySpider : EnemyBase
     /// 공격 발동 override.
     /// 데미지 처리 후 독(TryApplyOnHitEffect) + 이속감소(TryApplySlowDebuff) 순서로 2중 상태이상 적용.
     /// </summary>
-    protected override void ExecutePendingAttack()
+    protected override IEnumerator ExecutePendingAttack(Vector2Int targetCell, float delaySeconds)
     {
-        if (_pendingAttackCell.HasValue && Player.GridPosition == _pendingAttackCell.Value)
+        ShowTelegraph(targetCell);
+
+        yield return new WaitForSeconds(delaySeconds);
+
+        if (!IsDead)
         {
-            int damage = RollAttackDamage();
-            Player.TakeDamage(damage);
+            UpdateSpriteDirection(targetCell);
+            if (_animator != null)
+            {
+                _animator.SetTrigger("Attack");
+            }
+            if (Player.GridPosition == targetCell)
+            {
+                int damage = RollAttackDamage();
+                Player.TakeDamage(damage);
 
-            // 1. 독 상태이상 (EnemyData.onHitEffect 기반, EnemyBase 공통 로직)
-            TryApplyOnHitEffect(Player);
+                // 1. 독 상태이상 (EnemyData.onHitEffect 기반, EnemyBase 공통 로직)
+                TryApplyOnHitEffect(Player);
 
-            // 2. 이속 감소 디버프 추가 (slowDebuffData 직접 참조)
-            TryApplySlowDebuff(Player);
+                // 2. 이속 감소 디버프 추가 (slowDebuffData 직접 참조)
+                TryApplySlowDebuff(Player);
+            }
         }
-        _pendingAttackCell = null;
         ClearTelegraphs();
     }
 

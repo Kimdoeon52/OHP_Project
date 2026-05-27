@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 1001
   displayName: "\uC5ED\uBCD1 \uC950"
-  sprite: {fileID: 0}
+  sprite: {fileID: 88357071, guid: a455528ed0fba0645b9360dcf72e963b, type: 3}
   grade: 0
   moveType: 0
+  hasShield: 0
   maxHp: 8
   attackMin: 2
   attackMax: 4

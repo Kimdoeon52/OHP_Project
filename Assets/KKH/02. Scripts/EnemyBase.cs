@@ -63,6 +63,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// 자식 클래스가 CheckAttackTelegraph에서 값을 쓰고, ExecutePendingAttack에서 소비.
     /// </summary>
     protected Vector2Int? _pendingAttackCell;
+    protected bool _isAttacking = false;
 
     // ── 액션 포인트 (AP) ──
     // 플레이어가 행동할 때마다 그 행동 비용(초)만큼 누적됨.
@@ -126,9 +127,6 @@ public abstract class EnemyBase : EntityBase, IDamageable
         // 에디터에서 배치한 월드 좌표 → 격자 좌표 스냅 초기화
         var startPos = GridSystem.Instance.WorldToGrid(transform.position);
         Initialize(startPos);
-
-        // TurnManager에 등록 → 매 턴 OnTurnUpdate() 호출됨
-        TurnManager.Instance.Register(this);
 
         // 초기 안개 가시성 상태 적용
         UpdateVisibility();
@@ -401,61 +399,33 @@ public abstract class EnemyBase : EntityBase, IDamageable
     ///   4. AP가 공격 비용 충족 → CheckAttackTelegraph (다음 턴 공격 예고)
     ///   5. 이동 여부에 따라 Walk 애니메이션 파라미터 리셋
     /// </summary>
-    public override void OnTurnUpdate()
+    protected virtual void Update()
     {
         if (IsDead || Player == null) return;
 
         // 플레이어 행동 비용만큼 AP 충전
-        float elapsedSeconds = TurnManager.Instance != null ? TurnManager.Instance.LastPlayerActionTimeCost : 1.0f;
-        _moveActionPoints += elapsedSeconds;
-        _attackActionPoints += elapsedSeconds;
+        _moveActionPoints += Time.deltaTime;
+        _attackActionPoints += Time.deltaTime;
 
-        // 1단계: 예약된 공격 발동
-        ExecutePendingAttack();
 
-        // 2단계: 이동 (이동 비용 충족 시 반복 가능, 단 느린 적은 최대 1회)
+        // 1단계: 이동 (이동 비용 충족 시 반복 가능, 단 느린 적은 최대 1회)
         float moveCost = GetMoveCost();
-        bool moved = false;
-        while (_moveActionPoints >= moveCost)
+
+        if (_moveActionPoints >= moveCost)
         {
             PerformMovement();
             _moveActionPoints -= moveCost;
-            moved = true;
-
-            // 이동 비용이 1초 이상인 적은 한 턴에 최대 1칸만 이동 (순간이동 방지)
-            if (moveCost >= 1.0f)
-                break;
         }
 
-        // 3단계: 다음 공격 예고
+        // 2단계: 다음 공격 예고
         float attackCost = GetAttackCost();
         if (_attackActionPoints >= attackCost)
         {
             CheckAttackTelegraph();
             _attackActionPoints -= attackCost;
         }
-
-        // Walk 파라미터 처리
-        if (moved && !HasCustomMovementVisual())
-        {
-            // 이동 후 짧은 딜레이를 두고 Walk 해제 (보간 없는 즉시 이동 적용)
-            StartCoroutine(ResetWalkAfterDelay(0.18f));
-        }
-        else if (!moved)
-        {
-            if (_animator != null) _animator.SetBool("Walk", false);
-        }
     }
 
-    /// <summary>
-    /// Walk 파라미터를 일정 지연 후 false로 리셋하는 코루틴.
-    /// 즉시 격자 이동 방식(보간 없음)의 적에서 사용.
-    /// </summary>
-    private IEnumerator ResetWalkAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        if (_animator != null) _animator.SetBool("Walk", false);
-    }
 
     /// <summary>
     /// 자식 클래스가 SmoothMoveVisual 등 커스텀 보간 이동 코루틴을 직접 Walk 파라미터를 제어하는 경우 true 반환.
@@ -471,16 +441,17 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// 플레이어가 여전히 예고 타일에 있으면 데미지 부여.
     /// 완료 후 _pendingAttackCell 초기화 + 텔레그래프 정리.
     /// </summary>
-    protected virtual void ExecutePendingAttack()
+    protected virtual IEnumerator ExecutePendingAttack(Vector2Int targetCell, float delaySeconds)
     {
-        if (IsDead) return;
+        _isAttacking = true;
+        ShowTelegraph(targetCell);
 
-        if (_animator != null) _animator.SetBool("Walk", false);
+        yield return new WaitForSeconds(delaySeconds);
 
-        if (_pendingAttackCell.HasValue)
+        if (!IsDead)
         {
             // 공격 방향으로 스프라이트 전환
-            UpdateSpriteDirection(_pendingAttackCell.Value);
+            UpdateSpriteDirection(targetCell);
 
             if (_animator != null)
             {
@@ -488,7 +459,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
             }
 
             // 공격 타일에 플레이어가 있으면 데미지 + 상태이상 적용
-            if (Player.GridPosition == _pendingAttackCell.Value)
+            if (Player.GridPosition == targetCell)
             {
                 int damage = RollAttackDamage();
                 Player.TakeDamage(damage);
@@ -496,9 +467,10 @@ public abstract class EnemyBase : EntityBase, IDamageable
             }
         }
 
-        _pendingAttackCell = null;
         ClearTelegraphs();
+        _isAttacking = false;
     }
+
 
     /// <summary>
     /// 이동 처리 메서드.
@@ -522,7 +494,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// </summary>
     protected virtual void CheckAttackTelegraph()
     {
-        if (IsDead) return;
+        if (IsDead || _isAttacking) return;
 
         if (_animator != null) _animator.SetBool("Walk", false);
 
@@ -530,6 +502,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
         {
             _pendingAttackCell = Player.GridPosition;
             UpdateSpriteDirection(_pendingAttackCell.Value);
+            StartCoroutine(ExecutePendingAttack(_pendingAttackCell.Value, 0.5f));
             ShowTelegraph(_pendingAttackCell.Value);
         }
     }

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public enum AttackPattern { Melee, Ranged }
 
-public enum EnemyGrade { Common, Elite, MiniBoss, Boss }
+public enum EnemyGrade { Common, Elite }
 
 public enum EnemyMoveType { Normal, WallPass, Stationary }
 

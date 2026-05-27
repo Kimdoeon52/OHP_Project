@@ -50,9 +50,9 @@ public class EnemySkeleton : EnemyBase
         {
             int shieldReduction = Random.Range(0, 3);
             int rawDamageAfterShield = Mathf.Max(0, amount - shieldReduction);
-            
+
             Debug.Log($"{name} 방패 발동: 피해 {shieldReduction} 경감 (남은 피해: {rawDamageAfterShield})");
-            
+
             _shieldRaised = false; // 1회성
             base.TakeDamage(rawDamageAfterShield);
         }

@@ -22,10 +22,10 @@ public class EnemyGoblinThief : EnemyBase
 {
     /// <summary> 아이템 탈취 성공 여부. true이면 도주 AI 활성화. </summary>
     private bool _hasStolenItem = false;
-    
+
     /// <summary> 현재 보관 중인 훔친 아이템 데이터 참조. 사망 시 복구에 사용. </summary>
     private ItemBase _stolenItemData = null;
-    
+
     /// <summary> 이번 턴 시각 보간용 이동 경로 버퍼. 0번은 출발지. </summary>
     private readonly List<Vector2Int> _movePath = new List<Vector2Int>();
 
@@ -33,21 +33,31 @@ public class EnemyGoblinThief : EnemyBase
     /// 공격 발동 override.
     /// 기본 공격 + 훔치기 미완료 상태이면 TryStealItem 시도.
     /// </summary>
-    protected override void ExecutePendingAttack()
+    protected override IEnumerator ExecutePendingAttack(Vector2Int targetCell, float delaySeconds)
     {
-        if (_pendingAttackCell.HasValue && Player.GridPosition == _pendingAttackCell.Value)
-        {
-            int damage = RollAttackDamage();
-            Player.TakeDamage(damage);
-            TryApplyOnHitEffect(Player);
+        ShowTelegraph(targetCell);
 
-            // 아직 아이템을 훔치지 않았으면 시도
-            if (!_hasStolenItem)
+        yield return new WaitForSeconds(delaySeconds);
+
+        if (!IsDead)
+        {
+            UpdateSpriteDirection(targetCell);
+            if (_animator != null)
             {
-                TryStealItem();
+                _animator.SetTrigger("Attack");
+            }
+            if (Player.GridPosition == targetCell)
+            {
+                int damage = RollAttackDamage();
+                Player.TakeDamage(damage);
+                TryApplyOnHitEffect(Player);
+                // 고블린 도둑 고유 로직: 훔치기 시도
+                if (!_hasStolenItem)
+                {
+                    TryStealItem();
+                }
             }
         }
-        _pendingAttackCell = null;
         ClearTelegraphs();
     }
 
@@ -68,7 +78,7 @@ public class EnemyGoblinThief : EnemyBase
         if (targetItem != null && targetItem.ItemData != null)
         {
             _stolenItemData = targetItem.ItemData;
-            
+
             bool removed = invController.TryRemoveItem(targetItem);
             if (removed)
             {
@@ -198,10 +208,10 @@ public class EnemyGoblinThief : EnemyBase
         var dirY = diff.y != 0 ? new Vector2Int(0, System.Math.Sign(diff.y)) : Vector2Int.zero;
 
         bool xPrimary = Mathf.Abs(diff.x) >= Mathf.Abs(diff.y);
-        var primary   = xPrimary ? dirX : dirY;
+        var primary = xPrimary ? dirX : dirY;
         var secondary = xPrimary ? dirY : dirX;
 
-        if (primary   != Vector2Int.zero && CanMoveTo(GridPosition + primary))   return primary;
+        if (primary != Vector2Int.zero && CanMoveTo(GridPosition + primary)) return primary;
         if (secondary != Vector2Int.zero && CanMoveTo(GridPosition + secondary)) return secondary;
         return Vector2Int.zero;
     }
@@ -222,8 +232,8 @@ public class EnemyGoblinThief : EnemyBase
         for (int i = 0; i < dirs.Length; i++)
         {
             int randIdx = Random.Range(i, dirs.Length);
-            var temp  = dirs[i];
-            dirs[i]   = dirs[randIdx];
+            var temp = dirs[i];
+            dirs[i] = dirs[randIdx];
             dirs[randIdx] = temp;
         }
 

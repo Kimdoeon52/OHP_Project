@@ -17,6 +17,7 @@ MonoBehaviour:
   sprite: {fileID: 0}
   grade: 0
   moveType: 0
+  hasShield: 0
   maxHp: 6
   attackMin: 2
   attackMax: 3

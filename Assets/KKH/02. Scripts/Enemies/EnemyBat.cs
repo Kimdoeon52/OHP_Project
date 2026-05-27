@@ -33,16 +33,13 @@ public class EnemyBat : EnemyBase
 
         if (SquaredDistanceToPlayer() <= data.visionRange * data.visionRange)
         {
-            // 한 턴에 최대 2스텝 논리 이동 시도
-            for (int i = 0; i < 2; i++)
+            // 실시간으로 최대 1칸씩 논리 이동 시도
+            if (TryStepLogical())
             {
-                if (TryStepLogical())
-                {
-                    _movePath.Add(GridPosition);
-                }
+                _movePath.Add(GridPosition);
             }
         }
-        
+
         // 진행 중 코루틴 취소 후 새 경로로 재시작
         StopAllCoroutines();
         StartCoroutine(SmoothMoveVisual(0.05f)); // 칸당 0.05초 간격으로 고속 이동
@@ -77,18 +74,18 @@ public class EnemyBat : EnemyBase
     private IEnumerator SmoothMoveVisual(float delay)
     {
         if (_animator != null) _animator.SetBool("Walk", true);
-        
+
         // 0번은 출발지이므로 1번부터 순서대로 이동
         for (int i = 1; i < _movePath.Count; i++)
         {
             Vector3 targetWorldPos = GridSystem.Instance.GridToWorld(_movePath[i]);
             transform.position = targetWorldPos;
-            
+
             UpdateVisibility();
             UpdateSpriteDirection(_movePath[i]);
             yield return new WaitForSeconds(delay);
         }
-        
+
         if (_animator != null) _animator.SetBool("Walk", false);
     }
 
@@ -105,10 +102,10 @@ public class EnemyBat : EnemyBase
         var dirY = diff.y != 0 ? new Vector2Int(0, System.Math.Sign(diff.y)) : Vector2Int.zero;
 
         bool xPrimary = Mathf.Abs(diff.x) >= Mathf.Abs(diff.y);
-        var primary   = xPrimary ? dirX : dirY;
+        var primary = xPrimary ? dirX : dirY;
         var secondary = xPrimary ? dirY : dirX;
 
-        if (primary   != Vector2Int.zero && CanMoveTo(GridPosition + primary))   return primary;
+        if (primary != Vector2Int.zero && CanMoveTo(GridPosition + primary)) return primary;
         if (secondary != Vector2Int.zero && CanMoveTo(GridPosition + secondary)) return secondary;
         return Vector2Int.zero;
     }

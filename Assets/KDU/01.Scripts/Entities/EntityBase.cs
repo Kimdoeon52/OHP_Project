@@ -29,5 +29,5 @@ public abstract class EntityBase : MonoBehaviour, IGridEntity
         transform.position = GridSystem.Instance.GridToWorld(GridPosition);
     }
 
-    public abstract void OnTurnUpdate();
+    public virtual void OnTurnUpdate() { }
 }
