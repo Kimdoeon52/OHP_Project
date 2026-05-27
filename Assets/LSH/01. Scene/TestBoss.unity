@@ -182,7 +182,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 3
+  orthographic size: 5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -272,116 +272,6 @@ MonoBehaviour:
   target: {fileID: 666734900}
   offset: {x: 0, y: 0, z: -10}
   smoothing: 0.12
---- !u!1 &57115064
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 57115067}
-  - component: {fileID: 57115066}
-  - component: {fileID: 57115065}
-  m_Layer: 0
-  m_Name: GhostEffect
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!95 &57115065
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 57115064}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 7fdecfcb5080dea428a310d196fa4e47, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
---- !u!212 &57115066
-SpriteRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 57115064}
-  m_Enabled: 1
-  m_CastShadows: 0
-  m_ReceiveShadows: 0
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 0
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 0
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_Sprite: {fileID: -1962911498, guid: 167095396256c9447a0fb138ff8b76a0, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 0
-  m_FlipY: 0
-  m_DrawMode: 0
-  m_Size: {x: 0.64, y: 0.64}
-  m_AdaptiveModeThreshold: 0.5
-  m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
-  m_SpriteSortPoint: 0
---- !u!4 &57115067
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 57115064}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &137854675
 GameObject:
   m_ObjectHideFlags: 0
@@ -726,7 +616,6 @@ MonoBehaviour:
     wall: {fileID: 2462649507664473840}
     hazard: {fileID: 0}
     water: {fileID: 0}
-    grass: {fileID: 0}
     chasm: {fileID: 0}
 --- !u!1 &535393244
 GameObject:
@@ -2119,18 +2008,24 @@ MonoBehaviour:
   warningTilemap: {fileID: 399174845215498519}
   warningTile: {fileID: 11400000, guid: 149945ecfe1ad424fb7862e16697d6ba, type: 2}
   hpBar: {fileID: 993667598459514738}
-  moveTime: 0.25
-  moveEase: 1
-  stepsPerPattern: 0
   attack1Effect: {fileID: 3591762288387914882, guid: e4ec0dbb884146045ad1e26fe26a34e8, type: 3}
+  attack2Effect: {fileID: 955327466556852548, guid: dd86d967b6477bc488973b7f1da71cdc, type: 3}
   fallingRock: {fileID: 8334909061003502288, guid: 91e964234cbfa3f4997372c385a3b341, type: 3}
   swordGround: {fileID: 6793405847708951032, guid: 1d3f598b44e42ac4f9ae01682401ce07, type: 3}
-  rockMinDis: 1
-  rockMaxDis: 6
-  rockDelayMs: 200
+  shockwaveMaxRadius: 4
+  shockwaveStepMs: 700
+  shockwaveDamage: 1
+  shockwaveEffectLifetimeSec: 0.9
+  crystalPrefab: {fileID: 8334909061003502288, guid: 91e964234cbfa3f4997372c385a3b341, type: 3}
+  chasingCrystalCount: 20
+  chasingCrystalIntervalMs: 300
+  chasingCrystalWarnMs: 1000
+  chasingCrystalLifetimeSec: 1.5
+  chasingCrystalDamage: 1
+  chasingCrystalTint: {r: 1, g: 1, b: 1, a: 1}
   rainTickMs: 300
   rainCellsPerTick: 3
-  phase2Tint: {r: 1, g: 0.45, b: 0.45, a: 1}
+  phase2Tint: {r: 0.6792453, g: 0, b: 0.04179987, a: 1}
   phase2AnimSpeed: 2
   miniSkullPrefab: {fileID: 5469740153457854907, guid: ea29d0bb20763a54590974f7b05c8ec5, type: 3}
   miniSkullCount: 5
@@ -2229,6 +2124,5 @@ SceneRoots:
   - {fileID: 1838880255}
   - {fileID: 535393248}
   - {fileID: 1130639278}
-  - {fileID: 57115067}
   - {fileID: 1231019300}
   - {fileID: 1121755011}

@@ -8,23 +8,28 @@ using UnityEngine.Tilemaps;
 //IDamageable : 플레이어 공격 시스템이 이 보스를 데미지 받을 수 있는 대상으로 인식하기 위한 인터페이스
 public class BossB : BossBase, IGridEntity, IDamageable 
 {
-    [Header("이동 설정")]
-    [SerializeField] private float moveTime = 0.25f; //이동하는데 걸리는 시간
-    [SerializeField] private Ease moveEase = Ease.Linear; //스르륵 미끄러지게 끝나는 두트윈임.
-    [SerializeField] private int stepsPerPattern = 4; //이동 횟수
-    //[SerializeField] private int stepDelayMs = 1000; //이동 딜레이
-
     [Header("보스 공격 이펙트")]
-    [SerializeField] private GameObject attack1Effect; //쿵!
-    [SerializeField] private GameObject fallingRock; //떨어지는 바위 프리팹
-    [SerializeField] private GameObject swordGround; //땅에 칼 박아버리는거
+    [SerializeField] private GameObject attack1Effect; //쿵! 패턴1 휘두르기 전용
+    [SerializeField] private GameObject attack2Effect; //충격파 패턴 전용. 링 r번째에 scale이 r배로 커지며 spawn
+    [SerializeField] private GameObject fallingRock;   //Phase2 RockRain에서만 사용 (추후 크리스탈로 교체 예정)
+    [SerializeField] private GameObject swordGround;   //일단 보존만 콰과과과 하는거임.
+    
+    [Header("패턴2 충격파")]
+    [SerializeField] private int shockwaveMaxRadius = 4;            // 링 개수 (N)
+    [SerializeField] private int shockwaveStepMs = 1000;            // 각 단계 시간 (사용자 스펙: 1초씩)
+    [SerializeField] private int shockwaveDamage = 1;               // 링 한 칸당 데미지
+    [SerializeField] private float shockwaveEffectLifetimeSec = 1f; // spawn된 attack2Effect 잔존 시간
 
-    [Header("패턴2설정")]
-    [SerializeField] private int rockMinDis = 1; // 보스로부터 최소 1칸 떨어진 곳
-    [SerializeField] private int rockMaxDis = 5; // 보스로부터 최대 3칸 떨어진 곳
-    [SerializeField] private int rockDelayMs = 500; //0.5초...?
+    [Header("패턴3 추격 크리스탈 (0.5초 × 20회)")]
+    [SerializeField] private GameObject crystalPrefab;              // 3가지 변종 공용 베이스 prefab (Crystal 컴포넌트 부착)
+    [SerializeField] private int chasingCrystalCount = 20;           // 떨굴 총 횟수 (사용자 스펙: 20회)
+    [SerializeField] private int chasingCrystalIntervalMs = 500;     // 한 발 사이 간격 (사용자 스펙: 0.5초)
+    [SerializeField] private int chasingCrystalWarnMs = 400;         // 떨어지기 전 워닝(=조준) 시간 — 간격보다 짧게 잡아야 hit 사이클이 또렷
+    [SerializeField] private float chasingCrystalLifetimeSec = 0.5f; // 낙하 후 잔존 시간 (사용자 스펙: 떨어진 후 소멸)
+    [SerializeField] private int chasingCrystalDamage = 1;           // 직격 시 데미지
+    [SerializeField] private Color chasingCrystalTint = Color.white; // 기본 베이스 색상
 
-    [Header("Phase 2 바위 비 (HP ≤ phase2HpThreshold)")]
+    [Header("Phase 2 패시브 바위 비 (HP ≤ phase2HpThreshold)")]
     [SerializeField] private int rainTickMs = 300;        // 한 틱 간격(ms). 작을수록 빽빽함
     [SerializeField] private int rainCellsPerTick = 3;    // 한 틱에 동시에 떨어지는 칸 수
 
@@ -46,7 +51,6 @@ public class BossB : BossBase, IGridEntity, IDamageable
     //[SerializeField] private Tilemap floorTilemap;
 
     private Vector2Int gridPos;
-    private bool isMove = false;
     private Animator anime;
     private bool rainActive = false;                  // Phase 2 바위 비가 이미 돌고 있는지 (중복 시작 방지)
     private List<Vector2Int> walkableCellsCache;      // GetAllWalkableCells 결과 캐시 (매 틱 재조회 방지)
@@ -127,19 +131,13 @@ public class BossB : BossBase, IGridEntity, IDamageable
     }
     #endregion
 
-    // 4방향 이동을 위한 벡터 배열임
-    private static Vector2Int[] Dirs =
-    {
-        Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
-    };
-
     protected override void OnEnable()
     {
         currentHp = maxHp; // 보스 체력 설정먼저 해야 체력 업데이트가 보임
         base.OnEnable();
-        AddActionCase(BossAction.Pattern1, 60); // 평타
+        AddActionCase(BossAction.Pattern1, 50); // 평타
         AddActionCase(BossAction.Pattern2, 30); // 돌
-        AddActionCase(BossAction.Pattern3, 10); // 이동
+        AddActionCase(BossAction.Pattern3, 20); // 없음
         anime = GetComponent<Animator>();
         bossSprite = GetComponentInChildren<SpriteRenderer>(); //Phase 2 색 변경용 (자식 포함 검색)
         gridPos = GridSystem.Instance.WorldToGrid(transform.position); //보스 시작 격자 좌표 초기화
@@ -167,7 +165,7 @@ public class BossB : BossBase, IGridEntity, IDamageable
         transform.localScale = s;
     }
 
-    // 공격 이펙트를 보스 현재 방향에 맞춰 스폰. transform.localScale.x 부호로 플립 판정 (FaceDir과 같은 규약).
+    // 공격 이펙트를 보스 현재 방향에 맞춰 스폰. transform.localScale.x 부호로 플리쁘
     private GameObject SpawnAttackEffectFacingBoss(GameObject prefab, Vector3 pos)
     {
         if (prefab == null) return null;
@@ -178,21 +176,43 @@ public class BossB : BossBase, IGridEntity, IDamageable
         return go;
     }
 
+    // 모든 패턴의 공통 프리픽스. Teleport 사라짐 → 플레이어 옆 칸으로 위치 점프 → Appear 등장.
+    // disappearMs / appearMs를 절반으로 주면 Phase 2 가속 텔레포트로 사용 가능.
+    // 반환값: 보스가 바라보는 방향 (휘두르기 등 dir이 필요한 패턴에서 사용).
+    private async UniTask<Vector2Int> TeleportToPlayerAsync(int disappearMs = 1000, int appearMs = 500)
+    {
+        anime.SetTrigger("Teleport");
+        await UniTask.Delay(disappearMs, cancellationToken: cancelToken.Token);
+
+        var dir = TeleportBesidePlayer();
+        if (dir == Vector2Int.zero) dir = DirToPlayer();
+        FaceDir(dir);
+
+        anime.SetTrigger("Appear");
+        await UniTask.Delay(appearMs, cancellationToken: cancelToken.Token);
+        return dir;
+    }
+
+    private List<Vector2Int> GetRingCells(Vector2Int center, int r)
+    {
+        var cells = new List<Vector2Int>();
+        for (int dx = -r; dx <= r; dx++) // r=1 → 8셀, r=2 → 16셀, r=3 → 24셀 무ㅓ 이런식임
+        {
+            for (int dy = -r; dy <= r; dy++)
+            {
+                if (Mathf.Max(Mathf.Abs(dx), Mathf.Abs(dy)) != r) continue;
+                var c = center + new Vector2Int(dx, dy);
+                if (GridSystem.Instance.IsWalkable(c)) cells.Add(c);
+            }
+        }
+        return cells;
+    }
+
     //========= 패턴1 : 플레이어 옆 순간이동 → 휘두르기 ====================================================
     protected override async UniTask Phase1Pattern1()
     {
-        // 1) 사라지는 연출. Teleport 애니메이션이 끝나 보스가 보이지 않게 된 시점까지 대기.
-        anime.SetTrigger("Teleport");
-        await UniTask.Delay(1000, cancellationToken: cancelToken.Token); //텔레포트(사라짐) 애니메이션 1초
-
-        // 2) 사라진 동안(보이지 않을 때) 플레이어 옆 칸으로 실제 위치 점프. 양쪽 막히면 제자리에서 플레이어 방향으로 폴백.
-        var dir = TeleportBesidePlayer();
-        if (dir == Vector2Int.zero) dir = DirToPlayer();//두둥
-        FaceDir(dir);//플레이어 방향보기
-
-        // 3) 새 위치에서 등장 연출.
-        anime.SetTrigger("Appear");//등장!
-        await UniTask.Delay(500, cancellationToken: cancelToken.Token); //등장 애니메이션 0.5초
+        // 1~3) 텔레포트 프리픽스 (사라짐 → 위치 점프 → 등장). 모든 패턴 공용.
+        var dir = await TeleportToPlayerAsync();
 
         // 4) 휘두르기 칸 계산(데이터) → 경고 표시(시각). 셀은 여기서 고정 — 윈드업 중 재계산 X.
         var hitCells = BuildSwingCells(gridPos, dir, attack1Range, attack1Width);
@@ -217,7 +237,7 @@ public class BossB : BossBase, IGridEntity, IDamageable
         await UniTask.Delay(200, cancellationToken: cancelToken.Token);
         anime.SetTrigger("Attack1Fin");
 
-        await UniTask.Delay(2000, cancellationToken: cancelToken.Token);
+        await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
         isBossAttacking = false;
     }
 
@@ -273,66 +293,60 @@ public class BossB : BossBase, IGridEntity, IDamageable
         return cells;
     }
 
-    // ===================== 패턴2 : 바위떨구기 =========================================================
+    // ===================== 패턴2 : 텔레포트 → Attack2 → 단계별 확장 충격파 =========================
+    // 사용자 스펙: Attack2 트리거 후 1초 → 경고 → 1초 → attack2Effect spawn(+데미지) → 더 넓은 경고 → ... N번 반복.
+    // 각 단계는 shockwaveStepMs(=1초). attack2Effect는 링 r마다 새로 spawn되며 scale이 r배로 커짐.
     protected override async UniTask Phase1Pattern2()
     {
+        // 1) 텔레포트 프리픽스 (공용)
+        await TeleportToPlayerAsync();
+
+        // 2) Attack2 트리거 → 1초 대기 (첫 워닝 전 anim 시간 확보)
         anime.SetTrigger("Attack2");
-        await UniTask.Delay(2300, cancellationToken: cancelToken.Token);
-
-        GameObject Effect = Instantiate(swordGround, transform.position, Quaternion.identity);
-
-        // 보스 위치를 고정된 좌표로 저장 (안전장치임 호오오옥시 몰라서)
-        Vector2Int patternStartPos = this.gridPos;
-
-        RockFalling(patternStartPos).Forget();
-
-        await UniTask.Delay(8000, cancellationToken: cancelToken.Token);
-        Destroy(Effect);
-
-        anime.SetTrigger("Attack2Fin");
         await UniTask.Delay(2000, cancellationToken: cancelToken.Token);
-        isBossAttacking = false;
-    }
 
-    private async UniTask RockFalling(Vector2Int centerPos)
-    {
-        for (int i = 0; i < 20; i++)
+        var center = gridPos;
+
+        // 3) 링 r=1..N : ShowWarning → 1초 → attack2Effect(scale ×r) + 데미지 → ClearWarning → 다음 링.
+        for (int r = 1; r <= shockwaveMaxRadius; r++)
         {
-            if (cancelToken.IsCancellationRequested) return;
+            if (cancelToken.IsCancellationRequested) break;
 
-            Vector2Int targetPos = Vector2Int.zero;
-            bool isValidPosition = false;
-            int safetyCounter = 0; // 혹시 모를 무한루프 방지용 안전 장치
+            var ringCells = GetRingCells(center, r);
+            if (ringCells.Count == 0) continue;
 
-            while (!isValidPosition && safetyCounter < 10)
+            ShowWarning(ringCells);
+            try
             {
-                safetyCounter++;
-                int ranX = Random.Range(rockMinDis, rockMaxDis + 1) * (Random.Range(0, 2) == 0 ? 1 : -1);
-                int ranY = Random.Range(rockMinDis, rockMaxDis + 1) * (Random.Range(0, 2) == 0 ? 1 : -1);
+                await UniTask.Delay(shockwaveStepMs, cancellationToken: cancelToken.Token);
 
-                targetPos = centerPos + new Vector2Int(ranX, ranY);
-
-                if (GridSystem.Instance.IsWalkable(targetPos))
+                // attack2Effect spawn — scale은 링 r에 비례해 커짐. 보스 방향에 맞춰 플립.
+                if (attack2Effect != null)
                 {
-                    isValidPosition = true;
+                    var go = SpawnAttackEffectFacingBoss(attack2Effect, transform.position);
+                    var go2 = SpawnAttackEffectFacingBoss(attack1Effect, transform.position);
+                    if (go != null)
+                    {
+                        go.transform.localScale *= r;
+                        go2.transform.localScale *= r/2;
+                        Destroy(go, shockwaveEffectLifetimeSec);
+                        Destroy(go2, shockwaveEffectLifetimeSec);
+                        go.transform.transform.position += new Vector3(0, -0.5f, 0); // 살짝 밑에서
+                    }
                 }
-            }
 
-            // 유효한 좌표를 찾은 경우에만 바위 투하 및 딜레이 작동
-            if (isValidPosition)
-            {
-                FallSingleRockAsync(targetPos).Forget();
-
-                // 바위와 바위 사이의 생성 간격 딜레이 (정상적인 좌표 생성 시에만 대기)
-                await UniTask.Delay(rockDelayMs, cancellationToken: cancelToken.Token);
+                DamagePlayerIfInCells(ringCells, shockwaveDamage);
             }
-            else
+            finally
             {
-                // 10번 시도했는데도 자리를 못 찾았다면 이번 루프는 그냥 패스 (우르르 나오는 현상 방지)
-                i--;
-                await UniTask.Yield(cancellationToken: cancelToken.Token); // 한 프레임 쉬고 다음 시도
+                ClearWarning(ringCells);
             }
         }
+
+        // 4) 마무리
+        anime.SetTrigger("Attack2Fin");
+        await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
+        isBossAttacking = false;
     }
 
     private async UniTaskVoid FallSingleRockAsync(Vector2Int targetPos)
@@ -364,18 +378,9 @@ public class BossB : BossBase, IGridEntity, IDamageable
         for (int i = 0; i < 10; i++)
         {
             if (cancelToken.IsCancellationRequested) break;
-            // 1) 사라지는 연출 (2배속이라 500ms).
-            anime.SetTrigger("Teleport");
-            await UniTask.Delay(500, cancellationToken: cancelToken.Token);
 
-            // 2) 사라진 동안 플레이어 옆 칸으로 위치 점프.
-            var dir = TeleportBesidePlayer();
-            if (dir == Vector2Int.zero) dir = DirToPlayer();
-            FaceDir(dir);
-
-            // 3) 등장 연출 (250ms).
-            anime.SetTrigger("Appear");
-            await UniTask.Delay(250, cancellationToken: cancelToken.Token);
+            // 1~3) 텔레포트 프리픽스 (2배속). disappear/appear ms를 절반으로 넘김.
+            var dir = await TeleportToPlayerAsync(500, 250);
 
             // 4) 휘두르기 칸 계산 → 경고 표시.
             var hitCells = BuildSwingCells(gridPos, dir, attack1Range, attack1Width);
@@ -455,130 +460,60 @@ public class BossB : BossBase, IGridEntity, IDamageable
     {
         isBossAttacking = false;
     }
-    //=============================== 플레이어 추적 이동 패턴 ========================================
+    //=============================== 패턴3 : 텔레포트 → Attack2 → 플레이어 위치 추격 크리스탈 비 =================
+    // 보스가 텔레포트 → Attack2 트리거 → chasingCrystalIntervalMs 간격으로 chasingCrystalCount회 크리스탈 투하.
+    // 각 발은 fire-and-forget으로, 발사 순간 플레이어의 현재 위치를 스냅샷해서 그 칸으로 떨어짐 ("따라오는" 효과).
+    // 모든 발사가 끝나면 Attack2Fin 트리거.
     protected override async UniTask Phase1Pattern3()
     {
-        await BossMoveStart(true);
-        isBossAttacking = false;
-    }
-    //============================= 이동 로직 ==============================================
+        await TeleportToPlayerAsync();
 
-    public async UniTask BossMoveStart(bool chasePlayer)
-    {
-        isMove = true;
-        anime.SetBool("Walk", true);
-        // 지정된 횟수(stepsPerPattern)만큼 멈추지 않고 연속 이동 연출
-        for (int i = 0; i < 10; i++)
+        anime.SetTrigger("Attack2");
+        await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
+        GameObject Effect = SpawnAttackEffectFacingBoss(swordGround, transform.position);
+        for (int i = 0; i < chasingCrystalCount; i++)
         {
             if (cancelToken.IsCancellationRequested) break;
 
-            bool moveGood = false;
-
-            if (chasePlayer)
+            // 매 발 발사 시점의 플레이어 위치를 스냅샷. 이후 플레이어가 움직이면 다음 발이 새 위치를 추격.
+            if (player != null && !player.IsDead)
             {
-                moveGood = await NextMoveToPlayer();
-            }
-            else
-            {
-                moveGood = await RanMove();
+                DropChasingCrystal(player.GridPosition).Forget();
             }
 
-            // 만약 사방이 막혀서 이동에 실패했다면 루프 탈출
-            if (!moveGood) break;
+            await UniTask.Delay(chasingCrystalIntervalMs, cancellationToken: cancelToken.Token);
+        }
 
-            // 칸 사이의 딜레이를 0에 가깝게 주거나 moveTime과 맞춰야 끊기지 않습니다.
-            // 연속으로 스르륵 움직이게 하려면 stepDelayMs를 0으로 주거나 아주 짧게(50ms) 설정.
-            if (stepDelayMs > 0 && i < stepsPerPattern - 1)
+        anime.SetTrigger("Attack2Fin");
+        Destroy(Effect);
+        await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
+        isBossAttacking = false;
+    }
+
+    // 단일 크리스탈 낙하 (fire-and-forget). 호출 시 cell을 고정해 워닝 → 크리스탈 spawn → 데미지 → 자연 소멸.
+    private async UniTaskVoid DropChasingCrystal(Vector2Int cell)
+    {
+        ShowWarning(cell);
+        try
+        {
+            await UniTask.Delay(chasingCrystalWarnMs, cancellationToken: cancelToken.Token);
+
+            if (crystalPrefab != null)
             {
-                await UniTask.Delay(stepDelayMs, cancellationToken: cancelToken.Token);
+                var worldPos = GridSystem.Instance.GridToWorld(cell);
+                var go = Instantiate(crystalPrefab, worldPos, Quaternion.identity);
+                var c = go.GetComponent<Crystal>();
+                if (c != null) c.Setup(chasingCrystalTint, 1f, chasingCrystalLifetimeSec);
+                else Destroy(go, chasingCrystalLifetimeSec);
             }
-            bossMoveGridUpdate();
+
+            DamagePlayerIfInCell(cell, chasingCrystalDamage);
         }
-        anime.SetBool("Walk", false);
-        isMove = false;
-    }
-
-    private async UniTask<bool> RanMove()
-    {
-        var dirArray = (Vector2Int[])Dirs.Clone();
-        Array_Shuffle(dirArray);
-
-        foreach (var dir in dirArray)
+        catch (System.OperationCanceledException) { /* 보스 사망 등 취소 */ }
+        finally
         {
-            if (CheckAndUpateGrid(dir))
-            {
-                await MoveAnime();
-                return true;
-            }
+            ClearWarning(cell);
         }
-        return false;
-    }
-
-    private async UniTask<bool> NextMoveToPlayer()
-    {
-        if (player == null) return await RanMove();
-
-        var girdDis = player.GridPosition - gridPos;
-        var realDir = Vector2Int.zero;
-        var orDir = Vector2Int.zero;
-
-        // 더 멀리 떨어진 축을 주 방향으로 설정
-        if (Mathf.Abs(girdDis.x) >= Mathf.Abs(girdDis.y))
-        {
-            if (girdDis.x != 0) realDir = new Vector2Int(System.Math.Sign(girdDis.x), 0);
-            if (girdDis.y != 0) orDir = new Vector2Int(0, System.Math.Sign(girdDis.y));
-        }
-        else
-        {
-            if (girdDis.y != 0) realDir = new Vector2Int(0, System.Math.Sign(girdDis.y));
-            if (girdDis.x != 0) orDir = new Vector2Int(System.Math.Sign(girdDis.x), 0);
-        }
-
-        // 1순위: 플레이어와 더 멀어진 축 방향으로 전진
-        if (realDir != Vector2Int.zero && CheckAndUpateGrid(realDir)) { await MoveAnime(); return true; }
-        // 2순위: 막혔다면 차선책 축 방향으로 전진
-        if (orDir != Vector2Int.zero && CheckAndUpateGrid(orDir)) { await MoveAnime(); return true; }
-
-        // 다 막혔으면 우회하기 위해 랜덤 이동
-        return await RanMove();
-    }
-
-    private bool CheckAndUpateGrid(Vector2Int dir)
-    {
-        var nextPos = gridPos + dir;
-
-        if (!GridSystem.Instance.IsWalkable(nextPos)) return false;
-        if (player != null && nextPos == player.GridPosition) return false;
-
-        FaceDir(dir); // 이동 방향으로 스프라이트 반전 (좌우 이동만, 상하는 기존 방향 유지)
-        gridPos = nextPos;
-        return true;
-    }
-
-    private async UniTask MoveAnime()
-    {
-        var targetPos = GridSystem.Instance.GridToWorld(gridPos);
-        bool moveCom = false;
-        
-        transform.DOMove(targetPos, moveTime)
-            .SetEase(moveEase)
-            .OnComplete(() => moveCom = true);
-
-        await UniTask.WaitUntil(() => moveCom, cancellationToken: cancelToken.Token);
-    }
-
-    private static void Array_Shuffle(Vector2Int[] array)
-    {
-        for (int i = array.Length - 1; i > 0; i--)
-        {
-            int j = Random.Range(0, i + 1);
-            (array[i], array[j]) = (array[j], array[i]);
-        }
-    }
-
-    void bossMoveGridUpdate()
-    {
-        gridPos = GridSystem.Instance.WorldToGrid(transform.position);
     }
 
     //=============================== Phase 2 진입 / 바위 비 ==========================================
