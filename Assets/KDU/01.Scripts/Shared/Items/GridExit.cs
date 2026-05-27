@@ -8,6 +8,9 @@ public class GridExit : MonoBehaviour
 {
     public Vector2Int GridPosition { get; private set; }
 
+    [Tooltip("Animator int 파라미터 이름 — 다음 층 영역(1/2/3)이 들어감. 비우면 세팅 안 함.")]
+    [SerializeField] private string areaParamName = "Area";
+
     private SpriteRenderer _renderer;
     private GridPlayer _player;
     private bool _triggered;
@@ -33,7 +36,18 @@ public class GridExit : MonoBehaviour
         transform.position = GridSystem.Instance.GridToWorld(GridPosition);
         _player = FindFirstObjectByType<GridPlayer>();
 
+        ApplyAreaAnimation();
         UpdateVisibility();
+    }
+
+    private void ApplyAreaAnimation()
+    {
+        if (MapGenerator.Instance == null || string.IsNullOrEmpty(areaParamName)) return;
+        var animator = GetComponentInChildren<Animator>();
+        if (animator == null) return;
+        // 포탈은 "다음 층" 으로 가는 문 — 다음 depth 의 영역으로 분기.
+        int nextArea = MapGenerator.AreaFromDepth(MapGenerator.Instance.CurrentDepth + 1);
+        animator.SetInteger(areaParamName, nextArea);
     }
 
     private void Update()

@@ -91,10 +91,11 @@ public class MapGenerator : MonoBehaviour
         // 보스 층 분기
         if (IsBossDepth(depth) && bossRoomLoader != null)
         {
-            var bossRooms = bossRoomLoader.Load(depth, tilemaps);
+            var bossRooms = bossRoomLoader.Load(depth, tilemaps, out var bossExitCell);
             if (bossRooms == null) return null;
             CurrentRooms = bossRooms;
             CurrentFeeling = null;
+            SpawnExitMarker(bossExitCell);
             if (Spawner != null) Spawner.Spawn(bossRooms, depth, Rng);
             return bossRooms;
         }
@@ -126,7 +127,10 @@ public class MapGenerator : MonoBehaviour
 
         painter.Paint(rooms, tilemaps, feeling, Rng);
 
-        SpawnExitMarker(rooms);
+        Vector2Int? exitCell = FindExitCell(rooms);
+        if (exitCell.HasValue) ClearHazardAround(exitCell.Value, 1);
+
+        SpawnExitMarker(exitCell);
 
         if (Spawner != null)
         {
@@ -172,11 +176,10 @@ public class MapGenerator : MonoBehaviour
         return rooms;
     }
 
-    private void SpawnExitMarker(List<RoomData> rooms)
+    private static Vector2Int? FindExitCell(List<RoomData> rooms)
     {
-        if (exitPrefab == null) return;
         var exitRoom = rooms.Find(r => r.type == RoomType.Exit);
-        if (exitRoom == null || exitRoom.floorCells == null || exitRoom.floorCells.Count == 0) return;
+        if (exitRoom == null || exitRoom.floorCells == null || exitRoom.floorCells.Count == 0) return null;
 
         Vector2 center = Vector2.zero;
         foreach (var c in exitRoom.floorCells) center += c;
@@ -189,10 +192,29 @@ public class MapGenerator : MonoBehaviour
             float d = ((Vector2)c - center).sqrMagnitude;
             if (d < bestDist) { bestDist = d; best = c; }
         }
+        return best;
+    }
 
+    private void ClearHazardAround(Vector2Int center, int radius)
+    {
+        if (tilemaps == null || tilemaps.hazard == null) return;
+        for (int dx = -radius; dx <= radius; dx++)
+        {
+            for (int dy = -radius; dy <= radius; dy++)
+            {
+                var c = new Vector2Int(center.x + dx, center.y + dy);
+                tilemaps.hazard.SetTile(new Vector3Int(c.x, c.y, 0), null);
+                HazardCells.Remove(c);
+            }
+        }
+    }
+
+    private void SpawnExitMarker(Vector2Int? exitCell)
+    {
+        if (exitPrefab == null || !exitCell.HasValue) return;
         Vector3 worldPos = GridSystem.Instance != null
-            ? GridSystem.Instance.GridToWorld(best)
-            : new Vector3(best.x, best.y, 0);
+            ? GridSystem.Instance.GridToWorld(exitCell.Value)
+            : new Vector3(exitCell.Value.x, exitCell.Value.y, 0);
         _currentExit = Instantiate(exitPrefab, worldPos, Quaternion.identity);
     }
 

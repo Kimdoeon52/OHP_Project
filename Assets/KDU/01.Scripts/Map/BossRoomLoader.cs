@@ -22,9 +22,11 @@ public class BossRoomLoader : ScriptableObject
 
     /// <summary>
     /// depth 의 보스 prefab 을 로드해 target Tilemap 에 타일 복사. RoomData(타입 Boss) 1개 리스트 반환.
+    /// exitCell 은 prefab 의 ExitAnchor 셀 좌표 (없으면 null).
     /// </summary>
-    public List<RoomData> Load(int depth, TerrainTilemaps target)
+    public List<RoomData> Load(int depth, TerrainTilemaps target, out Vector2Int? exitCell)
     {
+        exitCell = null;
         if (target == null)
         {
             Debug.LogError("[BossRoomLoader] target TerrainTilemaps 가 null");
@@ -49,11 +51,18 @@ public class BossRoomLoader : ScriptableObject
             CopyChildTilemap(tempRoot.transform, "Wall", target.wall);
             CopyChildTilemap(tempRoot.transform, "Hazard", target.hazard);
             safeCell = ReadAnchorCell(tempRoot.transform, "SafeAnchor");
+            exitCell = ReadAnchorCell(tempRoot.transform, "ExitAnchor");
         }
         finally
         {
             if (Application.isPlaying) Destroy(tempRoot);
             else DestroyImmediate(tempRoot);
+        }
+
+        if (!exitCell.HasValue)
+        {
+            Debug.LogWarning("[BossRoomLoader] 'ExitAnchor' 자식 미발견 — 보스방 출구 미배치. " +
+                             "보스 prefab Root 에 빈 GameObject 'ExitAnchor' 를 출구로 쓸 셀에 두세요.");
         }
 
         return BuildBossRoomData(target, safeCell);
