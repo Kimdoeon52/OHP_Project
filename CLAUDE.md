@@ -75,3 +75,16 @@
 ---
 
 **작업 흐름**: 맵 코드 → `MAP_GENERATION.md` 읽기. Phase 작업 → `PHASE_3_5_PLAN.md`. 아키텍처 의문 → `ARCHITECTURE.md`. 수치 → GDD. 그 외엔 이 문서의 결정·금지·점검표만으로 충분.
+
+## Unity 에셋 탐색 규칙
+
+Unity 에셋(.prefab, .unity, .asset)을 읽을 때 cat/find/grep 대신
+unity-scanner를 사용한다 (토큰 절감). 프로젝트 루트에서 실행하므로 -p . 사용.
+
+- 폴더 구조: unity-scanner list -p . <path>
+- 검색:      unity-scanner search -p . Assets --name <name> --type <type>
+- 구조 파악:  unity-scanner read -p . <asset>
+- 필드 확인:  unity-scanner read -p . <asset> --component <name>
+- 참조 추적:  unity-scanner refs -p . <asset>
+
+먼저 list/search로 지도를 그리고, 필요한 대상만 read로 드릴다운.
