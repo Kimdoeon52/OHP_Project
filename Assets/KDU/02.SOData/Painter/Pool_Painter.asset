@@ -13,6 +13,12 @@ MonoBehaviour:
   m_Name: Pool_Painter
   m_EditorClassIdentifier: 
   entries:
-  - painter: {fileID: 11400000, guid: 34bbfddc4e621da4da0c56321b3042d7, type: 2}
+  - painter: {fileID: 11400000, guid: 437c8707694bba04382852d1771c7032, type: 2}
     minDepth: 1
-    maxDepth: 15
+    maxDepth: 4
+  - painter: {fileID: 11400000, guid: a44f7c5056b88a5438e0c1108b630c7c, type: 2}
+    minDepth: 6
+    maxDepth: 9
+  - painter: {fileID: 11400000, guid: 2c655be4767f8d04ca190f1d88018f88, type: 2}
+    minDepth: 11
+    maxDepth: 14

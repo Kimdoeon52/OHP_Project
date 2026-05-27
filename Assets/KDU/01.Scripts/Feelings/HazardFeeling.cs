@@ -86,12 +86,15 @@ public class HazardFeeling : FloorFeeling
             {
                 if (painted >= targetCells) break;
 
+                // 룰타일이 1칸짜리 다리/모서리에서 깨지지 않게, 짝수 격자에 스냅해서 2-grid 정렬 보장
+                var s = new Vector2Int(seed.x - (seed.x & 1), seed.y - (seed.y & 1));
+
                 int w = PickEvenSize(rng);
                 int h = PickEvenSize(rng);
 
-                if (!CanPaintRect(seed, w, h, roomCandidates, hazardCells))
+                if (!CanPaintRect(s, w, h, roomCandidates, hazardCells))
                 {
-                    if (!CanPaintRect(seed, 2, 2, roomCandidates, hazardCells)) continue;
+                    if (!CanPaintRect(s, 2, 2, roomCandidates, hazardCells)) continue;
                     w = 2; h = 2;
                 }
 
@@ -99,7 +102,7 @@ public class HazardFeeling : FloorFeeling
                 {
                     for (int dy = 0; dy < h; dy++)
                     {
-                        var c = new Vector2Int(seed.x + dx, seed.y + dy);
+                        var c = new Vector2Int(s.x + dx, s.y + dy);
                         tilemaps.hazard.SetTile(new Vector3Int(c.x, c.y, 0), tile);
                         hazardCells.Add(c);
                     }

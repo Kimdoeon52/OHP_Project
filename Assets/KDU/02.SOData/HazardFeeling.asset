@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 544ea944978591c43a7b563366fec9be, type: 3}
   m_Name: HazardFeeling
   m_EditorClassIdentifier: 
-  tileArea1: {fileID: 11400000, guid: 5440ef95718dd1a40965bc3583311134, type: 2}
+  tileArea1: {fileID: 11400000, guid: 1c8081c80b4e7794dbcff7e10b7545da, type: 2}
   tileArea2: {fileID: 0}
   tileArea3: {fileID: 0}
   coverage: 0.55
