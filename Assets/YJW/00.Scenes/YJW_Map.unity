@@ -7390,6 +7390,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1b1af8f15b8c8441a9ffeff3049201a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  areaParamName: Area
 --- !u!212 &1326951224
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -8370,8 +8371,8 @@ MonoBehaviour:
   baseMoveDuration: 0.18
   moveSpeedDurationMultiplier: 0.15
   minMoveDuration: 0.06
-  basePostMoveDelay: 0.5
-  zeroPostMoveDelaySpeed: 10
+  minMoveActionDelay: 0.3
+  moveSpeedForMinActionDelay: 10
   animationSpeedCapMoveSpeed: 5
 --- !u!114 &1658363719
 MonoBehaviour:
@@ -8490,7 +8491,9 @@ MonoBehaviour:
   currentExp: 0
   baseRequiredExp: 20
   requiredExpGrowth: 1.25
+  requiredExpByLevel: 1e00000028000000320000003c0000004600000032000000320000003200000064000000
   healthPerLevel: 5
+  moveSpeedPerLevel: 1
 --- !u!1 &1717082440
 GameObject:
   m_ObjectHideFlags: 0
