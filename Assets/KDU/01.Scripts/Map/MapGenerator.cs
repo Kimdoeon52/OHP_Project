@@ -128,7 +128,7 @@ public class MapGenerator : MonoBehaviour
         painter.Paint(rooms, tilemaps, feeling, Rng);
 
         Vector2Int? exitCell = FindExitCell(rooms);
-        if (exitCell.HasValue) ClearHazardAround(exitCell.Value, 1);
+        if (exitCell.HasValue) ClearHazardAround(exitCell.Value);
 
         SpawnExitMarker(exitCell);
 
@@ -195,16 +195,22 @@ public class MapGenerator : MonoBehaviour
         return best;
     }
 
-    private void ClearHazardAround(Vector2Int center, int radius)
+    // 출구 주변 hazard 청소. HazardFeeling 이 2-격자 정렬로만 칠하므로,
+    // clear 영역도 짝수 시작·홀수 끝(2-aligned) 으로 맞춰 1칸짜리 remnant 가 안 남게 함.
+    // 결과: 출구 3×3 을 덮는 4×4 짝수 정렬 블록이 비워짐.
+    private void ClearHazardAround(Vector2Int center)
     {
         if (tilemaps == null || tilemaps.hazard == null) return;
-        for (int dx = -radius; dx <= radius; dx++)
+        int minX = (center.x - 1) & ~1;
+        int maxX = (center.x + 1) | 1;
+        int minY = (center.y - 1) & ~1;
+        int maxY = (center.y + 1) | 1;
+        for (int x = minX; x <= maxX; x++)
         {
-            for (int dy = -radius; dy <= radius; dy++)
+            for (int y = minY; y <= maxY; y++)
             {
-                var c = new Vector2Int(center.x + dx, center.y + dy);
-                tilemaps.hazard.SetTile(new Vector3Int(c.x, c.y, 0), null);
-                HazardCells.Remove(c);
+                tilemaps.hazard.SetTile(new Vector3Int(x, y, 0), null);
+                HazardCells.Remove(new Vector2Int(x, y));
             }
         }
     }
