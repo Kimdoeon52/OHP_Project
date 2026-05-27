@@ -25,6 +25,9 @@ namespace PrototypeRT
         [Tooltip("아이템 UI를 생성할 Canvas Transform입니다. 비워두면 부모 Canvas를 자동으로 찾습니다.")]
         [SerializeField] private Transform canvasTransform;
 
+        [Tooltip("아이템 자동 추가에 사용할 기본 인벤토리 그리드입니다. 퀵슬롯 그리드가 아닌 큰 가방 그리드를 연결하세요.")]
+        [SerializeField] private ItemGrid defaultInventoryGrid;
+
         // 현재 마우스가 올라간 인벤토리 그리드입니다. 여러 그리드를 지원할 수 있도록 포인터 진입/이탈 때 갱신합니다.
         private ItemGrid _selectedGrid;
 
@@ -74,6 +77,12 @@ namespace PrototypeRT
             }
         }
 
+        public void ClearSelectedGridIfCurrent(ItemGrid grid)
+        {
+            if (_selectedGrid != grid) return;
+            SelectedGrid = null;
+        }
+
         /// <summary>
         /// 컴포넌트가 켜질 때 필요한 참조를 미리 찾아둡니다.
         /// 하이라이트, Canvas, 기본 ItemGrid를 준비하는 초기화 함수입니다.
@@ -106,6 +115,7 @@ namespace PrototypeRT
 
             // 들고 있는 아이템 이미지는 입력 가능 여부와 상관없이 마우스를 따라오게 둡니다.
             DragSelectedItemIcon();
+            RefreshSelectedGridUnderMouse();
 
             if (_isPointerInputBlocked)
             {
@@ -131,7 +141,7 @@ namespace PrototypeRT
 
         public bool TryAddItem(ItemBase itemData)
         {
-            if (_selectedGrid == null)
+            if (_selectedGrid == null || _selectedGrid.AcceptOnlyOneByOneItems)
                 SelectedGrid = ResolveItemGrid();
 
             if (_selectedGrid == null || itemPrefab == null || canvasTransform == null || itemData == null)
@@ -180,6 +190,14 @@ namespace PrototypeRT
             targetGrid.RemoveItem(item);
             RaiseInventoryChanged();
             return true;
+        }
+
+        public void ForgetItem(InventoryItem item)
+        {
+            if (item == null) return;
+
+            if (_items.Remove(item))
+                RaiseInventoryChanged();
         }
 
         public InventoryItem CreateItemView(ItemBase itemData, Transform parent, bool playerOwned)
@@ -238,19 +256,48 @@ namespace PrototypeRT
         /// </summary>
         private ItemGrid ResolveItemGrid()
         {
+            if (defaultInventoryGrid != null)
+                return defaultInventoryGrid;
+
             ItemGrid activeGrid = FindFirstObjectByType<ItemGrid>();
-            if (activeGrid != null) return activeGrid;
+            if (activeGrid != null && !activeGrid.AcceptOnlyOneByOneItems) return activeGrid;
 
             // 인벤토리 패널이 비활성화된 상태에서도 드랍 아이템 획득은 가능해야 하므로,
             // 씬에 존재하지만 비활성화된 UI까지 포함해서 한 번 더 찾습니다.
             ItemGrid[] allGrids = Resources.FindObjectsOfTypeAll<ItemGrid>();
             foreach (ItemGrid grid in allGrids)
             {
-                if (grid == null || !grid.gameObject.scene.IsValid()) continue;
+                if (grid == null || !grid.gameObject.scene.IsValid() || grid.AcceptOnlyOneByOneItems) continue;
                 return grid;
             }
 
             return null;
+        }
+
+        private void RefreshSelectedGridUnderMouse()
+        {
+            ItemGrid hoveredGrid = FindGridUnderMouse();
+            if (hoveredGrid != null)
+                SelectedGrid = hoveredGrid;
+        }
+
+        private ItemGrid FindGridUnderMouse()
+        {
+            ItemGrid[] grids = Resources.FindObjectsOfTypeAll<ItemGrid>();
+            ItemGrid fallback = null;
+
+            foreach (ItemGrid grid in grids)
+            {
+                if (grid == null || !grid.gameObject.scene.IsValid() || !grid.gameObject.activeInHierarchy) continue;
+                if (!grid.ContainsScreenPoint(Input.mousePosition)) continue;
+
+                if (grid.AcceptOnlyOneByOneItems)
+                    return grid;
+
+                fallback = grid;
+            }
+
+            return fallback;
         }
 
         /// <summary>
@@ -322,7 +369,13 @@ namespace PrototypeRT
         private void TryPlaceSelectedItem(Vector2Int gridPos)
         {
             bool placed = _selectedGrid.TryPlaceItem(_selectedItem, gridPos.x, gridPos.y, ref _overlapItem);
-            if (!placed) return;
+            if (!placed)
+            {
+                if (_selectedGrid.AcceptOnlyOneByOneItems)
+                    CancelDragAndReturnItem();
+
+                return;
+            }
 
             _selectedItem = null;
             if (_overlapItem != null)
@@ -435,7 +488,8 @@ namespace PrototypeRT
             else
             {
                 // 아이템을 들고 있을 때는 현재 위치에 배치 가능한 경우에만 하이라이트를 보여줍니다.
-                bool valid = _selectedGrid.IsWithinBoundary(gridPos.x, gridPos.y, _selectedItem.ItemData.Width, _selectedItem.ItemData.Height);
+                bool valid = _selectedGrid.CanAcceptItem(_selectedItem)
+                    && _selectedGrid.IsWithinBoundary(gridPos.x, gridPos.y, _selectedItem.ItemData.Width, _selectedItem.ItemData.Height);
                 _inventoryHighlight.Show(valid);
                 _inventoryHighlight.UpdateSize(_selectedItem);
                 _inventoryHighlight.UpdatePosition(_selectedGrid.GetLocalPositionForItem(_selectedItem, gridPos.x, gridPos.y));

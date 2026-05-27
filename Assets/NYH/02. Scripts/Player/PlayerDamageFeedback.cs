@@ -21,6 +21,7 @@ public class PlayerDamageFeedback : MonoBehaviour
 
     private GridPlayer _player;
     private SpriteRenderer _spriteRenderer;
+    private PlayerStatusVisual _statusVisual;
     private Coroutine _flashCoroutine;
     private Color _baseColor;
     private bool _isSubscribed;
@@ -29,6 +30,7 @@ public class PlayerDamageFeedback : MonoBehaviour
     {
         _player = GetComponent<GridPlayer>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
+        _statusVisual = GetComponent<PlayerStatusVisual>();
         _baseColor = _spriteRenderer.color;
     }
 
@@ -52,7 +54,9 @@ public class PlayerDamageFeedback : MonoBehaviour
             _flashCoroutine = null;
         }
 
-        if (_spriteRenderer != null)
+        if (_statusVisual != null)
+            _statusVisual.Refresh();
+        else if (_spriteRenderer != null)
             _spriteRenderer.color = _baseColor;
     }
 
@@ -102,20 +106,25 @@ public class PlayerDamageFeedback : MonoBehaviour
 
     private IEnumerator Flash()
     {
-        Color hitColor = _baseColor;
-        hitColor.a = hitAlpha;
+        Color restoreColor = _spriteRenderer.color;
 
         // 알파만 바꿔서 피격 인지는 주되, 위치/조작/애니메이션 흐름은 건드리지 않습니다.
         for (int i = 0; i < blinkCount; i++)
         {
+            Color hitColor = restoreColor;
+            hitColor.a = hitAlpha;
             _spriteRenderer.color = hitColor;
             yield return new WaitForSeconds(blinkInterval);
 
-            _spriteRenderer.color = _baseColor;
+            _spriteRenderer.color = restoreColor;
             yield return new WaitForSeconds(blinkInterval);
         }
 
-        _spriteRenderer.color = _baseColor;
+        if (_statusVisual != null)
+            _statusVisual.Refresh();
+        else
+            _spriteRenderer.color = restoreColor;
+
         _flashCoroutine = null;
     }
 }

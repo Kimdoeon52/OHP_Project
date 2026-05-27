@@ -2,24 +2,24 @@ using UnityEngine;
 
 public enum StatusType
 {
- Poison = 0,
-    Bleed = 1,
-    Cripple = 2,
-    Blind = 3,
-    Weakness = 4,
-    Curse = 5,
-    Ooze = 6,
-    Chill = 7,
-    Burn = 8,
-    Shock = 9,
-    Confusion = 10,
-    Corrosion = 11,
-    Paralysis = 12,
-    Fall = 13,
-    Slow = 14,
-    Hunger = 15,
-    Float = 16,
-    Haste = 17
+    Poison = 0,     // 독
+    Bleed = 1,      // 출혈
+    Cripple = 2,    // 불구 / 절름발이 / 이동 불능 계열
+    Blind = 3,      // 실명
+    Weakness = 4,   // 약화
+    Curse = 5,      // 저주
+    Ooze = 6,       // 점액 / 끈적임
+    Chill = 7,      // 냉기
+    Burn = 8,       // 화상
+    Shock = 9,      // 감전
+    Confusion = 10, // 혼란
+    Corrosion = 11, // 부식
+    Paralysis = 12, // 마비
+    Fall = 13,      // 추락
+    Slow = 14,      // 둔화
+    Hunger = 15,    // 굶주림
+    Float = 16,     // 부유
+    Haste = 17      // 신속
 }
 
 public enum TrapTerrainType

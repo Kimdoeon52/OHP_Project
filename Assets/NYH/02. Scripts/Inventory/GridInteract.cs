@@ -31,7 +31,7 @@ namespace PrototypeRT
         public void OnPointerExit(PointerEventData eventData)
         {
             // 그리드 밖으로 나가면 배치/하이라이트 계산을 멈춥니다.
-            if (inventoryController != null) inventoryController.SelectedGrid = null;
+            if (inventoryController != null) inventoryController.ClearSelectedGridIfCurrent(_itemGrid);
         }
     }
 }

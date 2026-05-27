@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -32,6 +33,10 @@ namespace PrototypeRT
         [Tooltip("시작 시 gridWidth x gridHeight 수만큼 슬롯 프리팹을 생성합니다.")]
         [SerializeField] private bool generateVisualSlots = true;
 
+        [Header("Placement Rules")]
+        [Tooltip("켜면 Width 1, Height 1 아이템만 이 그리드에 배치할 수 있습니다. 퀵슬롯 10칸처럼 작은 아이템 전용 그리드에 사용합니다.")]
+        [SerializeField] private bool acceptOnlyOneByOneItems;
+
         // 각 칸이 어떤 아이템에게 점유되어 있는지 저장합니다.
         // 2x2 아이템이면 네 칸 모두 같은 InventoryItem 참조를 가집니다.
         private InventoryItem[,] _slots;
@@ -41,10 +46,18 @@ namespace PrototypeRT
         // ConfigureSize 등으로 슬롯을 다시 만들 때 이전 시각 슬롯을 정리하기 위한 캐시입니다.
         private readonly List<RectTransform> _visualSlots = new();
 
+        public event Action OnGridChanged;
+
+        public bool AcceptOnlyOneByOneItems => acceptOnlyOneByOneItems;
+
         private void Awake()
         {
-            _rectTransform = GetComponent<RectTransform>();
-            InitGrid(gridWidth, gridHeight);
+            EnsureInitialized();
+        }
+
+        private void OnEnable()
+        {
+            EnsureInitialized();
         }
 
         private void InitGrid(int width, int height)
@@ -56,6 +69,7 @@ namespace PrototypeRT
             // 논리 그리드 크기와 실제 UI 판 크기를 맞춰 좌표 변환 오차를 막습니다.
             _rectTransform.sizeDelta = new Vector2(gridWidth * TileWidth, gridHeight * TileHeight);
             RebuildVisualSlots();
+            RestoreExistingItemReferences();
         }
 
         /// <summary>
@@ -72,17 +86,22 @@ namespace PrototypeRT
 
         public InventoryItem GetItemAt(int x, int y)
         {
+            EnsureInitialized();
+
             if (x < 0 || y < 0 || x >= gridWidth || y >= gridHeight) return null;
             return _slots[x, y];
         }
 
         public InventoryItem PickUpItem(int x, int y)
         {
+            EnsureInitialized();
+
             InventoryItem item = GetItemAt(x, y);
             if (item == null) return null;
 
             // 아이템이 여러 칸을 차지하므로, 집을 때는 해당 아이템이 점유하던 모든 칸을 비웁니다.
             ClearItemReferences(item);
+            RaiseGridChanged();
             return item;
         }
 
@@ -93,7 +112,10 @@ namespace PrototypeRT
         /// </summary>
         public bool TryPlaceItem(InventoryItem item, int x, int y, ref InventoryItem overlapItem)
         {
+            EnsureInitialized();
+
             if (item == null || item.ItemData == null) return false;
+            if (!CanAcceptItem(item)) return false;
             if (!IsWithinBoundary(x, y, item.ItemData.Width, item.ItemData.Height)) return false;
             if (!CheckOverlap(x, y, item.ItemData.Width, item.ItemData.Height, ref overlapItem))
             {
@@ -108,6 +130,8 @@ namespace PrototypeRT
 
         public void PlaceItemInternal(InventoryItem item, int x, int y)
         {
+            EnsureInitialized();
+
             RectTransform itemRect = item.GetComponent<RectTransform>();
             itemRect.SetParent(_rectTransform, false);
 
@@ -121,6 +145,7 @@ namespace PrototypeRT
             item.OnGridPositionX = x;
             item.OnGridPositionY = y;
             itemRect.anchoredPosition = GetLocalPositionForItem(item, x, y);
+            RaiseGridChanged();
         }
 
         /// <summary>
@@ -129,6 +154,8 @@ namespace PrototypeRT
         /// </summary>
         public Vector2Int ScreenToGridPosition(Vector2 screenPos)
         {
+            EnsureInitialized();
+
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(_rectTransform, screenPos, null, out Vector2 local))
                 return new Vector2Int(-1, -1);
 
@@ -138,11 +165,19 @@ namespace PrototypeRT
             return new Vector2Int(x, y);
         }
 
+        public bool ContainsScreenPoint(Vector2 screenPos)
+        {
+            EnsureInitialized();
+            return RectTransformUtility.RectangleContainsScreenPoint(_rectTransform, screenPos, null);
+        }
+
         /// <summary>
         /// 아이템의 좌상단 그리드 좌표를 기준으로, RectTransform.anchoredPosition에 넣을 중심 좌표를 계산합니다.
         /// </summary>
         public Vector2 GetLocalPositionForItem(InventoryItem item, int x, int y)
         {
+            EnsureInitialized();
+
             Vector2 topLeft = GetTopLeftLocalPosition();
             return new Vector2(
                 topLeft.x + x * TileWidth + TileWidth * item.ItemData.Width / 2f,
@@ -161,11 +196,23 @@ namespace PrototypeRT
 
         public bool IsWithinBoundary(int x, int y, int width, int height)
         {
+            EnsureInitialized();
+
             return x >= 0 && y >= 0 && x + width <= gridWidth && y + height <= gridHeight;
+        }
+
+        public bool CanAcceptItem(InventoryItem item)
+        {
+            if (item == null || item.ItemData == null) return false;
+            return !acceptOnlyOneByOneItems || (item.ItemData.Width == 1 && item.ItemData.Height == 1);
         }
 
         public Vector2Int? FindSpaceForItem(InventoryItem item)
         {
+            EnsureInitialized();
+
+            if (!CanAcceptItem(item)) return null;
+
             // 자동 획득용 탐색입니다. 위쪽 줄부터 왼쪽에서 오른쪽으로 훑어 첫 빈 공간을 반환합니다.
             for (int y = 0; y <= gridHeight - item.ItemData.Height; y++)
             {
@@ -181,13 +228,18 @@ namespace PrototypeRT
 
         public void RemoveItem(InventoryItem item)
         {
+            EnsureInitialized();
+
             if (item == null) return;
             ClearItemReferences(item);
             Destroy(item.gameObject);
+            RaiseGridChanged();
         }
 
         public void ClearAllItems(bool destroyItems)
         {
+            EnsureInitialized();
+
             if (_slots == null) return;
 
             if (destroyItems)
@@ -208,6 +260,21 @@ namespace PrototypeRT
             }
 
             _slots = new InventoryItem[gridWidth, gridHeight];
+            RaiseGridChanged();
+        }
+
+        private void RaiseGridChanged()
+        {
+            OnGridChanged?.Invoke();
+        }
+
+        private void EnsureInitialized()
+        {
+            if (_rectTransform == null)
+                _rectTransform = GetComponent<RectTransform>();
+
+            if (_slots == null)
+                InitGrid(gridWidth, gridHeight);
         }
 
         private void RebuildVisualSlots()
@@ -305,6 +372,22 @@ namespace PrototypeRT
                     int y = item.OnGridPositionY + iy;
                     if (x >= 0 && y >= 0 && x < gridWidth && y < gridHeight && _slots[x, y] == item)
                         _slots[x, y] = null;
+                }
+            }
+        }
+
+        private void RestoreExistingItemReferences()
+        {
+            InventoryItem[] existingItems = GetComponentsInChildren<InventoryItem>(true);
+            foreach (InventoryItem item in existingItems)
+            {
+                if (item == null || item.ItemData == null) continue;
+                if (!IsWithinBoundary(item.OnGridPositionX, item.OnGridPositionY, item.ItemData.Width, item.ItemData.Height)) continue;
+
+                for (int ix = 0; ix < item.ItemData.Width; ix++)
+                {
+                    for (int iy = 0; iy < item.ItemData.Height; iy++)
+                        _slots[item.OnGridPositionX + ix, item.OnGridPositionY + iy] = item;
                 }
             }
         }

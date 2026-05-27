@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: "\uAC00\uC8FD \uAC11\uC637"
   description: 
-  icon: {fileID: 0}
+  icon: {fileID: -2010429460, guid: 167095396256c9447a0fb138ff8b76a0, type: 3}
   itemType: 0
   slot: 2
   width: 2
@@ -22,5 +22,3 @@ MonoBehaviour:
   minMinusDamage: 0
   maxMinusDamage: 4
   canUseStrength: 0
-  grade: 0
-  isAnalyzed: 0
