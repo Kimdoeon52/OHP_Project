@@ -2,5 +2,5 @@
 
 public interface IHitEffect
 {
-    void ApplyEffect(EnemyBase enemy) { }
+    void ApplyEffect(EnemyBase enemy, int damage);
 }

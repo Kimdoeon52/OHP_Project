@@ -8,10 +8,9 @@ public class ThrowingAxe : ThrowableWeapon, IHitEffect
     [SerializeField] int minBleedingDamage;
     [SerializeField] int maxBleedingDamage;
 
-    public void ApplyEffect(EnemyBase enemy)
+    public void ApplyEffect(EnemyBase enemy, int damage)
     {
-        enemy.TakeDamage(GetDamage());
-
+        enemy.TakeDamage(damage);
         BleedingDamgae(enemy).Forget();
     }
 

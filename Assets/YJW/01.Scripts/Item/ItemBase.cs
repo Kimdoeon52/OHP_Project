@@ -19,6 +19,7 @@ public enum EquipmentSlot
 }
 public class ItemBase : ScriptableObject
 {
+    [SerializeField] private int id;
     [SerializeField] protected string itemName;
     [SerializeField] protected string description;
     [SerializeField] protected Sprite icon;
@@ -26,6 +27,8 @@ public class ItemBase : ScriptableObject
     [SerializeField] protected EquipmentSlot slot;
     [SerializeField] protected int width;
     [SerializeField] protected int height;
+    [SerializeField] private bool canEnhance;
+    [SerializeField] private bool canCurse;
 
     public string Name { get => itemName; set => itemName = value; }
     public string Description { get => description; set => description = value; }
@@ -34,6 +37,8 @@ public class ItemBase : ScriptableObject
     public EquipmentSlot Slot => slot;
     public int Width { get => width; set => width = value; }
     public int Height { get => height; set => height = value; }
+    public bool CanEnhance => canEnhance;
+    public bool CanCurse => canCurse;
 
     public virtual void Use() { }
     public virtual string GetToolTipStats() { return ""; }
