@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e454c61580eb2d4f90a9dfe9e9873d5, type: 3}
   m_Name: Painter_Dungeon
   m_EditorClassIdentifier: 
-  floorTile: {fileID: 0}
-  wallTile: {fileID: 0}
+  floorTile: {fileID: 11400000, guid: 6be5c88d6b5d686489c71c4d3a3e53db, type: 2}
+  wallTile: {fileID: 11400000, guid: 0532b1732d70dc045ad30e780d879ab9, type: 2}
   outerWallPadding: 5
