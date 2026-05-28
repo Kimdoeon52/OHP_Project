@@ -90,7 +90,7 @@ public class CurseData : ScriptableObject
             case CurseType.Drain:
                 if (Random.value < triggerChance)
                 {
-                    PlayerStats.Instance.AddStat(StatType.Hp, -drainAmount);
+                    PlayerStats.Instance.AddStat(StatType.Hp, -drainPercentage);
                 }
                 break;
 

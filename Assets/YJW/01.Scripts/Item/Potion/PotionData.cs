@@ -28,7 +28,7 @@ public class PotionData : ItemBase
         switch(potionType)
         {
             case PotionType.HP: 
-                if(NYHPlayerStats.Instance.HP >= NYHPlayerStats.Instance.MaxHP) return;
+                if(GridPlayerHealth.Instance.CurrentHp >= GridPlayerHealth.Instance.MaxHp) return;
                 HealPlayer(value); //체력 증가 수정
                 break;
             case PotionType.strength:

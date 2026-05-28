@@ -6,7 +6,7 @@ using UnityEngine;
 /// 플레이어 HP + 회복 포션.
 /// 포션: 즉시 +50% MaxHp, 이후 25초에 걸쳐 추가 +50% (curve로 곡선 조절).
 /// </summary>
-public class GridPlayerHealth : MonoBehaviour, IDamageable
+public class GridPlayerHealth : PersistentSingleton<GridPlayerHealth>, IDamageable
 {
     [Header("기본 체력")]
     [Tooltip("NYHPlayerStats가 없을 때 사용할 기본 최대 체력입니다. Stats 컴포넌트가 있으면 MaxHealth 값을 우선 사용합니다.")]
