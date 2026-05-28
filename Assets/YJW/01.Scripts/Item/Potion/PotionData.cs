@@ -20,9 +20,15 @@ public class PotionData : ItemBase
 
     public override void Use()
     {
+        if(NYHPlayerStats.Instance == null)
+        {
+            Debug.LogWarning("PotionData: NYHPlayerStats가 씬에 없어 포션 효과를 적용하지 못했습니다.");
+            return;
+        }
         switch(potionType)
         {
             case PotionType.HP: 
+                if(NYHPlayerStats.Instance.HP >= NYHPlayerStats.Instance.MaxHP) return;
                 HealPlayer(value); //체력 증가 수정
                 break;
             case PotionType.strength:

@@ -12,15 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b95f9807b19590345a329bde3cab06ea, type: 3}
   m_Name: Kunai
   m_EditorClassIdentifier: 
+  id: 0
   itemName: "\uCFE0\uB098\uC774"
   description: 
   icon: {fileID: 0}
   itemType: 0
+  slot: 0
   width: 1
   height: 1
+  canEnhance: 1
+  canCurse: 0
   minDamage: 6
   maxDamage: 12
-  CanUseStrength: 13
+  minEnhanceBonus: 0
+  maxEnhanceBonus: 0
+  canUseStrength: 0
   poolType: 7
   attackSpeed: 1
   durability: 7

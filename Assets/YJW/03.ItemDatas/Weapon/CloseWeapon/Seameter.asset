@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c78a00b21693164c8c970d01cecd70b, type: 3}
   m_Name: Seameter
   m_EditorClassIdentifier: 
+  id: 0
   itemName: "\uC2DC\uBBF8\uD130"
   description: 
   icon: {fileID: 0}
@@ -19,9 +20,11 @@ MonoBehaviour:
   slot: 1
   width: 2
   height: 3
+  canEnhance: 1
+  canCurse: 1
   minDamage: 4
   maxDamage: 20
-  CanUseStrength: 16
+  minEnhanceBonus: 0
+  maxEnhanceBonus: 0
+  canUseStrength: 0
   attackSpeed: 0.7
-  grade: 0
-  isAnalyzed: 0

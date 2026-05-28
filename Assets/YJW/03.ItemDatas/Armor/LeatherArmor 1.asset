@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 072b9cf2bcf93604f864078d90b4ee4f, type: 3}
   m_Name: LeatherArmor 1
   m_EditorClassIdentifier: 
+  id: 0
   itemName: "\uAC00\uC8FD \uAC11\uC637"
   description: 
   icon: {fileID: -2010429460, guid: 167095396256c9447a0fb138ff8b76a0, type: 3}
@@ -19,6 +20,10 @@ MonoBehaviour:
   slot: 2
   width: 2
   height: 2
-  minMinusDamage: 0
-  maxMinusDamage: 4
+  canEnhance: 1
+  canCurse: 1
+  minDefense: 0
+  maxDefense: 0
+  minEnhanceBonus: 0
+  maxEnhanceBonus: 0
   canUseStrength: 0

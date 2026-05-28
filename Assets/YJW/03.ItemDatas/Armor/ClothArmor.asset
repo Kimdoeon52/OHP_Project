@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 072b9cf2bcf93604f864078d90b4ee4f, type: 3}
   m_Name: ClothArmor
   m_EditorClassIdentifier: 
+  id: 0
   itemName: "\uCC9C \uAC11\uC637"
   description: 
   icon: {fileID: 0}
@@ -19,8 +20,10 @@ MonoBehaviour:
   slot: 2
   width: 2
   height: 2
-  minMinusDamage: 0
-  maxMinusDamage: 2
+  canEnhance: 1
+  canCurse: 1
+  minDefense: 0
+  maxDefense: 0
+  minEnhanceBonus: 0
+  maxEnhanceBonus: 0
   canUseStrength: 0
-  grade: 0
-  isAnalyzed: 0

@@ -12,15 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efe1ba28216c1ee4f9b546ca16a8cf8e, type: 3}
   m_Name: Noose
   m_EditorClassIdentifier: 
+  id: 0
   itemName: "\uC62C\uAC00\uBBF8"
   description: 
   icon: {fileID: 0}
   itemType: 0
+  slot: 0
   width: 1
   height: 1
+  canEnhance: 1
+  canCurse: 0
   minDamage: 4
   maxDamage: 9
-  CanUseStrength: 13
+  minEnhanceBonus: 0
+  maxEnhanceBonus: 0
+  canUseStrength: 0
   poolType: 8
   attackSpeed: 1
   durability: 7

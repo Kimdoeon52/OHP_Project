@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c78a00b21693164c8c970d01cecd70b, type: 3}
   m_Name: Sword
   m_EditorClassIdentifier: 
+  id: 0
   itemName: "\uAC80"
   description: 
   icon: {fileID: 0}
@@ -19,9 +20,11 @@ MonoBehaviour:
   slot: 1
   width: 1
   height: 2
+  canEnhance: 1
+  canCurse: 1
   minDamage: 2
   maxDamage: 15
-  CanUseStrength: 12
+  minEnhanceBonus: 0
+  maxEnhanceBonus: 0
+  canUseStrength: 0
   attackSpeed: 1
-  grade: 0
-  isAnalyzed: 0

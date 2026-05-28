@@ -12,11 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24546455f488342479ae12a74c883f28, type: 3}
   m_Name: ExperiencePotion
   m_EditorClassIdentifier: 
+  id: 0
   itemName: "\uACBD\uD5D8 \uD3EC\uC158"
   description: 
   icon: {fileID: 0}
   itemType: 1
+  slot: 0
   width: 1
   height: 1
+  canEnhance: 0
+  canCurse: 0
   potionType: 3
   value: 1

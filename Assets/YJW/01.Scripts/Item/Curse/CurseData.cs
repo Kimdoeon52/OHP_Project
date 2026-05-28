@@ -10,21 +10,21 @@ public enum CurseType
     Polarize    // 양극화 저주
 }
 
-[CreateAssetMenu(fileName = "Curse", menuName = "Item/Curse")]
+[CreateAssetMenu(fileName = "New Curse", menuName = "Item/Curse")]
 public class CurseData : ScriptableObject
 {
     [SerializeField] private string curseName;
     [SerializeField] private string description;
     [SerializeField] private CurseType curseType;
-    [SerializeField] private float triggerChance;
+    [SerializeField] private float triggerChance;   // 발동 확률 (0~1)
     [SerializeField] private EquipmentSlot targetSlot;
 
     [Header("출혈 저주")]
-    [SerializeField] private int bleedMin = 3;
-    [SerializeField] private int bleedMax = 6;
+    [SerializeField] private int bleedMin;
+    [SerializeField] private int bleedMax;
 
     [Header("착취 저주")]
-    [SerializeField] private int drainAmount = 5;
+    [SerializeField] private int drainPercentage;
 
     public string CurseName => curseName;
     public string Description => description;

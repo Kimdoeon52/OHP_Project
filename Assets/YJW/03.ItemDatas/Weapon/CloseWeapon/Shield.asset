@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a5acb0ee10d9e54982c8a84b8398110, type: 3}
   m_Name: Shield
   m_EditorClassIdentifier: 
+  id: 0
   itemName: "\uBC29\uD328"
   description: 
   icon: {fileID: 0}
@@ -19,11 +20,13 @@ MonoBehaviour:
   slot: 1
   width: 1
   height: 2
+  canEnhance: 1
+  canCurse: 1
   minDamage: 2
   maxDamage: 12
-  CanUseStrength: 12
+  minEnhanceBonus: 0
+  maxEnhanceBonus: 0
+  canUseStrength: 0
   attackSpeed: 1
-  grade: 0
-  isAnalyzed: 0
   minMinusDamage: 0
   maxMinusDamage: 2
