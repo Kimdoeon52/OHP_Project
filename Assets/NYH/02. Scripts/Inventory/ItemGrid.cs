@@ -45,6 +45,7 @@ namespace PrototypeRT
 
         // ConfigureSize 등으로 슬롯을 다시 만들 때 이전 시각 슬롯을 정리하기 위한 캐시입니다.
         private readonly List<RectTransform> _visualSlots = new();
+        private RectTransform[,] _visualSlotGrid;
 
         public event Action OnGridChanged;
 
@@ -101,6 +102,7 @@ namespace PrototypeRT
 
             // 아이템이 여러 칸을 차지하므로, 집을 때는 해당 아이템이 점유하던 모든 칸을 비웁니다.
             ClearItemReferences(item);
+            RefreshVisualSlots();
             RaiseGridChanged();
             return item;
         }
@@ -145,6 +147,7 @@ namespace PrototypeRT
             item.OnGridPositionX = x;
             item.OnGridPositionY = y;
             itemRect.anchoredPosition = GetLocalPositionForItem(item, x, y);
+            RefreshVisualSlots();
             RaiseGridChanged();
         }
 
@@ -260,6 +263,7 @@ namespace PrototypeRT
             }
 
             _slots = new InventoryItem[gridWidth, gridHeight];
+            RefreshVisualSlots();
             RaiseGridChanged();
         }
 
@@ -285,6 +289,7 @@ namespace PrototypeRT
 
             RectTransform parent = slotContainer != null ? slotContainer : _rectTransform;
             Vector2 topLeft = GetTopLeftLocalPosition();
+            _visualSlotGrid = new RectTransform[gridWidth, gridHeight];
 
             for (int y = 0; y < gridHeight; y++)
             {
@@ -308,8 +313,11 @@ namespace PrototypeRT
                         slotImage.raycastTarget = false;
 
                     _visualSlots.Add(slot);
+                    _visualSlotGrid[x, y] = slot;
                 }
             }
+
+            RefreshVisualSlots();
         }
 
         private void ClearVisualSlots()
@@ -326,6 +334,7 @@ namespace PrototypeRT
             }
 
             _visualSlots.Clear();
+            _visualSlotGrid = null;
         }
 
         private bool CheckOverlap(int x, int y, int width, int height, ref InventoryItem overlap)
@@ -374,6 +383,7 @@ namespace PrototypeRT
                         _slots[x, y] = null;
                 }
             }
+            RefreshVisualSlots();
         }
 
         private void RestoreExistingItemReferences()
@@ -388,6 +398,88 @@ namespace PrototypeRT
                 {
                     for (int iy = 0; iy < item.ItemData.Height; iy++)
                         _slots[item.OnGridPositionX + ix, item.OnGridPositionY + iy] = item;
+                }
+                RefreshVisualSlots();
+            }
+        }
+
+        private void RefreshVisualSlots()
+        {
+            if (_visualSlotGrid == null)
+                return;
+
+            RestoreDefaultVisualSlots();
+
+            if (_slots == null)
+                return;
+
+            HashSet<InventoryItem> mergedItems = new();
+            for (int y = 0; y < gridHeight; y++)
+            {
+                for (int x = 0; x < gridWidth; x++)
+                {
+                    InventoryItem item = _slots[x, y];
+                    if (item == null || item.ItemData == null || mergedItems.Contains(item))
+                        continue;
+
+                    mergedItems.Add(item);
+                    MergeVisualSlotsForItem(item);
+                }
+            }
+        }
+
+        private void RestoreDefaultVisualSlots()
+        {
+            Vector2 topLeft = GetTopLeftLocalPosition();
+            for (int y = 0; y < gridHeight; y++)
+            {
+                for (int x = 0; x < gridWidth; x++)
+                {
+                    RectTransform slot = _visualSlotGrid[x, y];
+                    if (slot == null) continue;
+
+                    slot.gameObject.SetActive(true);
+                    slot.name = $"Slot_{x}_{y}";
+                    slot.sizeDelta = new Vector2(TileWidth, TileHeight);
+                    slot.anchoredPosition = new Vector2(
+                        topLeft.x + x * TileWidth + TileWidth / 2f,
+                        topLeft.y - (y * TileHeight + TileHeight / 2f));
+                }
+            }
+        }
+
+        private void MergeVisualSlotsForItem(InventoryItem item)
+        {
+            int startX = item.OnGridPositionX;
+            int startY = item.OnGridPositionY;
+            int width = item.ItemData.Width;
+            int height = item.ItemData.Height;
+
+            if (!IsWithinBoundary(startX, startY, width, height))
+                return;
+
+            RectTransform mergedSlot = _visualSlotGrid[startX, startY];
+            if (mergedSlot == null)
+                return;
+
+            Vector2 topLeft = GetTopLeftLocalPosition();
+            mergedSlot.name = $"MergedSlot_{startX}_{startY}_{width}x{height}";
+            mergedSlot.gameObject.SetActive(true);
+            mergedSlot.sizeDelta = new Vector2(width * TileWidth, height * TileHeight);
+            mergedSlot.anchoredPosition = new Vector2(
+                topLeft.x + startX * TileWidth + width * TileWidth / 2f,
+                topLeft.y - (startY * TileHeight + height * TileHeight / 2f));
+
+            // 점유 영역 내부의 나머지 슬롯은 숨기고, 좌상단 슬롯 하나만 크게 써서 "합쳐진 슬롯"처럼 보이게 한다.
+            for (int iy = 0; iy < height; iy++)
+            {
+                for (int ix = 0; ix < width; ix++)
+                {
+                    if (ix == 0 && iy == 0) continue;
+
+                    RectTransform coveredSlot = _visualSlotGrid[startX + ix, startY + iy];
+                    if (coveredSlot != null)
+                        coveredSlot.gameObject.SetActive(false);
                 }
             }
         }

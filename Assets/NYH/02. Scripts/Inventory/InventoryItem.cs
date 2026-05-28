@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -38,10 +37,20 @@ namespace PrototypeRT
             _image.sprite = itemData.Icon;
             _image.enabled = itemData.Icon != null;
             _image.raycastTarget = true;
+            _image.preserveAspect = true;
 
             // ItemData의 칸 크기와 UI 크기를 맞춰 배치 계산이 어긋나지 않게 합니다.
             RectTransform rect = GetComponent<RectTransform>();
             rect.sizeDelta = new Vector2(itemData.Width * ItemGrid.TileWidth, itemData.Height * ItemGrid.TileHeight);
+        }
+
+        public void SetRaycastTarget(bool value)
+        {
+            if (_image == null) _image = GetComponent<Image>();
+            if (_image == null) return;
+
+            // 손에 든 아이템이 raycast를 먹으면 장비 슬롯/퀵슬롯이 클릭을 받지 못한다.
+            _image.raycastTarget = value;
         }
     }
 }

@@ -37,7 +37,7 @@ public class NYHPlayerStats : MonoBehaviour
     [Tooltip("플레이어 최대 체력입니다. GridPlayerHealth의 MaxHp 계산에 사용됩니다.")]
     [SerializeField, Min(1)] private int maxHealth = 20;
 
-    [Tooltip("플레이어의 기본 공격력 보정값입니다. 근접 공격과 일부 무기 피해 계산에 사용됩니다.")]
+    [Tooltip("플레이어의 기본 힘 입니다.일부 무기 장착 계산에 사용됩니다.")]
     [SerializeField, Min(0)] private int strength = 10;
 
     [Tooltip("플레이어 이동 속도입니다. 값이 높을수록 한 칸 이동 시간이 짧아집니다.")]
@@ -160,5 +160,74 @@ public class NYHPlayerStats : MonoBehaviour
         accuracy = Mathf.Clamp(accuracy, 0, 100);
         defense = Mathf.Max(0, defense);
         evasion = Mathf.Clamp(evasion, 0, 100);
+    }
+}
+
+public readonly struct NYHAttackDamageRange
+{
+    public readonly int MinDamage;
+    public readonly int MaxDamage;
+    public readonly int BonusMax;
+    public readonly bool IsUnarmed;
+    public readonly string WeaponName;
+
+    public NYHAttackDamageRange(int minDamage, int maxDamage, int bonusMax, bool isUnarmed, string weaponName)
+    {
+        MinDamage = Mathf.Max(0, minDamage);
+        MaxDamage = Mathf.Max(MinDamage, maxDamage);
+        BonusMax = Mathf.Max(0, bonusMax);
+        IsUnarmed = isUnarmed;
+        WeaponName = weaponName;
+    }
+
+    public string ToDisplayText()
+    {
+        if (MinDamage == MaxDamage)
+            return MinDamage.ToString();
+
+        return BonusMax > 0
+            ? $"{MinDamage}~{MaxDamage} (+0~{BonusMax})"
+            : $"{MinDamage}~{MaxDamage}";
+    }
+}
+
+public static class NYHPlayerAttackCalculator
+{
+    private const int UnarmedDamage = 1;
+
+    public static NYHAttackDamageRange CalculateMeleeRange(NYHPlayerStats stats, NYHEquipmentController equipmentController)
+    {
+        if (stats == null)
+            return new NYHAttackDamageRange(UnarmedDamage, UnarmedDamage, 0, true, "맨손");
+
+        CloseWeapon weapon = GetEquippedCloseWeapon(equipmentController);
+        if (weapon == null)
+            return new NYHAttackDamageRange(UnarmedDamage, UnarmedDamage, 0, true, "맨손");
+
+        int strengthBonusMax = Mathf.Max(0, stats.Strength - weapon.CanUseStrength);
+        int minDamage = Mathf.Max(0, weapon.MinDamage);
+        int maxDamage = Mathf.Max(minDamage, weapon.MaxDamage + strengthBonusMax);
+
+        return new NYHAttackDamageRange(minDamage, maxDamage, strengthBonusMax, false, weapon.Name);
+    }
+
+    public static int RollMeleeDamage(NYHPlayerStats stats, NYHEquipmentController equipmentController)
+    {
+        NYHAttackDamageRange range = CalculateMeleeRange(stats, equipmentController);
+        if (range.MinDamage == range.MaxDamage)
+            return range.MinDamage;
+
+        // UnityEngine.Random.Range(int, int)는 maxExclusive라서 +1 한다.
+        return UnityEngine.Random.Range(range.MinDamage, range.MaxDamage + 1);
+    }
+
+    private static CloseWeapon GetEquippedCloseWeapon(NYHEquipmentController equipmentController)
+    {
+        if (equipmentController == null)
+            return null;
+
+        return equipmentController.TryGetEquipped(EquipmentSlot.Weapon, out NYHEquipmentItemInstance item)
+            ? item.Data as CloseWeapon
+            : null;
     }
 }

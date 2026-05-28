@@ -36,9 +36,17 @@ public class BossB : BossBase, IGridEntity, IDamageable
     [Header("Phase 2 연출 / 패턴")]
     [SerializeField] private Color phase2Tint = new Color(1f, 0.45f, 0.45f, 1f); // 보스 스프라이트 붉은 틴트
     [SerializeField] private float phase2AnimSpeed = 2f;  // Phase 2 진입 시 애니메이터 speed
-    [SerializeField] private GameObject miniSkullPrefab;  // Phase2Pattern2에서 소환할 미니해골 프리팹
+    [SerializeField] private GameObject miniSkullPrefab;  // Phase2 패시브로 소환할 미니해골 프리팹
     [SerializeField] private int miniSkullCount = 2;      // 한 번에 소환할 미니해골 수
-    [SerializeField] private int miniSkullLifetimeMs = 10000; // 패턴2 대기 시간 (미니해골 lifetime과 맞출 것)
+    [SerializeField] private int miniSkullLifetimeMs = 10000; // 패시브 재소환 간격 (미니해골 자체 lifetime과 맞출 것)
+
+    [Header("죽음 패턴")]
+    [SerializeField] private int deathCrystalDistance = 7;   // 보스 등 뒤로 큰 크리스탈이 떨어지는 거리(칸)
+    [SerializeField] private int deathSafeZoneRadius = 1;    // 안전지대 반경 (1 → 3x3)
+    [SerializeField] private float deathEscapeSec = 5f;      // 즉사 전 도망 시간
+    [SerializeField] private Color deathCrystalTint = Color.red; // 죽음 크리스탈 색 (붉은색)
+    [SerializeField] private float deathCrystalScale = 2f;  // 죽음 크리스탈 크기 배율 (2배)
+    [SerializeField] private int deathInstantKillDamage = 99999; // 안전지대 밖 즉사 데미지
 
     [Header("패턴 1히트 판정")]
     [SerializeField] private int attack1Damage = 1;   // 패턴1(평타) 데미지
@@ -55,6 +63,7 @@ public class BossB : BossBase, IGridEntity, IDamageable
     private bool rainActive = false;                  // Phase 2 바위 비가 이미 돌고 있는지 (중복 시작 방지)
     private List<Vector2Int> walkableCellsCache;      // GetAllWalkableCells 결과 캐시 (매 틱 재조회 방지)
     private SpriteRenderer bossSprite;                // Phase 2 색 변경용
+    private readonly List<GameObject> activeMiniSkulls = new List<GameObject>(); // Phase 2 패시브로 소환된 미니해골 추적 (보스 사망 시 일괄 제거)
 
     #region 플레이어 이동공격 대상 등록 프록시
     // 이 region은 NYH 플레이어의 "이동하려는 칸에 적이 있으면 이동 대신 공격" 기능과 연결하기 위한 구간입니다.
@@ -135,14 +144,100 @@ public class BossB : BossBase, IGridEntity, IDamageable
     {
         currentHp = maxHp; // 보스 체력 설정먼저 해야 체력 업데이트가 보임
         base.OnEnable();
-        AddActionCase(BossAction.Pattern1, 50); // 평타
-        AddActionCase(BossAction.Pattern2, 30); // 돌
-        AddActionCase(BossAction.Pattern3, 20); // 없음
+        AddActionCase(BossAction.Pattern1, 40); // 평타
+        AddActionCase(BossAction.Pattern2, 30); // 충격파
+        AddActionCase(BossAction.Pattern3, 30); // 따라다니는 크리스탈
         anime = GetComponent<Animator>();
         bossSprite = GetComponentInChildren<SpriteRenderer>(); //Phase 2 색 변경용 (자식 포함 검색)
         gridPos = GridSystem.Instance.WorldToGrid(transform.position); //보스 시작 격자 좌표 초기화
         RegisterBossGridTarget(); // 플레이어가 이동공격 대상으로 보스를 찾을 수 있도록 TurnManager에 등록
         Debug.Log($"보스 시작 위치: {gridPos}"); //디버그용
+    }
+
+    // 보스가 죽을 때 Phase 2 패시브로 소환된 미니해골들 일괄 제거.
+    // OnDestroy는 SetActive(false) 때는 호출되지 않고 실제 Destroy 시에만 호출되므로 "사망" 시점과 정확히 매칭.
+    protected override void OnDestroy()
+    {
+        DestroyAllMiniSkulls();
+        base.OnDestroy(); // cancelToken cancel + ClearAllWarnings
+    }
+
+    private void DestroyAllMiniSkulls()
+    {
+        foreach (var skull in activeMiniSkulls)
+        {
+            if (skull != null) Destroy(skull);
+        }
+        activeMiniSkulls.Clear();
+    }
+
+    //=============================== 죽음 패턴 ==========================================
+    // HP 0 도달 시 BossBase.BossTakeDamage가 isDying을 잠그고 OnDeath() 호출.
+    // 즉시 파괴하지 않고: 패시브/오브젝트 정리 → 보스 등 뒤로 큰 붉은 크리스탈 → 안전지대(3x3) 제외 전체 위험표시 → deathEscapeSec 후 즉사 판정 → 자폭.
+    protected override void OnDeath()
+    {
+        DeathPatternAsync().Forget();
+    }
+
+    private async UniTaskVoid DeathPatternAsync()
+    {
+        // cancelToken은 아래에서 패시브를 멈추려고 Cancel하므로 못 씀.
+        // 보스가 실제 Destroy될 때만 취소되는 토큰을 사용 (UniTask 제공).
+        var token = this.GetCancellationTokenOnDestroy();
+
+        // 1) 패시브/진행 중 패턴 전부 중단 (RockRain, MiniSkullPassive, 현재 패턴)
+        if (cancelToken != null && !cancelToken.IsCancellationRequested) cancelToken.Cancel();
+
+        // 취소된 패턴들이 finally(ClearWarning)를 돌릴 한 프레임을 준 뒤 정리 — 워닝 refcount 꼬임 방지
+        await UniTask.Yield(token);
+
+        // 2) 소환된 오브젝트 정리: 미니해골 + 남은 워닝 일괄
+        DestroyAllMiniSkulls();
+        ClearAllWarnings();
+
+        // 3) 방향: 보스가 바라보는 반대(등 뒤). FaceDir 규약(localScale.x 부호)과 동일.
+        var bossCell = gridPos;
+        int facingSign = (transform.localScale.x >= 0f) ? 1 : -1;
+        var backwardDir = new Vector2Int(-facingSign, 0);
+
+        // 4) 큰 붉은 크리스탈을 등 뒤 deathCrystalDistance칸에 떨어뜨림 (시각 랜드마크)
+        if (crystalPrefab != null)
+        {
+            var crystalCell = bossCell + backwardDir * deathCrystalDistance;
+            var crystalWorld = GridSystem.Instance.GridToWorld(crystalCell);
+            var go = Instantiate(crystalPrefab, crystalWorld, Quaternion.identity);
+            var c = go.GetComponent<Crystal>();
+            if (c != null) c.Setup(deathCrystalTint, deathCrystalScale, deathEscapeSec + 2f);
+        }
+
+        // 5) 안전지대: 보스 등 뒤 1칸을 중심으로 (2*radius+1)^2 영역 (radius=1 → 3x3)
+        var safeCenter = bossCell + backwardDir;
+        var safeCells = new HashSet<Vector2Int>();
+        for (int dx = -deathSafeZoneRadius; dx <= deathSafeZoneRadius; dx++)
+            for (int dy = -deathSafeZoneRadius; dy <= deathSafeZoneRadius; dy++)
+                safeCells.Add(safeCenter + new Vector2Int(dx, dy));
+
+        // 6) 안전지대 제외한 모든 walkable 셀에 위험표시
+        var dangerCells = new List<Vector2Int>();
+        foreach (var cell in GridSystem.Instance.GetAllWalkableCells())
+            if (!safeCells.Contains(cell)) dangerCells.Add(cell);
+        ShowWarning(dangerCells);
+
+        try
+        {
+            // 7) 도망 시간
+            await UniTask.Delay((int)(deathEscapeSec * 1000), cancellationToken: token);
+
+            // 8) 즉사 판정: 안전지대 밖이면 즉사
+            if (player != null && !player.IsDead && !safeCells.Contains(player.GridPosition))
+                player.TakeDamage(deathInstantKillDamage);
+        }
+        catch (System.OperationCanceledException) { }
+        finally
+        {
+            ClearWarning(dangerCells);
+            Destroy(gameObject); // 자폭
+        }
     }
 
     private void DamagePlayerIfInCell(Vector2Int attackCell, int damage)
@@ -409,28 +504,13 @@ public class BossB : BossBase, IGridEntity, IDamageable
         isBossAttacking = false;
     }
 
-    //=========================================== 페이즈2 패턴 2 : MiniSkull 소환 ============================================================
-    // 보스 주변 walkable 셀에 miniSkullCount만큼 미니해골 소환. miniSkullLifetimeMs 동안 배회 후 자연 소멸(미니해골 자체 lifetime).
-    protected override async UniTask Phase2Pattern2()
+    //=========================================== 페이즈2 패턴 2 : (비어있음) ============================================================
+    // 미니해골 소환은 EnterPhase2에서 시작되는 MiniSkullPassive로 이관됨 (패시브로 보스 사망까지 동작).
+    // 패턴 가중치에 따라 이 슬롯이 뽑히면 보스는 잠깐 쉰다 (의도적으로 비워둠).
+    protected override UniTask Phase2Pattern2()
     {
-        if (miniSkullPrefab == null)
-        {
-            Debug.LogWarning("BossB.Phase2Pattern2: miniSkullPrefab이 비어 있어 패턴 스킵.");
-            isBossAttacking = false;
-            return;
-        }
-
-        // 보스 주변 walkable 셀 중 무작위로 N개 선택 (중복 없이).
-        var spawnCells = PickRandomNearbyWalkable(miniSkullCount, searchRadius: 4);
-        foreach (var cell in spawnCells)
-        {
-            var world = GridSystem.Instance.GridToWorld(cell);
-            Instantiate(miniSkullPrefab, world, Quaternion.identity);
-        }
-
-        // 미니해골이 배회하는 동안 보스는 다음 패턴 못 함 (isBossAttacking 유지).
-        await UniTask.Delay(miniSkullLifetimeMs, cancellationToken: cancelToken.Token);
         isBossAttacking = false;
+        return UniTask.CompletedTask;
     }
 
     // 보스 현재 위치 기준 searchRadius 안의 walkable 셀에서 최대 count개 무작위 선택 (보스 칸 제외, 중복 제외).
@@ -516,9 +596,11 @@ public class BossB : BossBase, IGridEntity, IDamageable
         }
     }
 
-    //=============================== Phase 2 진입 / 바위 비 ==========================================
-    // 베이스의 EnterPhase2(bossLevel=2, patternDelay 감소) 후에 맵 전체에 지속 바위 비 시작.
-    // 추가로 Phase 2 시각 연출: 보스 스프라이트 붉은 틴트 + 애니메이터 speed 가속.
+    //=============================== Phase 2 진입 / 패시브 시작 ==========================================
+    // 베이스 EnterPhase2(bossLevel=2, patternDelay 감소) 후 두 가지 패시브 시작:
+    //   1) RockRain — 맵 전체 walkable 셀에 바위 비 (보스가 죽을 때까지)
+    //   2) MiniSkullPassive — 미니해골 주기적 소환 (보스가 죽을 때까지)
+    // Phase 2 시각 연출: 보스 스프라이트 붉은 틴트 + 애니메이터 speed 가속.
     protected override void EnterPhase2()
     {
         base.EnterPhase2();
@@ -531,6 +613,35 @@ public class BossB : BossBase, IGridEntity, IDamageable
         rainActive = true;
         walkableCellsCache = new List<Vector2Int>(GridSystem.Instance.GetAllWalkableCells());
         RockRain().Forget();
+        MiniSkullPassive().Forget();
+    }
+
+    // Phase 2 동안 계속 동작하는 미니해골 패시브.
+    // miniSkullLifetimeMs 간격으로 miniSkullCount개를 보스 주변에 새로 소환.
+    // 기존 해골은 자체 lifetime으로 자연 소멸하고, 보스 사망 시 OnDestroy에서 일괄 제거.
+    private async UniTaskVoid MiniSkullPassive()
+    {
+        try
+        {
+            while (!cancelToken.IsCancellationRequested)
+            {
+                if (miniSkullPrefab != null)
+                {
+                    var spawnCells = PickRandomNearbyWalkable(miniSkullCount, searchRadius: 4);
+                    foreach (var cell in spawnCells)
+                    {
+                        var world = GridSystem.Instance.GridToWorld(cell);
+                        var skull = Instantiate(miniSkullPrefab, world, Quaternion.identity);
+                        activeMiniSkulls.Add(skull);
+                    }
+                }
+                await UniTask.Delay(miniSkullLifetimeMs, cancellationToken: cancelToken.Token);
+
+                // 자연 소멸한 해골 참조 정리 (다음 사이클 활성 카운트 정확화)
+                activeMiniSkulls.RemoveAll(s => s == null);
+            }
+        }
+        catch (System.OperationCanceledException) { /* 보스 파괴 시 정상 취소 */ }
     }
 
     // Phase 2가 시작된 시점부터 보스가 살아있는 동안(=cancelToken 살아있는 동안) 무한 반복.

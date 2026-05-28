@@ -1,0 +1,172 @@
+using PrototypeRT;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+public class NYHEquipmentSlotView : MonoBehaviour, IPointerClickHandler
+{
+    [Header("슬롯 설정")]
+    [Tooltip("이 UI 슬롯이 받을 장비 슬롯 종류입니다.")]
+    [SerializeField] private EquipmentSlot slot = EquipmentSlot.None;
+
+    [Tooltip("같은 슬롯이 여러 개일 때 구분하는 번호입니다. 반지 2칸은 0, 1로 설정합니다.")]
+    [SerializeField, Min(0)] private int slotIndex;
+
+    [Header("참조")]
+    [Tooltip("장비 장착/해제와 스탯 적용을 담당하는 컨트롤러입니다.")]
+    [SerializeField] private NYHEquipmentController controller;
+
+    [Tooltip("현재 마우스로 들고 있는 인벤토리 아이템을 넘겨받기 위한 인벤토리 컨트롤러입니다.")]
+    [SerializeField] private InventoryController inventoryController;
+
+    [Tooltip("장착된 아이템 아이콘을 표시할 Image입니다. 슬롯 배경이 아닌 자식 Image를 연결하는 것을 권장합니다.")]
+    [SerializeField] private Image iconImage;
+
+    private void Awake()
+    {
+        ResolveReferences();
+        ConfigureIconImage();
+        Refresh();
+    }
+
+    private void OnEnable()
+    {
+        ResolveReferences();
+
+        if (controller != null)
+        {
+            controller.OnInventoryItemEquipped += OnEquipmentChanged;
+            controller.OnInventoryItemUnequipped += OnEquipmentChanged;
+        }
+
+        Refresh();
+    }
+
+    private void OnDisable()
+    {
+        if (controller != null)
+        {
+            controller.OnInventoryItemEquipped -= OnEquipmentChanged;
+            controller.OnInventoryItemUnequipped -= OnEquipmentChanged;
+        }
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Left)
+            return;
+
+        ResolveReferences();
+
+        if (inventoryController != null && inventoryController.SelectedItem == null)
+        {
+            TryUnequipToHand();
+            return;
+        }
+
+        TryEquipHeldItem();
+    }
+
+    private void TryEquipHeldItem()
+    {
+        ResolveReferences();
+
+        if (controller == null || inventoryController == null)
+            return;
+
+        InventoryItem selectedItem = inventoryController.SelectedItem;
+        if (selectedItem == null || selectedItem.ItemData == null)
+            return;
+
+        if (!controller.TryEquipFromInventory(selectedItem, slot, slotIndex, out InventoryItem replacedItem))
+            return;
+
+        if (!inventoryController.TryConsumeSelectedItem(selectedItem))
+        {
+            // 장착 컨트롤러만 바뀌고 인벤토리 손 상태 정리에 실패한 예외 상황을 되돌립니다.
+            controller.Unequip(slot, slotIndex, out _);
+            return;
+        }
+
+        // 장착 중인 아이템 UI는 슬롯 아이콘으로만 보여주고, 원본 InventoryItem은 교체/해제용으로 보관합니다.
+        selectedItem.gameObject.SetActive(false);
+        Refresh();
+
+        if (replacedItem != null)
+            inventoryController.HoldItem(replacedItem, null, 0, 0);
+    }
+
+    private void TryUnequipToHand()
+    {
+        if (controller == null || inventoryController == null)
+            return;
+
+        if (!controller.TryGetEquippedInventoryItem(slot, slotIndex, out InventoryItem equippedItem) || equippedItem == null)
+            return;
+
+        if (!controller.Unequip(slot, slotIndex, out InventoryItem itemView) || itemView == null)
+            return;
+
+        // 장착 해제한 아이템은 원래 그리드 좌표가 없으므로 빈 인벤토리 칸을 찾을 때까지 손에 들게 둡니다.
+        inventoryController.HoldItem(itemView, null, 0, 0);
+        Refresh();
+    }
+
+    private void Refresh()
+    {
+        if (iconImage == null)
+            return;
+
+        Sprite icon = null;
+        if (controller != null && controller.TryGetEquipped(slot, slotIndex, out NYHEquipmentItemInstance equipped))
+            icon = equipped.Data != null ? equipped.Data.Icon : null;
+
+        iconImage.sprite = icon;
+        iconImage.enabled = icon != null;
+        iconImage.preserveAspect = true;
+    }
+
+    private void OnEquipmentChanged(EquipmentSlot changedSlot, int changedIndex, InventoryItem item)
+    {
+        if (changedSlot != slot || changedIndex != slotIndex)
+            return;
+
+        Refresh();
+    }
+
+    private void ResolveReferences()
+    {
+        if (controller == null)
+            controller = FindFirstObjectByType<NYHEquipmentController>();
+
+        if (inventoryController == null)
+            inventoryController = FindFirstObjectByType<InventoryController>();
+
+        if (iconImage == null)
+            iconImage = FindIconImage();
+    }
+
+    private Image FindIconImage()
+    {
+        Image[] images = GetComponentsInChildren<Image>(true);
+        for (int i = 0; i < images.Length; i++)
+        {
+            if (images[i] != null && images[i].transform != transform)
+                return images[i];
+        }
+
+        return GetComponent<Image>();
+    }
+
+    private void ConfigureIconImage()
+    {
+        if (iconImage == null)
+            return;
+
+        // 표시용 자식 아이콘이 클릭 판정을 가로채면 슬롯 OnPointerClick이 흔들리므로 꺼둡니다.
+        if (iconImage.transform != transform)
+            iconImage.raycastTarget = false;
+
+        iconImage.preserveAspect = true;
+    }
+}
