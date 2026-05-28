@@ -10,10 +10,7 @@ namespace PrototypeRT
     /// </summary>
     [RequireComponent(typeof(InventoryHighlight))]
     public class InventoryController : MonoBehaviour
-    { 
-        [Tooltip("켜두면 R 키로 debugItems 중 하나를 인벤토리에 넣습니다. 테스트 전용이므로 빌드 전에는 끄는 것을 권장합니다.")]
-        [SerializeField] private bool enableDebugInsertKey;
-
+    {
         [Header("UI 프리팹")]
         [Tooltip("인벤토리 칸에 생성할 아이템 UI 프리팹입니다. InventoryItem 컴포넌트와 Image가 붙어 있어야 합니다.")]
         [SerializeField] private InventoryItem itemPrefab;
@@ -62,6 +59,7 @@ namespace PrototypeRT
         public event Action<InventoryItem> OnItemAdded;
 
         public IReadOnlyList<InventoryItem> Items => _items;
+        public InventoryItem SelectedItem => _selectedItem;
 
         public ItemGrid SelectedGrid
         {
@@ -192,6 +190,54 @@ namespace PrototypeRT
 
             if (_items.Remove(item))
                 RaiseInventoryChanged();
+        }
+
+        public bool TryConsumeSelectedItem(InventoryItem expected)
+        {
+            if (expected == null || _selectedItem != expected)
+                return false;
+
+            _items.Remove(expected);
+            expected.SetRaycastTarget(false);
+            _selectedItem = null;
+            _overlapItem = null;
+            _dragRect = null;
+            ClearDragStartPosition();
+            _inventoryHighlight.Show(false);
+            RaiseInventoryChanged();
+            return true;
+        }
+
+        public void HoldItem(InventoryItem item, ItemGrid returnGrid, int returnX, int returnY)
+        {
+            if (item == null) return;
+
+            if (_selectedItem != null)
+            {
+                Debug.LogWarning("InventoryController: 이미 손에 든 아이템이 있어 새 아이템을 들 수 없습니다.");
+                return;
+            }
+
+            if (!_items.Contains(item))
+                _items.Add(item);
+
+            item.gameObject.SetActive(true);
+            item.SetRaycastTarget(false);
+            _selectedItem = item;
+            _overlapItem = null;
+            _dragRect = item.GetComponent<RectTransform>();
+
+            if (_dragRect != null)
+            {
+                _dragRect.SetParent(canvasTransform, true);
+                _dragRect.position = Input.mousePosition;
+                BringDraggedItemToFront();
+            }
+
+            _dragStartGrid = returnGrid;
+            _dragStartX = returnX;
+            _dragStartY = returnY;
+            RaiseInventoryChanged();
         }
 
         public InventoryItem CreateItemView(ItemBase itemData, Transform parent, bool playerOwned)
@@ -327,6 +373,7 @@ namespace PrototypeRT
             _selectedItem = _selectedGrid.PickUpItem(gridPos.x, gridPos.y);
             if (_selectedItem == null) return;
 
+            _selectedItem.SetRaycastTarget(false);
             _dragRect = _selectedItem.GetComponent<RectTransform>();
 
             // 드래그 중인 아이템은 Canvas 최상단으로 올려 다른 슬롯/아이템 뒤에 가려지지 않게 합니다.
@@ -362,6 +409,7 @@ namespace PrototypeRT
         /// </summary>
         private void TryPlaceSelectedItem(Vector2Int gridPos)
         {
+            InventoryItem placedItem = _selectedItem;
             bool placed = _selectedGrid.TryPlaceItem(_selectedItem, gridPos.x, gridPos.y, ref _overlapItem);
             if (!placed)
             {
@@ -371,6 +419,7 @@ namespace PrototypeRT
                 return;
             }
 
+            placedItem?.SetRaycastTarget(true);
             _selectedItem = null;
             if (_overlapItem != null)
             {
@@ -380,6 +429,7 @@ namespace PrototypeRT
                 // 방금 비워진 "처음 들었던 아이템의 자리"로 돌아갈 수 있습니다.
                 _selectedItem = _overlapItem;
                 _overlapItem = null;
+                _selectedItem.SetRaycastTarget(false);
                 _dragRect = _selectedItem.GetComponent<RectTransform>();
                 _dragRect.SetParent(canvasTransform, true);
                 BringDraggedItemToFront();
@@ -436,9 +486,27 @@ namespace PrototypeRT
         /// </summary>
         private void CancelDragAndReturnItem()
         {
-            if (_selectedItem != null && _dragStartGrid != null)
+            if (_selectedItem != null)
             {
-                _dragStartGrid.PlaceItemInternal(_selectedItem, _dragStartX, _dragStartY);
+                bool returned = false;
+
+                if (_dragStartGrid != null)
+                {
+                    _dragStartGrid.PlaceItemInternal(_selectedItem, _dragStartX, _dragStartY);
+                    _selectedItem.SetRaycastTarget(true);
+                    returned = true;
+                }
+                else
+                {
+                    returned = TryReturnSelectedItemToDefaultGrid();
+                }
+
+                if (!returned)
+                {
+                    Debug.LogWarning("InventoryController: 들고 있는 아이템을 되돌릴 빈 인벤토리 칸을 찾지 못했습니다.");
+                    return;
+                }
+
                 RaiseInventoryChanged();
             }
 
@@ -447,6 +515,24 @@ namespace PrototypeRT
             _dragRect = null;
             ClearDragStartPosition();
             _inventoryHighlight.Show(false);
+        }
+
+        private bool TryReturnSelectedItemToDefaultGrid()
+        {
+            if (_selectedItem == null) return true;
+
+            ItemGrid targetGrid = ResolveItemGrid();
+            if (targetGrid == null) return false;
+
+            Vector2Int? pos = targetGrid.FindSpaceForItem(_selectedItem);
+            if (pos == null) return false;
+
+            targetGrid.PlaceItemInternal(_selectedItem, pos.Value.x, pos.Value.y);
+            _selectedItem.SetRaycastTarget(true);
+            if (!_items.Contains(_selectedItem))
+                _items.Add(_selectedItem);
+
+            return true;
         }
 
         /// <summary>

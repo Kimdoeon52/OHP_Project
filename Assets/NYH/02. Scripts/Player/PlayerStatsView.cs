@@ -15,6 +15,9 @@ public class PlayerStatsView : MonoBehaviour
     [Tooltip("레벨과 경험치를 읽어올 플레이어 레벨 시스템입니다. 비워두면 씬에서 자동으로 찾습니다.")]
     [SerializeField] private PlayerLevelSystem playerLevel;
 
+    [Tooltip("현재 장착 무기를 읽어 공격력 표시를 계산할 장비 컨트롤러입니다. 비워두면 씬에서 자동으로 찾습니다.")]
+    [SerializeField] private NYHEquipmentController equipmentController;
+
     [Header("요약 텍스트")]
     [Tooltip("체력, 힘, 이동 속도, 공격 속도, 레벨, 방어력, 회피, 경험치를 한 번에 표시할 Text입니다.")]
     [SerializeField] private TMP_Text summaryText;
@@ -43,6 +46,8 @@ public class PlayerStatsView : MonoBehaviour
 
     [Tooltip("회피율을 표시할 Text입니다. 예: 회피 10%")]
     [SerializeField] private TMP_Text evasionText;
+    [Tooltip("공격력을 표시할 Text입니다.")]
+    [SerializeField] private TMP_Text attackText;
 
     /// <summary>
     /// UI가 켜질 때 참조를 찾고 이벤트 구독을 시작한다.
@@ -84,6 +89,9 @@ public class PlayerStatsView : MonoBehaviour
 
         if (playerLevel == null)
             playerLevel = FindFirstObjectByType<PlayerLevelSystem>();
+
+        if (equipmentController == null)
+            equipmentController = FindFirstObjectByType<NYHEquipmentController>();
     }
 
     /// <summary>
@@ -113,6 +121,14 @@ public class PlayerStatsView : MonoBehaviour
             playerLevel.OnExpChanged -= OnExpChanged;
             playerLevel.OnExpChanged += OnExpChanged;
         }
+
+        if (equipmentController != null)
+        {
+            equipmentController.OnEquipped -= OnEquipmentChanged;
+            equipmentController.OnEquipped += OnEquipmentChanged;
+            equipmentController.OnUnequipped -= OnEquipmentChanged;
+            equipmentController.OnUnequipped += OnEquipmentChanged;
+        }
     }
 
     /// <summary>
@@ -133,6 +149,12 @@ public class PlayerStatsView : MonoBehaviour
         {
             playerLevel.OnLevelChanged -= Refresh;
             playerLevel.OnExpChanged -= OnExpChanged;
+        }
+
+        if (equipmentController != null)
+        {
+            equipmentController.OnEquipped -= OnEquipmentChanged;
+            equipmentController.OnUnequipped -= OnEquipmentChanged;
         }
     }
 
@@ -160,6 +182,10 @@ public class PlayerStatsView : MonoBehaviour
         string defense = playerStats != null ? playerStats.Defense.ToString() : "-";
         string evasion = playerStats != null ? $"{playerStats.Evasion}%" : "-";
         string exp = playerLevel != null ? $"{playerLevel.CurrentExp}/{playerLevel.RequiredExp}" : "-";
+        string attack = playerStats != null
+            ? NYHPlayerAttackCalculator.CalculateMeleeRange(playerStats, equipmentController).ToDisplayText()
+            : "-";
+
 
         SetText(healthText, $"체력 {health}");
         SetText(strengthText, $"힘 {strength}");
@@ -169,8 +195,10 @@ public class PlayerStatsView : MonoBehaviour
         SetText(defenseText, $"방어력 {defense}");
         SetText(evasionText, $"회피 {evasion}");
         SetText(expText, $"EXP {exp}");
+        SetText(attackText, $"공격력 {attack}");
 
         SetText(summaryText,
+            $"공격력 {attack}\n" +
             $"힘 {strength}\n" +
             $"이동 속도 {moveSpeed}\n" +
             $"공격 속도 {attackSpeed}\n" +
@@ -178,6 +206,7 @@ public class PlayerStatsView : MonoBehaviour
             $"방어력 {defense}\n" +
             $"회피 {evasion}\n" +
             $"경험치 {exp}");
+
     }
 
     /// <summary>
@@ -205,5 +234,11 @@ public class PlayerStatsView : MonoBehaviour
     private void OnExpChanged(int amount)
     {
         Refresh();
+    }
+
+    private void OnEquipmentChanged(EquipmentSlot slot, NYHEquipmentItemInstance item)
+    {
+        if (slot == EquipmentSlot.Weapon)
+            Refresh();
     }
 }

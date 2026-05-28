@@ -21,8 +21,8 @@ public class GridPlayerCombat : MonoBehaviour
     [Tooltip("던지기 성공 시 맵 위에 생성할 단검 엔티티 프리팹입니다.")]
     [SerializeField] private GridDagger daggerPrefab;
 
-    [Tooltip("인접한 적을 근접 공격할 때 사용하는 기본 피해량입니다. 실제 피해는 대상 방어 계산을 거칠 수 있습니다.")]
-    [SerializeField] private int meleeDamage = 1;
+    [Tooltip("현재 장착 무기를 읽어 근접 피해를 계산할 장비 컨트롤러입니다. 비워두면 씬에서 자동으로 찾습니다.")]
+    [SerializeField] private NYHEquipmentController equipmentController;
 
     [Header("Attack Speed")]
     [Tooltip("GDD 기준 근접 공격 기본 딜레이입니다. AttackSpeed 1일 때 이 값을 그대로 사용합니다.")]
@@ -65,6 +65,9 @@ public class GridPlayerCombat : MonoBehaviour
         if (_stats == null)
             _stats = NYHPlayerStats.Instance;
 
+        if (equipmentController == null)
+            equipmentController = FindFirstObjectByType<NYHEquipmentController>();
+
         if (daggerData == null)
         {
             Debug.LogError("GridPlayerCombat: WeaponData(dagger)가 할당되지 않았습니다.");
@@ -105,7 +108,7 @@ public class GridPlayerCombat : MonoBehaviour
         var entity = TurnManager.Instance.GetEntityAt(target);
         if (entity is IDamageable damageable && (UnityEngine.Object)damageable != _player)
         {
-            int damage = GetModifiedOutgoingDamage(meleeDamage);
+            int damage = GetModifiedOutgoingDamage(RollMeleeDamage());
             int beforeHp = damageable.CurrentHp;
             damageable.TakeDamage(damage);
             LogDamageDealt("근접 공격", damageable, damage, beforeHp);
@@ -242,6 +245,17 @@ public class GridPlayerCombat : MonoBehaviour
     {
         StatusController statusController = _player.GetComponent<StatusController>();
         return statusController != null ? statusController.ModifyOutgoingDamage(baseDamage) : baseDamage;
+    }
+
+    private int RollMeleeDamage()
+    {
+        if (_stats == null)
+            _stats = NYHPlayerStats.Instance;
+
+        if (equipmentController == null)
+            equipmentController = FindFirstObjectByType<NYHEquipmentController>();
+
+        return NYHPlayerAttackCalculator.RollMeleeDamage(_stats, equipmentController);
     }
 
     private bool CanMeleeAttack()
