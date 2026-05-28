@@ -35,10 +35,10 @@ public class NYHPlayerStats : MonoBehaviour
 
     [Header("기본 스탯")]
     [Tooltip("플레이어 최대 체력입니다. GridPlayerHealth의 MaxHp 계산에 사용됩니다.")]
-    [SerializeField, Min(1)] private int maxHealth = 100;
+    [SerializeField, Min(1)] private int maxHealth = 20;
 
     [Tooltip("플레이어의 기본 공격력 보정값입니다. 근접 공격과 일부 무기 피해 계산에 사용됩니다.")]
-    [SerializeField, Min(0)] private int strength = 1;
+    [SerializeField, Min(0)] private int strength = 10;
 
     [Tooltip("플레이어 이동 속도입니다. 값이 높을수록 한 칸 이동 시간이 짧아집니다.")]
     [SerializeField, Min(0)] private int moveSpeed = 1;
@@ -47,14 +47,14 @@ public class NYHPlayerStats : MonoBehaviour
     [SerializeField, Min(0)] private int attackSpeed = 1;
 
     [Tooltip("플레이어 명중률 보정값입니다. 현재는 확장용 스탯이며, 명중 판정 시스템에서 사용할 수 있습니다.")]
-    [SerializeField, Range(0, 100)] private int accuracy;
+    [SerializeField, Range(0, 100)] private int accuracy = 15;
 
     [Header("방어 스탯")]
     [Tooltip("받는 피해를 고정값으로 감소시키는 방어력입니다. 최종 피해는 최소 0까지 내려갑니다.")]
     [SerializeField, Min(0)] private int defense;
 
     [Tooltip("피격을 완전히 회피할 확률입니다. 0이면 회피 없음, 100이면 항상 회피합니다.")]
-    [SerializeField, Range(0, 100)] private int evasion;
+    [SerializeField, Range(0, 100)] private int evasion = 20;
 
     /// <summary>
     /// 스탯 값이 변경됐을 때 호출된다.

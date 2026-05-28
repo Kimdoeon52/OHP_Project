@@ -16,7 +16,7 @@ namespace PrototypeRT
         [SerializeField] private QuickSlotController quickSlotController;
 
         [Header("HUD Images")]
-        [Tooltip("퀵슬롯 1~0번에 대응하는 아이콘 Image 배열입니다. 길이는 10을 권장합니다.")]
+        [Tooltip("퀵슬롯 1~0번에 대응하는 아이콘 Image 배열")]
         [SerializeField] private Image[] slotIcons = new Image[10];
 
         [Tooltip("선택 사항입니다. 연결하면 각 슬롯에 1~0 번호를 표시합니다.")]
@@ -26,6 +26,8 @@ namespace PrototypeRT
         {
             if (quickSlotController == null)
                 quickSlotController = FindFirstObjectByType<QuickSlotController>();
+
+            DisableIconRaycasts();
         }
 
         private void OnEnable()
@@ -60,6 +62,15 @@ namespace PrototypeRT
             {
                 if (slotNumberTexts[i] != null)
                     slotNumberTexts[i].text = SlotLabels[i];
+            }
+        }
+
+        private void DisableIconRaycasts()
+        {
+            for (int i = 0; i < slotIcons.Length; i++)
+            {
+                if (slotIcons[i] != null)
+                    slotIcons[i].raycastTarget = false;
             }
         }
     }

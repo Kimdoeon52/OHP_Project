@@ -41,6 +41,21 @@ public class GridPlayerMovement : MonoBehaviour
     [Tooltip("GDD 기준 최소 이동 행동 딜레이입니다. 레벨/MoveSpeed가 높아져도 이 값보다 낮아지지 않습니다.")]
     [SerializeField, Min(0.01f)] private float minMoveActionDelay = 0.3f;
 
+    [Tooltip("GDD 8.3 기준 레벨별 이동 행동 딜레이입니다. index 0은 1레벨, index 9는 10레벨입니다.")]
+    [SerializeField] private float[] levelMoveActionDelays =
+    {
+        1.0f,
+        0.9f,
+        0.8f,
+        0.7f,
+        0.6f,
+        0.5f,
+        0.45f,
+        0.4f,
+        0.35f,
+        0.3f
+    };
+
     [Tooltip("이 MoveSpeed에 도달하면 이동 행동 딜레이가 minMoveActionDelay에 도달합니다. 기본값 10은 GDD의 10레벨 0.3초 기준입니다.")]
     [SerializeField, Min(1)] private int moveSpeedForMinActionDelay = 10;
 
@@ -64,6 +79,7 @@ public class GridPlayerMovement : MonoBehaviour
 
     private GridPlayer _player;
     private NYHPlayerStats _stats;
+    private PlayerLevelSystem _levelSystem;
     private Coroutine _moveCoroutine;
 
     public void Init(GridPlayer player)
@@ -72,6 +88,10 @@ public class GridPlayerMovement : MonoBehaviour
         _stats = GetComponent<NYHPlayerStats>();
         if (_stats == null)
             _stats = NYHPlayerStats.Instance;
+
+        _levelSystem = GetComponent<PlayerLevelSystem>();
+        if (_levelSystem == null)
+            _levelSystem = PlayerLevelSystem.Instance;
     }
 
     /// <summary>
@@ -194,6 +214,9 @@ public class GridPlayerMovement : MonoBehaviour
 
     private float GetMoveActionDelay()
     {
+        if (TryGetLevelMoveActionDelay(out float levelDelay))
+            return Mathf.Max(minMoveActionDelay, levelDelay);
+
         float baseDelay = _player.Config != null ? _player.Config.moveTimeDelay : 1f;
         int moveSpeed = GetMoveSpeed();
 
@@ -202,6 +225,23 @@ public class GridPlayerMovement : MonoBehaviour
             : Mathf.Clamp01((moveSpeed - 1f) / (moveSpeedForMinActionDelay - 1f));
 
         return Mathf.Lerp(baseDelay, minMoveActionDelay, progress);
+    }
+
+    private bool TryGetLevelMoveActionDelay(out float delay)
+    {
+        delay = 0f;
+
+        if (_levelSystem == null)
+            _levelSystem = PlayerLevelSystem.Instance;
+
+        if (_levelSystem == null || levelMoveActionDelays == null || levelMoveActionDelays.Length == 0)
+            return false;
+
+        // GDD 8.3의 레벨별 이동 쿨타임 표를 우선 적용한다.
+        // 표 이후 레벨은 마지막 값에 고정해 고레벨 이동이 과도하게 빨라지는 것을 막는다.
+        int index = Mathf.Clamp(_levelSystem.Level - 1, 0, levelMoveActionDelays.Length - 1);
+        delay = levelMoveActionDelays[index];
+        return delay > 0f;
     }
 
     private float GetAnimationSpeedMultiplier()
@@ -239,5 +279,16 @@ public class GridPlayerMovement : MonoBehaviour
         IsMoving = false;
         OnMoveFinished?.Invoke();
         OnMoveSpeedChanged?.Invoke(1f);
+    }
+
+    private void OnValidate()
+    {
+        minMoveActionDelay = Mathf.Max(0.01f, minMoveActionDelay);
+
+        if (levelMoveActionDelays == null || levelMoveActionDelays.Length == 0)
+            return;
+
+        for (int i = 0; i < levelMoveActionDelays.Length; i++)
+            levelMoveActionDelays[i] = Mathf.Max(minMoveActionDelay, levelMoveActionDelays[i]);
     }
 }

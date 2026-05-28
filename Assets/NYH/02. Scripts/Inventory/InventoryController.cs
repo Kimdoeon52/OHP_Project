@@ -10,11 +10,7 @@ namespace PrototypeRT
     /// </summary>
     [RequireComponent(typeof(InventoryHighlight))]
     public class InventoryController : MonoBehaviour
-    {
-        [Header("디버그 아이템")]
-        [Tooltip("테스트용으로 인벤토리에 넣을 아이템 목록입니다. 실제 플레이 드랍 테이블과는 별개입니다.")]
-        [SerializeField] private List<ItemBase> debugItems = new();
-
+    { 
         [Tooltip("켜두면 R 키로 debugItems 중 하나를 인벤토리에 넣습니다. 테스트 전용이므로 빌드 전에는 끄는 것을 권장합니다.")]
         [SerializeField] private bool enableDebugInsertKey;
 
@@ -72,6 +68,8 @@ namespace PrototypeRT
             get => _selectedGrid;
             set
             {
+                if (_selectedGrid == value) return;
+
                 _selectedGrid = value;
                 _inventoryHighlight?.SetParent(value);
             }
@@ -122,10 +120,6 @@ namespace PrototypeRT
                 _inventoryHighlight.Show(false);
                 return;
             }
-
-            // 디버그 옵션이 켜져 있으면 R 키로 테스트 아이템을 하나 추가합니다.
-            if (enableDebugInsertKey && Input.GetKeyDown(KeyCode.R))
-                InsertRandomDebugItem();
 
             if (Input.GetMouseButtonDown(0))
                 HandleLeftClick();
@@ -337,7 +331,7 @@ namespace PrototypeRT
 
             // 드래그 중인 아이템은 Canvas 최상단으로 올려 다른 슬롯/아이템 뒤에 가려지지 않게 합니다.
             _dragRect.SetParent(canvasTransform, true);
-            _dragRect.SetAsLastSibling();
+            BringDraggedItemToFront();
         }
 
         /// <summary>
@@ -388,7 +382,7 @@ namespace PrototypeRT
                 _overlapItem = null;
                 _dragRect = _selectedItem.GetComponent<RectTransform>();
                 _dragRect.SetParent(canvasTransform, true);
-                _dragRect.SetAsLastSibling();
+                BringDraggedItemToFront();
             }
             else
             {
@@ -422,8 +416,18 @@ namespace PrototypeRT
         /// </summary>
         private void DragSelectedItemIcon()
         {
-            if (_selectedItem != null && _dragRect != null)
-                _dragRect.position = Input.mousePosition;
+            if (_selectedItem == null || _dragRect == null) return;
+
+            _dragRect.position = Input.mousePosition;
+            BringDraggedItemToFront();
+        }
+
+        private void BringDraggedItemToFront()
+        {
+            if (_dragRect == null) return;
+
+            // 하이라이트/다른 UI가 sibling 순서를 바꿔도 손에 든 아이템은 항상 가장 위에 보이게 합니다.
+            _dragRect.SetAsLastSibling();
         }
 
         /// <summary>
@@ -452,16 +456,6 @@ namespace PrototypeRT
         private void OnDisable()
         {
             CancelDragAndReturnItem();
-        }
-
-        /// <summary>
-        /// debugItems 목록에서 임의의 아이템 하나를 골라 인벤토리에 추가합니다.
-        /// 테스트 편의를 위한 함수라 실제 드랍/보상 로직과는 분리되어 있습니다.
-        /// </summary>
-        private void InsertRandomDebugItem()
-        {
-            if (debugItems.Count == 0) return;
-            TryAddItem(debugItems[UnityEngine.Random.Range(0, debugItems.Count)]);
         }
 
         /// <summary>
