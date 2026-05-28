@@ -127,21 +127,34 @@ public class BossBase : EnemyNormalBASE
         }
     }
 
-    //==================== 데미지 / 페이즈 전환 ====================
-    // 보스가 데미지를 받을 때 호출. HP가 phase2HpThreshold 이하로 떨어지면 EnterPhase2가 한 번 발동.
+    //==================== 데미지 / 페이즈 전환 / 사망 ====================
+    protected bool isDying; // 죽음 패턴 진행 중 추가 데미지 무시 + 재진입 방지
+
+    // 보스가 데미지를 받을 때 호출. HP가 phase2HpThreshold 이하로 떨어지면 EnterPhase2 1회.
+    // HP가 0 이하가 되면 isDying=true로 잠그고 OnDeath() 호출 (기본은 즉시 Destroy, 서브클래스가 죽음 패턴 오버라이드 가능).
     public virtual void BossTakeDamage(int amount)
     {
-        if(amount <= 0) return; //음수나 0 데미지는 무시 (힐링이나 무효 공격 방지)
-        if (currentHp <= 0)
-        {
-            Destroy(gameObject); //HP가 0이하가 되면 보스 파괴
-            return;
-        }
+        if (amount <= 0 || isDying) return;
+
         currentHp -= amount;
         Debug.Log($"<color=red>[보스 데미지]</color> 보스가 {amount}만큼 데미지를 받음. 현재 HP: {currentHp}");
         if (hpBar != null) hpBar.UpdateBar();
+
         if (bossLevel == 1 && currentHp <= phase2HpThreshold)
             EnterPhase2();
+
+        if (currentHp <= 0)
+        {
+            isDying = true;
+            OnDeath();
+        }
+    }
+
+    // 사망 시점 훅. 기본 동작은 즉시 Destroy. 서브클래스가 죽음 패턴(연출, 즉사 영역 등)을 위해 오버라이드.
+    // 죽음 패턴 끝에 반드시 Destroy(gameObject)를 호출해야 함.
+    protected virtual void OnDeath()
+    {
+        Destroy(gameObject);
     }
 
     protected virtual void EnterPhase2()
