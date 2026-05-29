@@ -106,12 +106,22 @@ public abstract class EnemyBase : EntityBase, IDamageable
     {
         // VisionSystem 갱신 이벤트 구독 → 안개/시야 내 가시성 자동 갱신
         GameEvents.OnVisionUpdated += OnVisionUpdated;
+
+        if (TurnManager.Instance != null)
+        {
+            TurnManager.Instance.Register(this);
+        }
     }
 
     private void OnDisable()
     {
         // 메모리 누수 방지: 씬 제거 또는 오브젝트 비활성화 시 구독 해제
         GameEvents.OnVisionUpdated -= OnVisionUpdated;
+
+        if (TurnManager.Instance != null)
+        {
+            TurnManager.Instance.Unregister(this);
+        }
     }
 
     protected virtual void Start()
@@ -127,6 +137,11 @@ public abstract class EnemyBase : EntityBase, IDamageable
         // 에디터에서 배치한 월드 좌표 → 격자 좌표 스냅 초기화
         var startPos = GridSystem.Instance.WorldToGrid(transform.position);
         Initialize(startPos);
+
+        if (TurnManager.Instance != null)
+        {
+            TurnManager.Instance.Register(this);
+        }
 
         // 초기 안개 가시성 상태 적용
         UpdateVisibility();
@@ -295,7 +310,8 @@ public abstract class EnemyBase : EntityBase, IDamageable
 
         if (!GridSystem.Instance.IsWalkable(next)) return false;  // 벽
         if (next == Player.GridPosition) return false;            // 플레이어 위치
-        if (TurnManager.Instance.GetEntityAt(next) != null) return false; // 타 엔티티
+      //  if (TurnManager.Instance.GetEntityAt(next) != null) return false; // 타 엔티티
+        if (GridSystem.Instance.IsCellOccupied(next)) return false; // 타 엔티티
 
         if (_animator != null) _animator.SetBool("Walk", true);
 

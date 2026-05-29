@@ -144,6 +144,8 @@ public class GridPlayerMovement : MonoBehaviour
         }
         if (!GridSystem.Instance.IsWalkable(target))
             return;
+        if (TurnManager.Instance.GetEntityAt(target) != null)
+            return;
         float totalCost = GetMoveActionDelay();
         StatusController statusController = _player.GetComponent<StatusController>();
         if (statusController != null)

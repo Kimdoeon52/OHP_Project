@@ -154,8 +154,13 @@ public class EnemyGoblinThief : EnemyBase
 
         if (!GridSystem.Instance.IsWalkable(next)) return false;
         if (next == Player.GridPosition) return false;
-        if (TurnManager.Instance.GetEntityAt(next) != null) return false;
-
+      //if (TurnManager.Instance.GetEntityAt(next) != null) return false;
+        if (GridSystem.Instance.IsCellOccupied(next)) return false; // 타 엔티티
+        if (GridSystem.Instance != null)
+        {
+            GridSystem.Instance.UnRegisterOccupancy(GridPosition);
+            GridSystem.Instance.RegisterOccupancy(next, this);
+        }
         GridPosition = next;
         return true;
     }
@@ -271,7 +276,8 @@ public class EnemyGoblinThief : EnemyBase
     {
         if (!GridSystem.Instance.IsWalkable(pos)) return false;
         if (pos == Player.GridPosition) return false;
-        if (TurnManager.Instance.GetEntityAt(pos) != null) return false;
+       // if (TurnManager.Instance.GetEntityAt(pos) != null) return false;
+        if (GridSystem.Instance.IsCellOccupied(pos)) return false; // 타 엔티티
         return true;
     }
 

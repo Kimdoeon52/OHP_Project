@@ -95,6 +95,7 @@ namespace EnemySystem
                 .Where(pos => !IsTooCloseToDoor(pos, room))
                 .Where(pos => GridSystem.Instance == null || GridSystem.Instance.IsWalkable(pos))
                 .Where(pos => TurnManager.Instance == null || TurnManager.Instance.GetEntityAt(pos) == null)
+                .Where(pos => GridSystem.Instance == null || !GridSystem.Instance.IsCellOccupied(pos))
                 .Where(pos => !playerPos.HasValue || pos != playerPos.Value)
                 .ToList();
         }

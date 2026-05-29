@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class GridSystem : MonoBehaviour
 {
@@ -118,5 +119,40 @@ public class GridSystem : MonoBehaviour
         }
 
         return visited;
+    }
+    private readonly Dictionary<Vector2Int, EntityBase> _occupiedCells = new();
+ 
+    public bool IsCellOccupied(Vector2Int pos) 
+    {
+        if (!_occupiedCells.TryGetValue(pos, out var entity))
+            return false;
+    
+        // Unity의 null 체크 (오브젝트가 Destroy 되었을 때 null로 평가됨)
+        if (entity == null)
+        {
+            _occupiedCells.Remove(pos); // 찌꺼기 데이터 청소
+            return false;
+        }
+        return true;
+    }
+    public EntityBase GetEntityAt(Vector2Int pos)
+    {
+        if (!_occupiedCells.TryGetValue(pos, out var entity))
+            return null;
+        
+        if (entity == null)
+        {
+            _occupiedCells.Remove(pos); // 찌꺼기 데이터 청소
+            return null;
+        }
+        return entity;
+    }
+    public void RegisterOccupancy(Vector2Int pos, EntityBase entity)
+    {
+        _occupiedCells[pos] = entity;
+    }
+    public void UnRegisterOccupancy(Vector2Int pos)
+    {
+        _occupiedCells.Remove(pos);
     }
 }
