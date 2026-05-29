@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startTime: 1000
   lowTimeWarning: 10
-  moveTimeCost: 0.3
-  throwTimeCost: 0.5
-  retrieveTimeCost: 0.3
-  potionTimeCost: 1
-  meleeTimeCost: 0.3
+  moveTimeDelay: 0.5
+  throwTimeDelay: 1
+  retrieveTimeDealy: 0.3
+  potionTimeDealy: 1
+  meleeTimeDealy: 1
   visionRadius: 5

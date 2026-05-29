@@ -71,6 +71,8 @@ public class DebugPlayer : MonoBehaviour
     [SerializeField] private KeyCode healKey = KeyCode.Alpha2;
     [Tooltip("플레이어에게 매우 큰 피해를 줘 사망 흐름을 확인하는 키입니다.")]
     [SerializeField] private KeyCode killKey = KeyCode.Alpha3;
+    [Tooltip("마우스가 가리키는 몬스터에게 damageAmount만큼 피해를 주는 키입니다.")]
+    [SerializeField] private KeyCode damageMonsterKey = KeyCode.Alpha0;
     [Tooltip("PlayerLevelSystem에 expAmount만큼 경험치를 추가하는 키입니다.")]
     [SerializeField] private KeyCode addExpKey = KeyCode.Alpha4;
     [Tooltip("itemToAdd를 인벤토리에 추가하는 키입니다.")]
@@ -106,6 +108,9 @@ public class DebugPlayer : MonoBehaviour
 
         if (Input.GetKeyDown(killKey))
             KillPlayer();
+
+        if (Input.GetKeyDown(damageMonsterKey))
+            DamageMonsterAtMouse();
 
         if (Input.GetKeyDown(addExpKey))
             AddExp();
@@ -270,6 +275,43 @@ public class DebugPlayer : MonoBehaviour
     /// <summary>
     /// 포션 개수를 늘려 인벤토리 없이 포션 UI/사용 흐름을 확인합니다.
     /// </summary>
+    /// <summary>
+    /// 마우스가 가리키는 그리드 칸의 몬스터에게 피해를 주고, 실제 적용된 피해량을 로그로 남깁니다.
+    /// 방어력/피해 경감이 있는 적은 요청 피해와 실제 HP 감소량이 다를 수 있습니다.
+    /// </summary>
+    [ContextMenu("Debug/Damage Monster At Mouse")]
+    public void DamageMonsterAtMouse()
+    {
+        if (!TryGetMouseGridPosition(out Vector2Int targetCell)) return;
+
+        if (TurnManager.Instance == null)
+        {
+            Debug.LogWarning("[DebugPlayer] TurnManager를 찾지 못해 몬스터를 찾을 수 없습니다.");
+            return;
+        }
+
+        IGridEntity entity = TurnManager.Instance.GetEntityAt(targetCell);
+        IDamageable damageable = entity as IDamageable;
+        if (damageable == null)
+        {
+            Debug.LogWarning($"[DebugPlayer] {targetCell} 위치에 피해를 줄 몬스터가 없습니다.");
+            return;
+        }
+
+        if (player != null && ReferenceEquals(entity, player))
+        {
+            Debug.LogWarning("[DebugPlayer] 선택한 대상이 플레이어입니다. 몬스터만 피해 테스트합니다.");
+            return;
+        }
+
+        int beforeHp = damageable.CurrentHp;
+        damageable.TakeDamage(damageAmount);
+        int actualDamage = Mathf.Max(0, beforeHp - damageable.CurrentHp);
+        string targetName = GetDebugTargetName(damageable);
+
+        Debug.Log($"[DebugPlayer] 몬스터 피해: {targetName}, 요청 피해 {damageAmount}, 실제 HP 감소 {actualDamage}, HP {damageable.CurrentHp}/{damageable.MaxHp}");
+    }
+
     [ContextMenu("Debug/Add Potion")]
     public void AddPotion()
     {
@@ -419,6 +461,35 @@ public class DebugPlayer : MonoBehaviour
 
         Debug.LogWarning("[DebugPlayer] NYHEquipmentController를 찾지 못했습니다.");
         return false;
+    }
+
+    private bool TryGetMouseGridPosition(out Vector2Int gridPosition)
+    {
+        gridPosition = Vector2Int.zero;
+
+        if (Camera.main == null)
+        {
+            Debug.LogWarning("[DebugPlayer] Main Camera를 찾지 못해 마우스 위치를 그리드로 변환할 수 없습니다.");
+            return false;
+        }
+
+        if (GridSystem.Instance == null)
+        {
+            Debug.LogWarning("[DebugPlayer] GridSystem을 찾지 못해 마우스 위치를 그리드로 변환할 수 없습니다.");
+            return false;
+        }
+
+        Vector3 worldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        gridPosition = GridSystem.Instance.WorldToGrid(worldPosition);
+        return true;
+    }
+
+    private string GetDebugTargetName(IDamageable target)
+    {
+        if (target is Object targetObject)
+            return targetObject.name;
+
+        return target != null ? target.GetType().Name : "Unknown";
     }
 }
 
