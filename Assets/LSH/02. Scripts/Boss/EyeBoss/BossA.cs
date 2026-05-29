@@ -1,47 +1,58 @@
-using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UI;
 
 /*
- * BossA 예상 컨셉
- * phase1: 30초 버티기. 패턴1: 화면가리기. 패턴2: 가로 레이저 공격. 패턴3: 세로 레이져 공격
- *
- * phase2: 보스 등장.
- * 체력 100%- 패턴1: 마구 점프(기본적으로 닿으면 데미지). 패턴2: 8방향 회전 레이저 공격.
- * 체력 30%- 빨갛게 변하며 긴박함 음악+8방향 회전 레이저 공격 + 화면 가리기 공격. 안끝남.
+ * BossA — 시간 기반 생존형 보스 (눈알 보스).
+ * 제한 시간 120초 동안 살아남기. 페이즈는 HP가 아니라 TimeSystem.TimeRemaining으로 전환.
+ *   120~80초 : 일반 패턴 (플레이어 방향 직선 레이저 / 굵은 직선 레이저)
+ *   80 ~20초 : 분노 패턴 (가로5 / 세로5 / 가로3+세로3 랜덤 레이저)
+ *   20 ~ 0초 : 죽음 패턴 (중앙으로 이동 + 10초간 4방향 회전 붉은 레이저, 닿으면 즉사)
+ * 패턴은 patternDelay(=2초) 간격으로 실행.
  */
-
 public class BossA : BossBase
 {
+    [Header("레이저 프리팹")]
+    [SerializeField] private GameObject lazerAttackPrefab; //레이저 본체 (경고는 BossBase의 warningTilemap 타일로 표시)
 
-    [Header("보스 화면 가리기 패턴")]
-    [SerializeField] private Image image;
-    [SerializeField] private Image image2;
+    [Header("레이저 타이밍 (patternDelay와 분리)")]
+    [SerializeField] private int laserTelegraphMs = 800; // 경고선 노출 시간 (회피 창)
+    [SerializeField] private int laserActiveMs = 400;    // 실제 레이저 발사 + 판정 노출 시간
 
-    [Header("보스 총알")]
-    [SerializeField] private GameObject bossABullet;
+    [Header("레이저 판정")]
+    [SerializeField] private int laserDamage = 1;         // 일반 레이저 피해
+    [SerializeField] private float thickLaserScaleY = 3f; // 굵은 레이저 시각 Y배수
+    [SerializeField] private int thickLaserWidth = 1;     // 굵은 레이저 폭 (중심선 양옆 칸 수)
 
-    [Header("레이저 설정")]
-    [SerializeField] private LineRenderer dangerLinePrefab;
-    [SerializeField] private GameObject lazerAttackPrefab;
+    [Header("페이즈 시간 경계 (초)")]
+    [SerializeField] private float phase1Until = 80f; // 이 시간보다 많으면 Phase1(일반)
+    [SerializeField] private float phase2Until = 20f; // 이 시간보다 많으면 Phase2(분노), 이하면 죽음
+
+    [Header("죽음 패턴 (회전 레이저)")]
+    [SerializeField] private float deathLaserDurationSec = 10f; // 회전 지속 시간
+    [SerializeField] private float deathLaserRotateSpeed = 60f; // 초당 회전 각도(도)
+    [SerializeField] private float deathLaserLength = 30f;      // 레이저 길이(월드)
+    [SerializeField] private float deathLaserHalfWidth = 0.5f;  // 판정 두께(월드, 중심선에서 거리)
+    [SerializeField] private Color deathLaserColor = Color.red;
+    [SerializeField] private int deathInstantKillDamage = 99999;
 
     private RectInt _bossRoomBounds;
     private bool _hasBossRoomBounds;
+    private RectInt _mapBounds;        // 전체 맵(통행 가능 셀) 경계 — 가로/세로 레이저 기준
+    private bool _hasMapBounds;
+    private bool _deathPhaseStarted;
 
     protected override void OnEnable()
     {
-        base.OnEnable();
-        currentHp = maxHp; // 보스 체력 설정
-        AddActionCase(BossAction.Pattern1, 30);
-        AddActionCase(BossAction.Pattern2, 30);
-        AddActionCase(BossAction.Pattern3, 40);
-        image.gameObject.SetActive(false);
-        image2.gameObject.SetActive(false);
+        base.OnEnable(); // patternDelay 변환 + 보스전 120초 타이머 시작
+        currentHp = maxHp;
         CacheBossRoom();
+        CacheMapBounds();
     }
+
+    // BossA는 시간 기반 페이즈라 HP 기반 Phase2 전환을 막는다 (patternDelay가 멋대로 줄지 않도록).
+    protected override void EnterPhase2() { /* no-op: 페이즈는 시간으로만 전환 */ }
 
     private void CacheBossRoom()
     {
@@ -52,147 +63,312 @@ public class BossA : BossBase
         _hasBossRoomBounds = true;
     }
 
-    protected override void Update()
+    // 전체 맵의 통행 가능 셀들로 바운딩 박스를 계산. 가로/세로 레이저를 맵 전체 기준으로 뽑기 위함.
+    private void CacheMapBounds()
     {
-        base.Update();
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        if (GridSystem.Instance == null) return;
+        int minX = int.MaxValue, minY = int.MaxValue, maxX = int.MinValue, maxY = int.MinValue;
+        bool any = false;
+        foreach (var c in GridSystem.Instance.GetAllWalkableCells())
         {
-            bossLevel = 2;
-            bossAnimation.SetBool("Phase2", true);
-            patternDelay = patternDelay / 2;
+            any = true;
+            if (c.x < minX) minX = c.x;
+            if (c.y < minY) minY = c.y;
+            if (c.x > maxX) maxX = c.x;
+            if (c.y > maxY) maxY = c.y;
+        }
+        if (!any) return;
+        _mapBounds = new RectInt(minX, minY, maxX - minX + 1, maxY - minY + 1);
+        _hasMapBounds = true;
+    }
+
+    //=============================== 시간 기반 페이즈 디스패치 ==========================================
+    private int CurrentTimePhase()
+    {
+        float t = TimeSystem.Instance != null ? TimeSystem.Instance.TimeRemaining : 0f;
+        if (t > phase1Until) return 1; // 120~80
+        if (t > phase2Until) return 2; // 80~20
+        return 3;                       // 20~0
+    }
+
+    protected override async UniTask PhaseState()
+    {
+        int phase = CurrentTimePhase();
+
+        // 죽음 패턴은 단 한 번만 시작하고 자체 수명으로 동작.
+        if (phase == 3)
+        {
+            if (!_deathPhaseStarted)
+            {
+                _deathPhaseStarted = true;
+                isBossAttacking = true; // 죽음 패턴 동안 일반 디스패치 잠금
+                DeathPhaseAsync().Forget();
+            }
+            return;
+        }
+
+        // 일반/분노: patternDelay(2초) 간격으로 패턴 1개 실행.
+        isBossAttacking = true;
+        await UniTask.Delay(patternDelay, cancellationToken: cancelToken.Token);
+
+        if (phase == 1)
+        {
+            if (Random.Range(0, 2) == 0) Phase1Pattern1().Forget();
+            else Phase1Pattern2().Forget();
+        }
+        else
+        {
+            int p = Random.Range(0, 3);
+            if (p == 0) Phase2Pattern1().Forget();
+            else if (p == 1) Phase2Pattern2().Forget();
+            else Phase2Pattern3().Forget();
         }
     }
 
-    //=====================================보스 행동 패턴 구현=====================================
+    //<<<<<<<<<<<<<<<<<<<<<<<< 일반 패턴 (120~80초) >>>>>>>>>>>>>>>>>>>>>>>>
 
-    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Phase 1 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-    //===================================== 패턴1 ==================================================
+    // 패턴1: 플레이어 방향(8방향 스냅) 전방 1직선 레이저
     protected override async UniTask Phase1Pattern1()
     {
-        Debug.Log($"<color=red>[행동패턴1]</color> ");
-        ImageAttack().Forget();
-        await UniTask.Delay(patternDelay);
+        await FirePlayerDirectedLaser(width: 0, visualScaleY: 1f, damage: laserDamage);
         isBossAttacking = false;
     }
 
-    private async UniTask ImageAttack()
-    {
-        Debug.Log($"<color=red>[화면 가리기 공격!]</color>");
-        int randomValue = Random.Range(0, 2);
-        switch (randomValue)
-        {
-            case 0: image.gameObject.SetActive(true);  break;
-            case 1: image2.gameObject.SetActive(true); break;
-        }
-        await UniTask.Delay(3000);
-        ImageOff();
-    }
-
-    void ImageOff()
-    {
-        image.gameObject.SetActive(false);
-        image2.gameObject.SetActive(false);
-    }
-
-    //===================================== 가로 레이저 ==================================================
+    // 패턴2: 플레이어 방향 굵은 직선 레이저
     protected override async UniTask Phase1Pattern2()
     {
-        Debug.Log($"<color=red>[행동패턴2]</color> ");
-        int ranY = Random.Range(-4, 4);
-        Vector3 pos = new Vector3(0, ranY, 0);
-        await LazerAttack(pos, Quaternion.identity, cancelToken.Token);
-        await UniTask.Delay(patternDelay, cancellationToken: cancelToken.Token);
+        await FirePlayerDirectedLaser(width: thickLaserWidth, visualScaleY: thickLaserScaleY, damage: laserDamage);
         isBossAttacking = false;
     }
 
-    //===================================== 세로 레이저 ==================================================
-    protected override async UniTask Phase1Pattern3()
+    //<<<<<<<<<<<<<<<<<<<<<<<< 분노 패턴 (80~20초) >>>>>>>>>>>>>>>>>>>>>>>>
+
+    // 패턴1: 가로 랜덤 5줄 (동시)
+    protected override async UniTask Phase2Pattern1()
     {
-        Debug.Log($"<color=red>[행동패턴3]</color> ");
-        int ranX = Random.Range(-8, 8);
-        Vector3 pos = new Vector3(ranX, 0, 0);
-        Quaternion quaternion = Quaternion.Euler(0, 0, 90f);
-        await LazerAttack(pos, quaternion, cancelToken.Token);
-        await UniTask.Delay(patternDelay, cancellationToken: cancelToken.Token);
+        var tasks = new List<UniTask>();
+        for (int i = 0; i < 5; i++) tasks.Add(FireRandomAxisLaser(Vector2Int.right));
+        await UniTask.WhenAll(tasks);
         isBossAttacking = false;
     }
 
-    //===================================== 레이저 공격 구현 =======================================
-    private async UniTask LazerAttack(Vector3 pos, Quaternion q, CancellationToken token)
+    // 패턴2: 세로 랜덤 5줄 (동시)
+    protected override async UniTask Phase2Pattern2()
     {
-        var (startPt, endPt) = FindLaserEndpoints(pos, q);
+        var tasks = new List<UniTask>();
+        for (int i = 0; i < 5; i++) tasks.Add(FireRandomAxisLaser(Vector2Int.up));
+        await UniTask.WhenAll(tasks);
+        isBossAttacking = false;
+    }
 
-        LineRenderer dangerLine = Instantiate(dangerLinePrefab, pos, q);
-        dangerLine.useWorldSpace = true; // 월드 좌표로 방 경계까지 직접 지정
-        dangerLine.positionCount = 2;
-        dangerLine.SetPosition(0, startPt);
-        dangerLine.SetPosition(1, endPt);
+    // 패턴3: 가로 3 + 세로 3 (동시)
+    protected override async UniTask Phase2Pattern3()
+    {
+        var tasks = new List<UniTask>();
+        for (int i = 0; i < 3; i++) tasks.Add(FireRandomAxisLaser(Vector2Int.right));
+        for (int i = 0; i < 3; i++) tasks.Add(FireRandomAxisLaser(Vector2Int.up));
+        await UniTask.WhenAll(tasks);
+        isBossAttacking = false;
+    }
 
+    //=============================== 레이저 발사 (시각 + 격자 데미지) ==========================================
+
+    // 보스에서 플레이어 방향(8방향 스냅)으로 벽까지 뻗는 레이저.
+    private async UniTask FirePlayerDirectedLaser(int width, float visualScaleY, int damage)
+    {
+        var bossCell = GridSystem.Instance.WorldToGrid(transform.position);
+        var dir = DirToPlayer8(bossCell);
+        var endCell = WalkToWall(bossCell, dir);
+        var startCell = WalkToWall(bossCell, -dir);
+        await FireLaserBetween(startCell, endCell, dir, width, visualScaleY, damage, cancelToken.Token);
+    }
+
+    // 방 경계 안에서 랜덤한 행(가로) 또는 열(세로) 전체를 가로지르는 레이저.
+    private async UniTask FireRandomAxisLaser(Vector2Int axis)
+    {
+        Vector2Int startCell, endCell;
+
+        if (_hasBossRoomBounds)
+        {
+            if (axis == Vector2Int.right) // 가로: 랜덤 행
+            {
+                int y = Random.Range(_bossRoomBounds.yMin + 1, _bossRoomBounds.yMax - 1);
+                startCell = new Vector2Int(_bossRoomBounds.xMin, y);
+                endCell = new Vector2Int(_bossRoomBounds.xMax - 1, y);
+            }
+            else // 세로: 랜덤 열
+            {
+                int x = Random.Range(_bossRoomBounds.xMin + 1, _bossRoomBounds.xMax - 1);
+                startCell = new Vector2Int(x, _bossRoomBounds.yMin);
+                endCell = new Vector2Int(x, _bossRoomBounds.yMax - 1);
+            }
+        }
+        else
+        {
+            // 방 경계 없으면 보스 위치 기준 벽 탐색으로 폴백
+            var bossCell = GridSystem.Instance.WorldToGrid(transform.position);
+            startCell = WalkToWall(bossCell, -axis);
+            endCell = WalkToWall(bossCell, axis);
+        }
+
+        await FireLaserBetween(startCell, endCell, axis, 0, 1f, laserDamage, cancelToken.Token);
+    }
+
+    // 두 격자 셀 사이를 잇는 레이저 공용 구현: 타일 경고 → 레이저 시각 + 격자 데미지 판정 → 정리.
+    private async UniTask FireLaserBetween(Vector2Int startCell, Vector2Int endCell, Vector2Int axis,
+                                           int width, float visualScaleY, int damage, CancellationToken token)
+    {
+        // 레이저가 지나는 칸들 — 경고 표시와 데미지 판정에 동일하게 사용.
+        var cells = CellsAlongLine(startCell, endCell, axis, width);
+
+        ShowWarning(cells); // 타일맵 경고 (회피 창)
         try
         {
-            await UniTask.Delay(patternDelay, cancellationToken: token);
-            if (dangerLine != null)
-                Destroy(dangerLine.gameObject);
+            await UniTask.Delay(laserTelegraphMs, cancellationToken: token);
+            ClearWarning(cells); // 경고 종료 → 레이저 발사
 
-            // 레이저 길이에 맞춰 프리팹 크기 조정 (프리팹 기본 localScale.x = 1 → 1 world unit 가정)
+            // 레이저 시각 spawn (길이에 맞춰 X스케일, 굵기 visualScaleY)
+            Vector3 startPt = GridSystem.Instance.GridToWorld(startCell);
+            Vector3 endPt = GridSystem.Instance.GridToWorld(endCell);
+            Quaternion q = Quaternion.Euler(0, 0, Mathf.Atan2(axis.y, axis.x) * Mathf.Rad2Deg);
             float length = Vector3.Distance(startPt, endPt);
             Vector3 center = (startPt + endPt) * 0.5f;
             GameObject lazer = Instantiate(lazerAttackPrefab, center, q);
             var s = lazer.transform.localScale;
-            lazer.transform.localScale = new Vector3(length, s.y, s.z);
+            lazer.transform.localScale = new Vector3(length, s.y * visualScaleY, s.z);
 
-            await UniTask.Delay(patternDelay, cancellationToken: token);
-            if (lazer != null)
-                Destroy(lazer);
+            // 격자 데미지 판정 (레이저가 지나는 칸에 플레이어가 있으면)
+            DamagePlayerIfInCells(cells, damage);
+
+            await UniTask.Delay(laserActiveMs, cancellationToken: token);
+            if (lazer != null) Destroy(lazer);
         }
-        catch (System.OperationCanceledException)
+        catch (System.OperationCanceledException) { }
+        finally
         {
-            if (dangerLine != null)
-                Destroy(dangerLine.gameObject);
+            ClearWarning(cells); // 취소 시 잔존 방지 (정상 경로에선 이미 비워져 no-op)
         }
     }
 
-    // ─── 방 경계 탐색 헬퍼 ────────────────────────────────────────────────────
-
-    private (Vector3 start, Vector3 end) FindLaserEndpoints(Vector3 worldPos, Quaternion q)
+    // startCell → endCell 사이 axis 방향 셀들 + 좌우 width칸 (굵은 레이저용).
+    private List<Vector2Int> CellsAlongLine(Vector2Int startCell, Vector2Int endCell, Vector2Int axis, int width)
     {
-        Vector3 fallbackStart = worldPos + q * new Vector3(-25f, 0, 0);
-        Vector3 fallbackEnd   = worldPos + q * new Vector3( 25f, 0, 0);
-
-        if (!_hasBossRoomBounds || GridSystem.Instance == null)
-            return (fallbackStart, fallbackEnd);
-
-        var dir = WorldDirToGridDir(q * Vector3.right);
-        if (dir == Vector2Int.zero)
-            return (fallbackStart, fallbackEnd);
-
-        Vector2Int startCell, endCell;
-
-        if (dir.y == 0) // 가로 레이저: bounds에서 랜덤 행 선택
+        var cells = new List<Vector2Int>();
+        var perp = new Vector2Int(-axis.y, axis.x);
+        var c = startCell;
+        int guard = 500; // 무한루프 방지
+        while (guard-- > 0)
         {
-            int gridY = Random.Range(_bossRoomBounds.yMin + 1, _bossRoomBounds.yMax - 1);
-            startCell = new Vector2Int(_bossRoomBounds.xMin, gridY);
-            endCell   = new Vector2Int(_bossRoomBounds.xMax - 1, gridY);
+            for (int w = -width; w <= width; w++)
+                cells.Add(c + perp * w);
+            if (c == endCell) break;
+            c += axis;
         }
-        else if (dir.x == 0) // 세로 레이저: bounds에서 랜덤 열 선택
-        {
-            int gridX = Random.Range(_bossRoomBounds.xMin + 1, _bossRoomBounds.xMax - 1);
-            startCell = new Vector2Int(gridX, _bossRoomBounds.yMin);
-            endCell   = new Vector2Int(gridX, _bossRoomBounds.yMax - 1);
-        }
-        else // 대각선(Phase2 8방향): 보스 위치에서 IsWalkable로 벽 탐색
-        {
-            var gridPos = GridSystem.Instance.WorldToGrid(transform.position);
-            endCell   = WalkToWall(gridPos,  dir);
-            startCell = WalkToWall(gridPos, -dir);
-        }
-
-        return (GridSystem.Instance.GridToWorld(startCell),
-                GridSystem.Instance.GridToWorld(endCell));
+        return cells;
     }
 
-    // 대각선 레이저 전용: 벽(IsWalkable 실패)에 닿을 때까지 이동
+    //=============================== 죽음 패턴 : 중앙 + 4방향 회전 레이저 ==========================================
+    private async UniTask DeathPhaseAsync()
+    {
+        var token = this.GetCancellationTokenOnDestroy();
+
+        // 1) 보스를 방 중앙으로 이동
+        Vector3 center = GetRoomCenterWorld();
+        transform.position = center;
+        if (bossAnimation != null) bossAnimation.SetBool("Phase2", true); // 연출용 (애니 있으면)
+
+        // 2) 4방향 회전 레이저용 lazerAttackPrefab 4개 생성 (+자 모양, 함께 회전). LineRenderer 미사용.
+        var beams = new GameObject[4];
+        for (int i = 0; i < 4; i++)
+        {
+            beams[i] = Instantiate(lazerAttackPrefab, center, Quaternion.identity);
+            var s = beams[i].transform.localScale;
+            beams[i].transform.localScale = new Vector3(deathLaserLength, s.y, s.z); // 길이만큼 X스케일
+            var sr = beams[i].GetComponentInChildren<SpriteRenderer>();
+            if (sr != null) sr.color = deathLaserColor; // 붉은 틴트 (SpriteRenderer 있을 때만)
+        }
+
+        float elapsed = 0f;
+        float baseAngle = 0f;
+
+        try
+        {
+            while (elapsed < deathLaserDurationSec)
+            {
+                baseAngle += deathLaserRotateSpeed * Time.deltaTime;
+
+                bool hit = false;
+                Vector3 playerPos = (player != null && !player.IsDead)
+                    ? GridSystem.Instance.GridToWorld(player.GridPosition)
+                    : Vector3.positiveInfinity;
+
+                for (int i = 0; i < 4; i++)
+                {
+                    float deg = baseAngle + i * 90f;
+                    float a = deg * Mathf.Deg2Rad;
+                    Vector3 dir = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f);
+
+                    // 시각 갱신: 빔 중심을 center에서 dir로 길이/2만큼 밀고, 그 각도로 회전.
+                    beams[i].transform.SetPositionAndRotation(
+                        center + dir * (deathLaserLength * 0.5f),
+                        Quaternion.Euler(0, 0, deg));
+
+                    // 판정: 플레이어가 이 레이저 선 위에 있으면 즉사
+                    if (!hit && IsOnRay(playerPos, center, dir, deathLaserLength, deathLaserHalfWidth))
+                        hit = true;
+                }
+
+                if (hit && player != null && !player.IsDead)
+                    player.TakeDamage(deathInstantKillDamage);
+
+                elapsed += Time.deltaTime;
+                await UniTask.Yield(token);
+            }
+        }
+        catch (System.OperationCanceledException) { }
+        finally
+        {
+            for (int i = 0; i < 4; i++)
+                if (beams[i] != null) Destroy(beams[i]);
+        }
+        // 죽음 패턴 종료 후에는 isBossAttacking을 풀지 않음 → 보스 정지. 시간이 0이 되면 생존 성공 처리는 별도.
+    }
+
+    private bool IsOnRay(Vector3 point, Vector3 origin, Vector3 dir, float length, float halfWidth)
+    {
+        Vector3 n = dir.normalized;
+        Vector3 toPoint = point - origin;
+        float along = Vector3.Dot(toPoint, n);
+        if (along < 0f || along > length) return false; // 레이저 범위 밖
+        Vector3 proj = origin + n * along;
+        return Vector3.Distance(point, proj) <= halfWidth;
+    }
+
+    private Vector3 GetRoomCenterWorld()
+    {
+        if (_hasBossRoomBounds && GridSystem.Instance != null)
+        {
+            int cx = (_bossRoomBounds.xMin + _bossRoomBounds.xMax) / 2;
+            int cy = (_bossRoomBounds.yMin + _bossRoomBounds.yMax) / 2;
+            return GridSystem.Instance.GridToWorld(new Vector2Int(cx, cy));
+        }
+        return transform.position;
+    }
+
+    //=============================== 방향 헬퍼 ==========================================
+
+    // 보스→플레이어 방향을 8방향 중 가장 가까운 격자 방향으로 스냅.
+    private Vector2Int DirToPlayer8(Vector2Int from)
+    {
+        if (player == null) return Vector2Int.right;
+        Vector2 v = player.GridPosition - from;
+        if (v == Vector2.zero) return Vector2Int.right;
+
+        float oct = Mathf.Round(Mathf.Atan2(v.y, v.x) / (Mathf.PI / 4f)) * (Mathf.PI / 4f);
+        return new Vector2Int(Mathf.RoundToInt(Mathf.Cos(oct)), Mathf.RoundToInt(Mathf.Sin(oct)));
+    }
+
+    // 벽(IsWalkable 실패)에 닿기 직전까지 dir로 전진한 마지막 통행 가능 셀 반환.
     private Vector2Int WalkToWall(Vector2Int origin, Vector2Int dir)
     {
         var current = origin;
@@ -200,54 +376,5 @@ public class BossA : BossBase
         while (guard-- > 0 && GridSystem.Instance.IsWalkable(current + dir))
             current += dir;
         return current;
-    }
-
-    private static Vector2Int WorldDirToGridDir(Vector3 worldDir)
-    {
-        int x = Mathf.Clamp(Mathf.RoundToInt(worldDir.x), -1, 1);
-        int y = Mathf.Clamp(Mathf.RoundToInt(worldDir.y), -1, 1);
-        return new Vector2Int(x, y);
-    }
-
-    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Phase2 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-    //=====================================패턴1==================================================
-    protected override async UniTask Phase2Pattern1()
-    {
-        Debug.Log($"<color=red>[Phase2 행동패턴1]</color> ");
-        for (int i = 0; i < 5; i++)
-        {
-            int ranX = Random.Range(-8, 8);
-            Vector3 pos = new Vector3(ranX, 0, 0);
-            Quaternion quaternion = Quaternion.Euler(0, 0, 90f);
-            await LazerAttack(pos, quaternion, cancelToken.Token);
-        }
-        isBossAttacking = false;
-    }
-
-    //=====================================패턴2==================================================
-    protected override async UniTask Phase2Pattern2()
-    {
-        Debug.Log($"<color=red>[Phase2 행동패턴2]</color> ");
-        for (int i = 0; i < 8; i++)
-        {
-            float angle = i * 45f;
-            Quaternion q = Quaternion.Euler(0, 0, angle);
-            await LazerAttack(Vector3.zero, q, cancelToken.Token);
-        }
-        isBossAttacking = false;
-    }
-
-    //=====================================패턴3==================================================
-    protected override async UniTask Phase2Pattern3()
-    {
-        Debug.Log($"<color=red>[Phase2 행동패턴3]</color> ");
-        for (int i = 0; i < 5; i++)
-        {
-            int ranY = Random.Range(-4, 4);
-            Vector3 pos = new Vector3(0, ranY, 0);
-            await LazerAttack(pos, Quaternion.identity, cancelToken.Token);
-        }
-        isBossAttacking = false;
     }
 }

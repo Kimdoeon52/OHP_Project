@@ -32,9 +32,12 @@ public class BossBase : EnemyNormalBASE
     [Header("보스 패턴 딜레이 (초)")]
     [SerializeField] protected int patternDelay; //보스 패턴 행동 사이의 딜레이 시간
 
-    [Header("페이즈 전환")]
-    [SerializeField] protected int phase2HpThreshold = 50;          //HP가 이 값 이하가 되면 Phase 2 진입
+    [Header("페이즈 전환 (남은 시간 기준)")]
+    [SerializeField] protected float phase2TimeThreshold = 60f;     //남은 시간이 이 값(초) 이하가 되면 Phase 2 진입
     [SerializeField, Range(0.05f, 1f)] protected float phase2DelayMultiplier = 0.3f; //Phase 2 진입 시 patternDelay에 곱하는 배율
+
+    [Header("보스전 시간")]
+    [SerializeField] protected float bossFightTimeLimit = 120f; //보스전 진입 시 제한 시간(초)으로 고정
 
     [Header("경고 타일맵 (시각 표시 전용 — 판정 아님)")]
     [SerializeField] protected Tilemap warningTilemap; //공격 예고를 칠할 전용 타일맵
@@ -80,6 +83,15 @@ public class BossBase : EnemyNormalBASE
         {
             Debug.LogError($"BossBase: warningTilemap이 GridSystem의 WallTilemap과 동일합니다. " +
                            $"인스펙터에서 별도의 WarningTilemap을 지정해 주세요. (현재 충돌 중)");
+        }
+
+        // 4) 보스전 진입 시 제한 시간을 bossFightTimeLimit(초)로 고정하고 타이머 시작.
+        //    TimeSystem에 SetTime이 없어 AddTime(목표 - 현재)로 보정 (실험용 — 추후 SetTime 도입 검토).
+        if (TimeSystem.Instance != null)
+        {
+            TimeSystem.Instance.AddTime(bossFightTimeLimit - TimeSystem.Instance.TimeRemaining);
+            TimeSystem.Instance.StartTimer();
+            Debug.Log($"<color=cyan>[보스전]</color> 제한 시간 {bossFightTimeLimit}초로 고정, 타이머 시작.");
         }
 
         WaitBossCoolTime().Forget();
@@ -130,7 +142,7 @@ public class BossBase : EnemyNormalBASE
     //==================== 데미지 / 페이즈 전환 / 사망 ====================
     protected bool isDying; // 죽음 패턴 진행 중 추가 데미지 무시 + 재진입 방지
 
-    // 보스가 데미지를 받을 때 호출. HP가 phase2HpThreshold 이하로 떨어지면 EnterPhase2 1회.
+    // 보스가 데미지를 받을 때 호출. 페이즈 전환은 시간 기반으로 이관됨(PhaseState 참고) — 여기선 HP/사망만 처리.
     // HP가 0 이하가 되면 isDying=true로 잠그고 OnDeath() 호출 (기본은 즉시 Destroy, 서브클래스가 죽음 패턴 오버라이드 가능).
     public virtual void BossTakeDamage(int amount)
     {
@@ -139,9 +151,6 @@ public class BossBase : EnemyNormalBASE
         currentHp -= amount;
         Debug.Log($"<color=red>[보스 데미지]</color> 보스가 {amount}만큼 데미지를 받음. 현재 HP: {currentHp}");
         if (hpBar != null) hpBar.UpdateBar();
-
-        if (bossLevel == 1 && currentHp <= phase2HpThreshold)
-            EnterPhase2();
 
         if (currentHp <= 0)
         {
@@ -234,8 +243,16 @@ public class BossBase : EnemyNormalBASE
         return 0; //예외 처리, 모든 패턴이 선택되지 않은 경우
     }
     //==================================보스 Phase 구현======================================
+    // 페이즈는 남은 시간으로 전환. 남은 시간이 phase2TimeThreshold 이하가 되면 1회 EnterPhase2.
+    // (3페이즈 이상 보스는 PhaseState를 오버라이드해서 자체 시간 분기 — 예: BossA)
     protected virtual async UniTask PhaseState() //첫 페이즈는 회피구간 두번째 페이즈는 공격구간
     {
+        if (bossLevel == 1 && TimeSystem.Instance != null
+            && TimeSystem.Instance.TimeRemaining <= phase2TimeThreshold)
+        {
+            EnterPhase2();
+        }
+
         switch(bossLevel)
         {
             case 1: //첫번째 페이즈
