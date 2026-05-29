@@ -29,7 +29,7 @@ public class BossB : BossBase, IGridEntity, IDamageable
     [SerializeField] private int chasingCrystalDamage = 1;           // 직격 시 데미지
     [SerializeField] private Color chasingCrystalTint = Color.white; // 기본 베이스 색상
 
-    [Header("Phase 2 패시브 바위 비 (HP ≤ phase2HpThreshold)")]
+    [Header("Phase 2 패시브 바위 비 (남은 시간 ≤ phase2TimeThreshold)")]
     [SerializeField] private int rainTickMs = 300;        // 한 틱 간격(ms). 작을수록 빽빽함
     [SerializeField] private int rainCellsPerTick = 3;    // 한 틱에 동시에 떨어지는 칸 수
 
