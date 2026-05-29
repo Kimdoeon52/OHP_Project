@@ -1,9 +1,13 @@
 ﻿using UnityEngine;
 
+[CreateAssetMenu(fileName = "AnalyzeScroll", menuName = "Item/Scroll/AnalyzeScroll")]
 public class AnalyzeScroll : ItemBase
 {
-	public override void Use()
-	{
-		
-	}
+    public override void Use(ItemInstance targetItem)
+    {
+        if (targetItem.data.CanAnalyze)
+            return;
+
+        targetItem.isAnalyzed = true; // 감정 처리
+    }
 }

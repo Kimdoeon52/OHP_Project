@@ -22,6 +22,7 @@ MonoBehaviour:
   height: 3
   canEnhance: 1
   canCurse: 1
+  canAnalyze: 1
   minDamage: 5
   maxDamage: 30
   minEnhanceBonus: 0

@@ -29,6 +29,7 @@ public class ItemBase : ScriptableObject
     [SerializeField] protected int height;
     [SerializeField] private bool canEnhance;
     [SerializeField] private bool canCurse;
+    [SerializeField] private bool canAnalyze;
 
     public string Name { get => itemName; set => itemName = value; }
     public string Description { get => description; set => description = value; }
@@ -39,7 +40,9 @@ public class ItemBase : ScriptableObject
     public int Height { get => height; set => height = value; }
     public bool CanEnhance => canEnhance;
     public bool CanCurse => canCurse;
+    public bool CanAnalyze => canAnalyze;
 
     public virtual void Use() { }
+    public virtual void Use(ItemInstance target) { }
     public virtual string GetToolTipStats() { return ""; }
 }
