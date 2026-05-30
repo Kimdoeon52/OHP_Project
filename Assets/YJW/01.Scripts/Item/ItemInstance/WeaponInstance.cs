@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class WeaponInstance : ItemInstance
+public class WeaponInstance : EquipmentInstance
 {
     public CloseWeapon Weapon => data as CloseWeapon;
 

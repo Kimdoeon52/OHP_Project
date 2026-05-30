@@ -5,7 +5,7 @@ public class AnalyzeScroll : ItemBase
 {
     public override void Use(ItemInstance targetItem)
     {
-        if (targetItem == null || targetItem.data == null || targetItem.data.CanAnalyze == false || targetItem.isAnalyzed)
+        if (targetItem.data.CanAnalyze == false)
             return;
 
         targetItem.isAnalyzed = true; // 감정 처리

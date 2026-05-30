@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class ArmorInstance : ItemInstance
+public class ArmorInstance : EquipmentInstance
 {
     public ArmorData Armor => data as ArmorData;
 

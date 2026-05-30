@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class ThrowableWeaponInstance : ItemInstance, IThrowable
+public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
 {
     public ThrowableWeapon weapon => data as ThrowableWeapon;
 
