@@ -5,7 +5,7 @@ public class ReinforceScroll : ItemBase
 {
     public override void Use(ItemInstance targetItem)
     {
-        if (targetItem.data.CanEnhance == false || targetItem.enhanceLevel >= 15)
+        if (targetItem == null || targetItem.data == null || targetItem.data.CanEnhance == false || targetItem.enhanceLevel >= 15)
             return;
 
         targetItem.enhanceLevel++; // 강화 처리

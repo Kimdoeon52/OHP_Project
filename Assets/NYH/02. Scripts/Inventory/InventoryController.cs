@@ -21,6 +21,16 @@ namespace PrototypeRT
         [Tooltip("아이템 자동 추가에 사용할 기본 인벤토리 그리드입니다. 퀵슬롯 그리드가 아닌 큰 가방 그리드를 연결하세요.")]
         [SerializeField] private ItemGrid defaultInventoryGrid;
 
+        [Header("아이템 사용")]
+        [Tooltip("아이템을 들고 다시 클릭했을 때 더블클릭으로 인정할 최대 시간입니다.")]
+        [SerializeField, Min(0.05f)] private float doubleClickMaxDelay = 0.25f;
+
+        [Tooltip("더블클릭 아이템 사용 분기를 담당하는 컨트롤러입니다. 비워두면 런타임에 자동으로 붙입니다.")]
+        [SerializeField] private InventoryItemUseController itemUseController;
+
+        [Tooltip("주문서 대상 지정과 투척 포션 조준을 담당하는 컨트롤러입니다. 비워두면 런타임에 자동으로 붙입니다.")]
+        [SerializeField] private InventoryTargetingController targetingController;
+
         // 현재 마우스가 올라간 인벤토리 그리드입니다. 여러 그리드를 지원할 수 있도록 포인터 진입/이탈 때 갱신합니다.
         private ItemGrid _selectedGrid;
 
@@ -51,6 +61,9 @@ namespace PrototypeRT
         private ItemGrid _dragStartGrid;
         private int _dragStartX;
         private int _dragStartY;
+
+        private InventoryItem _lastPickedItem;
+        private float _lastPickTime;
 
         /// <summary>아이템 추가/삭제/재배치 등 인벤토리 구성이 바뀔 때 호출됩니다.</summary>
         public event Action OnInventoryChanged;
@@ -93,6 +106,8 @@ namespace PrototypeRT
 
             if (_selectedGrid == null)
                 SelectedGrid = ResolveItemGrid();
+
+            ResolveUseControllers();
         }
 
         /// <summary>
@@ -112,6 +127,12 @@ namespace PrototypeRT
             // 들고 있는 아이템 이미지는 입력 가능 여부와 상관없이 마우스를 따라오게 둡니다.
             DragSelectedItemIcon();
             RefreshSelectedGridUnderMouse();
+
+            if (targetingController != null && targetingController.IsTargeting)
+            {
+                _inventoryHighlight.Show(false);
+                return;
+            }
 
             if (_isPointerInputBlocked)
             {
@@ -133,16 +154,21 @@ namespace PrototypeRT
 
         public bool TryAddItem(ItemBase itemData)
         {
+            return TryAddItem(InventoryItem.CreateDefaultInstance(itemData));
+        }
+
+        public bool TryAddItem(ItemInstance itemInstance)
+        {
             if (_selectedGrid == null || _selectedGrid.AcceptOnlyOneByOneItems)
                 SelectedGrid = ResolveItemGrid();
 
-            if (_selectedGrid == null || itemPrefab == null || canvasTransform == null || itemData == null)
+            if (_selectedGrid == null || itemPrefab == null || canvasTransform == null || itemInstance == null || itemInstance.data == null)
             {
                 Debug.LogError("InventoryController: 인벤토리 그리드, 아이템 프리팹, Canvas, ItemData 연결을 확인해야 합니다.");
                 return false;
             }
 
-            InventoryItem item = CreateInventoryItem(itemData);
+            InventoryItem item = CreateInventoryItem(itemInstance);
 
             // 자동 획득 시에는 좌상단부터 훑어서 들어갈 수 있는 첫 빈 공간에 넣습니다.
             Vector2Int? pos = _selectedGrid.FindSpaceForItem(item);
@@ -194,6 +220,16 @@ namespace PrototypeRT
 
         public bool TryConsumeSelectedItem(InventoryItem expected)
         {
+            return TryConsumeHeldItem(expected, false);
+        }
+
+        /// <summary>
+        /// 현재 마우스에 들고 있는 아이템을 인벤토리 소유 목록과 드래그 상태에서 제거합니다.
+        /// 장비 장착처럼 GameObject를 보관해야 하는 경우 destroyObject=false, 포션/스크롤 소비처럼 사라져야 하는 경우 true를 사용합니다.
+        /// </summary>
+        public bool TryConsumeHeldItem(InventoryItem expected, bool destroyObject)
+        {
+            // 손에 든 아이템과 요청 아이템이 다르면 다른 시스템이 잘못된 아이템을 소비하려는 것이므로 실패합니다.
             if (expected == null || _selectedItem != expected)
                 return false;
 
@@ -202,8 +238,12 @@ namespace PrototypeRT
             _selectedItem = null;
             _overlapItem = null;
             _dragRect = null;
+            _lastPickedItem = null;
             ClearDragStartPosition();
             _inventoryHighlight.Show(false);
+            if (destroyObject)
+                Destroy(expected.gameObject);
+
             RaiseInventoryChanged();
             return true;
         }
@@ -240,9 +280,49 @@ namespace PrototypeRT
             RaiseInventoryChanged();
         }
 
+        public bool CanPlaceInDefaultGrid(InventoryItem item)
+        {
+            if (item == null) return false;
+
+            // 자동 장착 교체처럼 "실제로 넣기 전"에 공간만 확인해야 하는 흐름에서 사용합니다.
+            ItemGrid targetGrid = ResolveItemGrid();
+            return targetGrid != null && targetGrid.FindSpaceForItem(item).HasValue;
+        }
+
+        /// <summary>
+        /// 아이템을 기본 인벤토리 그리드의 첫 빈 공간에 자동 배치합니다.
+        /// 장비 교체 후 기존 장비를 가방으로 돌려보낼 때 사용합니다.
+        /// </summary>
+        public bool TryPlaceInDefaultGrid(InventoryItem item)
+        {
+            if (item == null) return false;
+
+            ItemGrid targetGrid = ResolveItemGrid();
+            if (targetGrid == null) return false;
+
+            // 실제 배치 전에 FindSpaceForItem으로 좌상단 빈칸을 찾습니다.
+            Vector2Int? pos = targetGrid.FindSpaceForItem(item);
+            if (pos == null) return false;
+
+            // 장착 중 숨겨뒀던 InventoryItem도 다시 보이게 켠 뒤 그리드 아래로 배치합니다.
+            item.gameObject.SetActive(true);
+            targetGrid.PlaceItemInternal(item, pos.Value.x, pos.Value.y);
+            item.SetRaycastTarget(true);
+            if (!_items.Contains(item))
+                _items.Add(item);
+
+            RaiseInventoryChanged();
+            return true;
+        }
+
         public InventoryItem CreateItemView(ItemBase itemData, Transform parent, bool playerOwned)
         {
-            if (itemPrefab == null || itemData == null || parent == null)
+            return CreateItemView(InventoryItem.CreateDefaultInstance(itemData), parent, playerOwned);
+        }
+
+        public InventoryItem CreateItemView(ItemInstance itemInstance, Transform parent, bool playerOwned)
+        {
+            if (itemPrefab == null || itemInstance == null || itemInstance.data == null || parent == null)
             {
                 Debug.LogError("InventoryController: 아이템 UI 뷰를 만들기 위한 Prefab, ItemData, Parent 연결을 확인해야 합니다.");
                 return null;
@@ -251,7 +331,7 @@ namespace PrototypeRT
             InventoryItem item = Instantiate(itemPrefab, parent);
 
             // playerOwned가 false인 뷰는 상점/보상 미리보기처럼 인벤토리 소유물이 아닌 표시용으로 쓸 수 있습니다.
-            item.Set(itemData, playerOwned ? this : null);
+            item.Set(itemInstance, playerOwned ? this : null);
             return item;
         }
 
@@ -285,9 +365,30 @@ namespace PrototypeRT
         /// <summary>
         /// 플레이어 소유 인벤토리에 넣을 아이템 UI를 Canvas 아래에 생성합니다.
         /// </summary>
-        private InventoryItem CreateInventoryItem(ItemBase itemData)
+        private InventoryItem CreateInventoryItem(ItemInstance itemInstance)
         {
-            return CreateItemView(itemData, canvasTransform, true);
+            return CreateItemView(itemInstance, canvasTransform, true);
+        }
+
+        private void ResolveUseControllers()
+        {
+            // 씬에 직접 붙여두지 않아도 더블클릭 사용 흐름이 동작하도록 같은 오브젝트에 자동으로 붙입니다.
+            if (targetingController == null)
+                targetingController = GetComponent<InventoryTargetingController>();
+
+            if (targetingController == null)
+                targetingController = gameObject.AddComponent<InventoryTargetingController>();
+
+            targetingController.Configure(this);
+
+            // 사용 컨트롤러는 대상 지정 컨트롤러를 필요로 하므로 targetingController 준비 뒤 초기화합니다.
+            if (itemUseController == null)
+                itemUseController = GetComponent<InventoryItemUseController>();
+
+            if (itemUseController == null)
+                itemUseController = gameObject.AddComponent<InventoryItemUseController>();
+
+            itemUseController.Configure(this, targetingController);
         }
 
         /// <summary>
@@ -343,9 +444,18 @@ namespace PrototypeRT
         /// <summary>
         /// 마우스 왼쪽 클릭 입력을 처리합니다.
         /// 손에 든 아이템이 없으면 집고, 이미 들고 있으면 현재 칸에 배치를 시도합니다.
+        /// 실질적인 게임에서 더블클릭시 사용을 호출하는 시작점
         /// </summary>
         private void HandleLeftClick()
         {
+            // 드래그 우선 방식: 첫 클릭은 기존처럼 집고, 같은 아이템을 짧은 시간 안에 다시 클릭하면 사용으로 전환합니다.
+            if (_selectedItem != null && IsDoubleClickOnSelectedItem())
+            {
+                itemUseController?.TryUseDoubleClickedItem(_selectedItem);
+                _lastPickedItem = null;
+                return;
+            }
+
             if (_selectedGrid == null) return;
 
             Vector2Int gridPos = GetMouseGridPosition();
@@ -374,6 +484,9 @@ namespace PrototypeRT
             if (_selectedItem == null) return;
 
             _selectedItem.SetRaycastTarget(false);
+            // 더블클릭 판정을 위해 "방금 집은 아이템"과 집은 시간을 기록합니다.
+            _lastPickedItem = _selectedItem;
+            _lastPickTime = Time.unscaledTime;
             _dragRect = _selectedItem.GetComponent<RectTransform>();
 
             // 드래그 중인 아이템은 Canvas 최상단으로 올려 다른 슬롯/아이템 뒤에 가려지지 않게 합니다.
@@ -484,7 +597,7 @@ namespace PrototypeRT
         /// 현재 손에 들고 있는 아이템을 드래그 시작 위치로 되돌리고, 드래그 상태를 정리합니다.
         /// 인벤토리 패널을 닫을 때 이 처리를 하지 않으면 아이템 UI가 Canvas 아래에 떠 있거나 슬롯에서 빠질 수 있습니다.
         /// </summary>
-        private void CancelDragAndReturnItem()
+        public void CancelDragAndReturnItem()
         {
             if (_selectedItem != null)
             {
@@ -515,6 +628,15 @@ namespace PrototypeRT
             _dragRect = null;
             ClearDragStartPosition();
             _inventoryHighlight.Show(false);
+        }
+
+        private bool IsDoubleClickOnSelectedItem()
+        {
+            if (_selectedItem == null || _lastPickedItem != _selectedItem)
+                return false;
+
+            // Time.timeScale 영향을 받지 않도록 unscaledTime 기준으로 판정합니다.
+            return Time.unscaledTime - _lastPickTime <= doubleClickMaxDelay;
         }
 
         private bool TryReturnSelectedItemToDefaultGrid()

@@ -5,7 +5,7 @@ public class PurifyScroll : ItemBase
 {
     public override void Use(ItemInstance targetItem)
     {
-        if (targetItem.data.CanCurse == false)
+        if (targetItem == null || targetItem.data == null || targetItem.data.CanCurse == false || targetItem.curse == null)
             return;
         
         targetItem.Purify();

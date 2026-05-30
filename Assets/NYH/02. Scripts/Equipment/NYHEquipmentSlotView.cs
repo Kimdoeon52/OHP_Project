@@ -22,6 +22,9 @@ public class NYHEquipmentSlotView : MonoBehaviour, IPointerClickHandler
     [Tooltip("장착된 아이템 아이콘을 표시할 Image입니다. 슬롯 배경이 아닌 자식 Image를 연결하는 것을 권장합니다.")]
     [SerializeField] private Image iconImage;
 
+    public EquipmentSlot Slot => slot;
+    public int SlotIndex => slotIndex;
+
     private void Awake()
     {
         ResolveReferences();

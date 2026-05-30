@@ -85,6 +85,23 @@ public class NYHEquipmentController : MonoBehaviour
         return MeetsEquipRequirements(itemData, profile);
     }
 
+    public bool TryGetTargetSlotFor(ItemBase itemData, out EquipmentSlot slot, out int slotIndex)
+    {
+        slot = EquipmentSlot.None;
+        slotIndex = 0;
+
+        // 자동 장착 전에 슬롯과 조건을 모두 확인합니다.
+        // 실패하면 장착/교체 시도를 하지 않아 인벤토리 상태가 바뀌지 않습니다.
+        if (itemData == null || !CanEquip(itemData))
+            return false;
+
+        // 반지는 0번 칸이 차 있으면 1번 칸을 우선 선택하는 기존 GetDefaultKey 규칙을 그대로 따릅니다.
+        NYHEquipmentSlotKey key = GetDefaultKey(itemData);
+        slot = key.Slot;
+        slotIndex = key.Index;
+        return slot != EquipmentSlot.None;
+    }
+
     public bool TryEquipFromInventory(InventoryItem item, out InventoryItem replacedItem)
     {
         replacedItem = null;

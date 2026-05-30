@@ -10,8 +10,11 @@ namespace PrototypeRT
     [RequireComponent(typeof(Image))]
     public class InventoryItem : MonoBehaviour
     {
+        /// <summary>이 UI가 표시하는 아이템의 개별 상태입니다. 강화/저주/감정 여부는 여기에 저장됩니다.</summary>
+        public ItemInstance ItemInstance { get; private set; }
+
         /// <summary>이 UI가 표시하는 아이템 데이터입니다.</summary>
-        public ItemBase ItemData { get; private set; }
+        public ItemBase ItemData => ItemInstance != null ? ItemInstance.data : null;
 
         /// <summary>아이템이 배치된 좌상단 칸의 X 좌표입니다.</summary>
         public int OnGridPositionX { get; set; }
@@ -26,9 +29,28 @@ namespace PrototypeRT
             _image = GetComponent<Image>();
         }
 
+        /// <summary>
+        /// ScriptableObject 원본 데이터만 있는 아이템을 UI에 연결합니다.
+        /// 내부에서는 YJW ItemInstance를 새로 만들어 강화/저주/감정 상태를 담을 수 있게 합니다.
+        /// </summary>
         public void Set(ItemBase itemData, InventoryController inventoryController)
         {
-            ItemData = itemData;
+            Set(CreateDefaultInstance(itemData), inventoryController);
+        }
+
+        /// <summary>
+        /// 이미 생성된 YJW ItemInstance를 UI에 연결합니다.
+        /// 드랍 아이템처럼 강화/저주/감정 상태가 있는 아이템은 이 경로로 들어와야 상태가 보존됩니다.
+        /// </summary>
+        public void Set(ItemInstance itemInstance, InventoryController inventoryController)
+        {
+            ItemInstance = itemInstance;
+            ItemBase itemData = ItemData;
+            if (itemData == null)
+            {
+                Debug.LogWarning("InventoryItem: ItemInstance에 ItemBase 데이터가 없어 표시할 수 없습니다.");
+                return;
+            }
 
             if (_image == null) _image = GetComponent<Image>();
 
@@ -51,6 +73,30 @@ namespace PrototypeRT
 
             // 손에 든 아이템이 raycast를 먹으면 장비 슬롯/퀵슬롯이 클릭을 받지 못한다.
             _image.raycastTarget = value;
+        }
+
+        /// <summary>
+        /// ItemBase 종류에 맞는 YJW ItemInstance 구현체를 만듭니다.
+        /// 장비/투척 무기는 전용 Instance가 데미지·방어력·투척 계산을 갖고 있으므로 가능한 한 구체 타입으로 생성합니다.
+        /// </summary>
+        public static ItemInstance CreateDefaultInstance(ItemBase itemData)
+        {
+            if (itemData == null)
+                return null;
+
+            ItemInstance instance = itemData switch
+            {
+                CloseWeapon => new WeaponInstance(),
+                ArmorData => new ArmorInstance(),
+                ThrowableWeapon => new ThrowableWeaponInstance(),
+                _ => new ItemInstance()
+            };
+
+            instance.data = itemData;
+            instance.enhanceLevel = 0;
+            instance.curse = null;
+            instance.isAnalyzed = false;
+            return instance;
         }
     }
 }
