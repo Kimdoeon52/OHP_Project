@@ -2,18 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Exit 도달(OnLevelComplete) → fade out → 다음 층 맵 재생성 → Safe Room 으로 플레이어 텔레포트 →
-/// 시야/타이머 리셋 → fade in. 씬 재시작 없이 진행.
-///
-/// 의존성:
-///   - MapGenerator: 새 층 생성
-///   - RunState: depth 증가 + 시드 보관
-///   - GridPlayer: 텔레포트 대상
-///   - ScreenFader: 화면 페이드 (없으면 즉시 전환)
-/// 이전 적은 EnemySpawner.Spawn 내부에서, Exit 마커는 MapGenerator.Generate 진입부에서 자체 정리됨.
-/// 단검(GridDagger) 만 여기서 정리.
-/// </summary>
 public class FloorTransitionController : MonoBehaviour
 {
     [Header("필수 의존성")]
