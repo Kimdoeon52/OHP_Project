@@ -152,11 +152,6 @@ namespace PrototypeRT
             UpdateHighlight();
         }
 
-        //public bool TryAddItem(ItemBase itemData)
-        //{
-        //    return TryAddItem(InventoryItem.CreateDefaultInstance(itemData));
-        //}
-
         public bool TryAddItem(ItemInstance itemInstance)
         {
             if (_selectedGrid == null || _selectedGrid.AcceptOnlyOneByOneItems)
@@ -314,11 +309,6 @@ namespace PrototypeRT
             RaiseInventoryChanged();
             return true;
         }
-
-        //public InventoryItem CreateItemView(ItemBase itemData, Transform parent, bool playerOwned)
-        //{
-        //    return CreateItemView(InventoryItem.CreateDefaultInstance(itemData), parent, playerOwned);
-        //}
 
         public InventoryItem CreateItemView(ItemInstance itemInstance, Transform parent, bool playerOwned)
         {

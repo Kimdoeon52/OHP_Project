@@ -377,7 +377,7 @@ public class DebugPlayer : MonoBehaviour
             return;
         }
 
-        bool added = targetInventory.TryAddItem(itemToAdd);
+        bool added = targetInventory.TryAddItem(itemToAdd.CreateInstance());
         Debug.Log($"[DebugPlayer] 인벤토리 아이템 추가: {itemToAdd.Name}, 성공 {added}");
         RefreshStatsUI();
     }
