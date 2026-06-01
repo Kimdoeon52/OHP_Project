@@ -49,15 +49,18 @@ public class GridPlayerInput : MonoBehaviour
         if (_player.Health.IsDead) return;
         // 한 칸 이동 보간 중에는 다음 입력을 막아 턴 처리와 위치가 어긋나지 않게 한다.
         if (_player.Movement.IsMoving) return;
-        if (_player.ActionDelay != null && !_player.ActionDelay.CanAct) return;
         if (TimeSystem.Instance.TimeRemaining <= 0f) return;
+        bool canAct = _player.ActionDelay == null || _player.ActionDelay.CanAct;
+        bool canMove = canAct || _player.Movement.IgnoresActionDelayForMovement;
 
         // 이동 (단일 키 처리 — 동시 입력 시 위 우선)
-        if (TryGetHeldMoveDirection(out Vector2Int moveDirection))
+        if (canMove && TryGetHeldMoveDirection(out Vector2Int moveDirection))
         {
             _player.Movement.TryMove(moveDirection);
             return;
         }
+
+        if (!canAct) return;
 
         // 좌클릭 근접 공격
         if (Input.GetMouseButtonDown(0))

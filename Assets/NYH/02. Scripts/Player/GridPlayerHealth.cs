@@ -145,7 +145,10 @@ public class GridPlayerHealth : PersistentSingleton<GridPlayerHealth>, IDamageab
 
         float actionDelay = _player.Config.potionTimeDealy;
         _player.ActionDelay?.StartDelay(actionDelay);
-        TurnManager.Instance.OnPlayerActionCompleted(actionDelay);
+        if (_player.Movement != null && _player.Movement.IgnoresActionDelayForMovement)
+            TurnManager.Instance.OnPlayerActionCompletedWithoutEnemyTurns(actionDelay);
+        else
+            TurnManager.Instance.OnPlayerActionCompleted(actionDelay);
     }
 
     private IEnumerator RegenOverTime()

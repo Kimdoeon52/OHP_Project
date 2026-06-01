@@ -1,0 +1,713 @@
+fileFormatVersion: 2
+guid: c29a80298fa651840b7b401160d65667
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 4270706488877227428
+    second: Die-Photoroom_0
+  - first:
+      213: -8061791823443901889
+    second: Die-Photoroom_1
+  - first:
+      213: 8135679609451917695
+    second: Die-Photoroom_2
+  - first:
+      213: 8733119799413296665
+    second: Die-Photoroom_3
+  - first:
+      213: 7305666323490565224
+    second: Die-Photoroom_4
+  - first:
+      213: -1216558584878921788
+    second: Die-Photoroom_5
+  - first:
+      213: 4192425221355532673
+    second: Die-Photoroom_6
+  - first:
+      213: 3365138982679040488
+    second: Die-Photoroom_7
+  - first:
+      213: 4009772503512957527
+    second: Die-Photoroom_8
+  - first:
+      213: -1285565347079464272
+    second: Die-Photoroom_9
+  - first:
+      213: 8093555932291252477
+    second: Die-Photoroom_10
+  - first:
+      213: 128003191612204121
+    second: Die-Photoroom_11
+  - first:
+      213: 5218815566293369087
+    second: Die-Photoroom_12
+  - first:
+      213: 6681588481678582968
+    second: Die-Photoroom_13
+  - first:
+      213: -2775772541859658002
+    second: Die-Photoroom_14
+  - first:
+      213: 8423928634364113560
+    second: Die-Photoroom_15
+  - first:
+      213: -324635659940840177
+    second: Die-Photoroom_16
+  - first:
+      213: 6654523868441677270
+    second: Die-Photoroom_17
+  - first:
+      213: -6428832759710959426
+    second: Die-Photoroom_18
+  - first:
+      213: 121813691184946984
+    second: Die-Photoroom_19
+  - first:
+      213: 7931799640789378228
+    second: Die-Photoroom_20
+  - first:
+      213: -2382868439762149050
+    second: Die-Photoroom_21
+  - first:
+      213: 5442477283891579854
+    second: Die-Photoroom_22
+  - first:
+      213: 8553081199155570314
+    second: Die-Photoroom_23
+  - first:
+      213: 2779621124624692021
+    second: Die-Photoroom_24
+  - first:
+      213: -5057904388221781445
+    second: Die-Photoroom_25
+  - first:
+      213: 839686539764303217
+    second: Die-Photoroom_26
+  - first:
+      213: -1973023407854496672
+    second: Die-Photoroom_27
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 3
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Die-Photoroom_0
+      rect:
+        serializedVersion: 2
+        x: 98
+        y: 354
+        width: 87
+        height: 133
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4ad9b79ace8944b30800000000000000
+      internalID: 4270706488877227428
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_1
+      rect:
+        serializedVersion: 2
+        x: 407
+        y: 352
+        width: 76
+        height: 138
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f324a7ebc03ce1090800000000000000
+      internalID: -8061791823443901889
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_2
+      rect:
+        serializedVersion: 2
+        x: 711
+        y: 352
+        width: 71
+        height: 139
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f7135c7008db7e070800000000000000
+      internalID: 8135679609451917695
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_4
+      rect:
+        serializedVersion: 2
+        x: 1015
+        y: 352
+        width: 68
+        height: 140
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 86c603b60d0f26560800000000000000
+      internalID: 7305666323490565224
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_5
+      rect:
+        serializedVersion: 2
+        x: 1314
+        y: 354
+        width: 71
+        height: 136
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c707d3a96aed1fe0800000000000000
+      internalID: -1216558584878921788
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_6
+      rect:
+        serializedVersion: 2
+        x: 1613
+        y: 352
+        width: 73
+        height: 136
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 181f842c68c7e2a30800000000000000
+      internalID: 4192425221355532673
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_7
+      rect:
+        serializedVersion: 2
+        x: 1910
+        y: 356
+        width: 80
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8e15762531063be20800000000000000
+      internalID: 3365138982679040488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_8
+      rect:
+        serializedVersion: 2
+        x: 2206
+        y: 352
+        width: 92
+        height: 130
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 752c406e8d295a730800000000000000
+      internalID: 4009772503512957527
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_10
+      rect:
+        serializedVersion: 2
+        x: 95
+        y: 186
+        width: 109
+        height: 124
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df0c9f92d36125070800000000000000
+      internalID: 8093555932291252477
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_12
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 183
+        width: 119
+        height: 132
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ff002396b15fc6840800000000000000
+      internalID: 5218815566293369087
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_13
+      rect:
+        serializedVersion: 2
+        x: 680
+        y: 183
+        width: 122
+        height: 132
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b42bc1d255c9bc50800000000000000
+      internalID: 6681588481678582968
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_14
+      rect:
+        serializedVersion: 2
+        x: 988
+        y: 186
+        width: 105
+        height: 122
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ee60c2174997a79d0800000000000000
+      internalID: -2775772541859658002
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_15
+      rect:
+        serializedVersion: 2
+        x: 1287
+        y: 183
+        width: 106
+        height: 122
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 892b388067ec7e470800000000000000
+      internalID: 8423928634364113560
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_16
+      rect:
+        serializedVersion: 2
+        x: 1593
+        y: 183
+        width: 94
+        height: 120
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f0d3dc75699ae7bf0800000000000000
+      internalID: -324635659940840177
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_17
+      rect:
+        serializedVersion: 2
+        x: 1894
+        y: 183
+        width: 90
+        height: 121
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6dd03df733e995c50800000000000000
+      internalID: 6654523868441677270
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_19
+      rect:
+        serializedVersion: 2
+        x: 2193
+        y: 183
+        width: 94
+        height: 122
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82f9bdf18e4c0b100800000000000000
+      internalID: 121813691184946984
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_21
+      rect:
+        serializedVersion: 2
+        x: 91
+        y: 0
+        width: 98
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 641ec7d67c95eeed0800000000000000
+      internalID: -2382868439762149050
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_22
+      rect:
+        serializedVersion: 2
+        x: 391
+        y: 17
+        width: 99
+        height: 117
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ecb8d741140978b40800000000000000
+      internalID: 5442477283891579854
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_23
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 15
+        width: 112
+        height: 107
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a866db2d806a2b670800000000000000
+      internalID: 8553081199155570314
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_25
+      rect:
+        serializedVersion: 2
+        x: 963
+        y: 12
+        width: 129
+        height: 89
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b3ab620c1c6bec9b0800000000000000
+      internalID: -5057904388221781445
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_26
+      rect:
+        serializedVersion: 2
+        x: 1254
+        y: 7
+        width: 155
+        height: 80
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1750455857a27ab00800000000000000
+      internalID: 839686539764303217
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Die-Photoroom_27
+      rect:
+        serializedVersion: 2
+        x: 1541
+        y: 5
+        width: 169
+        height: 61
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0645d410aa96e94e0800000000000000
+      internalID: -1973023407854496672
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: b5588017a7f845d44b1d7998f70d7d82
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Die-Photoroom_0: 4270706488877227428
+      Die-Photoroom_1: -8061791823443901889
+      Die-Photoroom_10: 8093555932291252477
+      Die-Photoroom_11: 128003191612204121
+      Die-Photoroom_12: 5218815566293369087
+      Die-Photoroom_13: 6681588481678582968
+      Die-Photoroom_14: -2775772541859658002
+      Die-Photoroom_15: 8423928634364113560
+      Die-Photoroom_16: -324635659940840177
+      Die-Photoroom_17: 6654523868441677270
+      Die-Photoroom_18: -6428832759710959426
+      Die-Photoroom_19: 121813691184946984
+      Die-Photoroom_2: 8135679609451917695
+      Die-Photoroom_20: 7931799640789378228
+      Die-Photoroom_21: -2382868439762149050
+      Die-Photoroom_22: 5442477283891579854
+      Die-Photoroom_23: 8553081199155570314
+      Die-Photoroom_24: 2779621124624692021
+      Die-Photoroom_25: -5057904388221781445
+      Die-Photoroom_26: 839686539764303217
+      Die-Photoroom_27: -1973023407854496672
+      Die-Photoroom_3: 8733119799413296665
+      Die-Photoroom_4: 7305666323490565224
+      Die-Photoroom_5: -1216558584878921788
+      Die-Photoroom_6: 4192425221355532673
+      Die-Photoroom_7: 3365138982679040488
+      Die-Photoroom_8: 4009772503512957527
+      Die-Photoroom_9: -1285565347079464272
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

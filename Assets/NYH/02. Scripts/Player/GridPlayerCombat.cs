@@ -26,7 +26,7 @@ public class GridPlayerCombat : MonoBehaviour
 
     [Header("Attack Speed")]
     [Tooltip("GDD 기준 근접 공격 기본 딜레이입니다. AttackSpeed 1일 때 이 값을 그대로 사용합니다.")]
-    [SerializeField, Min(0.01f)] private float baseMeleeCooldown = 1.0f;
+    [SerializeField, Min(0.001f)] private float baseMeleeCooldown = 1.0f;
 
     [Tooltip("AttackSpeed가 1보다 높을 때, 1 증가당 근접 공격 쿨다운과 행동 딜레이를 줄이는 비율입니다.")]
     [SerializeField, Min(0f)] private float attackSpeedCooldownMultiplier = 0.12f;
@@ -116,7 +116,7 @@ public class GridPlayerCombat : MonoBehaviour
             OnAttackPerformed?.Invoke(dir);
             float actionDelay = GetModifiedMeleeTimeCost();
             _player.ActionDelay?.StartDelay(actionDelay);
-            TurnManager.Instance.OnPlayerActionCompleted(actionDelay);
+            CompletePlayerAction(actionDelay);
         }
         // 적 없으면 빈 휘두름 — 시간 소모 X (회전만 함)
     }
@@ -176,7 +176,15 @@ public class GridPlayerCombat : MonoBehaviour
         OnAttackPerformed?.Invoke(facingDir);
         float actionDelay = _player.Config.throwTimeDelay;
         _player.ActionDelay?.StartDelay(actionDelay);
-        TurnManager.Instance.OnPlayerActionCompleted(actionDelay);
+        CompletePlayerAction(actionDelay);
+    }
+
+    private void CompletePlayerAction(float actionDelay)
+    {
+        if (_player.Movement != null && _player.Movement.IgnoresActionDelayForMovement)
+            TurnManager.Instance.OnPlayerActionCompletedWithoutEnemyTurns(actionDelay);
+        else
+            TurnManager.Instance.OnPlayerActionCompleted(actionDelay);
     }
 
     /// <summary>

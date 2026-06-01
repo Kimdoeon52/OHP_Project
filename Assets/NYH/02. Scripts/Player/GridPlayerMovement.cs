@@ -2,6 +2,12 @@ using System;
 using System.Collections;
 using UnityEngine;
 
+public enum PlayerGridMoveMode
+{
+    LegacyActionDelay,
+    ContinuousGridMove
+}
+
 /// <summary>
 /// 플레이어의 4방향 그리드 이동을 담당한다.
 /// 논리 위치(GridPosition)는 이동 시작 시점에 먼저 바꾸고,
@@ -35,11 +41,14 @@ public class GridPlayerMovement : MonoBehaviour
     [SerializeField, Min(0f)] private float moveSpeedDurationMultiplier = 0.15f;
 
     [Tooltip("MoveSpeed가 높아도 한 칸 이동 시간이 이 값보다 짧아지지 않게 한다.")]
-    [SerializeField, Min(0.01f)] private float minMoveDuration = 0.06f;
+    [SerializeField, Min(0.0001f)] private float minMoveDuration = 0.001f;
+
+    [Header("Move Mode")]
+    [SerializeField] private PlayerGridMoveMode moveMode = PlayerGridMoveMode.ContinuousGridMove;
 
     [Header("Move Action Delay")]
     [Tooltip("GDD 기준 최소 이동 행동 딜레이입니다. 레벨/MoveSpeed가 높아져도 이 값보다 낮아지지 않습니다.")]
-    [SerializeField, Min(0.01f)] private float minMoveActionDelay = 0.3f;
+    [SerializeField, Min(0.0005f)] private float minMoveActionDelay = 0.3f;
 
     [Tooltip("GDD 8.3 기준 레벨별 이동 행동 딜레이입니다. index 0은 1레벨, index 9는 10레벨입니다.")]
     [SerializeField] private float[] levelMoveActionDelays =
@@ -70,6 +79,8 @@ public class GridPlayerMovement : MonoBehaviour
     /// 이 값이 이동 중 입력 잠금의 기준이다.
     /// </summary>
     public bool IsMoving { get; private set; }
+    public bool UsesActionDelayForMovement => moveMode == PlayerGridMoveMode.LegacyActionDelay;
+    public bool IgnoresActionDelayForMovement => moveMode == PlayerGridMoveMode.ContinuousGridMove;
 
     /// <summary>
     /// 현재 진행 중인 한 칸 이동에 실제 적용된 보간 시간.
@@ -111,12 +122,25 @@ public class GridPlayerMovement : MonoBehaviour
     public bool ShouldKeepMoveAnimationAfterMove()
     {
         if (_player == null || _player.Input == null) return false;
-        if (_player.ActionDelay == null || !_player.ActionDelay.CanAct) return false;
+        if (UsesActionDelayForMovement && (_player.ActionDelay == null || !_player.ActionDelay.CanAct)) return false;
         if (GridSystem.Instance == null) return false;
         if (!_player.Input.TryGetHeldMoveDirection(out Vector2Int heldDirection)) return false;
 
         Vector2Int nextCell = _player.GridPosition + heldDirection;
-        return GridSystem.Instance.IsWalkable(nextCell);
+        return CanContinueMoveAnimationInto(nextCell);
+    }
+
+    private bool CanContinueMoveAnimationInto(Vector2Int cell)
+    {
+        if (!GridSystem.Instance.IsWalkable(cell)) return false;
+        if (TurnManager.Instance != null && TurnManager.Instance.GetEntityAt(cell) != null) return false;
+        return !GridSystem.Instance.IsCellOccupied(cell);
+    }
+
+    private void FinishMoveVisual()
+    {
+        OnMoveFinished?.Invoke();
+        OnMoveSpeedChanged?.Invoke(1f);
     }
 
     /// <summary>
@@ -129,7 +153,7 @@ public class GridPlayerMovement : MonoBehaviour
         // 그리드 이동 중 입력 잠금은 여기서 1차로 걸린다.
         // GridPlayerInput에서도 IsMoving을 보고 입력 자체를 막아 중복 호출을 줄인다.
         if (IsMoving) return;
-        if (_player.ActionDelay != null && !_player.ActionDelay.CanAct) return;
+        if (UsesActionDelayForMovement && _player.ActionDelay != null && !_player.ActionDelay.CanAct) return;
 
         Facing = direction;
 
@@ -139,13 +163,25 @@ public class GridPlayerMovement : MonoBehaviour
         IGridEntity entity = TurnManager.Instance.GetEntityAt(target);
         if (entity is IDamageable damageable && (UnityEngine.Object)damageable != _player)
         {
+            FinishMoveVisual();
             _player.Combat.TryMeleeAt(target);
             return;
         }
         if (!GridSystem.Instance.IsWalkable(target))
+        {
+            FinishMoveVisual();
             return;
+        }
         if (TurnManager.Instance.GetEntityAt(target) != null)
+        {
+            FinishMoveVisual();
             return;
+        }
+        if (GridSystem.Instance.IsCellOccupied(target))
+        {
+            FinishMoveVisual();
+            return;
+        }
         float totalCost = GetMoveActionDelay();
         StatusController statusController = _player.GetComponent<StatusController>();
         if (statusController != null)
@@ -192,16 +228,19 @@ public class GridPlayerMovement : MonoBehaviour
         IsMoving = false;
         _moveCoroutine = null;
 
-        _player.ActionDelay?.StartDelay(totalCost);
+        if (UsesActionDelayForMovement)
+            _player.ActionDelay?.StartDelay(totalCost);
 
         bool keepMoveAnimation = ShouldKeepMoveAnimationAfterMove();
         if (!keepMoveAnimation)
         {
-            OnMoveFinished?.Invoke();
-            OnMoveSpeedChanged?.Invoke(1f);
+            FinishMoveVisual();
         }
 
-        TurnManager.Instance.OnPlayerActionCompleted(totalCost, skipEnemyTurnDelay);
+        if (UsesActionDelayForMovement)
+            TurnManager.Instance.OnPlayerActionCompleted(totalCost, skipEnemyTurnDelay);
+        else
+            TurnManager.Instance.OnPlayerActionCompletedWithoutEnemyTurns(totalCost);
     }
 
     private float GetMoveDuration()
@@ -285,7 +324,7 @@ public class GridPlayerMovement : MonoBehaviour
 
     private void OnValidate()
     {
-        minMoveActionDelay = Mathf.Max(0.01f, minMoveActionDelay);
+        minMoveActionDelay = Mathf.Max(0.0005f, minMoveActionDelay);
 
         if (levelMoveActionDelays == null || levelMoveActionDelays.Length == 0)
             return;

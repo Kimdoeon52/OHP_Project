@@ -1,0 +1,455 @@
+fileFormatVersion: 2
+guid: a1e9b661d8bdb5441aa286fe334c1971
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2375692598987717886
+    second: hit-Photoroom_0
+  - first:
+      213: 3702636458710731855
+    second: hit-Photoroom_1
+  - first:
+      213: -5017987037389714868
+    second: hit-Photoroom_2
+  - first:
+      213: -437958698595240249
+    second: hit-Photoroom_3
+  - first:
+      213: -8411065807199143233
+    second: hit-Photoroom_4
+  - first:
+      213: -8419295268590050017
+    second: hit-Photoroom_5
+  - first:
+      213: 143075116886417763
+    second: hit-Photoroom_6
+  - first:
+      213: -7709071274541315252
+    second: hit-Photoroom_7
+  - first:
+      213: 977613466281500136
+    second: hit-Photoroom_8
+  - first:
+      213: -2441820530193587039
+    second: hit-Photoroom_9
+  - first:
+      213: -4142552734196471243
+    second: hit-Photoroom_10
+  - first:
+      213: 3192887660830799104
+    second: hit-Photoroom_11
+  - first:
+      213: -3016477633087008047
+    second: hit-Photoroom_12
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: hit-Photoroom_0
+      rect:
+        serializedVersion: 2
+        x: 97
+        y: 178
+        width: 90
+        height: 160
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20300dd0b28d70fd0800000000000000
+      internalID: -2375692598987717886
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hit-Photoroom_1
+      rect:
+        serializedVersion: 2
+        x: 388
+        y: 181
+        width: 99
+        height: 140
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4c0dd5ed38626330800000000000000
+      internalID: 3702636458710731855
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hit-Photoroom_2
+      rect:
+        serializedVersion: 2
+        x: 676
+        y: 173
+        width: 117
+        height: 140
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c4a0fdc30678c5ab0800000000000000
+      internalID: -5017987037389714868
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hit-Photoroom_3
+      rect:
+        serializedVersion: 2
+        x: 969
+        y: 177
+        width: 116
+        height: 136
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c630ff42ee0ce9f0800000000000000
+      internalID: -437958698595240249
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hit-Photoroom_4
+      rect:
+        serializedVersion: 2
+        x: 1266
+        y: 181
+        width: 119
+        height: 134
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fbaf57b4634e54b80800000000000000
+      internalID: -8411065807199143233
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hit-Photoroom_5
+      rect:
+        serializedVersion: 2
+        x: 1569
+        y: 181
+        width: 110
+        height: 136
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f1520908f87a82b80800000000000000
+      internalID: -8419295268590050017
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hit-Photoroom_6
+      rect:
+        serializedVersion: 2
+        x: 1882
+        y: 178
+        width: 99
+        height: 141
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 361663e8f0e4cf100800000000000000
+      internalID: 143075116886417763
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hit-Photoroom_7
+      rect:
+        serializedVersion: 2
+        x: 2196
+        y: 171
+        width: 91
+        height: 167
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c4b0ccc2580e30590800000000000000
+      internalID: -7709071274541315252
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hit-Photoroom_8
+      rect:
+        serializedVersion: 2
+        x: 108
+        y: 0
+        width: 77
+        height: 156
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8edd859944e219d00800000000000000
+      internalID: 977613466281500136
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hit-Photoroom_9
+      rect:
+        serializedVersion: 2
+        x: 414
+        y: 16
+        width: 67
+        height: 140
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a42e844a29ec1ed0800000000000000
+      internalID: -2441820530193587039
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hit-Photoroom_10
+      rect:
+        serializedVersion: 2
+        x: 714
+        y: 12
+        width: 67
+        height: 144
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 53a65e68c32b286c0800000000000000
+      internalID: -4142552734196471243
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hit-Photoroom_11
+      rect:
+        serializedVersion: 2
+        x: 1014
+        y: 12
+        width: 69
+        height: 144
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0053c8f296a6f4c20800000000000000
+      internalID: 3192887660830799104
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hit-Photoroom_12
+      rect:
+        serializedVersion: 2
+        x: 1313
+        y: 15
+        width: 66
+        height: 141
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d210fe13915326d0800000000000000
+      internalID: -3016477633087008047
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 8055dddfcd2e97a4fa36b18e037ae4d0
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      hit-Photoroom_0: -2375692598987717886
+      hit-Photoroom_1: 3702636458710731855
+      hit-Photoroom_10: -4142552734196471243
+      hit-Photoroom_11: 3192887660830799104
+      hit-Photoroom_12: -3016477633087008047
+      hit-Photoroom_2: -5017987037389714868
+      hit-Photoroom_3: -437958698595240249
+      hit-Photoroom_4: -8411065807199143233
+      hit-Photoroom_5: -8419295268590050017
+      hit-Photoroom_6: 143075116886417763
+      hit-Photoroom_7: -7709071274541315252
+      hit-Photoroom_8: 977613466281500136
+      hit-Photoroom_9: -2441820530193587039
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

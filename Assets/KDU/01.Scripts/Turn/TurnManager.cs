@@ -147,11 +147,21 @@ public class TurnManager : MonoBehaviour
         OnPlayerActionCompleted(timeCost, false);
     }
 
+    public void OnPlayerActionCompletedWithoutEnemyTurns(float timeCost)
+    {
+        CompletePlayerAction(timeCost, false, false);
+    }
+
     /// <summary>
     /// 플레이어 행동 완료 후 행동 딜레이 알림과 적 턴을 처리한다.
     /// skipEnemyTurnDelay가 true면 적 행동 자체는 유지하되, 고속 이동이 끊겨 보이지 않도록 턴 사이 대기만 생략한다.
     /// </summary>
     public void OnPlayerActionCompleted(float timeCost, bool skipEnemyTurnDelay)
+    {
+        CompletePlayerAction(timeCost, skipEnemyTurnDelay, true);
+    }
+
+    private void CompletePlayerAction(float timeCost, bool skipEnemyTurnDelay, bool processEnemyTurns)
     {
         if (_processingTurn) return;
 
@@ -165,6 +175,7 @@ public class TurnManager : MonoBehaviour
 
         // 시간 소진으로 이미 게임오버 처리된 경우 적 턴 차단함 (세이프룸/테스트씬 등 타이머 정지 중에도 적 행동 허용)
         if (TimeSystem.Instance != null && TimeSystem.Instance.TimeRemaining <= 0f) return;
+        if (!processEnemyTurns) return;
 
         StartCoroutine(ProcessEnemyTurns(skipEnemyTurnDelay));
     }
