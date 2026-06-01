@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace PrototypeRT
 {
@@ -259,14 +259,14 @@ namespace PrototypeRT
         /// </summary>
         private static bool CanUseScrollOnTarget(InventoryScrollTargetKind kind, ItemInstance target)
         {
-            if (target == null || target.data == null)
-                return false;
+			if (target is not EquipmentInstance equip) return false;
+			if (equip.data == null) return false;
 
             return kind switch
             {
-                InventoryScrollTargetKind.Analyze => target.data.CanAnalyze && !target.isAnalyzed,
-                InventoryScrollTargetKind.Reinforce => target.data.CanEnhance && target.enhanceLevel < 15,
-                InventoryScrollTargetKind.Purify => target.data.CanCurse && target.curse != null,
+                InventoryScrollTargetKind.Analyze => equip.data.CanAnalyze && !equip.isAnalyzed,
+                InventoryScrollTargetKind.Reinforce => equip.data.CanEnhance && equip.enhanceLevel < 15,
+                InventoryScrollTargetKind.Purify => equip.data.CanCurse && equip.curse != null,
                 _ => false
             };
         }

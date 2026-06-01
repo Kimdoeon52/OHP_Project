@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "ThrowableWeapon", menuName = "Item/Equipment/Throwable/ThrowableWeapon")]
 public class ThrowableWeapon : ItemBase
@@ -19,4 +19,9 @@ public class ThrowableWeapon : ItemBase
     public int CanUseStrength => canUseStrength;
     public PoolType PoolType => poolType;
     public int Durability => durability;
+
+	public override ItemInstance CreateInstance()
+	{
+		return new WeaponInstance { data = this };
+	}
 }

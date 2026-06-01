@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "ArmorData", menuName = "Item/Equipment/Armor/Armor Data")]
 public class ArmorData : ItemBase
@@ -14,4 +14,9 @@ public class ArmorData : ItemBase
     public int MinEnhanceBonus => minEnhanceBonus;
     public int MaxEnhanceBonus => maxEnhanceBonus;
     public int CanUseStrength => canUseStrength;
+
+	public override ItemInstance CreateInstance()
+	{
+		return new WeaponInstance { data = this };
+	}
 }

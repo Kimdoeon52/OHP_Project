@@ -5,10 +5,11 @@ public class PurifyScroll : ItemBase
 {
     public override void Use(ItemInstance targetItem)
     {
-        if (targetItem == null || targetItem.data == null || targetItem.data.CanCurse == false || targetItem.curse == null)
+		if (targetItem is not EquipmentInstance equip) return;
+		if (equip.data == null || equip.data.CanCurse == false || equip.curse == null)
             return;
-        
-        targetItem.Purify();
+
+		equip.Purify();
 
     }
 }

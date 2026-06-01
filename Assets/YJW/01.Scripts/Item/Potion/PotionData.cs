@@ -46,7 +46,12 @@ public class PotionData : ItemBase
         }
     }
 
-    private void AddNYHStat(NYHStatType type)
+	public override ItemInstance CreateInstance()
+	{
+		return new WeaponInstance { data = this };
+	}
+
+	private void AddNYHStat(NYHStatType type)
     {
         if (NYHPlayerStats.Instance == null)
         {

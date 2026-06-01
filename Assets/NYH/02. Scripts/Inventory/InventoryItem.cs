@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace PrototypeRT
@@ -33,10 +33,10 @@ namespace PrototypeRT
         /// ScriptableObject 원본 데이터만 있는 아이템을 UI에 연결합니다.
         /// 내부에서는 YJW ItemInstance를 새로 만들어 강화/저주/감정 상태를 담을 수 있게 합니다.
         /// </summary>
-        public void Set(ItemBase itemData, InventoryController inventoryController)
-        {
-            Set(CreateDefaultInstance(itemData), inventoryController);
-        }
+        //public void Set(ItemBase itemData, InventoryController inventoryController)
+        //{
+        //    Set(CreateDefaultInstance(itemData), inventoryController);
+        //}
 
         /// <summary>
         /// 이미 생성된 YJW ItemInstance를 UI에 연결합니다.
@@ -79,24 +79,24 @@ namespace PrototypeRT
         /// ItemBase 종류에 맞는 YJW ItemInstance 구현체를 만듭니다.
         /// 장비/투척 무기는 전용 Instance가 데미지·방어력·투척 계산을 갖고 있으므로 가능한 한 구체 타입으로 생성합니다.
         /// </summary>
-        public static ItemInstance CreateDefaultInstance(ItemBase itemData)
-        {
-            if (itemData == null)
-                return null;
+        //public static ItemInstance CreateDefaultInstance(ItemBase itemData)
+        //{
+        //    if (itemData == null)
+        //        return null;
 
-            ItemInstance instance = itemData switch
-            {
-                CloseWeapon => new WeaponInstance(),
-                ArmorData => new ArmorInstance(),
-                ThrowableWeapon => new ThrowableWeaponInstance(),
-                _ => new ItemInstance()
-            };
+        //    ItemInstance instance = itemData switch
+        //    {
+        //        CloseWeapon => new WeaponInstance(),
+        //        ArmorData => new ArmorInstance(),
+        //        ThrowableWeapon => new ThrowableWeaponInstance(),
+        //        _ => new ItemInstance()
+        //    };
 
-            instance.data = itemData;
-            instance.enhanceLevel = 0;
-            instance.curse = null;
-            instance.isAnalyzed = false;
-            return instance;
-        }
+        //    instance.data = itemData;
+        //    instance.enhanceLevel = 0;
+        //    instance.curse = null;
+        //    instance.isAnalyzed = false;
+        //    return instance;
+        //}
     }
 }

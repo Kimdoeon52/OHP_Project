@@ -45,4 +45,5 @@ public class ItemBase : ScriptableObject
     public virtual void Use() { }
     public virtual void Use(ItemInstance target) { }
     public virtual string GetToolTipStats() { return ""; }
+	public virtual ItemInstance CreateInstance(){ return new ItemInstance { data = this }; }
 }

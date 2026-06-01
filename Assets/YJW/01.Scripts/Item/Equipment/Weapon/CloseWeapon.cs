@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "CloseWeapon", menuName = "Item/Equipment/Weapon/CloseWeapon")]
 public class CloseWeapon : ItemBase
@@ -16,4 +16,9 @@ public class CloseWeapon : ItemBase
     public int MaxEnhanceBonus => maxEnhanceBonus;
     public int CanUseStrength => canUseStrength;
     public float AttackSpeed => attackSpeed;
+
+	public override ItemInstance CreateInstance()
+	{
+		return new WeaponInstance { data = this };
+	}
 }

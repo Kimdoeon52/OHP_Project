@@ -8,13 +8,14 @@ public class ItemPickup : MonoBehaviour
 
     public ItemInstance item;
 
-    private void Start()
-    {
-        item = new ItemInstance
-        {
-            data = itemSO,
-            enhanceLevel = enhanceLevel,
-            curse = curse
-        };
-    }
+	private void Start()
+	{
+		item = itemSO switch
+		{
+			CloseWeapon => new WeaponInstance { data = itemSO, enhanceLevel = enhanceLevel, curse = curse },
+			ArmorData => new ArmorInstance { data = itemSO, enhanceLevel = enhanceLevel, curse = curse },
+			PotionData => new PotionInstance { data = itemSO, count = 1},
+			_ => new ItemInstance { data = itemSO }
+		};
+	}
 }
