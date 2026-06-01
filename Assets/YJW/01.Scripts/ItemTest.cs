@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 public class ItemTest : MonoBehaviour
 {
     [SerializeField] private FirePotion firePotion;
@@ -20,4 +20,6 @@ public class ItemTest : MonoBehaviour
             firePotion.Throw(targetPos);
         }
     }
+
+    
 }

@@ -11,13 +11,7 @@ public class ItemSpawner : MonoBehaviour
 		// 랜덤 SO 뽑기
 		ItemBase randomSO = itemPool.items[Random.Range(0, itemPool.items.Length)];
 
-		// Instance 생성 + 아이템 종류에 따라 강화/저주 결정
-		var instance = new ItemInstance
-		{
-			data = randomSO,
-			enhanceLevel = randomSO.CanEnhance ? RollEnhanceLevel() : 0,
-			curse        = randomSO.CanCurse   ? RollCurse()        : null
-		};
+		ItemInstance instance = randomSO.CreateInstance();
 
 		// 픽업 프리팹 스폰
 		var pickup = Instantiate(itemPickupPrefab, pos, Quaternion.identity);
