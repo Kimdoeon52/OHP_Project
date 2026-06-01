@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
@@ -50,10 +50,16 @@ public class BossBase : EnemyNormalBASE
 
     [SerializeField] protected BossHpBar hpBar;
 
+    [Header("보스방 전용 타일 설정")]
+    [SerializeField] protected GameObject bossMapPrefab; // 미리 그려놓은 보스방 프리팹 (Floor, Wall, Hazard 등 자식 타일맵 보유)
+ 
     private bool _patternDelayConverted; // patternDelay 초→ms 변환이 한 번만 일어나도록 가드
 
     protected virtual void OnEnable()
     {
+        maxHp = 100;
+        currentHp = maxHp;
+
         // 1) 핵심 시스템 초기화 — 이 블록은 절대 예외로 끊기면 안 됨 (이후 모든 패턴이 의존).
         cancelToken = new CancellationTokenSource();
         actionCases.Clear();
@@ -94,6 +100,12 @@ public class BossBase : EnemyNormalBASE
             Debug.Log($"<color=cyan>[보스전]</color> 제한 시간 {bossFightTimeLimit}초로 고정, 타이머 시작.");
         }
 
+        // 보스전 시작 시 보스방 전용 타일 배치로 자동 변경 (단독 테스트 씬에서만 수행하도록 예외 처리)
+        if (MapGenerator.Instance == null)
+        {
+            ChangeBossRoomTiles();
+        }
+ 
         WaitBossCoolTime().Forget();
     }
     protected async UniTask WaitBossCoolTime()
@@ -114,6 +126,13 @@ public class BossBase : EnemyNormalBASE
             Debug.Log($"<color=yellow>[디버그]  아야!!!!!!!!</color>");
             BossTakeDamage(10);
         }
+
+        // P 버튼을 누르면 타일배치가 바뀌도록 디버그/수동 변경 기능 제공
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            ChangeBossRoomTiles();
+        }
+
         if (isBossAttacking)
             return;
         PhaseState().Forget();
@@ -247,9 +266,9 @@ public class BossBase : EnemyNormalBASE
     // (3페이즈 이상 보스는 PhaseState를 오버라이드해서 자체 시간 분기 — 예: BossA)
     protected virtual async UniTask PhaseState() //첫 페이즈는 회피구간 두번째 페이즈는 공격구간
     {
-        if (bossLevel == 1 && TimeSystem.Instance != null
-            && TimeSystem.Instance.TimeRemaining <= phase2TimeThreshold)
+        if (bossLevel == 1 && currentHp <= maxHp * 0.5f)
         {
+            Debug.Log($"<color=orange>[보스 Phase 2 진입 조건 충족]</color> 체력 {currentHp} ≤ {maxHp * 0.5f}");
             EnterPhase2();
         }
 
@@ -374,6 +393,58 @@ public class BossBase : EnemyNormalBASE
                 Debug.Log($"<color=red>[보스 공격 히트]</color> 플레이어가 공격 칸 {c}에 있음. 데미지: {damage}");
                 player.TakeDamage(damage);
                 return;
+            }
+        }
+    }
+
+    // 보스방 전용 타일 배치로 지형 변경 함수
+    protected void ChangeBossRoomTiles()
+    {
+        if (bossMapPrefab == null)
+        {
+            Debug.LogWarning("[보스방 지형 변경] bossMapPrefab이 설정되지 않아 지형을 변경하지 않았습니다.");
+            return;
+        }
+
+        if (GridSystem.Instance == null || GridSystem.Instance.Tilemaps == null) return;
+        var tilemaps = GridSystem.Instance.Tilemaps;
+
+        tilemaps.ClearAll();
+
+        var tempRoot = Instantiate(bossMapPrefab);
+        try
+        {
+            var srcFloor = tempRoot.transform.Find("Floor")?.GetComponent<Tilemap>();
+            var srcWall = tempRoot.transform.Find("Wall")?.GetComponent<Tilemap>();
+            var srcHazard = tempRoot.transform.Find("Hazard")?.GetComponent<Tilemap>();
+
+            if (srcFloor != null && tilemaps.floor != null) CopyTilemapData(srcFloor, tilemaps.floor);
+            if (srcWall != null && tilemaps.wall != null) CopyTilemapData(srcWall, tilemaps.wall);
+            if (srcHazard != null && tilemaps.hazard != null) CopyTilemapData(srcHazard, tilemaps.hazard);
+            
+            Debug.Log("<color=green>[보스방 지형 변경]</color> 미리 그려놓은 보스방 프리팹 타일로 맵을 교체하였습니다.");
+        }
+        finally
+        {
+            if (Application.isPlaying) Destroy(tempRoot);
+            else DestroyImmediate(tempRoot);
+        }
+    }
+
+    private void CopyTilemapData(Tilemap src, Tilemap dest)
+    {
+        if (src == null || dest == null) return;
+        foreach (var pos in src.cellBounds.allPositionsWithin)
+        {
+            var tile = src.GetTile(pos);
+            if (tile == null) continue;
+            
+            dest.SetTile(pos, tile);
+            var mat = src.GetTransformMatrix(pos);
+            if (mat != Matrix4x4.identity)
+            {
+                dest.SetTransformMatrix(pos, mat);
+                dest.SetTileFlags(pos, src.GetTileFlags(pos));
             }
         }
     }
