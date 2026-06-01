@@ -61,7 +61,9 @@ public class HazardFeeling : FloorFeeling
 
         foreach (var room in rooms)
         {
-            if (room.type == RoomType.Safe || room.type == RoomType.Tunnel) continue;
+            // Safe/Tunnel + 보상 방(Special/Secret)은 Hazard 제외 — 보상 동선에 페널티 없음
+            if (room.type == RoomType.Safe || room.type == RoomType.Tunnel
+                || room.type == RoomType.Special || room.type == RoomType.Secret) continue;
             if (room.floorCells == null || room.floorCells.Count == 0) continue;
 
             roomCandidates.Clear();

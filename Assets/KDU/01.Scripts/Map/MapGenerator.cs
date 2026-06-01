@@ -44,6 +44,12 @@ public class MapGenerator : MonoBehaviour
     /// <summary>현재 층의 Hazard 셀 좌표 — 이동 처리부가 페널티 판정용으로 조회. Generate 호출마다 갱신.</summary>
     public HashSet<Vector2Int> HazardCells { get; } = new HashSet<Vector2Int>();
 
+    /// <summary>Secret 방으로 들어가는 숨은 문 셀 — 페인터가 wall 로 봉인, 추후 문/탐색 시스템이 개통. Generate 호출마다 갱신.</summary>
+    public HashSet<Vector2Int> SecretGatewayCells { get; } = new HashSet<Vector2Int>();
+
+    /// <summary>Special 방으로 들어가는 잠긴 문 셀 — 통행 가능하되 추후 문/열쇠 시스템이 잠금 처리. Generate 호출마다 갱신.</summary>
+    public HashSet<Vector2Int> LockedGatewayCells { get; } = new HashSet<Vector2Int>();
+
     /// <summary>depth -> 영역(1=하수구, 2=던전, 3=지옥)</summary>
     public static int AreaFromDepth(int depth)
     {
@@ -83,6 +89,8 @@ public class MapGenerator : MonoBehaviour
         CurrentSeed = runSeed;
         CurrentDepth = depth;
         HazardCells.Clear();
+        SecretGatewayCells.Clear();
+        LockedGatewayCells.Clear();
         DestroyCurrentExit();
         // 이전 층의 Feeling 효과 리셋
         if (VisionSystem.Instance != null) VisionSystem.Instance.VisionRadiusDelta = 0;
@@ -124,6 +132,10 @@ public class MapGenerator : MonoBehaviour
             Debug.LogError("[MapGenerator] Builder가 null 반환함");
             return null;
         }
+
+        // Special/Secret 막다른 가지의 입구 셀을 게이트 집합으로 노출.
+        // 페인터가 Secret 게이트를 wall 로 봉인하므로 Paint 전에 채워야 함.
+        DeriveGatewayCells(rooms);
 
         painter.Paint(rooms, tilemaps, feeling, Rng);
 
@@ -170,10 +182,36 @@ public class MapGenerator : MonoBehaviour
                     sizeCategory = PickNormalSize(rng)
                 });
             }
+
+            // 특수 방: 층당 Special 0~1, Secret 0~1 (GDD 6.2). 빌더가 막다른 가지로 따로 부착.
+            float specialChance = config != null ? config.specialRoomChance : 0f;
+            float secretChance = config != null ? config.secretRoomChance : 0f;
+            if (rng.Chance(specialChance))
+                rooms.Add(new RoomData { type = RoomType.Special, sizeCategory = SizeCategory.Normal });
+            if (rng.Chance(secretChance))
+                rooms.Add(new RoomData { type = RoomType.Secret, sizeCategory = SizeCategory.Normal });
         }
 
         rooms.Add(new RoomData { type = RoomType.Exit, sizeCategory = SizeCategory.Normal });
         return rooms;
+    }
+
+    /// <summary>
+    /// Secret = 숨은 문(페인터가 wall 봉인), Special = 잠긴 문 - 구현해야됨.
+    /// </summary>
+    private void DeriveGatewayCells(List<RoomData> rooms)
+    {
+        SecretGatewayCells.Clear();
+        LockedGatewayCells.Clear();
+        foreach (var r in rooms)
+        {
+            if (r.type == RoomType.Secret)
+                foreach (var c in r.gatewayCells)
+                    SecretGatewayCells.Add(c);
+            else if (r.type == RoomType.Special)
+                foreach (var c in r.gatewayCells)
+                    LockedGatewayCells.Add(c);
+        }
     }
 
     private static Vector2Int? FindExitCell(List<RoomData> rooms)
@@ -182,7 +220,9 @@ public class MapGenerator : MonoBehaviour
         if (exitRoom == null || exitRoom.floorCells == null || exitRoom.floorCells.Count == 0) return null;
 
         Vector2 center = Vector2.zero;
-        foreach (var c in exitRoom.floorCells) center += c;
+        foreach (var c in exitRoom.floorCells) 
+            center += c;
+        
         center /= exitRoom.floorCells.Count;
 
         Vector2Int best = exitRoom.floorCells[0];
@@ -190,7 +230,10 @@ public class MapGenerator : MonoBehaviour
         foreach (var c in exitRoom.floorCells)
         {
             float d = ((Vector2)c - center).sqrMagnitude;
-            if (d < bestDist) { bestDist = d; best = c; }
+            if (d < bestDist) 
+            { 
+                bestDist = d; best = c; 
+            }
         }
         return best;
     }
@@ -200,7 +243,9 @@ public class MapGenerator : MonoBehaviour
     // 결과: 출구 3×3 을 덮는 4×4 짝수 정렬 블록이 비워짐.
     private void ClearHazardAround(Vector2Int center)
     {
-        if (tilemaps == null || tilemaps.hazard == null) return;
+        if (tilemaps == null || tilemaps.hazard == null) 
+            return;
+        
         int minX = (center.x - 1) & ~1;
         int maxX = (center.x + 1) | 1;
         int minY = (center.y - 1) & ~1;
@@ -218,25 +263,28 @@ public class MapGenerator : MonoBehaviour
     private void SpawnExitMarker(Vector2Int? exitCell)
     {
         if (exitPrefab == null || !exitCell.HasValue) return;
-        Vector3 worldPos = GridSystem.Instance != null
-            ? GridSystem.Instance.GridToWorld(exitCell.Value)
-            : new Vector3(exitCell.Value.x, exitCell.Value.y, 0);
+        Vector3 worldPos = GridSystem.Instance != null ? GridSystem.Instance.GridToWorld(exitCell.Value) : new Vector3(exitCell.Value.x, exitCell.Value.y, 0);
         _currentExit = Instantiate(exitPrefab, worldPos, Quaternion.identity);
     }
 
     private void DestroyCurrentExit()
     {
-        if (_currentExit == null) return;
-        if (Application.isPlaying) Destroy(_currentExit.gameObject);
-        else DestroyImmediate(_currentExit.gameObject);
+        if (_currentExit == null) 
+            return;
+        if (Application.isPlaying) 
+            Destroy(_currentExit.gameObject);
+        else 
+            DestroyImmediate(_currentExit.gameObject);
         _currentExit = null;
     }
 
     private static SizeCategory PickNormalSize(DungeonRandom rng)
     {
         float v = rng.Value();
-        if (v < 0.7f) return SizeCategory.Normal;
-        if (v < 0.95f) return SizeCategory.Large;
+        if (v < 0.7f) 
+            return SizeCategory.Normal;
+        if (v < 0.95f) 
+            return SizeCategory.Large;
         return SizeCategory.Giant;
     }
 }

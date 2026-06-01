@@ -45,6 +45,14 @@ public class DefaultPainter : ScriptableObject, IRegionPainter
             foreach (var c in room.floorCells) floorSet.Add(c);
         }
 
+        // Secret 방 입구는 숨은 문 — floor 에서 빼서 wall 로 봉인(추후 문/탐색 시스템이 개통).
+        // wall 산출/dissolve 전에 제거해야 벽으로 잡히고 다시 뚫리지 않음.
+        HashSet<Vector2Int> secretGates = MapGenerator.Instance != null
+            ? MapGenerator.Instance.SecretGatewayCells
+            : null;
+        if (secretGates != null)
+            foreach (var g in secretGates) floorSet.Remove(g);
+
         var wallSet = new HashSet<Vector2Int>();
         foreach (var c in floorSet)
         {
@@ -65,6 +73,8 @@ public class DefaultPainter : ScriptableObject, IRegionPainter
             toDissolve.Clear();
             foreach (var w in wallSet)
             {
+                // Secret 게이트는 floor 사이에 끼어도 뚫지 않음 — 봉인 유지.
+                if (secretGates != null && secretGates.Contains(w)) continue;
                 bool hSandwich =
                     floorSet.Contains(new Vector2Int(w.x - 1, w.y)) &&
                     floorSet.Contains(new Vector2Int(w.x + 1, w.y));

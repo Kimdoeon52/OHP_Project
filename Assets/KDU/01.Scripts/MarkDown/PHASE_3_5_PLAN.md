@@ -18,7 +18,38 @@
 
 ---
 
-## Phase 3 — Feeling 시스템 (3종)
+## KDU 맵 작업 잔여 우선순위 (실제 진행 기준 — 2026-06)
+
+> 아래는 본 문서의 Phase 3/4/5 를 **"KDU 맵 담당이 실제로 남은 일"** 관점으로 재정렬한 뷰.
+> 원래의 3→4→5 순차 틀은 KDU 입장의 우선순위와 어긋남 — **스폰(적/아이템)은 타팀 소유**라 KDU 에겐 빌드가 아니라 *연동점*이고, Phase 5 인프라(빌더/풀)는 이미 끝나 있음.
+> 상세 설계·검증 기준은 아래 각 Phase 섹션 그대로 참조.
+
+### 상태 범례
+✅ 완료 · 🔜 진행/예정(KDU) · ⏳ 블로킹 · 🤝 타팀 소유(KDU 는 연동만)
+
+### 우선순위 (KDU)
+1. ✅ **Special / Secret 방 배치 + 게이트 데이터 (① 단계 완료)** — 막다른 가지 배치 + `SecretGatewayCells`/`LockedGatewayCells` 노출 + Secret 게이트 wall 봉인까지 구현. Phase 5 Q3/Q4 의 *콘텐츠*(방 안 보상)는 별건으로 남음. → 아래 'Special/Secret 레이아웃 설계' 절
+2. 🔜 **문 시스템 → 열쇠 연계** — ①의 게이트 데이터(`SecretGatewayCells`/`LockedGatewayCells`)를 입력으로 잠긴문/숨은문 오브젝트 + 상태 + 통행 판정 → 그 뒤 스페셜 열쇠 드랍·1초 개방(GDD 9.15)·탐색 특성(GDD 8.6)
+3. 🔜 **영역 페인터 3종** (Sewer/Dungeon/Hell) — Phase 5 Q2. 블로커 없음, 출품 비주얼 핵심
+4. 🔜 **TrapsFeeling** — Feeling 3종 마무리. 단 몬스터 -1 은 🤝 KKH `EnemySpawner` 연동 필요
+5. 🤝 **적 스폰** — ✅ KKH 완료(`EnemySpawner`/`RoomSpawnRule`/`EnemySpawnTable`/`FloorSpawnConfig` + 적 9종, 마법사 스켈레톤 LOS 포함). MapGenerator 가 이미 `Spawner.Spawn` 호출 연결 → KDU 는 **연동·검증만**
+6. ⏳ **아이템 스폰** — 🤝 YJW `ItemSpawner` 존재하나 **아이템 구현 블로킹** + MapGenerator 미연동. **아이템 구현 후 차순위**
+
+### 이미 완료된 KDU 인프라 (재확인)
+✅ MapGenerator 파이프라인 + 빌더/페인터/Feeling 풀 선택 · ✅ LoopBuilder / FigureEightBuilder / BuilderUtils · ✅ HazardFeeling / DarkFeeling / FloorFeelingPool · ✅ DefaultPainter · ✅ BossRoomLoader 분기
+
+### Special/Secret 레이아웃 설계 (Phase 5 Q3/Q4 의 빈칸 — 배치/연결)
+- **원칙**: 사이클에 끼우지 않고 **호스트 방 1곳에 터널 1개(막다른 가지)** + 빈 공간 배치 → "흐름에서 벗어나 따로 빠진" 느낌. 메인 동선(Safe→Exit)에 영향 0.
+- **타입별 배치**: **Special** = 메인 방 옆 *짧은* 가지(잠긴문이 동선에서 보여 열쇠 탐색 동기부여) / **Secret** = 링 바깥·중심 빈공간으로 *긴* 복도(숨은 문, 깊숙이).
+- **단계화**: ① 배치 + 게이트 데이터 노출 → ② 문 시스템 → ③ 열쇠 연계. (이번 작업 = ①)
+- **신규 코드**: `BuilderUtils.AttachBranchRoom` + `Overlaps`(충돌검사). Loop/FigureEight 둘 다 루프 완성 직후 한 줄 호출(빌더 무관 → "새 빌더도 같은 방식").
+- **Initialize**: 층마다 Special 0~1 / Secret 0~1 생성(확률은 `GameConfig` const, 보스층 제외).
+- **Paint**: Secret 게이트 셀 = **wall 강제**(DefaultPainter wall-dissolve 제외 + dissolve 이후 강제 wall). Special 게이트 셀 = 통행 가능. 둘 다 게이트 셀 집합을 `MapGenerator` 에 노출(Hazard 패턴 동일).
+- **결정론**: 모든 무작위 `DungeonRandom`. 막다른 가지라 메인 연결성 검증 불변(Secret 은 발견 전 봉인 — 그래프 기준 유지).
+
+---
+
+## Phase 3 — Feeling 시스템 (3종)  *(✅ Hazard/Dark · 🔜 Traps)*
 
 ### 작업 항목
 
@@ -79,7 +110,7 @@
 
 ---
 
-## Phase 4 — 스폰 통합
+## Phase 4 — 스폰 통합  *(🤝 적=KKH 완료 · ⏳ 아이템=YJW·아이템 구현 후 — KDU 는 연동점)*
 
 ### 작업 항목
 
@@ -184,7 +215,7 @@ public abstract class RoomSpawnRule : ScriptableObject {
 
 ---
 
-## Phase 5 — 다양성 / 폴리싱
+## Phase 5 — 다양성 / 폴리싱  *(✅ 빌더/풀/FigureEight 완료 · 🔜 영역 페인터/Special/Secret 잔여)*
 
 ### 작업 항목
 
@@ -296,6 +327,8 @@ public abstract class RoomSpawnRule : ScriptableObject {
 ---
 
 ## 작업 순서 (권장)
+
+> ⚠️ 아래는 원래의 Phase 순차 기준. **KDU 실제 우선순위는 상단 'KDU 맵 작업 잔여 우선순위' 섹션을 따른다** (스폰은 타팀 완료/블로킹이라 순차 의존 아님).
 
 1. **Phase 3 시작 전**: Q1~Q3 의사결정 → 본 문서 업데이트
 2. **Phase 3**:

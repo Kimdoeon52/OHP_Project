@@ -29,13 +29,18 @@ public class LoopBuilder : ScriptableObject, ILayoutBuilder
         foreach (var r in rooms) AssignSize(r, rng);
 
         var loopOrder = BuildLoopOrder(rooms);
-        if (loopOrder == null) return rooms;
+        if (loopOrder == null) 
+            return rooms;
 
         int radius = BuilderUtils.ComputeLoopRadius(loopOrder, interRoomGap, minLoopRadius);
         BuilderUtils.PositionInLoop(loopOrder, Vector2Int.zero, radius);
 
-        // 방 자체의 floorCells 채우기
-        foreach (var r in rooms) r.floorCells = BuilderUtils.CellsInRect(r.bounds);
+        // 메인 루프 방의 floorCells 채우기 (Special/Secret 막다른 가지는 아래에서 따로 배치)
+        foreach (var r in rooms)
+        {
+            if (r.type == RoomType.Special || r.type == RoomType.Secret) continue;
+            r.floorCells = BuilderUtils.CellsInRect(r.bounds);
+        }
 
         // 인접쌍 cycle 연결 — 각 연결마다 Tunnel 한 개 생성
         var allRooms = new List<RoomData>(rooms);
@@ -45,6 +50,9 @@ public class LoopBuilder : ScriptableObject, ILayoutBuilder
             var b = loopOrder[(i + 1) % loopOrder.Count];
             BuilderUtils.ConnectWithTunnel(a, b, allRooms, rng);
         }
+
+        // Special/Secret 을 막다른 가지로 빈 공간에 부착
+        BuilderUtils.AttachBranchRooms(rooms, allRooms, rng);
 
         // BFS 로 Safe Room 으로부터의 그래프 거리 계산
         var safe = rooms.Find(r => r.type == RoomType.Safe);
@@ -60,9 +68,15 @@ public class LoopBuilder : ScriptableObject, ILayoutBuilder
         Vector2Int range;
         switch (room.sizeCategory)
         {
-            case SizeCategory.Large: range = largeSize; break;
-            case SizeCategory.Giant: range = giantSize; break;
-            default: range = normalSize; break;
+            case SizeCategory.Large: 
+                range = largeSize; 
+                break;
+            case SizeCategory.Giant: 
+                range = giantSize; 
+                break;
+            default: 
+                range = normalSize; 
+                break;
         }
         int w = rng.Range(range.x, range.y + 1);
         int h = rng.Range(range.x, range.y + 1);
