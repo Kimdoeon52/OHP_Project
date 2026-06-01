@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 072b9cf2bcf93604f864078d90b4ee4f, type: 3}
-  m_Name: MetalArmor
+  m_Name: GoldArmor
   m_EditorClassIdentifier: 
   id: 0
-  itemName: "\uD310\uAE08 \uAC11\uC637"
+  itemName: "\uD669\uAE08 \uAC11\uC637"
   description: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: ed95f218173bfa341a3f73c219325959, type: 3}
   itemType: 0
   slot: 2
   width: 2

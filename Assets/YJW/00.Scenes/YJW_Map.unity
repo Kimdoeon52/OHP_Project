@@ -6136,6 +6136,7 @@ MonoBehaviour:
   slotPrefab: {fileID: 1825143228908762284, guid: 274a57dc3d84fc443a29819ff20a6676, type: 3}
   slotContainer: {fileID: 1050508145}
   generateVisualSlots: 1
+  acceptOnlyOneByOneItems: 0
 --- !u!222 &794469125
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -6442,34 +6443,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44d47f331f333d64cb1ed18ab673585c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  debugItems:
-  - {fileID: 11400000, guid: 2ed3874c5c5e380418e7bc27ffe264f9, type: 2}
-  - {fileID: 11400000, guid: fd323057bf9033e438182fa5bb5aa075, type: 2}
-  - {fileID: 11400000, guid: f3c09012cf906e541a56fb28c238034e, type: 2}
-  - {fileID: 11400000, guid: 055bf66d72d19b84bb89c11f484f587f, type: 2}
-  - {fileID: 11400000, guid: 39711791c46c8a944befb541243f8428, type: 2}
-  - {fileID: 11400000, guid: 7011632252bb4df4196b8c31e18e75e0, type: 2}
-  - {fileID: 11400000, guid: 51ce784fa9526b540bdacc6156bf26b6, type: 2}
-  - {fileID: 11400000, guid: 4a902dc025b67184b99fb4ab9d51bfcb, type: 2}
-  - {fileID: 11400000, guid: c9e583c10cabeb14ea2b30cc83a9a63b, type: 2}
-  - {fileID: 11400000, guid: 8304ef5e83323f049a10a0131de71998, type: 2}
-  - {fileID: 11400000, guid: c6b87baf1f067cb4d8e88617fe1d8cb1, type: 2}
-  - {fileID: 11400000, guid: cf06e4070abfe004fa5dc04fafd7aab0, type: 2}
-  - {fileID: 11400000, guid: e8c5ac7452f78504897869c7aa5b80ee, type: 2}
-  - {fileID: 11400000, guid: fefd89048c55a314b92380e58dda60fb, type: 2}
-  - {fileID: 11400000, guid: aca2f7316475b98428c13119cf56dc57, type: 2}
-  - {fileID: 11400000, guid: 82799cf20b3929748b627cac07efae6f, type: 2}
-  - {fileID: 11400000, guid: fb7465c185470f64a890aa5c828d883f, type: 2}
-  - {fileID: 11400000, guid: 8bb432fa8eef84945a9b933bd6bf6a51, type: 2}
-  - {fileID: 11400000, guid: a1a6322013c39b743b78a96efe46ee48, type: 2}
-  - {fileID: 11400000, guid: e6dfe69788e81a44e96f249557671b12, type: 2}
-  - {fileID: 11400000, guid: af15f1485f14a8e4890b7e1866684ca0, type: 2}
-  - {fileID: 11400000, guid: 3d58ea8b93cac164ebdee663f580b67c, type: 2}
-  - {fileID: 11400000, guid: 7bb6faaacb5885f46b2f47ad855427d8, type: 2}
-  - {fileID: 11400000, guid: 33bb6ff5c4bc8524b908d6e7f3385f89, type: 2}
-  enableDebugInsertKey: 1
   itemPrefab: {fileID: 1928696720531422438, guid: 274a57dc3d84fc443a29819ff20a6676, type: 3}
   canvasTransform: {fileID: 1188262306}
+  defaultInventoryGrid: {fileID: 0}
+  doubleClickMaxDelay: 0.25
+  itemUseController: {fileID: 0}
+  targetingController: {fileID: 0}
 --- !u!114 &875748666
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7060,6 +7039,93 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1050508144}
   m_CullTransparentMesh: 1
+--- !u!1 &1054488437
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1054488439}
+  - component: {fileID: 1054488438}
+  m_Layer: 0
+  m_Name: ThrowingKnife
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!212 &1054488438
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1054488437}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 100
+  m_Sprite: {fileID: 21300000, guid: 2389863a18dab3f42994677e3fb6410c, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 1.3125, y: 1.3125}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 0
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
+--- !u!4 &1054488439
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1054488437}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: -0.38268343, w: 0.92387956}
+  m_LocalPosition: {x: -2.018, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -45}
 --- !u!1 &1188262305
 GameObject:
   m_ObjectHideFlags: 0
@@ -8209,6 +8275,7 @@ GameObject:
   - component: {fileID: 1658363714}
   - component: {fileID: 1658363713}
   - component: {fileID: 1658363723}
+  - component: {fileID: 1658363724}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -8350,7 +8417,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   daggerData: {fileID: 11400000, guid: 4bd54afd48bbb6b499670f633e1a26ee, type: 2}
   daggerPrefab: {fileID: 7796981772736433693, guid: 998ee0674d00d4849bd46ca2c58d7017, type: 3}
-  meleeDamage: 1
+  equipmentController: {fileID: 0}
   baseMeleeCooldown: 0.45
   attackSpeedCooldownMultiplier: 0.12
   minMeleeCooldown: 0.12
@@ -8372,6 +8439,17 @@ MonoBehaviour:
   moveSpeedDurationMultiplier: 0.15
   minMoveDuration: 0.06
   minMoveActionDelay: 0.3
+  levelMoveActionDelays:
+  - 1
+  - 0.9
+  - 0.8
+  - 0.7
+  - 0.6
+  - 0.5
+  - 0.45
+  - 0.4
+  - 0.35
+  - 0.3
   moveSpeedForMinActionDelay: 10
   animationSpeedCapMoveSpeed: 5
 --- !u!114 &1658363719
@@ -8494,6 +8572,18 @@ MonoBehaviour:
   requiredExpByLevel: 1e00000028000000320000003c0000004600000032000000320000003200000064000000
   healthPerLevel: 5
   moveSpeedPerLevel: 1
+--- !u!114 &1658363724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1658363712}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e32cae7d89661d42917901f91720343, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1717082440
 GameObject:
   m_ObjectHideFlags: 0
@@ -25520,3 +25610,4 @@ SceneRoots:
   - {fileID: 710562069}
   - {fileID: 900855398}
   - {fileID: 1235544796}
+  - {fileID: 1054488439}

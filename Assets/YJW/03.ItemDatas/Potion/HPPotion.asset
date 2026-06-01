@@ -12,11 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24546455f488342479ae12a74c883f28, type: 3}
   m_Name: HPPotion
   m_EditorClassIdentifier: 
+  id: 0
   itemName: "\uD68C\uBCF5 \uD3EC\uC158"
   description: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 03bcf5d0bb0fed94ab723d73e35175a1, type: 3}
   itemType: 1
+  slot: 0
   width: 1
   height: 1
+  canEnhance: 0
+  canCurse: 0
+  canAnalyze: 0
   potionType: 0
   value: 70
