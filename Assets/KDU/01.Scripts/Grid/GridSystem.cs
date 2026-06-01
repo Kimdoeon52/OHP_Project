@@ -55,6 +55,13 @@ public class GridSystem : MonoBehaviour
         bool hasFloor = tilemaps.floor != null && tilemaps.floor.HasTile(cell);
         if (!hasFloor) return false;
 
+        // 닫힌 문은 벽처럼 통행·시야 차단. 열린 문은 통과.
+        if (_doors.TryGetValue(pos, out var door))
+        {
+            if (door == null) _doors.Remove(pos);
+            else if (!door.IsOpen) return false;
+        }
+
         return true;
     }
 
@@ -154,5 +161,23 @@ public class GridSystem : MonoBehaviour
     public void UnRegisterOccupancy(Vector2Int pos)
     {
         _occupiedCells.Remove(pos);
+    }
+
+    // ───── 문 ─────
+    private readonly Dictionary<Vector2Int, GridDoor> _doors = new();
+
+    public void RegisterDoor(Vector2Int pos, GridDoor door) => _doors[pos] = door;
+
+    public void UnregisterDoor(Vector2Int pos)
+    {
+        // 같은 셀에 새 문이 이미 등록됐을 수 있으니 그대로 둠 — 빈 경우만 제거.
+        _doors.Remove(pos);
+    }
+
+    public GridDoor GetDoorAt(Vector2Int pos)
+    {
+        if (!_doors.TryGetValue(pos, out var door)) return null;
+        if (door == null) { _doors.Remove(pos); return null; }
+        return door;
     }
 }

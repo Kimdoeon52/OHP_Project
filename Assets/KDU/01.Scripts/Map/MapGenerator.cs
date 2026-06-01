@@ -35,6 +35,10 @@ public class MapGenerator : MonoBehaviour
     [SerializeField] private GridExit exitPrefab;
     private GridExit _currentExit;
 
+    [Tooltip("문 프리팹 — 1칸 통로(벽이 양옆으로 끊긴 입구)마다 배치")]
+    [SerializeField] private GridDoor doorPrefab;
+    private readonly List<GridDoor> _currentDoors = new();
+
     public DungeonRandom Rng { get; } = new DungeonRandom();
     public List<RoomData> CurrentRooms { get; private set; }
     public int CurrentSeed { get; private set; }
@@ -92,6 +96,7 @@ public class MapGenerator : MonoBehaviour
         SecretGatewayCells.Clear();
         LockedGatewayCells.Clear();
         DestroyCurrentExit();
+        DestroyCurrentDoors();
         // 이전 층의 Feeling 효과 리셋
         if (VisionSystem.Instance != null) VisionSystem.Instance.VisionRadiusDelta = 0;
         Rng.Init(DungeonRandom.DeriveFloorSeed(runSeed, depth));
@@ -149,6 +154,9 @@ public class MapGenerator : MonoBehaviour
             feeling?.ApplyToSpawn(Spawner);
             Spawner.Spawn(rooms, depth, Rng);
         }
+
+        // 문은 스폰 뒤에 배치 — 닫힌 문이 스폰 단계의 도달성 판정을 막지 않도록.
+        PlaceDoors(rooms);
 
         CurrentRooms = rooms;
         return rooms;
@@ -269,13 +277,91 @@ public class MapGenerator : MonoBehaviour
 
     private void DestroyCurrentExit()
     {
-        if (_currentExit == null) 
+        if (_currentExit == null)
             return;
-        if (Application.isPlaying) 
+        if (Application.isPlaying)
             Destroy(_currentExit.gameObject);
-        else 
+        else
             DestroyImmediate(_currentExit.gameObject);
         _currentExit = null;
+    }
+
+    /// <summary>
+    /// 방 입구(1칸 통로 = 벽이 양옆으로 끊긴 floor 셀)마다 문을 배치한다.
+    /// 후보는 빌드 때 기록된 doorCells(방-복도 접점). 복도 중간엔 doorCell 이 없어 문이 안 생긴다.
+    /// Secret(봉인 상태)·Tunnel 은 제외, 1칸 통로 형태가 아닌 셀(dissolve 로 넓어진 입구 등)도 제외.
+    /// </summary>
+    private void PlaceDoors(List<RoomData> rooms)
+    {
+        if (doorPrefab == null) return;
+
+        var placed = new HashSet<Vector2Int>();
+        foreach (var room in rooms)
+        {
+            if (room.type == RoomType.Secret || room.type == RoomType.Tunnel) continue;
+            if (room.doorCells == null) continue;
+
+            foreach (var cell in room.doorCells)
+            {
+                if (placed.Contains(cell)) continue;
+                if (!IsDoorwayCell(cell, out bool horizontalPassage)) continue;
+
+                placed.Add(cell);
+                Vector3 pos = GridSystem.Instance != null
+                    ? GridSystem.Instance.GridToWorld(cell)
+                    : new Vector3(cell.x, cell.y, 0);
+                var door = Instantiate(doorPrefab, pos, Quaternion.identity);
+                door.Initialize(cell, horizontalPassage);
+                _currentDoors.Add(door);
+            }
+        }
+    }
+
+    /// <summary>cell 이 1칸 폭 통로(양옆이 벽, 통로 방향만 트인 floor)인지. horizontalPassage = 좌우로 통하는지.</summary>
+    private bool IsDoorwayCell(Vector2Int cell, out bool horizontalPassage)
+    {
+        horizontalPassage = false;
+        if (!IsOpenFloor(cell)) return false;
+
+        bool wallL = IsWallCell(cell + Vector2Int.left);
+        bool wallR = IsWallCell(cell + Vector2Int.right);
+        bool wallU = IsWallCell(cell + Vector2Int.up);
+        bool wallD = IsWallCell(cell + Vector2Int.down);
+
+        // 좌우로 통하는 입구: 위아래가 벽, 좌우가 트임.
+        bool horiz = wallU && wallD && IsOpenFloor(cell + Vector2Int.left) && IsOpenFloor(cell + Vector2Int.right);
+        // 상하로 통하는 입구: 좌우가 벽, 위아래가 트임.
+        bool vert = wallL && wallR && IsOpenFloor(cell + Vector2Int.up) && IsOpenFloor(cell + Vector2Int.down);
+
+        if (horiz == vert) return false; // 둘 다거나 둘 다 아니면 1칸 통로가 아님
+        horizontalPassage = horiz;
+        return true;
+    }
+
+    private bool IsWallCell(Vector2Int c)
+    {
+        return tilemaps != null && tilemaps.wall != null && tilemaps.wall.HasTile(new Vector3Int(c.x, c.y, 0));
+    }
+
+    // 통행 가능한 바닥(벽/구덩이 아래 깔린 floor 타일은 제외).
+    private bool IsOpenFloor(Vector2Int c)
+    {
+        var cell = new Vector3Int(c.x, c.y, 0);
+        if (tilemaps == null || tilemaps.floor == null || !tilemaps.floor.HasTile(cell)) return false;
+        if (tilemaps.wall != null && tilemaps.wall.HasTile(cell)) return false;
+        if (tilemaps.chasm != null && tilemaps.chasm.HasTile(cell)) return false;
+        return true;
+    }
+
+    private void DestroyCurrentDoors()
+    {
+        foreach (var door in _currentDoors)
+        {
+            if (door == null) continue;
+            if (Application.isPlaying) Destroy(door.gameObject);
+            else DestroyImmediate(door.gameObject);
+        }
+        _currentDoors.Clear();
     }
 
     private static SizeCategory PickNormalSize(DungeonRandom rng)
