@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: bat
   displayName: "\uBC15\uC950"
-  sprite: {fileID: 0}
+  sprite: {fileID: 1250992400, guid: b5a7f1315e6662645975a55d2b27a8cb, type: 3}
   grade: 0
   moveType: 0
   hasShield: 0

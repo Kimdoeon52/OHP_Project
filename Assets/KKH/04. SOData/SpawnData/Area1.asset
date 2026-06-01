@@ -31,13 +31,16 @@ MonoBehaviour:
     maxCount: 3
     eliteChance: 0
   - pool:
-    - enemyData: {fileID: 0}
-      weight: 0
+    - enemyData: {fileID: 11400000, guid: 2eddec62bffdd854ba302e51a5d08d06, type: 2}
+      weight: 3
       requiresLineOfSight: 0
     minCount: 0
     maxCount: 0
     eliteChance: 0
-  - pool: []
+  - pool:
+    - enemyData: {fileID: 11400000, guid: 5f0af966e4d1be84aacd9a988ba634da, type: 2}
+      weight: 1
+      requiresLineOfSight: 0
     minCount: 0
     maxCount: 0
-    eliteChance: 0
+    eliteChance: 1

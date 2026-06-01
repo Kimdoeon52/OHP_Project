@@ -1,6 +1,6 @@
-**Stolen Time**
+ **Stolen Time**
 
-Game Design Document  v1.0
+Game Design Document  v1.3
 
 # **0\. 목차**
 
@@ -85,7 +85,7 @@ Game Design Document  v1.0
     **13.4 시드 챌린지**  
     **13.5 회차 간 진행**
 
-# 
+#
 
 # **1\. 게임 개요**
 
@@ -119,7 +119,7 @@ Game Design Document  v1.0
 
 ### **2.3 차별 포인트 — 왜 이 게임이 필요한가**
 
-기존 로그라이크는 무한한 시간 위에서 공간적 위험을 푸는 장르였다. 60초 던전은 여기에 시간이라는 새로운 축을 추가한다.
+기존 로그라이크는 무한한 시간 위에서 공간적 위험을 푸는 장르였다. Stolen Time은 여기에 시간이라는 새로운 축을 추가한다.
 
 * **계획-실행 분리 (Plan-Execute Split):** Safe Room의 시간 정지는 플레이어가 차분히 사고하는 공간을 보장하면서도, 실행 단계에서는 즉각적 반응을 요구한다. 두 모드의 톤 전환이 게임의 정체성이다.
 
@@ -163,7 +163,7 @@ Game Design Document  v1.0
 
 괄호 안의 수치들은 다회차 플레이를 위한 보스 강화 시 능력치이다.
 
-Area 1 보스 
+Area 1 보스
 
 ![][image3]
 
@@ -231,7 +231,7 @@ Area 3 보스
 | :---- | :---- | :---- |
 | 체력 (HP) | 300(400) | 0이 되면 사망.  |
 | 공격력 | 20(25)\~30(40) |  |
-| 이동 속도 | 1칸/s |  |
+| 이동 속도 |  |  |
 | 공격 속도 | 1회/s |  |
 | 내구성 (Defense) | 0(3)\~10(15) |  |
 | 회피 (Evasion) | 15(20) |  |
@@ -276,7 +276,7 @@ Area 3 보스
 | Exit | 다음 층 출구 | 층당 1개 (필수) | 출구가 들어있는 방 |
 | Boss | 보스전용 | 5 / 10 / 15층만 | 단일 거대 방 |
 
-### 
+###
 
 ### **6.2.1 스페셜 방 종류**
 
@@ -292,7 +292,7 @@ Area 3 보스
 | 골드 상자 방 | 골드 상자가 3개 등장한다. | 상자 시스템 참조 |
 | 스크롤 방 | 스크롤이 2\~3개 등장한다. | 강화 스크롤 제외 |
 
-### 
+###
 
 ### **6.2.2 시크릿 방 종류**
 
@@ -305,7 +305,7 @@ Area 3 보스
 | 골드 방 | 바닥에 골드 뭉치가 3\~5개가 등장한다. | 골드 뭉치는 50\~75 골드 사이 중 랜덤으로 획득 |
 | 인챈트 방 | 무기나 방어구에 마법을 부여할 수 있다. | 9.16의 마법 종류 중 랜덤으로 하나가 부여된다. |
 
-### 
+###
 
 ### **6.3 Floor Feeling 시스템**
 
@@ -315,13 +315,13 @@ Area 3 보스
 | Traps | 함정 추가 배치 | 고위험 경로. 조심히 이동하는 것을 강요하여 시간 손실을 유도 |
 | Dark | 기본 시야 반경 \-2 | 정보 비용 증가, 횃불·심안 포션 가치 상승 |
 
-# **7\. 시간 시스템** 
+# **7\. 시간 시스템**
 
 ### **7.1 행동별 시간 소모 표**
 
 | 행동 | 시간 소모 (초) | 비고 |
 | :---- | :---- | :---- |
-| 이동 (1칸) | 1.0 | 기본값. 레벨 성장에 따라 감소 (8.4번). 장비·저주·상태이상으로 추가 변동 |
+| 이동 (1칸) | 0.5 | 기본값. 레벨 성장에 따라 감소 (8.4번). 장비·저주·상태이상으로 추가 변동 |
 | 근접 공격 | 0.1 \~ 1.5 | 무기 공격속도에 따라 차등 (쌍검·시미터는 0.8초) |
 | 투척 | 1.0 | 수리검은 0.7초 |
 | 아이템 사용 (포션) | 1.0 | Safe Room에서는 시간 소모 없음 |
@@ -359,7 +359,7 @@ Area 3 보스
 | :---- | :---- | :---- | :---- |
 | 체력 (HP) | 20 | 레벨업 시 \+5 | 0이 되면 사망.  |
 | 힘 (Strength) | 10 | 힘 포션 (+1), 레벨업 영향 없음 | 장비 사용 가능 여부 결정. 던전 곳곳에 \+1 포션이 분포 (Area당 2개) |
-| 이동 속도 | 1.0 | 레벨 비례 쿨타임 감소 (8.4번) \+ 장비·저주·상태이상 추가 변동 | 1칸 이동의 시간 소모를 결정. 레벨이 오를수록 하한에 가까워짐 |
+| 이동 속도 | 0.5 | 레벨 비례 쿨타임 감소 (8.4번) \+ 장비·저주·상태이상 추가 변동 | 1칸 이동의 시간 소모를 결정. 레벨이 오를수록 하한에 가까워짐 |
 | 공격 속도 | 1.0 | 무기 종류·강화·저주에 따라 변동 | 근접 공격의 시간 소모 결정 |
 | 내구성 (Defense) | 0 | 갑옷 \+ 강화 수치 합산 | 받는 데미지 감소 ("0\~N 데미지를 막는다" 형식의 최대 감소량) |
 | 회피 (Evasion) | 20  | 반지로 추가 가능 | 회피 \- 정확도 \= 공격 무효화 확률 최댓값: 50 |
@@ -371,15 +371,15 @@ Area 3 보스
 | 레벨 | 필요 누적 EXP | 보상 | 예상 도달 층 |
 | :---- | :---- | :---- | :---- |
 | 1 | 0 | 시작 레벨 | 1 |
-| 2 | 30 | HP \+5, 이동 속도 증가,  1티어 특성 포인트 \+1 | 2 |
+| 2 | 30 | HP \+5,  1티어 특성 포인트 \+1 | 2 |
 | 3 | 70 | HP \+5, 이동 속도 증가 1티어 특성 포인트 \+1 | 3\~4 |
-| 4 | 120 | HP \+5, 이동 속도 증가 1티어 특성 포인트 \+1 | 5\~6 |
+| 4 | 120 | HP \+5,  1티어 특성 포인트 \+1 | 5\~6 |
 | 5 | 180 | HP \+5, 이동 속도 증가 2티어 특성 포인트 \+1 | 6\~7 |
-| 6 | 250 | HP \+5, 이동 속도 증가 2티어 특성 포인트 \+1 | 8\~9 |
+| 6 | 250 | HP \+5 2티어 특성 포인트 \+1 | 8\~9 |
 | 7 | 300 | HP \+5, 이동 속도 증가 2티어 특성 포인트 \+1 | 10\~11 |
-| 8 | 350 | HP \+5, 이동 속도 증가 3티어 특성 포인트 \+1 | 12\~13 |
+| 8 | 350 | HP \+5 3티어 특성 포인트 \+1 | 12\~13 |
 | 9 | 400 | HP \+5, 이동 속도 증가 3티어 특성 포인트 \+1 | 13\~14 |
-| 10 | 500 | HP \+5, 이동 속도 증가 3티어 특성 포인트 \+1 | 14 |
+| 10 | 500 | HP \+5 3티어 특성 포인트 \+1 | 14 |
 
 ### **8.3 레벨별 이동 쿨타임 — 수치 설계 시트**
 
@@ -387,18 +387,18 @@ Area 3 보스
 
 | 레벨 | 이동 쿨타임 (초) | 기본 대비 감소 (초) | 비고 |
 | :---- | :---- | :---- | :---- |
-| 1 | 1.0 | — | 기본값 |
-| 2 | 0.9 | 0.1 |  |
-| 3 | 0.8 | 0.1 |  |
-| 4 | 0.7 | 0.1 |  |
-| 5 | 0.6 | 0.1 |  |
-| 6 | 0.5 | 0.1 |  |
-| 7 | 0.45 | 0.05 |  |
-| 8 | 0.4 | 0.05 |  |
-| 9 | 0.35 | 0.05 |  |
-| 10 | 0.3 | 0.05 | 이동 속도 최솟값 0.3초 |
+| 1 | 0.5 | — | 기본값 |
+| 2 | 0.5 | — |  |
+| 3 | 0.45 | 0.05 |  |
+| 4 | 0.45 | — |  |
+| 5 | 0.4 | 0.05 |  |
+| 6 | 0.4 | — |  |
+| 7 | 0.35 | 0.05 |  |
+| 8 | 0.35 | — |  |
+| 9 | 0.3 | 0.05 |  |
+| 10 | 0.3 | — |  |
 
-### 
+###
 
 ### **8.4 배고픔 상세**
 
@@ -416,16 +416,16 @@ Area 3 보스
 
 ### **8.5.1 플레이어 상태**
 
-| 상태 | 효과 |
-| :---- | :---- |
-| 독 | 일정 시간 동안 체력 감소 |
-| 화상 | 매초 피해  |
-| 둔화 | 이동 쿨타임 증가 |
-| 출혈 | 지속 피해 |
-| 냉기 | 이동 쿨타임 및 공격 쿨타임 증가 |
-| 굶주림 | 체력 감소 및 이동 쿨타임 증가 |
-| 부유 | Hazard 효과 무시 |
-| 신속 | 이동 쿨타임 감소 |
+| 상태 | 효과 | 해제 방법 |
+| :---- | :---- | :---- |
+| 독 | 일정 시간 동안 체력 감소 | 정화 포션 |
+| 화상 | 매초 피해  | 냉기 포션 |
+| 둔화 | 이동 쿨타임 증가 | 정화 포션 |
+| 출혈 | 지속 피해 | — |
+| 냉기 | 이동 쿨타임 및 공격 쿨타임 증가 | 화염 포션 |
+| 굶주림 | 체력 감소 및 이동 쿨타임 증가 |  |
+| 부유 | Hazard 효과 무시 |  |
+| 신속 | 이동 쿨타임 감소 |  |
 
 ### **8.6 플레이어 특성**
 
@@ -477,6 +477,7 @@ Area 3 보스
 | 과부하 포션 | 15초 동안 공격 쿨타임 \-0.2초 종료 후 10초 동안 이동 쿨타임 \+0.3초 |  |
 | 시간의 포션 | 현재 층에 한하여 10초를 획득한다.다음 층에서 \-5초 패널티를 받는다. |  |
 | 기억 포션 | 처음 마시면 기억 포션의 절반을 마시고 위치를 저장한다. 다시 한번 마시면 저장해둔 위치로 돌아온다. |  |
+| 정화 포션 | 독, 둔화 상태 10초 동안 해제 및 걸리지 않음 |  |
 
 **9.3 횃불 \[ 1\*1** 사이즈 \]
 
@@ -487,9 +488,9 @@ Area 3 보스
 
 ### **9.4 투척 아이템 — 힘 요구치 진행 곡선 \[ 1\*1 사이즈 \]**
 
-모든 투척 아이템은 3개가 1세트로 진행된다. 같은 종류면 겹치는 것이 가능하다. 
+모든 투척 아이템은 3개가 1세트로 진행된다.
 
-강화 스크롤을 투척 무기에 사용하면 1세트(3개)가 한번에 강화되고, 강화가 다른 투척 아이템은 겹치는 것이 불가능하다. 투척 무기를 강화하면 내구도가 초기화 된다.
+강화 스크롤을 투척 무기에 사용하면 1세트(n개)가 한번에 강화되고, 강화가 다른 투척 아이템은 겹치는 것이 불가능하다. 투척 무기를 강화하면 내구도가 초기화 된다.
 
 | 투척 무기 | 데미지 | 힘 요구 | 내구도 | 강화 별 증가 (최소 / 최대) | 특수 효과 |
 | :---- | :---- | :---- | :---- | :---- | :---- |
@@ -515,7 +516,7 @@ Area 3 보스
 ### **9.6 장착 아이템 — 무기**
 
 감정되지 않은 무기는 장착시 던전에 있는 시간 90초 이후 자동 감정된다.(다음 층까지 이동해야 감정된다.)  
-무기는 힘 수치에 비례해서 데미지 보정을 받는다.   
+무기는 힘 수치에 비례해서 데미지 보정을 받는다.
 ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정치 0\~2 \-\> 최종 데미지 1\~12
 
 | 무기 | 데미지 | 강화 별 증가(최소 / 최대) | 힘 요구 | 사이즈 | 특수 효과 |
@@ -541,7 +542,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 
 * 무기는 강화 시 최대 데미지 \+2, 최소 데미지 \+1
 
-* 갑옷은 강화 시 최대 데미지 감소 \+2, 최소 데미지 감소 \+1 
+* 갑옷은 강화 시 최대 데미지 감소 \+2, 최소 데미지 감소 \+1
 
 | 강화 단계 | 힘 요구 감소 |
 | :---- | :---- |
@@ -564,11 +565,11 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 | 분류 | 저주명 | 효과 |
 | :---- | :---- | :---- |
 | 갑옷 | 둔화 저주 | 이동속도가 느려진다.(이동에 쿨타임 0.2초 증가) |
-| 갑옷 | 출혈 저주 | 공격 받았을 때 20% 확률로 사용자에게 출혈 발생 (3\~6데미지) |
+| 갑옷 | 출혈 저주 | 공격 받았을 때 20% 확률로 사용자에게 출혈 발생 (3\~6데미지) 5초동안 |
 | 갑옷 | 변위 저주 | 공격 받았을 때 15% 확률로 사용자를 맵의 랜덤 위치로 이동 |
 | 무기 | 경보 저주 | 공격 시 10% 확률로 층의 적들에게 플레이어 위치를 알림 |
-| 무기 | 착취 저주 | 공격 시 15% 확률로 플레이어의 체력을 앗아감 |
-| 무기 | 양극화 저주 | 공격 시 150% 또는 0% 데미지 |
+| 무기 | 착취 저주 | 공격 시 15% 확률로 플레이어의 체력을 10% 앗아감 |
+| 무기 | 양극화 저주 | 공격 시 150% 또는 0% 데미지, 소수점은 올림 |
 
 ![][image6]
 
@@ -576,7 +577,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 
 ### **9.10 인벤토리 시스템**
 
-인벤토리는 그리드 시스템으로 10\*10 사이즈로 장비, 스크롤, 투척 무기, 유물을 저장하는데 사용된다. 플레이어가 장착 할 수 있는 아이템으로는 갑옷 1개, 근접 무기 1개, 반지 2개, 유물 1개로 이루어져있다.
+인벤토리는 그리드 시스템으로 10\*5 사이즈로 장비, 스크롤, 투척 무기, 유물을 저장하는데 사용된다. 플레이어가 장착 할 수 있는 아이템으로는 갑옷 1개, 근접 무기 1개, 반지 2개, 유물 1개로 이루어져있다.
 
 ### **9.11 장착 아이템 \- 반지 \[ 1\*1 사이즈 \]**
 
@@ -620,7 +621,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 
 ### **9.15 열쇠 시스템**
 
-열쇠는 방 열쇠와 상자 열쇠로 나누어져있다.   
+열쇠는 방 열쇠와 상자 열쇠로 나누어져있다.
 해당 층에 필요한 열쇠들은 해당 층의 일반 방이나 exit방에서 등장한다. 해당 층에서 획득한 열쇠는 해당 층에서만 사용 가능하다.  
 열쇠로 여는 모든 것들은 여는데 1초의 시간이 소요된다.
 
@@ -631,7 +632,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 
 ### **9.16 마법 시스템**
 
-시크릿 방 중 인챈트 방에서 부여할 수 있는 마법의 목록이다. 
+시크릿 방 중 인챈트 방에서 부여할 수 있는 마법의 목록이다.
 
 | 분류 | 마법명 | 효과 |
 | :---- | :---- | :---- |
@@ -648,18 +649,18 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 
 | 영역 | 몬스터 | 특징 | 시간 보너스 |
 | :---- | :---- | :---- | :---- |
-| Area 1 | 역병 쥐 | 근접 공격, 독(1초에 1칸) | \+3 |
-| Area 1 | 거미 | 이동 방해, 근접 공격, 독(1초에 1칸) | \+3 |
-| Area 1 | 박쥐 | 근접 공격, 고속 이동(0.5초에 1칸) | \+3 |
-| Area 1 | 뱀 | 근접 엘리트 몬스터(1초에 1칸) | \+5 |
-| Area 2 | 스켈레톤 방패 O,X | 근접 공격, 방패 들면 데미지 0\~2 추가 감소(0.75초에 1칸) | \+3 |
-| Area 2 | 마법사 스켈레톤 방패 O,X | 원거리 마법 공격, 방패 들면 데미지 0\~2 추가 감소(0.75초에 1칸) | \+3 |
-| Area 2 | 칼 든 고블린 | 근접 공격, 인벤토리 아이템 랜덤 훔침, 고속 이동(0.4초에 1칸) | \+3 |
+| Area 1 | 역병 쥐 | 근접 공격, 독(0.5초에 1칸) | \+3 |
+| Area 1 | 거미 | 이동 방해, 근접 공격, 독(0.5초에 1칸) | \+3 |
+| Area 1 | 박쥐 | 근접 공격, 고속 이동(0.3초에 1칸) | \+3 |
+| Area 1 | 뱀 | 근접 엘리트 몬스터(0.5초에 1칸) | \+5 |
+| Area 2 | 스켈레톤 방패 O,X | 근접 공격, 방패 들면 데미지 0\~2 추가 감소(0.4초에 1칸) | \+3 |
+| Area 2 | 마법사 스켈레톤 방패 O,X | 원거리 마법 공격, 방패 들면 데미지 0\~2 추가 감소(0.4초에 1칸) | \+3 |
+| Area 2 | 칼 든 고블린 | 근접 공격, 인벤토리 아이템 랜덤 훔침, 고속 이동(0.3초에 1칸) | \+3 |
 | Area 2 | 트롤 | 근접 엘리트 몬스터 (0.75초에 1칸) | \+5 |
-| Area 3 | 작은 악마 | 장판 공격, 고속 이동(0.3초에 1칸) | \+3 |
-| Area 3 | 지렁이 | 이동 중 원거리 공격 안받는 근접 몬스터, 이동(0.5초에 1칸) | \+3 |
-| Area 3 | 핑크 트롤 | 높은 체력(0.5초에 1칸) | \+3 |
-| Area 3 | 불의 정령 | 엘리트 몬스터(0.5초에 1칸) | \+5 |
+| Area 3 | 작은 악마 | 장판 공격, 고속 이동(0.2초에 1칸) | \+3 |
+| Area 3 | 지렁이 | 이동 중 원거리 공격 안받는 근접 몬스터, 이동(0.3초에 1칸) | \+3 |
+| Area 3 | 핑크 트롤 | 높은 체력(0.3초에 1칸) | \+3 |
+| Area 3 | 불의 정령 | 엘리트 몬스터(0.3초에 1칸) | \+5 |
 | Area 1\~3 | 고대 골램 | 스페셜 룸에서 등장함. 몬스터 상세 참조 | \+10 |
 
 ### **10.1 종별 상세 스탯**
@@ -676,7 +677,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 | :---- | :---- | :---- |
 | 체력 (HP) | 8 | 0이 되면 사망 |
 | 공격력 | 2\~4 |  |
-| 이동 속도 | 1.0초/칸 |  |
+| 이동 속도 | 0.5초/칸 |  |
 | 공격 속도 | 1회/s |  |
 | 내구성 (Defense) | 0 |  |
 | 회피 (Evasion) | 5 |  |
@@ -697,7 +698,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 | :---- | :---- | :---- |
 | 체력 (HP) | 6 | 0이 되면 사망 |
 | 공격력 | 2\~3 |  |
-| 이동 속도 | 1.0초/칸 |  |
+| 이동 속도 | 0.5초/칸 |  |
 | 공격 속도 | 1회/s |  |
 | 내구성 (Defense) | 0 |  |
 | 회피 (Evasion) | 8 |  |
@@ -719,7 +720,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 | :---- | :---- | :---- |
 | 체력 (HP) | 5 | 0이 되면 사망 |
 | 공격력 | 3\~5 |  |
-| 이동 속도 | 0.5초/칸 |  |
+| 이동 속도 | 0.3초/칸 |  |
 | 공격 속도 | 1회/s |  |
 | 내구성 (Defense) | 0 |  |
 | 회피 (Evasion) | 12 |  |
@@ -741,7 +742,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 | :---- | :---- | :---- |
 | 체력 (HP) | 20 | 0이 되면 사망 |
 | 공격력 | 5\~8 |  |
-| 이동 속도 | 1.0초/칸 |  |
+| 이동 속도 | 0.5초/칸 |  |
 | 공격 속도 | 1회/s |  |
 | 내구성 (Defense) | 0\~1 |  |
 | 회피 (Evasion) | 10 |  |
@@ -765,7 +766,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 | :---- | :---- | :---- |
 | 체력 (HP) | 18 | 0이 되면 사망 |
 | 공격력 | 6\~10 |  |
-| 이동 속도 | 0.75초/칸 |  |
+| 이동 속도 | 0.4초/칸 |  |
 | 공격 속도 | 1회/s |  |
 | 내구성 (Defense) | 0\~2 |  |
 | 회피 (Evasion) | 5 |  |
@@ -786,7 +787,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 | :---- | :---- | :---- |
 | 체력 (HP) | 22 | 0이 되면 사망 |
 | 공격력 | 6\~10 |  |
-| 이동 속도 | 0.75초/칸 |  |
+| 이동 속도 | 0.4초/칸 |  |
 | 공격 속도 | 1회/s |  |
 | 내구성 (Defense) | 1\~4 |  |
 | 회피 (Evasion) | 5 |  |
@@ -807,7 +808,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 | :---- | :---- | :---- |
 | 체력 (HP) | 15 | 0이 되면 사망 |
 | 공격력 | 8\~13 |  |
-| 이동 속도 | 0.75초/칸 |  |
+| 이동 속도 | 0.4초/칸 |  |
 | 공격 속도 | 1회/s |  |
 | 내구성 (Defense) | 0\~1 |  |
 | 회피 (Evasion) | 8 |  |
@@ -828,7 +829,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 | :---- | :---- | :---- |
 | 체력 (HP) | 18 | 0이 되면 사망 |
 | 공격력 | 8\~13 |  |
-| 이동 속도 | 0.75초/칸 |  |
+| 이동 속도 | 0.4초/칸 |  |
 | 공격 속도 | 1회/s |  |
 | 내구성 (Defense) | 0\~3 |  |
 | 회피 (Evasion) | 8 |  |
@@ -850,7 +851,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 | :---- | :---- | :---- |
 | 체력 (HP) | 14 | 0이 되면 사망 |
 | 공격력 | 5\~9 |  |
-| 이동 속도 | 0.4초/칸 |  |
+| 이동 속도 | 0.3초/칸 |  |
 | 공격 속도 | 1회/s |  |
 | 내구성 (Defense) | 0\~1 |  |
 | 회피 (Evasion) | 13 |  |
@@ -872,7 +873,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 | :---- | :---- | :---- |
 | 체력 (HP) | 45 | 0이 되면 사망 |
 | 공격력 | 12\~18 |  |
-| 이동 속도 | 0.75초/칸 |  |
+| 이동 속도 | 0.4초/칸 |  |
 | 공격 속도 | 1회/s |  |
 | 내구성 (Defense) | 2\~4 |  |
 | 회피 (Evasion) | 8 |  |
@@ -896,7 +897,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 | :---- | :---- | :---- |
 | 체력 (HP) | 16 | 0이 되면 사망 |
 | 공격력 | 8\~14 |  |
-| 이동 속도 | 0.3초/칸 |  |
+| 이동 속도 | 0.2초/칸 |  |
 | 공격 속도 | 1회/s |  |
 | 내구성 (Defense) | 1\~2 |  |
 | 회피 (Evasion) | 15 |  |
@@ -917,7 +918,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 | :---- | :---- | :---- |
 | 체력 (HP) | 30 | 0이 되면 사망 |
 | 공격력 | 10\~15 |  |
-| 이동 속도 | 0.5초/칸 |  |
+| 이동 속도 | 0.3초/칸 |  |
 | 공격 속도 | 1회/s |  |
 | 내구성 (Defense) | 2\~3 |  |
 | 회피 (Evasion) | 5 |  |
@@ -938,7 +939,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 | :---- | :---- | :---- |
 | 체력 (HP) | 60 | 0이 되면 사망 |
 | 공격력 | 12\~18 |  |
-| 이동 속도 | 0.5초/칸 |  |
+| 이동 속도 | 0.3초/칸 |  |
 | 공격 속도 | 1회/s |  |
 | 내구성 (Defense) | 3\~5 |  |
 | 회피 (Evasion) | 5 |  |
@@ -960,7 +961,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 | :---- | :---- | :---- |
 | 체력 (HP) | 55 | 0이 되면 사망 |
 | 공격력 | 15\~22 |  |
-| 이동 속도 | 0.5초/칸 |  |
+| 이동 속도 | 0.3초/칸 |  |
 | 공격 속도 | 1회/s |  |
 | 내구성 (Defense) | 2\~5 |  |
 | 회피 (Evasion) | 12 |  |
@@ -984,7 +985,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 | :---- | :---- | :---- |
 | 체력 (HP) | 20 / 50 / 100 (Area 기반) | 0이 되면 사망 |
 | 공격력 | 1/3/5 (Area 기반) | 베이스 수치 \+ 랜덤 무기 기반 공격력 |
-| 이동 속도 | (1/0.75/0.5)초/칸(Area 기반) |  |
+| 이동 속도 | (0.5/0.4/0.3)초/칸(Area 기반) |  |
 | 공격 속도 | 1회/s |  |
 | 내구성 (Defense) | (0\~2),(1\~3),(2\~5)(Area 기반) |  |
 | 회피 (Evasion) | 8/10/12(Area 기반) |  |
@@ -998,7 +999,7 @@ ex)플레이어 힘 12, 장착 무기 소검 \-\> 기본 데미지 1\~10, 보정
 
 ### **10.2 몬스터 상태**
 
-### 
+###
 
 | 상태 | 효과 |
 | :---- | :---- |
@@ -1094,11 +1095,11 @@ UI 예시 \- 위치 변경 가능
 
 ![][image22]
 
-# **13\. 메타프로그레션 / 챌린지 모드** 
+# **13\. 메타프로그레션 / 챌린지 모드**
 
 ### **13.1 설계 철학**
 
-왜 챌린지 모드인가 1회 클리어는 입문이고, 챌린지 모드부터가 진짜 게임이다. 같은 던전을 서로 다른 제약 아래 다시 통과하게 만들어 리플레이 가치를 만들어낸다. 
+왜 챌린지 모드인가 1회 클리어는 입문이고, 챌린지 모드부터가 진짜 게임이다. 같은 던전을 서로 다른 제약 아래 다시 통과하게 만들어 리플레이 가치를 만들어낸다.
 
 챌린지 모드는 다음 원칙으로 설계된다.
 
@@ -1111,20 +1112,20 @@ UI 예시 \- 위치 변경 가능
 
 챌린지는 1층 Safe Room 입장 직전 선택 화면에서 토글한다. 한 번 시작한 런에서는 챌린지 구성을 변경할 수 없으며, 활성 챌린지 수에는 제한이 없다.
 
-### 
+###
 
 | 챌린지 | 변경 내용  | 비고 |
 | :---- | :---- | :---- |
 | 시간 압박 | 층당 제한시간 60초 → 45초  | 모든 행동 시간 소모는 동일  |
 | 보스 강화  | 보스 HP/공격력/방어력/회피/정확도 상승, 패턴 변화 추가  | 5.1 보스 표 괄호값 적용. 패턴 변화는 5.1.x에 별도 기술 |
-| 빈약한 강화  | 강화 주문서 등장 수량 감소 (Area당 3개 → 2개)  |  |
+| 빈약한 강화  | 강화 스크롤 등장 수량 감소 (Area당 3개 → 2개)  |  |
 | 회복 봉인  | 회복 포션 효과 무효 (드랍은 정상, 사용 시 효과 0\)  | 흡혈 마법, 음식, 건강한 몸 특성은 정상 작동  |
 | 파편 봉인  | 몬스터 생명 파편 드랍 없음  | 처치 동기가 시간 보너스/경험치로 한정  |
 | 시야 제한  | 기본 시야 \-2 (Dark Feeling과 누적, 최소 시야 2 유지)  | 횃불, 지도 스크롤, 심안 포션 가치 상승  |
 
 ### **13.3 점수 시스템**
 
-기본 점수는 다음 항목의 합으로 산출한다. 
+기본 점수는 다음 항목의 합으로 산출한다.
 
 | 항목 | 수치  | 비고 |
 | :---- | :---- | :---- |
@@ -1133,7 +1134,7 @@ UI 예시 \- 위치 변경 가능
 | 보스 클리어 보너스  | 500 / 1000 / 2000  | 5층 / 10층 / 15층 각각  |
 | 처치 보너스  | 처치한 몬스터의 시간 보너스 수치 합  | \+3/+5/+10초 보너스 그대로 점수 환산  |
 
-최종 점수 \= 기본 점수 × (1.5 ^ (활성 챌린지)) 
+최종 점수 \= 기본 점수 × (1.5 ^ (활성 챌린지))
 
 ### **13.4 시드 챌린지**
 
@@ -1146,11 +1147,11 @@ UI 예시 \- 위치 변경 가능
 | 일일 챌린지  | 매일 모든 플레이어에게 동일한 시드 \+ 챌린지 조합 제공  | 하루 1회  |
 | 공유 시드  | 시드 코드와 챌린지 구성을 함께 공유하여 친구와 경쟁  | 무제한  |
 
-일일 챌린지와 공유 시드는 점수 랭킹 비교의 핵심 동기다. 동일 시드는 동일 맵·아이템·몬스터 배치를 보장하므로, 점수 차이는 전적으로 플레이어의 판단력으로 귀결된다. 
+일일 챌린지와 공유 시드는 점수 랭킹 비교의 핵심 동기다. 동일 시드는 동일 맵·아이템·몬스터 배치를 보장하므로, 점수 차이는 전적으로 플레이어의 판단력으로 귀결된다.
 
 ### **13.5 회차 간 진행**
 
-챌린지 모드는 회차 간 빌드 누적을 허용하지 않는다. 
+챌린지 모드는 회차 간 빌드 누적을 허용하지 않는다.
 
 | 분류 | 요소  | 비고 |
 | :---- | :---- | :---- |
@@ -1162,7 +1163,7 @@ UI 예시 \- 위치 변경 가능
 | 비보존  | 장비 강화 수치  | —  |
 | 비보존  | 특성 포인트 / 캐릭터 레벨  | —  |
 
-디자인 철학 회차 간에 누적되는 것은 점수와 기록뿐이다. 빌드는 매번 죽고 다시 태어난다. 이는 의도된 설계다. 한 회차가 자기 안에서 완결되어야 짧은 세션(15\~25분)의 의사결정이 무겁게 다가오고, 사망의 비용도 명확해진다. 60초 던전은 메타프로그레션 게임이 아니라 챌린지 게임이다. 
+디자인 철학 회차 간에 누적되는 것은 점수와 기록뿐이다. 빌드는 매번 죽고 다시 태어난다. 이는 의도된 설계다. 한 회차가 자기 안에서 완결되어야 짧은 세션(15\~25분)의 의사결정이 무겁게 다가오고, 사망의 비용도 명확해진다. Stolen Time은 메타프로그레션 게임이 아니라 챌린지 게임이다.
 
 [image1]: <data:image/png;base64,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>
 
