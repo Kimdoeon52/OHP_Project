@@ -24,7 +24,7 @@ public class EnemyGoblinThief : EnemyBase
     private bool _hasStolenItem = false;
 
     /// <summary> 현재 보관 중인 훔친 아이템 데이터 참조. 사망 시 복구에 사용. </summary>
-    private ItemBase _stolenItemData = null;
+    private ItemInstance  _stolenItem = null;
 
     /// <summary> 이번 턴 시각 보간용 이동 경로 버퍼. 0번은 출발지. </summary>
     private readonly List<Vector2Int> _movePath = new List<Vector2Int>();
@@ -75,9 +75,9 @@ public class EnemyGoblinThief : EnemyBase
         int index = Random.Range(0, invController.Items.Count);
         var targetItem = invController.Items[index];
 
-        if (targetItem != null && targetItem.ItemData != null)
+        if (targetItem != null && targetItem.ItemInstance != null)
         {
-            _stolenItemData = targetItem.ItemData;
+            _stolenItem  = targetItem.ItemInstance;
 
             bool removed = invController.TryRemoveItem(targetItem);
             if (removed)
@@ -85,7 +85,7 @@ public class EnemyGoblinThief : EnemyBase
                 // 인벤토리 UI 오브젝트도 같이 소멸
                 Destroy(targetItem.gameObject);
                 _hasStolenItem = true;
-                Debug.Log($"[GoblinThief] {name}이(가) 플레이어의 {_stolenItemData.Name} 훔쳐 도망 시작.");
+                Debug.Log($"[GoblinThief] {name}이(가) 플레이어의 {_stolenItem.data.Name} 훔쳐 도망 시작.");
             }
         }
     }
@@ -97,19 +97,19 @@ public class EnemyGoblinThief : EnemyBase
     /// </summary>
     protected override void Die()
     {
-        if (_hasStolenItem && _stolenItemData != null)
+        if (_hasStolenItem && _stolenItem != null)
         {
             var invController = FindFirstObjectByType<InventoryController>();
             if (invController != null)
             {
-                bool added = invController.TryAddItem(_stolenItemData);
+                bool added = invController.TryAddItem(_stolenItem);
                 if (added)
                 {
-                    Debug.Log($"[GoblinThief] {name} 처치 → {_stolenItemData.Name} 회수 성공.");
+                    Debug.Log($"[GoblinThief] {name} 처치 → {_stolenItem.data.Name} 회수 성공.");
                 }
                 else
                 {
-                    Debug.LogWarning($"[GoblinThief] {name} 처치했으나 인벤토리 가득 참 → {_stolenItemData.Name} 회수 실패.");
+                    Debug.LogWarning($"[GoblinThief] {name} 처치했으나 인벤토리 가득 참 → {_stolenItem.data.Name} 회수 실패.");
                 }
             }
         }
