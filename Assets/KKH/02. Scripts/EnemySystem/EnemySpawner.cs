@@ -95,9 +95,10 @@ namespace EnemySystem
         /// 순서:
         ///   1. 이전 층 몬스터 전부 Destroy
         ///   2. depth로 FloorSpawnConfig 검색
-        ///   3. 각 방에 RoomSpawnRule.Generate() 실행
-        ///   4. 결과(EnemySpawnEntry) 목록을 InstantiateOne으로 소환
-        ///   5. SpawnCountModifier 리셋
+        ///   3. 엘리트 몬스터를 Exit Room에 확정 배치 (단독)
+        ///   4. Exit Room 제외한 각 방에 RoomSpawnRule.Generate() 실행
+        ///   5. 결과(EnemySpawnEntry) 목록을 InstantiateOne으로 소환
+        ///   6. SpawnCountModifier 리셋
         /// </summary>
         /// <param name="rooms">던전 방 목록</param>
         /// <param name="depth">현재 층 깊이</param>
@@ -122,10 +123,14 @@ namespace EnemySystem
                 return;
             }
 
-            // 방별로 스폰 규칙 적용
+            // 1단계: 엘리트 몬스터 Exit Room 확정 배치 (단독)
+            SpawnEliteInExitRoom(rooms, currentConfig, rng);
+
+            // 2단계: 방별 일반 스폰 (Exit Room은 엘리트 단독이므로 스킵)
             foreach (var room in rooms)
             {
                 if (room.type == RoomType.Tunnel) continue; // 복도는 스킵
+                if (room.type == RoomType.Exit) continue;   // Exit Room은 엘리트 단독
 
                 // 방 타입에 맞는 RoomSpawnRule 결정
                 RoomSpawnRule rule = ResolveRule(room.type);
@@ -140,6 +145,132 @@ namespace EnemySystem
 
             // 다음 층 스폰을 위해 보정값 초기화
             SpawnCountModifier = 0;
+        }
+
+        // ──────────── 엘리트 Exit Room 전용 스폰 ────────────
+
+        /// <summary>
+        /// 스폰 테이블 전체 풀에서 EnemyGrade.Elite인 몬스터를 필터링하고,
+        /// Exit Room의 출구 타일 인접(상하좌우) Walkable 위치에 딱 1마리만 배치.
+        /// 엘리트가 풀에 없거나 Exit Room이 없으면 아무것도 안 함.
+        /// </summary>
+        private void SpawnEliteInExitRoom(List<RoomData> rooms, FloorSpawnConfig config, DungeonRandom rng)
+        {
+            if (config.spawnTable == null || config.spawnTable.tiers == null) return;
+
+            // 1. 스폰 테이블의 모든 티어에서 Elite 등급 몬스터 수집
+            List<EnemyData> eliteCandidates = new List<EnemyData>();
+            foreach (var tier in config.spawnTable.tiers)
+            {
+                if (tier?.pool == null) continue;
+                foreach (var poolEntry in tier.pool)
+                {
+                    if (poolEntry?.enemyData != null
+                        && poolEntry.enemyData.grade == EnemyGrade.Elite
+                        && !eliteCandidates.Contains(poolEntry.enemyData))
+                    {
+                        eliteCandidates.Add(poolEntry.enemyData);
+                    }
+                }
+            }
+
+            if (eliteCandidates.Count == 0) return; // 이 층에 엘리트 없음
+
+            // 2. Exit Room 탐색
+            RoomData exitRoom = null;
+            foreach (var room in rooms)
+            {
+                if (room.type == RoomType.Exit)
+                {
+                    exitRoom = room;
+                    break;
+                }
+            }
+
+            if (exitRoom == null) return; // Exit Room 없음 (보스층 등)
+
+            // 3. 출구(Exit) 타일 인접 Walkable 위치 탐색
+            //    MapGenerator.FindExitCell과 동일한 방식으로 실제 출구 타일을 찾음
+            Vector2Int exitTile = Vector2Int.zero;
+            bool exitTileFound = false;
+
+            if (exitRoom.floorCells != null && exitRoom.floorCells.Count > 0)
+            {
+                Vector2 center = Vector2.zero;
+                foreach (var c in exitRoom.floorCells)
+                    center += c;
+                center /= exitRoom.floorCells.Count;
+
+                Vector2Int best = exitRoom.floorCells[0];
+                float bestDist = float.MaxValue;
+                foreach (var c in exitRoom.floorCells)
+                {
+                    float d = ((Vector2)c - center).sqrMagnitude;
+                    if (d < bestDist)
+                    {
+                        bestDist = d;
+                        best = c;
+                    }
+                }
+                exitTile = best;
+                exitTileFound = true;
+            }
+
+            Vector2Int spawnPos = Vector2Int.zero;
+            bool found = false;
+            Vector2Int[] adjacentDirs = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+
+            if (exitTileFound)
+            {
+                foreach (var dir in adjacentDirs)
+                {
+                    Vector2Int candidate = exitTile + dir;
+                    // floorCells에 포함되고 Walkable인 위치만 허용
+                    if (exitRoom.floorCells.Contains(candidate))
+                    {
+                        bool isWalkable = GridSystem.Instance == null || GridSystem.Instance.IsWalkable(candidate);
+                        if (isWalkable)
+                        {
+                            spawnPos = candidate;
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 폴백: 인접 셀을 못 찾으면 방 중앙 Walkable 셀 사용
+            if (!found)
+            {
+                Vector2Int center = new Vector2Int(
+                    exitRoom.bounds.x + exitRoom.bounds.width / 2,
+                    exitRoom.bounds.y + exitRoom.bounds.height / 2
+                );
+                float minDist = float.MaxValue;
+                foreach (var cell in exitRoom.floorCells)
+                {
+                    bool isWalkable = GridSystem.Instance == null || GridSystem.Instance.IsWalkable(cell);
+                    if (isWalkable)
+                    {
+                        float dist = (cell - center).sqrMagnitude;
+                        if (dist < minDist)
+                        {
+                            minDist = dist;
+                            spawnPos = cell;
+                            found = true;
+                        }
+                    }
+                }
+            }
+
+            if (!found) return; // Walkable 셀 없음
+
+            // 4. 랜덤으로 엘리트 1종 선택 후 배치
+            EnemyData selectedElite = eliteCandidates[rng.Range(0, eliteCandidates.Count)];
+            var spawnEntry = new EnemySpawnEntry(selectedElite, spawnPos);
+            InstantiateOne(spawnEntry, config);
+
+            Debug.Log($"EnemySpawner: Exit Room에 엘리트 '{selectedElite.displayName}' 배치 완료 ({spawnPos}).");
         }
 
         /// <summary>

@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95ae69ab44fdc2f449301d0fbafbdcbf, type: 3}
   m_Name: GoblinThief
   m_EditorClassIdentifier: 
-  id: goblin_thief
-  displayName: "칼 든 고블린"
+  id: 2005
+  displayName: "\uCE7C \uB4E0 \uACE0\uBE14\uB9B0"
   sprite: {fileID: 0}
   grade: 0
   moveType: 0

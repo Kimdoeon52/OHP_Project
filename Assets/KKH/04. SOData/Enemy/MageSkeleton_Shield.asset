@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95ae69ab44fdc2f449301d0fbafbdcbf, type: 3}
   m_Name: MageSkeleton_Shield
   m_EditorClassIdentifier: 
-  id: mage_skeleton_shield
-  displayName: "마법사 스켈레톤 (방패)"
+  id: 2004
+  displayName: "\uB9C8\uBC95\uC0AC \uC2A4\uCF08\uB808\uD1A4 (\uBC29\uD328)"
   sprite: {fileID: 0}
   grade: 0
   moveType: 0

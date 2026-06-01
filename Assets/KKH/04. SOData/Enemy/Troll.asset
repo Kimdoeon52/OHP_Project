@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95ae69ab44fdc2f449301d0fbafbdcbf, type: 3}
   m_Name: Troll
   m_EditorClassIdentifier: 
-  id: troll
-  displayName: "트롤"
+  id: 2006
+  displayName: "\uD2B8\uB864"
   sprite: {fileID: 0}
   grade: 1
   moveType: 0

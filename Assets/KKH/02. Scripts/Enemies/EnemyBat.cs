@@ -18,6 +18,7 @@ public class EnemyBat : EnemyBase
 {
     /// <summary> 이번 턴에 이동할 격자 좌표 경로 버퍼. 0번은 출발지. </summary>
     private List<Vector2Int> _movePath = new List<Vector2Int>();
+    private Coroutine _moveCoroutine;
 
     // ExecutePendingAttack / CheckAttackTelegraph는 부모(EnemyBase) 기본 로직 그대로 사용.
     // (인접 1칸 근접 공격 예고)
@@ -41,8 +42,11 @@ public class EnemyBat : EnemyBase
         }
 
         // 진행 중 코루틴 취소 후 새 경로로 재시작
-        StopAllCoroutines();
-        StartCoroutine(SmoothMoveVisual(0.05f)); // 칸당 0.05초 간격으로 고속 이동
+        if (_moveCoroutine != null)
+        {
+            StopCoroutine(_moveCoroutine);
+        }
+        _moveCoroutine = StartCoroutine(SmoothMoveVisual(0.05f)); // 칸당 0.05초 간격으로 고속 이동
     }
 
     /// <summary>
@@ -59,7 +63,7 @@ public class EnemyBat : EnemyBase
 
         if (!GridSystem.Instance.IsWalkable(next)) return false;   // 벽
         if (next == Player.GridPosition) return false;             // 플레이어 위치
-       // if (TurnManager.Instance.GetEntityAt(next) != null) return false; // 타 엔티티
+                                                                   // if (TurnManager.Instance.GetEntityAt(next) != null) return false; // 타 엔티티
         if (GridSystem.Instance.IsCellOccupied(next)) return false; // 타 엔티티
         if (GridSystem.Instance != null)
         {
@@ -123,7 +127,7 @@ public class EnemyBat : EnemyBase
     {
         if (!GridSystem.Instance.IsWalkable(pos)) return false;
         if (pos == Player.GridPosition) return false;
-//      if (TurnManager.Instance.GetEntityAt(pos) != null) return false;
+        //      if (TurnManager.Instance.GetEntityAt(pos) != null) return false;
         if (GridSystem.Instance.IsCellOccupied(pos)) return false; // 타 엔티티
         return true;
     }

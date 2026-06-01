@@ -202,10 +202,33 @@ namespace EnemySystem
             int spawnCount = rng.Range(minCount, maxCount + 1);
             spawnCount = Mathf.Min(spawnCount, validPositions.Count);
 
+            // 일반 스폰 풀에서 엘리트(Elite) 등급 몬스터 제외
+            var nonElitePool = System.Array.FindAll(tier.pool, e => e.enemyData != null && e.enemyData.grade != EnemyGrade.Elite);
+
+            // 현재 티어에 일반 몬스터가 없는 경우, 하위 티어에서 검색하여 대체 (ex. Area1의 4티어는 뱀[Elite]만 존재)
+            if (nonElitePool.Length == 0)
+            {
+                for (int d = room.distanceFromSafe - 1; d >= 1; d--)
+                {
+                    var fallbackTier = spawnTable.GetTier(d);
+                    if (fallbackTier != null && fallbackTier.pool != null)
+                    {
+                        nonElitePool = System.Array.FindAll(fallbackTier.pool, e => e.enemyData != null && e.enemyData.grade != EnemyGrade.Elite);
+                        if (nonElitePool.Length > 0)
+                        {
+                            tier = fallbackTier; // 해당 티어의 기준 값(마릿수 등) 차용
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (nonElitePool.Length == 0) yield break;
+
             int posIndex = 0;
             for (int i = 0; i < spawnCount && posIndex < validPositions.Count; i++)
             {
-                EnemyPoolEntry picked = PickWeightedRandom(tier.pool, rng);
+                EnemyPoolEntry picked = PickWeightedRandom(nonElitePool, rng);
                 if (picked == null || picked.enemyData == null) continue;
 
                 // LOS 필요 적은 적합한 위치 탐색
@@ -227,7 +250,7 @@ namespace EnemySystem
                     if (!found)
                     {
                         // LOS 위치 없음 → requiresLineOfSight = false인 일반 몬스터로 대체
-                        var nonLOSPool = System.Array.FindAll(tier.pool, e => !e.requiresLineOfSight);
+                        var nonLOSPool = System.Array.FindAll(nonElitePool, e => !e.requiresLineOfSight);
                         if (nonLOSPool.Length > 0)
                         {
                             picked = PickWeightedRandom(nonLOSPool, rng);

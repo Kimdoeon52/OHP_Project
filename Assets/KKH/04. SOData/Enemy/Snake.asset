@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95ae69ab44fdc2f449301d0fbafbdcbf, type: 3}
   m_Name: Snake
   m_EditorClassIdentifier: 
-  id: snake
-  displayName: "뱀"
-  sprite: {fileID: 0}
+  id: 1004
+  displayName: "\uBC40"
+  sprite: {fileID: 331297703, guid: cc2866ab7a7f24447a30db81eead0c32, type: 3}
   grade: 1
   moveType: 0
   hasShield: 0

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95ae69ab44fdc2f449301d0fbafbdcbf, type: 3}
   m_Name: Bat
   m_EditorClassIdentifier: 
-  id: bat
+  id: 1003
   displayName: "\uBC15\uC950"
   sprite: {fileID: 1250992400, guid: b5a7f1315e6662645975a55d2b27a8cb, type: 3}
   grade: 0

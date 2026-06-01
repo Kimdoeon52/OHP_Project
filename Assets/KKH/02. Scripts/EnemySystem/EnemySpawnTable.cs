@@ -47,10 +47,6 @@ namespace EnemySystem
 
         [Tooltip("방 1개당 최대 스폰 마릿수")]
         public int maxCount = 3;
-
-        [Tooltip("Elite 변종 출현 확률. 0=0%, 1=100%.")]
-        [Range(0f, 1f)]
-        public float eliteChance = 0f;
     }
 
     /// <summary>

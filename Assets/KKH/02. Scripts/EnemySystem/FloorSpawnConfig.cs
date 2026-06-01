@@ -12,7 +12,7 @@ namespace EnemySystem
     {
         [Tooltip("매핑할 적의 SO 데이터")]
         public EnemyData enemyData;
-        
+
         [Tooltip("런타임에 Instantiate할 유니티 프리팹")]
         public GameObject prefab;
     }
