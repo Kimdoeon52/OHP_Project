@@ -6,37 +6,38 @@ using System.Collections.Generic;
 
 /*
  * BossA — HP 기반 보스 (눈알 보스). 본체 행동만 담당.
- * 격자 레이저 패턴은 별도 스크립트(LazerPattern)에서 독립적으로 실행.
- *
- * 본체 행동 사이클 (반복, HP > phase3HpThreshold 동안):
- *   1) 활성 모드 — activeDurationSec(=10초) 현재 위치에서 대기
- *   2) 사라짐 → 맵 중앙으로 텔레포트 (충격파 효과)
- *   3) 배회 모드 — wanderDurationSec(=10초) 랜덤 인접 셀 이동
- *
- * Phase 3 (HP ≤ phase3HpThreshold):
- *   사이클 정지. 한 번 중앙으로 이동한 뒤 영구 정지.
- *   (회전 레이저는 LazerPattern이 별도로 처리)
+ * BossBase를 상속하며, BossBase의 패턴 메서드를 오버라이드하여 동작을 구성.
+ * 
+ * 행동 사이클:
+ *   1) AttackFloor 위에서 3보 배회 (Wander)
+ *   2) BossPatternPer()로 Pattern1 또는 Pattern2 결정
+ *   3) 패턴 실행 후 patternDelay 대기 및 반복
+ * 
+ * 패턴 종류:
+ *   - Pattern 1 (점프 찍기): 플레이어 위치로 점프(DOJump)하여 3x3 범위 공격, 3초 쿨타임 후 한번 더 반복.
+ *   - Pattern 2 (십자 레이저): 플레이어가 있는 라인을 향해 가로/세로 4방향 레이저 발사.
  */
 public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 {
-    [Header("메인 사이클")]
-    [SerializeField] private float activeDurationSec = 10f;    // 활성 모드 지속 시간
-    [SerializeField] private float wanderDurationSec = 10f;    // 배회 모드 지속 시간
-    [SerializeField] private int wanderStepIntervalMs = 500;   // 배회 한 칸 이동 간격
-    [SerializeField] private int breakDisappearMs = 800;       // 사라짐 노출 시간
-    [SerializeField] private int fallAppearMs = 400;           // 중앙 등장 후 잠깐 대기
-
     [Header("HP 페이즈 경계")]
-    [SerializeField] private int phase3HpThreshold = 20;       // HP ≤ 이 값 → Phase 3 (중앙 고정, 사이클 정지)
+    [SerializeField] private int phase3HpThreshold = 20;
 
-    [Header("충격파 (선택)")]
-    [SerializeField] private GameObject shockwavePrefab;       // 중앙 낙하 시 spawn할 효과 prefab
+    [Header("배회 설정")]
+    [SerializeField] private float wanderMoveDuration = 0.25f; // DOTween 이동 한 칸 소요 시간(초)
+    [SerializeField] private int wanderStepIntervalMs = 500;   // 배회 한 칸 이동 간격
+    [SerializeField] private int wanderStepsBeforePattern = 3; // 패턴 실행 전 배회(걷기) 횟수
+
+    [Header("공격 예고/이펙트")]
+    [SerializeField] private GameObject shockwavePrefab;       // 점프 공격 시 소환할 충격파 효과
     [SerializeField] private float shockwaveLifetimeSec = 1f;
 
-    [Header("이동 연출")]
-    [SerializeField] private float wanderMoveDuration = 0.25f; // DOTween 이동 한 칸 소요 시간(초)
+    [Header("레이저 설정 (Pattern 2)")]
+    [SerializeField] private GameObject laserPrefab;
+    [SerializeField] private int laserTelegraphMs = 800;
+    [SerializeField] private int laserActiveMs = 400;
+    [SerializeField] private int laserDamage = 1;
 
-    [Header("AttackFloor 타일맵 (이동·중앙 범위 제한)")]
+    [Header("AttackFloor 타일맵 (이동 범위 제한)")]
     [SerializeField] private Tilemap attackFloorTilemap;
 
     [SerializeField] private Vector2Int bossSize = new Vector2Int(2, 2); // 보스가 차지하는 크기 (2,2)
@@ -45,31 +46,14 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     private RectInt _mapBounds;
     private bool _hasMapBounds;
     private SpriteRenderer _bossSprite;
-    private bool _phase3Locked;
-    private bool _mainLoopStarted;
     private Vector2Int gridPos;
 
     #region 플레이어 이동공격 대상 등록 프록시
-    // 이 region은 NYH 플레이어의 "이동하려는 칸에 적이 있으면 이동 대신 공격" 기능과 연결하기 위한 구간입니다.
-    // BossB는 원래 자기 내부 gridPos만 알고 있고, TurnManager에는 자신을 등록하지 않았습니다.
-    // 그래서 플레이어 쪽에서 TurnManager.GetEntityAt(target)을 호출해도 보스를 찾을 수 없었습니다.
-    //
-    // 해결 방식:
-    // 1. BossB가 IGridEntity를 구현해서 "내가 어느 격자 칸에 있는지" 외부에 알려줍니다.
-    // 2. BossB가 IDamageable을 구현해서 플레이어 공격 코드가 TakeDamage를 호출할 수 있게 합니다.
-    // 3. Start에서 TurnManager에 등록하고, OnDisable에서 해제합니다.
-    //
-    // 주의:
-    // 현재 구현은 BossB가 한 칸짜리 보스라는 가정입니다.
-    // 보스가 2x2 이상을 차지하게 되면 GridPosition 하나만으로는 부족하므로,
-    // 보스가 점유하는 모든 칸을 반환하거나 별도 충돌 판정 목록을 만들어야 합니다.
-
     public Vector2Int GridPosition => gridPos;
     public int CurrentHp => currentHp;
     public int MaxHp => maxHp;
     public bool IsDead => currentHp <= 0;
 
-    // IMultiCellGridEntity 인터페이스 요구사항입니다. 보스가 실제로 차지하는 모든 칸을 반환합니다.
     public IEnumerable<Vector2Int> OccupiedCells
     {
         get
@@ -83,64 +67,48 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         }
     }
 
-    // IDamageable 인터페이스 요구사항입니다.
-    // 플레이어 공격 시스템은 TakeDamage 이름으로 피해를 주므로,
-    // BossB 내부의 기존 보스 피해 처리 함수인 BossTakeDamage로 연결합니다.
     public void TakeDamage(int amount)
     {
         BossTakeDamage(amount);
     }
 
-    // IDamageable 인터페이스 요구사항입니다.
-    // BossBase에는 BossTakeDamage가 이미 있으므로, 피해 처리는 TakeDamage에서 BossTakeDamage로 연결합니다.
     public virtual void Heal(int amount)
     {
         if (amount <= 0 || IsDead) return;
         currentHp = Mathf.Min(maxHp, currentHp + amount);
     }
 
-    // IGridEntity 인터페이스 요구사항입니다.
-    // BossB는 BossBase의 Update/UniTask 패턴으로 독립 행동하므로, 턴 매니저가 호출해도 여기서는 아무것도 하지 않습니다.
     public void OnTurnUpdate()
     {
     }
 
-    //Boss를 TurnManager의 엔티티 목록에 등록하는 함수.
-    // 플레이어는 이동하려는 칸의 대상을 TurnManager.GetEntityAt()으로 찾기 때문에,
-    //이 등록이 빠지면 보스가 실제로 그 칸에 있어도 이동공격 대상으로 인식되지 않습니다.
     private void RegisterBossGridTarget()
     {
         if (TurnManager.Instance == null)
         {
-            Debug.LogWarning("BossB: TurnManager가 없어 플레이어 이동공격 대상으로 등록하지 못했습니다.");
+            Debug.LogWarning("BossA: TurnManager가 없어 플레이어 이동공격 대상으로 등록하지 못했습니다.");
             return;
         }
-
         TurnManager.Instance.Register(this);
     }
 
-    // BossB를 TurnManager의 그리드 엔티티 목록에서 제거합니다.
-    // 보스가 죽거나 비활성화된 뒤에도 목록에 남아 있으면,
-    // 플레이어가 없는 대상을 공격하려 하거나 파괴된 참조가 남을 수 있어서 정리합니다.
-    // ?. 연산자는 TurnManager가 이미 사라진 상황에서는 아무것도 하지 않도록 막아줍니다.
     private void UnregisterBossGridTarget()
     {
         TurnManager.Instance?.Unregister(this);
     }
 
-    // Unity 생명주기 함수입니다.
-    // BossB 오브젝트가 비활성화되거나 파괴될 때 자동으로 호출됩니다.
-    // 이때 TurnManager 목록에서 BossB를 제거해서,
-    // 사라진 보스가 플레이어 이동공격 대상으로 계속 남지 않게 합니다.
     private void OnDisable()
     {
         UnregisterBossGridTarget();
     }
     #endregion
-    //=============================== 초기화 ==========================================
+
+    //==============================================================================================
+    // 1. 초기화 및 지형/범위 판정 헬퍼
+    //==============================================================================================
     protected override void OnEnable()
     {
-        base.OnEnable(); // patternDelay 변환, 보스전 120초 타이머 시작
+        base.OnEnable(); // patternDelay 변환, 보스전 120초 타이머 시작 및 WaitBossCoolTime 구동
         currentHp = maxHp;
         _bossSprite = GetComponentInChildren<SpriteRenderer>();
         CacheMapBounds();
@@ -150,20 +118,11 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
         RegisterBossGridTarget();
 
-        // base의 PhaseState 디스패치를 막고 자체 메인 루프로 동작.
-        isBossAttacking = true;
-        if (!_mainLoopStarted)
-        {
-            _mainLoopStarted = true;
-            MainLoop().Forget();
-        }
+        // BossAction 가중치 설정 (Pattern1: 50% / Pattern2: 50%)
+        actionCases.Clear();
+        AddActionCase(BossAction.Pattern1, 50);
+        AddActionCase(BossAction.Pattern2, 50);
     }
-
-    // BossBase의 시간 기반 Phase2 전환을 막는다 (BossA는 HP 기반 + 자체 사이클).
-    protected override void EnterPhase2() { /* no-op */ }
-
-    // base PhaseState가 호출되지 않도록 무력화 (메인 루프에서 직접 사이클 운영).
-    protected override UniTask PhaseState() => UniTask.CompletedTask;
 
     private void CacheMapBounds()
     {
@@ -176,7 +135,6 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             return;
         }
 
-        // attackFloorTilemap 미설정 시 기존 방식(전체 walkable) 폴백
         if (GridSystem.Instance == null) return;
         int minX = int.MaxValue, minY = int.MaxValue, maxX = int.MinValue, maxY = int.MinValue;
         bool any = false;
@@ -213,118 +171,101 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         return true;
     }
 
-    private int GetCurrentPhase()
+    //==============================================================================================
+    // 2. 메인 행동 루프 제어 (BossBase 오버라이드)
+    //==============================================================================================
+    protected override async UniTask Phase1BossPattern()
     {
-        if (currentHp <= phase3HpThreshold || _phase3Locked) return 3;
-        return 1;
-    }
+        isBossAttacking = true;
+        if (!_hasMapBounds) CacheMapBounds();
 
-    //=============================== 메인 행동 루프 ==========================================
-    private async UniTask MainLoop()
-    {
-        try
+        // 설정된 횟수만큼 배회 후 패턴 발사
+        await WanderStepsAsync(wanderStepsBeforePattern);
+
+        if (cancelToken.IsCancellationRequested || isDying)
         {
-            while (!cancelToken.IsCancellationRequested && !isDying)
-            {
-                if (!_hasMapBounds) CacheMapBounds();
-
-                switch (GetCurrentPhase())
-                {
-                    case 3:
-                        if (!_phase3Locked)
-                        {
-                            _phase3Locked = true;
-                            await BreakAndFallAsync();
-                        }
-                        // 사이클 정지, 가만히 대기
-                        await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
-                        break;
-
-                    default:
-                        // 일반 사이클: 활성(현재 자리에서 대기) → 사라짐/중앙낙하 → 배회 → 반복
-                        await UniTask.Delay((int)(activeDurationSec * 1000), cancellationToken: cancelToken.Token);
-                        if (cancelToken.IsCancellationRequested || isDying) break;
-
-                        await BreakAndFallAsync();
-                        if (cancelToken.IsCancellationRequested || isDying) break;
-
-                        await WanderModeAsync();
-                        break;
-                }
-            }
-        }
-        catch (System.OperationCanceledException) { }
-    }
-
-    //=============================== 사라짐 / 중앙 낙하 / 배회 ==========================================
-    private async UniTask BreakAndFallAsync()
-    {
-        // 1) 페이드 아웃 후 사라짐
-        if (_bossSprite != null)
-        {
-            await _bossSprite.DOFade(0f, breakDisappearMs / 1000f * 0.5f)
-                .SetEase(Ease.InQuad)
-                .AsyncWaitForCompletion();
-            _bossSprite.enabled = false;
-            _bossSprite.color = new UnityEngine.Color(_bossSprite.color.r, _bossSprite.color.g, _bossSprite.color.b, 1f);
-        }
-        else
-        {
-            await UniTask.Delay(breakDisappearMs, cancellationToken: cancelToken.Token);
+            isBossAttacking = false;
+            return;
         }
 
-        // 2) 맵 중앙으로 텔레포트 후 gridPos 갱신
-        var centerWorld = GetMapCenterWorld();
-        transform.position = centerWorld;
-        if (GridSystem.Instance != null)
-            gridPos = GridSystem.Instance.WorldToGrid(centerWorld - new Vector3(0.5f, 0.5f, 0f));
+        BossAction bossAction = BossPatternPer();
+        await UniTask.Delay(patternDelay, cancellationToken: cancelToken.Token);
 
-        // 3) 충격파 effect (있으면) + 페이드 인 등장
-        if (shockwavePrefab != null)
+        switch (bossAction)
         {
-            var go = Instantiate(shockwavePrefab, transform.position, Quaternion.identity);
-            if (shockwaveLifetimeSec > 0f) Destroy(go, shockwaveLifetimeSec);
-        }
-        if (_bossSprite != null)
-        {
-            _bossSprite.color = new UnityEngine.Color(_bossSprite.color.r, _bossSprite.color.g, _bossSprite.color.b, 0f);
-            _bossSprite.enabled = true;
-            await _bossSprite.DOFade(1f, fallAppearMs / 1000f * 0.6f)
-                .SetEase(Ease.OutQuad)
-                .AsyncWaitForCompletion();
-        }
-        else
-        {
-            await UniTask.Delay(fallAppearMs, cancellationToken: cancelToken.Token);
+            case BossAction.Pattern1:
+                Phase1Pattern1().Forget();
+                break;
+            case BossAction.Pattern2:
+                Phase1Pattern2().Forget();
+                break;
+            default:
+                Phase1Pattern1().Forget();
+                break;
         }
     }
 
-    private async UniTask WanderModeAsync()
+    protected override async UniTask Phase2BossPattern()
+    {
+        isBossAttacking = true;
+        if (!_hasMapBounds) CacheMapBounds();
+
+        // 설정된 횟수만큼 배회 후 패턴 발사
+        await WanderStepsAsync(wanderStepsBeforePattern);
+
+        if (cancelToken.IsCancellationRequested || isDying)
+        {
+            isBossAttacking = false;
+            return;
+        }
+
+        BossAction bossAction = BossPatternPer();
+        await UniTask.Delay(patternDelay, cancellationToken: cancelToken.Token);
+
+        switch (bossAction)
+        {
+            case BossAction.Pattern1:
+                Phase2Pattern1().Forget();
+                break;
+            case BossAction.Pattern2:
+                Phase2Pattern2().Forget();
+                break;
+            default:
+                Phase2Pattern1().Forget();
+                break;
+        }
+    }
+
+    //==============================================================================================
+    // 3. 배회 및 이동 지원 헬퍼
+    //==============================================================================================
+    private async UniTask WanderStepsAsync(int steps)
     {
         var dirs = new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
-        float elapsed = 0f;
 
-        while (elapsed < wanderDurationSec)
+        for (int i = 0; i < steps; i++)
         {
             if (cancelToken.IsCancellationRequested || isDying) break;
 
             ShuffleDirs(dirs);
-            var bossCell = gridPos; // gridPos는 항상 보스 2x2 영역의 좌하단(bottom-left) 셀입니다.
+            bool moved = false;
             foreach (var d in dirs)
             {
-                var next = bossCell + d;
+                var next = gridPos + d;
                 if (IsAreaInAttackFloor(next, bossSize))
                 {
-                    // 2x2 보스의 렌더러 중심점을 새로운 2x2 중심 위치로 연출 이동시킵니다.
                     var targetWorld = GridSystem.Instance.GridToWorld(next) + new Vector3(0.5f, 0.5f, 0f);
-                    transform.DOMove(targetWorld, wanderMoveDuration).SetEase(Ease.InOutSine);
+                    await transform.DOMove(targetWorld, wanderMoveDuration)
+                        .SetEase(Ease.InOutSine)
+                        .AsyncWaitForCompletion();
                     gridPos = next;
+                    moved = true;
                     break;
                 }
             }
+            if (!moved) break;
 
             await UniTask.Delay(wanderStepIntervalMs, cancellationToken: cancelToken.Token);
-            elapsed += wanderStepIntervalMs / 1000f;
         }
     }
 
@@ -337,15 +278,196 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         }
     }
 
-    private Vector3 GetMapCenterWorld()
+    private Vector2Int FindValidFootprintNear(Vector2Int target)
     {
-        if (_hasMapBounds && GridSystem.Instance != null)
+        Vector2Int centerTarget = target - new Vector2Int(bossSize.x / 2, bossSize.y / 2);
+        if (IsAreaInAttackFloor(centerTarget, bossSize)) return centerTarget;
+
+        var offsets = new[]
         {
-            int cx = (_mapBounds.xMin + _mapBounds.xMax) / 2;
-            int cy = (_mapBounds.yMin + _mapBounds.yMax) / 2;
-            // 2x2 보스의 중심점을 맵 중심 2x2 격자의 가운데에 맞춥니다.
-            return GridSystem.Instance.GridToWorld(new Vector2Int(cx, cy)) + new Vector3(0.5f, 0.5f, 0f);
+            new Vector2Int(0, 0),
+            new Vector2Int(-1, 0),
+            new Vector2Int(0, -1),
+            new Vector2Int(-1, -1),
+            new Vector2Int(1, 0),
+            new Vector2Int(0, 1),
+            new Vector2Int(1, 1),
+        };
+        foreach (var offset in offsets)
+        {
+            Vector2Int candidate = target + offset;
+            if (IsAreaInAttackFloor(candidate, bossSize))
+                return candidate;
         }
-        return transform.position;
+        return gridPos;
+    }
+
+    //==============================================================================================
+    // 4. 패턴 1: 점프 및 3x3 범위 격자 공격
+    //==============================================================================================
+    protected override async UniTask Phase1Pattern1()
+    {
+        await ExecuteJumpAttackPattern();
+        isBossAttacking = false;
+    }
+
+    protected override async UniTask Phase2Pattern1()
+    {
+        await ExecuteJumpAttackPattern();
+        isBossAttacking = false;
+    }
+
+    private async UniTask ExecuteJumpAttackPattern()
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            if (cancelToken.IsCancellationRequested || isDying) break;
+            if (player == null || player.IsDead) break;
+
+            Vector2Int playerCell = player.GridPosition;
+            Vector2Int landingGridPos = FindValidFootprintNear(playerCell);
+
+            // 1) 3x3 범위 공격 경고 표시 (플레이어 중심)
+            var attackCells = new List<Vector2Int>();
+            for (int x = -1; x <= 1; x++)
+            {
+                for (int y = -1; y <= 1; y++)
+                {
+                    Vector2Int c = playerCell + new Vector2Int(x, y);
+                    if (GridSystem.Instance.IsInBounds(c))
+                        attackCells.Add(c);
+                }
+            }
+
+            ShowWarning(attackCells);
+            try
+            {
+                // 경고 표시 후 2초 대기
+                await UniTask.Delay(2000, cancellationToken: cancelToken.Token);
+
+                if (cancelToken.IsCancellationRequested || isDying) break;
+
+                // 2) 점프 이동
+                var targetWorld = GridSystem.Instance.GridToWorld(landingGridPos) + new Vector3(0.5f, 0.5f, 0f);
+                if (bossAnimation != null) bossAnimation.SetTrigger("Teleport");
+
+                await transform.DOJump(targetWorld, jumpPower: 2f, numJumps: 1, duration: 0.6f)
+                    .SetEase(Ease.OutQuad)
+                    .AsyncWaitForCompletion();
+                gridPos = landingGridPos;
+
+                if (bossAnimation != null) bossAnimation.SetTrigger("Appear");
+
+                // 3) 충격파 및 데미지 판정
+                if (shockwavePrefab != null)
+                {
+                    var go = Instantiate(shockwavePrefab, transform.position, Quaternion.identity);
+                    if (shockwaveLifetimeSec > 0f) Destroy(go, shockwaveLifetimeSec);
+                }
+
+                DamagePlayerIfInCells(attackCells, 1);
+            }
+            finally
+            {
+                ClearWarning(attackCells);
+            }
+
+            // 4) 대기 시간 처리
+            if (i == 0)
+            {
+                // 첫 번째 점프 후에는 3초 쿨타임 대기
+                await UniTask.Delay(3000, cancellationToken: cancelToken.Token);
+            }
+            else
+            {
+                // 두 번째 점프 후에는 충격파 나오고 1초 뒤 다시 걷기
+                await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
+            }
+        }
+    }
+
+    //==============================================================================================
+    // 5. 패턴 2: 플레이어 방향 십자 레이저 발사
+    //==============================================================================================
+    protected override async UniTask Phase1Pattern2()
+    {
+        await ExecuteCrossLaserPattern();
+        isBossAttacking = false;
+    }
+
+    protected override async UniTask Phase2Pattern2()
+    {
+        await ExecuteCrossLaserPattern();
+        isBossAttacking = false;
+    }
+
+    private async UniTask ExecuteCrossLaserPattern()
+    {
+        if (player == null || player.IsDead) return;
+
+        var attackCells = GetCrossCells();
+        ShowWarning(attackCells);
+
+        try
+        {
+            if (bossAnimation != null) bossAnimation.SetTrigger("Attack2");
+
+            await UniTask.Delay(laserTelegraphMs, cancellationToken: cancelToken.Token);
+
+            List<GameObject> lasers = new List<GameObject>();
+            if (laserPrefab != null && _hasMapBounds)
+            {
+                // 세로 레이저 (두께 2칸)
+                Vector3 vStart = GridSystem.Instance.GridToWorld(new Vector2Int(gridPos.x, _mapBounds.yMin));
+                Vector3 vEnd = GridSystem.Instance.GridToWorld(new Vector2Int(gridPos.x + 1, _mapBounds.yMax - 1));
+                Vector3 vCenter = (vStart + vEnd) * 0.5f;
+                GameObject vLaser = Instantiate(laserPrefab, vCenter, Quaternion.Euler(0, 0, 90));
+                float vLength = Vector3.Distance(vStart, vEnd);
+                vLaser.transform.localScale = new Vector3(vLength, 2f, 1f);
+                lasers.Add(vLaser);
+
+                // 가로 레이저 (두께 2칸)
+                Vector3 hStart = GridSystem.Instance.GridToWorld(new Vector2Int(_mapBounds.xMin, gridPos.y));
+                Vector3 hEnd = GridSystem.Instance.GridToWorld(new Vector2Int(_mapBounds.xMax - 1, gridPos.y + 1));
+                Vector3 hCenter = (hStart + hEnd) * 0.5f;
+                GameObject hLaser = Instantiate(laserPrefab, hCenter, Quaternion.identity);
+                float hLength = Vector3.Distance(hStart, hEnd);
+                hLaser.transform.localScale = new Vector3(hLength, 2f, 1f);
+                lasers.Add(hLaser);
+            }
+
+            DamagePlayerIfInCells(attackCells, laserDamage);
+
+            await UniTask.Delay(laserActiveMs, cancellationToken: cancelToken.Token);
+
+            foreach (var l in lasers) if (l != null) Destroy(l);
+        }
+        finally
+        {
+            ClearWarning(attackCells);
+            if (bossAnimation != null) bossAnimation.SetTrigger("Attack2Fin");
+        }
+    }
+
+    private List<Vector2Int> GetCrossCells()
+    {
+        var cells = new List<Vector2Int>();
+        if (!_hasMapBounds) return cells;
+
+        // 세로 두께 2줄
+        for (int y = _mapBounds.yMin; y < _mapBounds.yMax; y++)
+        {
+            cells.Add(new Vector2Int(gridPos.x, y));
+            cells.Add(new Vector2Int(gridPos.x + 1, y));
+        }
+
+        // 가로 두께 2줄
+        for (int x = _mapBounds.xMin; x < _mapBounds.xMax; x++)
+        {
+            cells.Add(new Vector2Int(x, gridPos.y));
+            cells.Add(new Vector2Int(x, gridPos.y + 1));
+        }
+
+        return cells;
     }
 }

@@ -308,19 +308,44 @@ public class LazerPattern : MonoBehaviour
             eyeObj = Instantiate(specialEyePrefab, center, Quaternion.identity);
         }
 
-        var beams = new GameObject[4];
-        for (int i = 0; i < 4; i++)
+        var warningCells = new List<Vector2Int>();
+        if (_hasMapBounds)
         {
-            beams[i] = Instantiate(lazerAttackPrefab, center, Quaternion.identity);
-            var s = beams[i].transform.localScale;
-            beams[i].transform.localScale = new Vector3(phase3LaserLength, s.y, s.z);
-            var sr = beams[i].GetComponentInChildren<SpriteRenderer>();
-            if (sr != null) sr.color = phase3LaserColor;
+            int cx = (_mapBounds.xMin + _mapBounds.xMax) / 2;
+            int cy = (_mapBounds.yMin + _mapBounds.yMax) / 2;
+
+            for (int x = _mapBounds.xMin; x < _mapBounds.xMax; x++)
+            {
+                warningCells.Add(new Vector2Int(x, cy));
+            }
+            for (int y = _mapBounds.yMin; y < _mapBounds.yMax; y++)
+            {
+                if (y != cy)
+                    warningCells.Add(new Vector2Int(cx, y));
+            }
         }
 
-        float baseAngle = 0f;
+        ShowWarning(warningCells);
+
+        var beams = new GameObject[4];
         try
         {
+            // 실행 전 2초간 경고표시 보여주기
+            await UniTask.Delay(2000, cancellationToken: token);
+            ClearWarning(warningCells);
+
+            if (token.IsCancellationRequested || !IsBossAlive()) return;
+
+            for (int i = 0; i < 4; i++)
+            {
+                beams[i] = Instantiate(lazerAttackPrefab, center, Quaternion.identity);
+                var s = beams[i].transform.localScale;
+                beams[i].transform.localScale = new Vector3(phase3LaserLength, s.y, s.z);
+                var sr = beams[i].GetComponentInChildren<SpriteRenderer>();
+                if (sr != null) sr.color = phase3LaserColor;
+            }
+
+            float baseAngle = 0f;
             while (!token.IsCancellationRequested && IsBossAlive())
             {
                 baseAngle += phase3LaserRotateSpeed * Time.deltaTime;
@@ -332,6 +357,8 @@ public class LazerPattern : MonoBehaviour
 
                 for (int i = 0; i < 4; i++)
                 {
+                    if (beams[i] == null) continue;
+
                     float deg = baseAngle + i * 90f;
                     float a = deg * Mathf.Deg2Rad;
                     Vector3 dir = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f);
@@ -353,7 +380,11 @@ public class LazerPattern : MonoBehaviour
         catch (System.OperationCanceledException) { }
         finally
         {
-            for (int i = 0; i < 4; i++) if (beams[i] != null) Destroy(beams[i]);
+            ClearWarning(warningCells);
+            for (int i = 0; i < 4; i++)
+            {
+                if (beams[i] != null) Destroy(beams[i]);
+            }
             if (eyeObj != null) Destroy(eyeObj);
         }
     }

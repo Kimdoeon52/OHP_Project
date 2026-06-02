@@ -96,8 +96,8 @@ public class TurnManager : Singleton<TurnManager>
 
     public void Register(IGridEntity entity)
     {
-        if(!IsEntityAlive(entity)) return;
-
+        if (!IsEntityAlive(entity))
+            return;
 
         if (!_entities.Contains(entity))
             _entities.Add(entity);   
