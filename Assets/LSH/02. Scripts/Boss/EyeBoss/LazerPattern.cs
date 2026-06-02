@@ -67,6 +67,8 @@ public class LazerPattern : MonoBehaviour
     private void OnEnable()
     {
         if (boss == null) boss = GetComponent<BossBase>();
+        if (boss == null) boss = FindFirstObjectByType<BossBase>(); // 별도 오브젝트에 있을 때 폴백
+        if (boss == null) Debug.LogError("[LazerPattern] BossBase를 찾지 못했습니다. 페이즈가 항상 1로 고정됩니다.");
         if (player == null) player = FindFirstObjectByType<GridPlayer>();
         _cts = new CancellationTokenSource();
         _phase3LaserStarted = false;
@@ -125,9 +127,12 @@ public class LazerPattern : MonoBehaviour
     {
         if (boss == null) return 1;
         int hp = boss.currentHp;
-        if (hp > phase1HpMin) return 1;
-        if (hp > phase2HpMin) return 2;
-        return 3;
+        switch (hp)
+        {
+            case > phase1HpMin: return 1;
+            case > phase2HpMin: return 2;
+            default: return 3;
+        }
     }
 
     private async UniTask MainLoop()
@@ -156,17 +161,21 @@ public class LazerPattern : MonoBehaviour
 
     private async UniTask DoOneAttack(int hpPhase)
     {
-        if (hpPhase == 1)
+        switch (hpPhase)
         {
-            if (Random.Range(0, 2) == 0) await FireRandomAxisLasers(Vector2Int.right, Random.Range(2, 4));
-            else                          await FireRandomAxisLasers(Vector2Int.up, Random.Range(2, 4));
-        }
-        else if (hpPhase == 2)
-        {
-            int p = Random.Range(0, 3);
-            if      (p == 0) await Phase2Pattern_Mixed();
-            else if (p == 1) await SweepLasers(Vector2Int.right);
-            else             await SweepLasers(Vector2Int.up);
+            case 1:
+                var axis = (Random.Range(0, 2) == 0) ? Vector2Int.right : Vector2Int.up;
+                await FireRandomAxisLasers(axis, Random.Range(2, 4));
+                break;
+
+            case 2:
+                switch (Random.Range(0, 3))
+                {
+                    case 0: await Phase2Pattern_Mixed(); break;
+                    case 1: await SweepLasers(Vector2Int.right); break;
+                    case 2: await SweepLasers(Vector2Int.up); break;
+                }
+                break;
         }
     }
 

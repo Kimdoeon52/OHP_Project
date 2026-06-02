@@ -200,6 +200,12 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         return GridSystem.Instance != null && GridSystem.Instance.IsWalkable(cell);
     }
 
+    private int GetCurrentPhase()
+    {
+        if (currentHp <= phase3HpThreshold || _phase3Locked) return 3;
+        return 1;
+    }
+
     //=============================== 메인 행동 루프 ==========================================
     private async UniTask MainLoop()
     {
@@ -207,28 +213,29 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         {
             while (!cancelToken.IsCancellationRequested && !isDying)
             {
-                // Phase 3 진입 1회: 중앙 이동 후 영구 정지 (회전 레이저는 LazerPattern이 별도 담당)
-                if (currentHp <= phase3HpThreshold && !_phase3Locked)
+                switch (GetCurrentPhase())
                 {
-                    _phase3Locked = true;
-                    await BreakAndFallAsync();
+                    case 3:
+                        if (!_phase3Locked)
+                        {
+                            _phase3Locked = true;
+                            await BreakAndFallAsync();
+                        }
+                        // 사이클 정지, 가만히 대기
+                        await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
+                        break;
+
+                    default:
+                        // 일반 사이클: 활성(현재 자리에서 대기) → 사라짐/중앙낙하 → 배회 → 반복
+                        await UniTask.Delay((int)(activeDurationSec * 1000), cancellationToken: cancelToken.Token);
+                        if (cancelToken.IsCancellationRequested || isDying) break;
+
+                        await BreakAndFallAsync();
+                        if (cancelToken.IsCancellationRequested || isDying) break;
+
+                        await WanderModeAsync();
+                        break;
                 }
-
-                if (_phase3Locked)
-                {
-                    // 사이클 정지, 가만히 대기
-                    await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
-                    continue;
-                }
-
-                // 일반 사이클: 활성(현재 자리에서 대기) → 사라짐/중앙낙하 → 배회 → 반복
-                await UniTask.Delay((int)(activeDurationSec * 1000), cancellationToken: cancelToken.Token);
-                if (cancelToken.IsCancellationRequested || isDying) break;
-
-                await BreakAndFallAsync();
-                if (cancelToken.IsCancellationRequested || isDying) break;
-
-                await WanderModeAsync();
             }
         }
         catch (System.OperationCanceledException) { }
