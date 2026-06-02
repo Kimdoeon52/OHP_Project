@@ -1,11 +1,10 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 
 public class DebugUI : MonoBehaviour
 {
     [SerializeField] private TMP_Text timeText;
     [SerializeField] private TMP_Text hpText;
-    [SerializeField] private TMP_Text daggerText;
     [SerializeField] private TMP_Text potionText;
     [SerializeField] private TMP_Text keyText;
     [SerializeField] private TMP_Text statusText;
@@ -49,13 +48,6 @@ public class DebugUI : MonoBehaviour
         if (hpText != null)
             hpText.text = $"HP {_player.CurrentHp}/{_player.MaxHp}";
 
-        if (daggerText != null)
-        {
-            var durabilities = _player.Combat.InventoryDurabilities;
-            daggerText.text = durabilities.Count == 0
-                ? "단검 0"
-                : $"단검 {durabilities.Count} [{string.Join(",", durabilities)}]";
-        }
 
         if (potionText != null)
             potionText.text = $"포션 {_player.Health.PotionCount}";
@@ -83,3 +75,4 @@ public class DebugUI : MonoBehaviour
         if (statusText != null) statusText.text = text;
     }
 }
+
