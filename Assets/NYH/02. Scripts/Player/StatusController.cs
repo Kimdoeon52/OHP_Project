@@ -237,7 +237,6 @@ public class StatusController : MonoBehaviour
             case StatusType.Poison:
             case StatusType.Burn:
             case StatusType.Bleed:
-            case StatusType.Hunger:
             case StatusType.Corrosion:
             case StatusType.Ooze:
                 _damageable.TakeDamage(Mathf.Max(1, status.Power));
@@ -252,7 +251,6 @@ public class StatusController : MonoBehaviour
             case StatusType.Poison:
             case StatusType.Burn:
             case StatusType.Bleed:
-            case StatusType.Hunger:
             case StatusType.Corrosion:
             case StatusType.Ooze:
                 return true;
