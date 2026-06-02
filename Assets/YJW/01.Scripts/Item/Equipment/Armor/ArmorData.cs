@@ -17,6 +17,6 @@ public class ArmorData : ItemBase
 
 	public override ItemInstance CreateInstance()
 	{
-		return new WeaponInstance { data = this };
+		return new ArmorInstance { data = this };
 	}
 }

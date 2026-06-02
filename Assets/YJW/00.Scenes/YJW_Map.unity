@@ -7258,7 +7258,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemPool: {fileID: 11400000, guid: d0c54d88ee8009d43935660d1b18892c, type: 2}
-  allCurses: []
+  allCurses:
+  - {fileID: 11400000, guid: 020737b41b6547340895b30440d4e6e7, type: 2}
+  - {fileID: 11400000, guid: 0734b831b805c014fb21b8d42783d1fb, type: 2}
+  - {fileID: 11400000, guid: f730c415672468b4fb6bc9cb29bd37fa, type: 2}
+  - {fileID: 11400000, guid: 3fe4561d6a4d065478871c949943bcba, type: 2}
+  - {fileID: 11400000, guid: f9cd78c07fd52e349ac6dabac5c4f12b, type: 2}
+  - {fileID: 11400000, guid: 19cf9aecec6db834a86ab57a5ad254fc, type: 2}
   itemPickupPrefab: {fileID: 4792168810918137755, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
 --- !u!4 &1235544796
 Transform:
@@ -8440,6 +8446,7 @@ MonoBehaviour:
   baseMoveDuration: 0.18
   moveSpeedDurationMultiplier: 0.15
   minMoveDuration: 0.06
+  moveMode: 1
   minMoveActionDelay: 0.3
   levelMoveActionDelays:
   - 1

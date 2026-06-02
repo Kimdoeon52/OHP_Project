@@ -6,7 +6,7 @@ public class AnalyzeScroll : ItemBase
     public override void Use(ItemInstance targetItem)
     {
 		if (targetItem is not EquipmentInstance equip) return;
-		if (equip.data == null|| equip.data.CanAnalyze == false)
+		if (equip.data == null|| equip.data.CanAnalyze == false || equip.isAnalyzed)
             return;
 
 		equip.isAnalyzed = true; // 감정 처리

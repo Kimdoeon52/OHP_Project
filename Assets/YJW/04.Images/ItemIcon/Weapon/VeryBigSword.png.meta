@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 8f9dfbd9c083979409633769f35d3314
+guid: f5f82339fbdb0de458175155f28f9ca4
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5825250732961213246
-    second: Axe_0
+      213: -7501498693324995999
+    second: VeryBigSword_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Axe_0
+      name: VeryBigSword_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 6
-        width: 27
-        height: 36
+        y: 0
+        width: 31
+        height: 42
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2c45346625d882fa0800000000000000
-      internalID: -5825250732961213246
+      spriteID: 1628e4ddea255e790800000000000000
+      internalID: -7501498693324995999
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Axe_0: -5825250732961213246
+      VeryBigSword_0: -7501498693324995999
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
