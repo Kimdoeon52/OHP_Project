@@ -60,6 +60,10 @@ public class MapGenerator : Singleton<MapGenerator>
     /// <summary>Safe Room 출구 문 셀 — 처음엔 일반 문처럼 자동 개폐, 플레이어가 한 번 나가면 영구 잠김 (GDD 11.1).</summary>
     public HashSet<Vector2Int> SafeGatewayCells { get; } = new HashSet<Vector2Int>();
 
+    /// <summary>현재 층의 월드 바운드 (floor 셀 + 패딩). 카메라 팬 제한 등에 사용. Generate 호출마다 갱신.</summary>
+    public Bounds MapWorldBounds { get; private set; }
+    public bool MapWorldBoundsValid { get; private set; }
+
     /// <summary>depth -> 영역(1=하수구, 2=던전, 3=지옥)</summary>
     public static int AreaFromDepth(int depth)
     {
@@ -158,6 +162,8 @@ public class MapGenerator : Singleton<MapGenerator>
 
         // 열쇠 픽업 배치 — Special 방이 있으면 스페셜 키 1개를 Normal/Exit 방 임의 셀에 (GDD 9.15).
         SpawnKeys(rooms);
+
+        ComputeMapBounds(rooms);
 
         CurrentRooms = rooms;
         return rooms;
@@ -498,6 +504,42 @@ public class MapGenerator : Singleton<MapGenerator>
             else DestroyImmediate(key.gameObject);
         }
         _currentKeys.Clear();
+    }
+
+    /// <summary>현재 층의 floor 셀 + 패딩을 감싸는 월드 바운드 계산. CameraFollow 가 팬 제한에 사용.</summary>
+    private void ComputeMapBounds(List<RoomData> rooms)
+    {
+        MapWorldBoundsValid = false;
+        if (rooms == null || GridSystem.Instance == null) return;
+
+        int minX = int.MaxValue, minY = int.MaxValue;
+        int maxX = int.MinValue, maxY = int.MinValue;
+        bool any = false;
+        foreach (var r in rooms)
+        {
+            if (r.floorCells == null) continue;
+            foreach (var c in r.floorCells)
+            {
+                if (c.x < minX) minX = c.x;
+                if (c.y < minY) minY = c.y;
+                if (c.x > maxX) maxX = c.x;
+                if (c.y > maxY) maxY = c.y;
+                any = true;
+            }
+        }
+        if (!any) return;
+
+        // 외벽이 보이도록 약간 여유.
+        const int padding = 2;
+        minX -= padding; minY -= padding;
+        maxX += padding; maxY += padding;
+
+        var wMin = GridSystem.Instance.GridToWorld(new Vector2Int(minX, minY));
+        var wMax = GridSystem.Instance.GridToWorld(new Vector2Int(maxX, maxY));
+        MapWorldBounds = new Bounds(
+            (wMin + wMax) * 0.5f,
+            new Vector3(Mathf.Abs(wMax.x - wMin.x), Mathf.Abs(wMax.y - wMin.y), 0f));
+        MapWorldBoundsValid = true;
     }
 
     private static SizeCategory PickNormalSize(DungeonRandom rng)

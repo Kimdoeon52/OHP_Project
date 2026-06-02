@@ -128,8 +128,14 @@ public class FloorTransitionController : MonoBehaviour
 
         player.SetGridPosition(spawnCell);
 
-        // 카메라 즉시 스냅 — 페이드 인 시 빈 영역이 보이는 현상 방지(이전 층 위치에 머문 카메라가 따라잡기 전 보임).
-        if (cameraFollow != null) cameraFollow.SnapToTarget();
+        // Safe Room 플래닝 카메라 (스크롤 줌 + 엣지 팬). 첫 이탈 시 자동 해제 — Arm 을 Snap 보다 먼저 호출해
+        // 줌·팬 상태를 기본값으로 리셋한 뒤 카메라를 스냅한다.
+        if (cameraFollow != null)
+        {
+            cameraFollow.ArmSafeRoom(safeRoom != null ? safeRoom.floorCells : null);
+            // 카메라 즉시 스냅 — 페이드 인 시 빈 영역이 보이는 현상 방지(이전 층 위치에 머문 카메라가 따라잡기 전 보임).
+            cameraFollow.SnapToTarget();
+        }
 
         // 시야 갱신 (GridPlayer.Start 가 먼저 갱신해뒀어도 ResetForNewFloor 로 덮어쓰여 정확함)
         VisionSystem.Instance?.UpdateVision(spawnCell);
