@@ -7,7 +7,12 @@ public class DebugUI : MonoBehaviour
     [SerializeField] private TMP_Text hpText;
     [SerializeField] private TMP_Text daggerText;
     [SerializeField] private TMP_Text potionText;
+    [SerializeField] private TMP_Text keyText;
     [SerializeField] private TMP_Text statusText;
+
+    [Header("디버그 단축키")]
+    [Tooltip("이 키를 누르면 스페셜 방 열쇠 1개 지급(테스트용).")]
+    [SerializeField] private KeyCode debugGrantSpecialKey = KeyCode.K;
 
     private GridPlayer _player;
 
@@ -51,6 +56,12 @@ public class DebugUI : MonoBehaviour
 
         if (potionText != null)
             potionText.text = $"포션 {_player.Health.PotionCount}";
+
+        if (keyText != null && KeyInventory.Instance != null)
+            keyText.text = $"열쇠 S:{KeyInventory.Instance.GetCount(KeyType.SpecialRoom)} R:{KeyInventory.Instance.GetCount(KeyType.RingChest)}";
+
+        if (Input.GetKeyDown(debugGrantSpecialKey) && KeyInventory.Instance != null)
+            KeyInventory.Instance.Grant(KeyType.SpecialRoom);
     }
 
     private void OnPlayerDied()    => SetStatus("사망 - 재시작 중...");

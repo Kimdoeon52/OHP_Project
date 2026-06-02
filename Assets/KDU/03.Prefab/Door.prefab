@@ -104,4 +104,9 @@ MonoBehaviour:
   sideOpenSprite: {fileID: -908616156, guid: 1e5388495179da748933f01c1fd5839e, type: 3}
   topClosedSprite: {fileID: -908616156, guid: 1e5388495179da748933f01c1fd5839e, type: 3}
   topOpenSprite: {fileID: -930234529, guid: 1e5388495179da748933f01c1fd5839e, type: 3}
+  sideLockedClosedSprite: {fileID: -2070759403, guid: 0f3ff9efb69d7054f851c7d7d4511305, type: 3}
+  sideLockedOpenSprite: {fileID: 533186539, guid: 0f3ff9efb69d7054f851c7d7d4511305, type: 3}
+  topLockedClosedSprite: {fileID: 0}
+  topLockedOpenSprite: {fileID: 0}
   autoOpenWhenAdjacent: 1
+  lockedOpenSeconds: 1

@@ -99,6 +99,8 @@ public class MapGenerator : MonoBehaviour
         DestroyCurrentDoors();
         // 이전 층의 Feeling 효과 리셋
         if (VisionSystem.Instance != null) VisionSystem.Instance.VisionRadiusDelta = 0;
+        // 열쇠는 해당 층에서만 사용 가능 (GDD 9.15) → 층 진입 시 폐기.
+        if (KeyInventory.Instance != null) KeyInventory.Instance.ClearAll();
         Rng.Init(DungeonRandom.DeriveFloorSeed(runSeed, depth));
 
         // 보스 층 분기
@@ -311,7 +313,10 @@ public class MapGenerator : MonoBehaviour
                     ? GridSystem.Instance.GridToWorld(cell)
                     : new Vector3(cell.x, cell.y, 0);
                 var door = Instantiate(doorPrefab, pos, Quaternion.identity);
-                door.Initialize(cell, horizontalPassage);
+                var kind = LockedGatewayCells.Contains(cell)
+                    ? GridDoor.DoorKind.Locked
+                    : GridDoor.DoorKind.Normal;
+                door.Initialize(cell, horizontalPassage, kind);
                 _currentDoors.Add(door);
             }
         }
