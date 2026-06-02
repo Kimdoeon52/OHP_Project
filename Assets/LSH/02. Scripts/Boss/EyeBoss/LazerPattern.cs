@@ -1,0 +1,428 @@
+using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.Tilemaps;
+
+/*
+ * LazerPattern — 격자 레이저 패턴을 독립적으로 실행하는 모듈.
+ * 보스의 행동 사이클(이동/배회/사라짐)과는 완전히 분리. 자체 타이머로 패턴을 계속 발사.
+ * 현재 페이즈는 boss.currentHp를 읽어 판정.
+ *
+ * 페이즈별 패턴:
+ *   HP > phase1HpMin       Phase1: P1 가로 랜덤 2~3 / P2 세로 랜덤 2~3
+ *   HP > phase2HpMin       Phase2: P1 가로+세로 랜덤 2~3씩 / P2 가로 스윕 / P3 세로 스윕
+ *   HP ≤ phase2HpMin       Phase3: 회전 붉은 레이저(닿으면 phase3LaserDamage) + Phase1 패턴 병행
+ *
+ * 경고 표시: warningTilemap에 타일(참조 카운트로 중복 방지).
+ */
+public class LazerPattern : MonoBehaviour
+{
+    [Header("보스/플레이어 참조 (null이면 자동 검색)")]
+    [SerializeField] private BossBase boss;
+    [SerializeField] private GridPlayer player;
+
+    [Header("레이저 프리팹")]
+    [SerializeField] private GameObject lazerAttackPrefab;
+    [SerializeField] private GameObject eyeHorizontalPrefab; //가로 레이저용 눈: 왼쪽 끝에 소환
+    [SerializeField] private GameObject eyeVerticalPrefab;   //세로 레이저용 눈: 위쪽 끝에 소환
+
+    [Header("AttackFloor 타일맵 (공격·레이저 범위 제한)")]
+    [SerializeField] private Tilemap attackFloorTilemap;
+
+    [Header("경고 타일맵 (LazerPattern 전용)")]
+    [SerializeField] private Tilemap warningTilemap;
+    [SerializeField] private TileBase warningTile;
+
+    [Header("레이저 타이밍")]
+    [SerializeField] private int laserTelegraphMs = 800; // 타일 경고 노출 시간 (회피 창)
+    [SerializeField] private int laserActiveMs = 400;    // 실제 레이저 발사 + 판정 시간
+    [SerializeField] private int laserDamage = 1;
+
+    [Header("패턴 사이클")]
+    [SerializeField] private int patternDelayMs = 1000; // 패턴 사이 딜레이 (스펙: 1초)
+
+    [Header("Phase 2 스윕")]
+    [SerializeField] private int sweepStepMs = 2000;    // 스윕 한 줄당 시간 (스펙: 2초)
+
+    [Header("HP 페이즈 경계 (보스 currentHp 기준)")]
+    [SerializeField] private int phase1HpMin = 70;
+    [SerializeField] private int phase2HpMin = 20;
+
+    [Header("Phase 3 회전 레이저")]
+    [SerializeField] private float phase3LaserRotateSpeed = 60f;
+    [SerializeField] private float phase3LaserLength = 30f;
+    [SerializeField] private float phase3LaserHalfWidth = 0.5f;
+    [SerializeField] private Color phase3LaserColor = Color.red;
+    [SerializeField] private int phase3LaserDamage = 50;
+
+    // ─── 내부 상태 ───────────────────────────────────────────────────
+    private RectInt _mapBounds;
+    private bool _hasMapBounds;
+    private CancellationTokenSource _cts;
+    private bool _phase3LaserStarted;
+    private readonly Dictionary<Vector2Int, int> _warningRefCount = new Dictionary<Vector2Int, int>();
+
+    //=============================== 초기화 / 정리 ==========================================
+    private void OnEnable()
+    {
+        if (boss == null) boss = GetComponent<BossBase>();
+        if (player == null) player = FindFirstObjectByType<GridPlayer>();
+        _cts = new CancellationTokenSource();
+        _phase3LaserStarted = false;
+        CacheMapBounds();
+        MainLoop().Forget();
+    }
+
+    private void OnDestroy()
+    {
+        if (_cts != null)
+        {
+            _cts.Cancel();
+            _cts.Dispose();
+            _cts = null;
+        }
+        ClearAllWarnings();
+    }
+
+    private void CacheMapBounds()
+    {
+        if (attackFloorTilemap != null)
+        {
+            attackFloorTilemap.CompressBounds();
+            var b = attackFloorTilemap.cellBounds;
+            _mapBounds = new RectInt(b.xMin, b.yMin, b.size.x, b.size.y);
+            _hasMapBounds = true;
+            return;
+        }
+
+        // attackFloorTilemap 미설정 시 기존 방식(전체 walkable) 폴백
+        if (GridSystem.Instance == null) return;
+        int minX = int.MaxValue, minY = int.MaxValue, maxX = int.MinValue, maxY = int.MinValue;
+        bool any = false;
+        foreach (var c in GridSystem.Instance.GetAllWalkableCells())
+        {
+            any = true;
+            if (c.x < minX) minX = c.x;
+            if (c.y < minY) minY = c.y;
+            if (c.x > maxX) maxX = c.x;
+            if (c.y > maxY) maxY = c.y;
+        }
+        if (!any) return;
+        _mapBounds = new RectInt(minX, minY, maxX - minX + 1, maxY - minY + 1);
+        _hasMapBounds = true;
+    }
+
+    //=============================== 메인 루프 ==========================================
+    private bool IsBossAlive()
+    {
+        // Unity의 destroyed-object special equality: null 비교로 잡힘.
+        if (boss == null) return false;
+        return boss.currentHp > 0;
+    }
+
+    private int CurrentHpPhase()
+    {
+        if (boss == null) return 1;
+        int hp = boss.currentHp;
+        if (hp > phase1HpMin) return 1;
+        if (hp > phase2HpMin) return 2;
+        return 3;
+    }
+
+    private async UniTask MainLoop()
+    {
+        try
+        {
+            while (!_cts.IsCancellationRequested && IsBossAlive())
+            {
+                int hpPhase = CurrentHpPhase();
+
+                // Phase 3 진입 1회: 회전 레이저 백그라운드 시작
+                if (hpPhase == 3 && !_phase3LaserStarted)
+                {
+                    _phase3LaserStarted = true;
+                    Phase3RotatingLaserAsync().Forget();
+                }
+
+                // Phase 3에서는 Phase 1 패턴을 계속 발사 (회전 레이저는 백그라운드).
+                int patternPhase = (hpPhase == 3) ? 1 : hpPhase;
+                await DoOneAttack(patternPhase);
+                await UniTask.Delay(patternDelayMs, cancellationToken: _cts.Token);
+            }
+        }
+        catch (System.OperationCanceledException) { }
+    }
+
+    private async UniTask DoOneAttack(int hpPhase)
+    {
+        if (hpPhase == 1)
+        {
+            if (Random.Range(0, 2) == 0) await FireRandomAxisLasers(Vector2Int.right, Random.Range(2, 4));
+            else                          await FireRandomAxisLasers(Vector2Int.up, Random.Range(2, 4));
+        }
+        else if (hpPhase == 2)
+        {
+            int p = Random.Range(0, 3);
+            if      (p == 0) await Phase2Pattern_Mixed();
+            else if (p == 1) await SweepLasers(Vector2Int.right);
+            else             await SweepLasers(Vector2Int.up);
+        }
+    }
+
+    // Phase2 P1: 가로 2~3 + 세로 2~3 동시
+    private async UniTask Phase2Pattern_Mixed()
+    {
+        var tasks = new List<UniTask>();
+        int h = Random.Range(2, 4);
+        int v = Random.Range(2, 4);
+        for (int i = 0; i < h; i++) tasks.Add(FireRandomAxisLaser(Vector2Int.right));
+        for (int i = 0; i < v; i++) tasks.Add(FireRandomAxisLaser(Vector2Int.up));
+        await UniTask.WhenAll(tasks);
+    }
+
+    // Phase2 P2/P3: 처음부터 끝까지 한 줄씩 sweepStepMs 간격으로 발사 (스윕).
+    private async UniTask SweepLasers(Vector2Int axis)
+    {
+        if (!_hasMapBounds) return;
+
+        int from, to;
+        if (axis == Vector2Int.right) { from = _mapBounds.yMin; to = _mapBounds.yMax; }
+        else                          { from = _mapBounds.xMin; to = _mapBounds.xMax; }
+
+        for (int coord = from; coord < to; coord++)
+        {
+            if (_cts.IsCancellationRequested || !IsBossAlive()) break;
+            FireAxisLaserAt(axis, coord).Forget();
+            await UniTask.Delay(sweepStepMs, cancellationToken: _cts.Token);
+        }
+    }
+
+    private async UniTask FireRandomAxisLasers(Vector2Int axis, int count)
+    {
+        var tasks = new List<UniTask>();
+        for (int i = 0; i < count; i++) tasks.Add(FireRandomAxisLaser(axis));
+        await UniTask.WhenAll(tasks);
+    }
+
+    //=============================== Phase 3 회전 레이저 ==========================================
+    private async UniTaskVoid Phase3RotatingLaserAsync()
+    {
+        var token = _cts.Token;
+        Vector3 center = GetMapCenterWorld();
+
+        var beams = new GameObject[4];
+        for (int i = 0; i < 4; i++)
+        {
+            beams[i] = Instantiate(lazerAttackPrefab, center, Quaternion.identity);
+            var s = beams[i].transform.localScale;
+            beams[i].transform.localScale = new Vector3(phase3LaserLength, s.y, s.z);
+            var sr = beams[i].GetComponentInChildren<SpriteRenderer>();
+            if (sr != null) sr.color = phase3LaserColor;
+        }
+
+        float baseAngle = 0f;
+        try
+        {
+            while (!token.IsCancellationRequested && IsBossAlive())
+            {
+                baseAngle += phase3LaserRotateSpeed * Time.deltaTime;
+
+                bool hit = false;
+                Vector3 playerPos = (player != null && !player.IsDead)
+                    ? GridSystem.Instance.GridToWorld(player.GridPosition)
+                    : Vector3.positiveInfinity;
+
+                for (int i = 0; i < 4; i++)
+                {
+                    float deg = baseAngle + i * 90f;
+                    float a = deg * Mathf.Deg2Rad;
+                    Vector3 dir = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f);
+
+                    beams[i].transform.SetPositionAndRotation(
+                        center + dir * (phase3LaserLength * 0.5f),
+                        Quaternion.Euler(0, 0, deg));
+
+                    if (!hit && IsOnRay(playerPos, center, dir, phase3LaserLength, phase3LaserHalfWidth))
+                        hit = true;
+                }
+
+                if (hit && player != null && !player.IsDead)
+                    player.TakeDamage(phase3LaserDamage);
+
+                await UniTask.Yield(token);
+            }
+        }
+        catch (System.OperationCanceledException) { }
+        finally
+        {
+            for (int i = 0; i < 4; i++) if (beams[i] != null) Destroy(beams[i]);
+        }
+    }
+
+    //=============================== 레이저 발사 (시각 + 타일 경고 + 격자 데미지) ==========================================
+
+    private UniTask FireRandomAxisLaser(Vector2Int axis)
+    {
+        if (!_hasMapBounds) return UniTask.CompletedTask;
+        int coord = (axis == Vector2Int.right)
+            ? Random.Range(_mapBounds.yMin, _mapBounds.yMax)
+            : Random.Range(_mapBounds.xMin, _mapBounds.xMax);
+        return FireAxisLaserAt(axis, coord);
+    }
+
+    private UniTask FireAxisLaserAt(Vector2Int axis, int coord)
+    {
+        if (!_hasMapBounds) return UniTask.CompletedTask;
+        Vector2Int startCell, endCell;
+        if (axis == Vector2Int.right)
+        {
+            startCell = new Vector2Int(_mapBounds.xMin, coord);
+            endCell   = new Vector2Int(_mapBounds.xMax - 1, coord);
+        }
+        else
+        {
+            startCell = new Vector2Int(coord, _mapBounds.yMin);
+            endCell   = new Vector2Int(coord, _mapBounds.yMax - 1);
+        }
+        return FireLaserBetween(startCell, endCell, axis, 0, 1f, laserDamage, _cts.Token);
+    }
+
+    // 두 격자 셀 사이 레이저 공용 구현: 타일 경고 + 눈 prefab → 레이저 시각 + 격자 데미지 → 정리.
+    private async UniTask FireLaserBetween(Vector2Int startCell, Vector2Int endCell, Vector2Int axis,
+                                           int width, float visualScaleY, int damage, CancellationToken token)
+    {
+        var cells = CellsAlongLine(startCell, endCell, axis, width);
+
+        ShowWarning(cells);
+        GameObject eye = SpawnEyeForAxis(axis, startCell, endCell);
+
+        try
+        {
+            await UniTask.Delay(laserTelegraphMs, cancellationToken: token);
+            ClearWarning(cells);
+
+            if (eye != null) { Destroy(eye); eye = null; }
+
+            // 레이저 시각 spawn
+            Vector3 startPt = GridSystem.Instance.GridToWorld(startCell);
+            Vector3 endPt   = GridSystem.Instance.GridToWorld(endCell);
+            Quaternion q = Quaternion.Euler(0, 0, Mathf.Atan2(axis.y, axis.x) * Mathf.Rad2Deg);
+            float length = Vector3.Distance(startPt, endPt);
+            Vector3 center = (startPt + endPt) * 0.5f;
+            GameObject lazer = Instantiate(lazerAttackPrefab, center, q);
+            var s = lazer.transform.localScale;
+            lazer.transform.localScale = new Vector3(length, s.y * visualScaleY, s.z);
+
+            DamagePlayerIfInCells(cells, damage);
+
+            await UniTask.Delay(laserActiveMs, cancellationToken: token);
+            if (lazer != null) Destroy(lazer);
+        }
+        catch (System.OperationCanceledException) { }
+        finally
+        {
+            ClearWarning(cells);
+            if (eye != null) Destroy(eye);
+        }
+    }
+
+    private GameObject SpawnEyeForAxis(Vector2Int axis, Vector2Int startCell, Vector2Int endCell)
+    {
+        GameObject prefab = (axis == Vector2Int.right) ? eyeHorizontalPrefab : eyeVerticalPrefab;
+        if (prefab == null) return null;
+        Vector2Int spawnCell = (axis == Vector2Int.right) ? startCell : endCell;
+        return Instantiate(prefab, GridSystem.Instance.GridToWorld(spawnCell), Quaternion.identity);
+    }
+
+    private static List<Vector2Int> CellsAlongLine(Vector2Int startCell, Vector2Int endCell, Vector2Int axis, int width)
+    {
+        var cells = new List<Vector2Int>();
+        var perp = new Vector2Int(-axis.y, axis.x);
+        var c = startCell;
+        int guard = 500;
+        while (guard-- > 0)
+        {
+            for (int w = -width; w <= width; w++) cells.Add(c + perp * w);
+            if (c == endCell) break;
+            c += axis;
+        }
+        return cells;
+    }
+
+    //=============================== 데미지 / 워닝 (LazerPattern 자체 구현) ==========================================
+    private void DamagePlayerIfInCells(IEnumerable<Vector2Int> cells, int damage)
+    {
+        if (player == null || player.IsDead) return;
+        foreach (var c in cells)
+        {
+            if (player.GridPosition == c)
+            {
+                player.TakeDamage(damage);
+                return;
+            }
+        }
+    }
+
+    // 참조 카운트 워닝 (BossBase와 동일 패턴, LazerPattern 전용 dict).
+    private void ShowWarning(IEnumerable<Vector2Int> cells)
+    {
+        if (warningTilemap == null || warningTile == null || cells == null) return;
+        foreach (var c in cells)
+        {
+            if (_warningRefCount.TryGetValue(c, out int count))
+                _warningRefCount[c] = count + 1;
+            else
+            {
+                _warningRefCount[c] = 1;
+                warningTilemap.SetTile(new Vector3Int(c.x, c.y, 0), warningTile);
+            }
+        }
+    }
+
+    private void ClearWarning(IEnumerable<Vector2Int> cells)
+    {
+        if (warningTilemap == null || cells == null) return;
+        foreach (var c in cells)
+        {
+            if (!_warningRefCount.TryGetValue(c, out int count)) continue;
+            if (count <= 1)
+            {
+                _warningRefCount.Remove(c);
+                warningTilemap.SetTile(new Vector3Int(c.x, c.y, 0), null);
+            }
+            else
+                _warningRefCount[c] = count - 1;
+        }
+    }
+
+    private void ClearAllWarnings()
+    {
+        if (warningTilemap == null) return;
+        foreach (var kv in _warningRefCount)
+            warningTilemap.SetTile(new Vector3Int(kv.Key.x, kv.Key.y, 0), null);
+        _warningRefCount.Clear();
+    }
+
+    //=============================== 헬퍼 ==========================================
+    private bool IsOnRay(Vector3 point, Vector3 origin, Vector3 dir, float length, float halfWidth)
+    {
+        Vector3 n = dir.normalized;
+        Vector3 toPoint = point - origin;
+        float along = Vector3.Dot(toPoint, n);
+        if (along < 0f || along > length) return false;
+        Vector3 proj = origin + n * along;
+        return Vector3.Distance(point, proj) <= halfWidth;
+    }
+
+    private Vector3 GetMapCenterWorld()
+    {
+        if (_hasMapBounds && GridSystem.Instance != null)
+        {
+            int cx = (_mapBounds.xMin + _mapBounds.xMax) / 2;
+            int cy = (_mapBounds.yMin + _mapBounds.yMax) / 2;
+            return GridSystem.Instance.GridToWorld(new Vector2Int(cx, cy));
+        }
+        return transform.position;
+    }
+}

@@ -1,0 +1,592 @@
+fileFormatVersion: 2
+guid: 5112d6a185b81fd4e8c9499b6f9f1d29
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 4655868819431197315
+    second: Crash_0
+  - first:
+      213: -8272230473100591333
+    second: Crash_1
+  - first:
+      213: -7241607516288195682
+    second: Crash_2
+  - first:
+      213: 6952640340204227909
+    second: Crash_3
+  - first:
+      213: -9013962378064249317
+    second: Crash_4
+  - first:
+      213: -8620045791331338822
+    second: Crash_5
+  - first:
+      213: -2555642874174542895
+    second: Crash_6
+  - first:
+      213: 7634897503530567128
+    second: Crash_7
+  - first:
+      213: -8899423346771768631
+    second: Crash_8
+  - first:
+      213: 5521479360655758186
+    second: Crash_9
+  - first:
+      213: 2644149700015471391
+    second: Crash_10
+  - first:
+      213: 2317496583802972863
+    second: Crash_11
+  - first:
+      213: -5986515317502969474
+    second: Crash_12
+  - first:
+      213: -1662719395819407572
+    second: Crash_13
+  - first:
+      213: -513555577765673983
+    second: Crash_14
+  - first:
+      213: 1360083970324855648
+    second: Crash_15
+  - first:
+      213: 3100735722612595077
+    second: Crash_16
+  - first:
+      213: -7275126024972962218
+    second: Crash_17
+  - first:
+      213: 4754271707878978342
+    second: Crash_18
+  - first:
+      213: -1905122991024313031
+    second: Crash_19
+  - first:
+      213: -8676642643908617039
+    second: Crash_20
+  - first:
+      213: -6313860621741446276
+    second: Crash_21
+  - first:
+      213: 4663018100561652969
+    second: Crash_22
+  - first:
+      213: 5342605365135163930
+    second: Crash_23
+  - first:
+      213: 3919147376908401390
+    second: Crash_24
+  - first:
+      213: 5260270021818646317
+    second: Crash_25
+  - first:
+      213: 2547451015519769164
+    second: Crash_26
+  - first:
+      213: 8341995316804219331
+    second: Crash_27
+  - first:
+      213: 448037756650675577
+    second: Crash_28
+  - first:
+      213: 8187417608597845651
+    second: Crash_29
+  - first:
+      213: -1593876833931490718
+    second: Crash_30
+  - first:
+      213: -6192789467825542808
+    second: Crash_31
+  - first:
+      213: -8500733527774006573
+    second: Crash_32
+  - first:
+      213: 3117803194689997177
+    second: Crash_33
+  - first:
+      213: -6759112808239438854
+    second: Crash_34
+  - first:
+      213: -3212120142119322483
+    second: Crash_35
+  - first:
+      213: 7686670239797052377
+    second: Crash_36
+  - first:
+      213: -8922226000604733875
+    second: Crash_37
+  - first:
+      213: 2370426247775721481
+    second: Crash_38
+  - first:
+      213: 3920870163193028027
+    second: Crash_39
+  - first:
+      213: -7944914342978183119
+    second: Crash_40
+  - first:
+      213: 6727391051429321533
+    second: Crash_41
+  - first:
+      213: -7526970061810598231
+    second: Crash_42
+  - first:
+      213: -7506919444774941317
+    second: Crash_43
+  - first:
+      213: 7868239074555106045
+    second: Crash_44
+  - first:
+      213: -1733269368868829687
+    second: Crash_45
+  - first:
+      213: 6684192876577984387
+    second: Crash_46
+  - first:
+      213: 4212947674349428984
+    second: Crash_47
+  - first:
+      213: -9187691632153983680
+    second: Crash_48
+  - first:
+      213: 6020804508771779280
+    second: Crash_49
+  - first:
+      213: 1887669299180273652
+    second: Crash_50
+  - first:
+      213: 5339354394539230786
+    second: Crash_51
+  - first:
+      213: 6640087798220865740
+    second: Crash_52
+  - first:
+      213: 6583187154854079592
+    second: Crash_53
+  - first:
+      213: 4398670110707561189
+    second: Crash_54
+  - first:
+      213: -6796242651210243329
+    second: Crash_55
+  - first:
+      213: -5931761738291320571
+    second: Crash_56
+  - first:
+      213: -4907057161064757585
+    second: Crash_57
+  - first:
+      213: 4416988402367434215
+    second: Crash_58
+  - first:
+      213: -4254362663324847856
+    second: Crash_59
+  - first:
+      213: -456379409577865275
+    second: Crash_60
+  - first:
+      213: 4113116677925957427
+    second: Crash_61
+  - first:
+      213: -4854721132988523584
+    second: Crash_62
+  - first:
+      213: -4208393650079006905
+    second: Crash_63
+  - first:
+      213: 3512767801031463082
+    second: Crash_64
+  - first:
+      213: -8024504896339531551
+    second: Crash_65
+  - first:
+      213: 5200332024587056595
+    second: Crash_66
+  - first:
+      213: 7180452730928112204
+    second: Crash_67
+  - first:
+      213: 6039986937517171497
+    second: Crash_68
+  - first:
+      213: -5461439874398275948
+    second: Crash_69
+  - first:
+      213: -3967594197619506477
+    second: Crash_70
+  - first:
+      213: 4724891593860939417
+    second: Crash_71
+  - first:
+      213: -7094896873968868756
+    second: Crash_72
+  - first:
+      213: 7332459326979793123
+    second: Crash_73
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 32
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Crash_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 174
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 38a830ff508fc9040800000000000000
+      internalID: 4655868819431197315
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_1
+      rect:
+        serializedVersion: 2
+        x: 174
+        y: 0
+        width: 174
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1f7dae7632233d80800000000000000
+      internalID: -8272230473100591333
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_2
+      rect:
+        serializedVersion: 2
+        x: 348
+        y: 0
+        width: 174
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e93e7d4e454a08b90800000000000000
+      internalID: -7241607516288195682
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_3
+      rect:
+        serializedVersion: 2
+        x: 522
+        y: 0
+        width: 174
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 54d8ce08d8dbc7060800000000000000
+      internalID: 6952640340204227909
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_4
+      rect:
+        serializedVersion: 2
+        x: 696
+        y: 0
+        width: 174
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1ebeb4a9f8f7e280800000000000000
+      internalID: -9013962378064249317
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_5
+      rect:
+        serializedVersion: 2
+        x: 870
+        y: 0
+        width: 174
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ab5381416027f5880800000000000000
+      internalID: -8620045791331338822
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_6
+      rect:
+        serializedVersion: 2
+        x: 1044
+        y: 0
+        width: 174
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1db6118a858888cd0800000000000000
+      internalID: -2555642874174542895
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_7
+      rect:
+        serializedVersion: 2
+        x: 1218
+        y: 0
+        width: 174
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d5c47af3da94f960800000000000000
+      internalID: 7634897503530567128
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_8
+      rect:
+        serializedVersion: 2
+        x: 1392
+        y: 0
+        width: 174
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9cac9d50e95ee7480800000000000000
+      internalID: -8899423346771768631
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_9
+      rect:
+        serializedVersion: 2
+        x: 1566
+        y: 0
+        width: 174
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a639986793c30ac40800000000000000
+      internalID: 5521479360655758186
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_10
+      rect:
+        serializedVersion: 2
+        x: 1740
+        y: 0
+        width: 174
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f1bb0629428e1b420800000000000000
+      internalID: 2644149700015471391
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 48a51a896c6fdd3418c98538780aaf46
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Crash_0: 4655868819431197315
+      Crash_1: -8272230473100591333
+      Crash_10: 2644149700015471391
+      Crash_2: -7241607516288195682
+      Crash_3: 6952640340204227909
+      Crash_4: -9013962378064249317
+      Crash_5: -8620045791331338822
+      Crash_6: -2555642874174542895
+      Crash_7: 7634897503530567128
+      Crash_8: -8899423346771768631
+      Crash_9: 5521479360655758186
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
