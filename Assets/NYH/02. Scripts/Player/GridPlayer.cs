@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -100,3 +100,5 @@ public class GridPlayer : EntityBase, IDamageable
     public void TakeDamage(int amount) => Health.TakeDamage(amount);
     public void Heal(int amount) => Health.Heal(amount);
 }
+
+#endregion
