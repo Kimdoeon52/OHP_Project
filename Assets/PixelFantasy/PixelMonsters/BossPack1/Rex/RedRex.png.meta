@@ -1,9 +1,16 @@
 fileFormatVersion: 2
 guid: 392e7abcb0e44c3f840131ae009e062a
+AssetOrigin:
+  serializedVersion: 1
+  productId: 269333
+  packageName: Pixel Monsters Animated Boss Pack #1
+  packageVersion: 2.7
+  assetPath: Assets/PixelFantasy/PixelMonsters/BossPack1/Rex/RedRex.png
+  uploadId: 656019
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
-  serializedVersion: 12
+  serializedVersion: 13
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -20,11 +27,12 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
+    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
-  ignoreMasterTextureLimit: 0
+  ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -47,7 +55,7 @@ TextureImporter:
   spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 16
+  spritePixelsToUnits: 32
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -63,9 +71,10 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 0
+  swizzle: 50462976
   cookieLightType: 0
   platformSettings:
-  - serializedVersion: 3
+  - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -75,9 +84,10 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
+  - serializedVersion: 4
     buildTarget: WebGL
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -87,9 +97,10 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
+  - serializedVersion: 4
     buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -99,10 +110,11 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    buildTarget: iPhone
+  - serializedVersion: 4
+    buildTarget: iOS
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -111,9 +123,10 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
+  - serializedVersion: 4
     buildTarget: Android
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -123,10 +136,11 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    buildTarget: Windows Store Apps
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -135,9 +149,10 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
+  - serializedVersion: 4
     buildTarget: Server
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -147,558 +162,586 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Idle_0
+      name: RedRex_0
       rect:
         serializedVersion: 2
         x: 0
         y: 512
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7865b8cc28158d5408a8bb21f7665c09
-      internalID: 4723107735738678597
+      spriteID: b189da7102cc7bc4ca9820353055a530
+      internalID: -141670448
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Idle_1
+      name: RedRex_1
       rect:
         serializedVersion: 2
         x: 128
         y: 512
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 69cd7c7c30f9f5343abc0ece47547297
-      internalID: -7385789195546760866
+      spriteID: e4792f4b0e302c1498caeb1d962ada71
+      internalID: -231235006
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Idle_2
+      name: RedRex_2
       rect:
         serializedVersion: 2
         x: 256
         y: 512
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: b753ac79b22166946bc20bbfce77de27
-      internalID: 3234629978573100161
+      spriteID: 1f4a7cff04504f048ad05154624cebec
+      internalID: 1019612827
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Idle_3
+      name: RedRex_3
       rect:
         serializedVersion: 2
         x: 384
         y: 512
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0c3591938f2bb6243be5918c2fa00caa
-      internalID: 6373048116405451881
+      spriteID: 0ad6eda52bfbb214bb1df94822e65d2e
+      internalID: -2025511105
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Ready_0
+      name: RedRex_4
       rect:
         serializedVersion: 2
         x: 0
         y: 384
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 08764bd2ff72e3b4d9611d517f902855
-      internalID: -2978808618200810919
+      spriteID: 1f772027256305545a96bb40229d50cf
+      internalID: 1838274412
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Ready_1
+      name: RedRex_5
       rect:
         serializedVersion: 2
         x: 128
         y: 384
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e1144211cca566f4aa97fa89cf29bb2f
-      internalID: 7683567802946276634
+      spriteID: 91c7636445cd6544181f694f10e3d920
+      internalID: -915171411
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Ready_2
+      name: RedRex_6
       rect:
         serializedVersion: 2
         x: 256
         y: 384
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 583ec4b99109006478ffba5d26858c9c
-      internalID: 4149154237482698375
+      spriteID: 1aec271562ee6434a93442e6a6e1294f
+      internalID: -418314757
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Ready_3
+      name: RedRex_7
       rect:
         serializedVersion: 2
         x: 384
         y: 384
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1da255925fc89b541a5510daf3261149
-      internalID: -7736129105856362428
+      spriteID: b7c03c787cabe634aacdebdb08a52981
+      internalID: 887650442
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Run_0
+      name: RedRex_8
       rect:
         serializedVersion: 2
         x: 0
         y: 256
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7a65101190643dc4abde012f603d6664
-      internalID: 4944230376442633554
+      spriteID: 564246f23aa889844a96bf0924e844f0
+      internalID: -744039196
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Run_1
+      name: RedRex_9
       rect:
         serializedVersion: 2
         x: 128
         y: 256
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ed0ebb797c4a5e54ab853ad174f836c8
-      internalID: -2274363484027164459
+      spriteID: bd2e30d78fee91f448f8034c8a0d5656
+      internalID: 1429071387
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Run_2
+      name: RedRex_10
       rect:
         serializedVersion: 2
         x: 256
         y: 256
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f2ca8e14a41546a41917b7f5a96eb37f
-      internalID: 8284087734974297348
+      spriteID: 99f330fd7eb0b394e8066c6f412e9ef2
+      internalID: 393493296
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Run_3
+      name: RedRex_11
       rect:
         serializedVersion: 2
         x: 384
         y: 256
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d978cbc8dc6a2024e949a87178b5a489
-      internalID: 5304202850863732263
+      spriteID: befbf5223510bec4ebe33d8cd507896a
+      internalID: -990888617
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Run_4
+      name: RedRex_12
       rect:
         serializedVersion: 2
         x: 512
         y: 256
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: cf8cfa49af4c3b54e8acdeed001c2cbc
-      internalID: 2833043080597125133
+      spriteID: bdcc1366e87ba2342b2d42c7ace7d1fc
+      internalID: -1342600087
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Run_5
+      name: RedRex_13
       rect:
         serializedVersion: 2
         x: 640
         y: 256
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 187a12395920add48b00e60f1570a420
-      internalID: -2217414122262695004
+      spriteID: 50699abaa480589419dc0fa60b47d3ff
+      internalID: -1409432778
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Attack_0
+      name: RedRex_14
       rect:
         serializedVersion: 2
         x: 0
         y: 128
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 296acdc8c66daf747a9d5b56fd101d7a
-      internalID: -7008412969330441016
+      spriteID: 9ffb49ae22f93a54285ac4f6dc9ea195
+      internalID: 1724454600
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Attack_1
+      name: RedRex_15
       rect:
         serializedVersion: 2
         x: 128
         y: 128
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 36789a6ac8c423740b8de820482625a0
-      internalID: -7763475090823894447
+      spriteID: b1dee253637702c4d9f592b08d163229
+      internalID: 1449690864
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Attack_2
+      name: RedRex_16
       rect:
         serializedVersion: 2
         x: 256
         y: 128
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 4b802efba2ff0944f90607f089a851dd
-      internalID: 302641331129538988
+      spriteID: 5295604bfe28414469157887237bccac
+      internalID: -1476859374
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Attack_3
+      name: RedRex_17
       rect:
         serializedVersion: 2
         x: 384
         y: 128
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5f668c41325ef944da9d0512420a63ba
-      internalID: -6329420634031446844
+      spriteID: cbfba9817245dba46ad944f0c3873cd4
+      internalID: 851837513
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Attack_4
+      name: RedRex_18
       rect:
         serializedVersion: 2
         x: 512
         y: 128
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 065adccbc31d27d43bb5d9026dd7b379
-      internalID: -910092549403018386
+      spriteID: 310757686aecfe54496604ba560a2aa8
+      internalID: 366468368
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Attack_5
+      name: RedRex_19
       rect:
         serializedVersion: 2
         x: 640
         y: 128
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 00e679f1d3016d3408db5b3e722e89cc
-      internalID: 221524225039350300
+      spriteID: 5d85c6a3651f0c84f81b3bb5ad048981
+      internalID: 50238110
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Death_0
+      name: RedRex_20
       rect:
         serializedVersion: 2
         x: 0
         y: 0
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 71ca7aa4d2d13a448bf7408b506edef9
-      internalID: 6991849013916550155
+      spriteID: 0738aac0aebb7334a8b1e072633ec175
+      internalID: -57395954
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Death_1
+      name: RedRex_21
       rect:
         serializedVersion: 2
         x: 128
         y: 0
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6be32975e17654c4985ed58d38ee7266
-      internalID: -276728812324164698
+      spriteID: f28c67edcedfbd54f9ecc079fec6a724
+      internalID: -1842452541
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Death_2
+      name: RedRex_22
       rect:
         serializedVersion: 2
         x: 256
         y: 0
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 9546394f7f2cf7e419ae2201288fc156
-      internalID: 3156895337291164288
+      spriteID: 4a61eb6b7c96d464bb5c2b53ec412db4
+      internalID: 302728722
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Death_3
+      name: RedRex_23
       rect:
         serializedVersion: 2
         x: 384
         y: 0
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e979edc69edcc6d4f88c2ff2c69cc6a6
-      internalID: 1400002288684528572
+      spriteID: 0725692c2c6954940812e7c5b158f068
+      internalID: 1566153689
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Death_4
+      name: RedRex_24
       rect:
         serializedVersion: 2
         x: 512
         y: 0
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 067721896fb3af5489e4acda1ac508e5
-      internalID: -1891625820773287384
+      spriteID: cc8c4899781f14f4f9bbdb2a6adc74e4
+      internalID: 333651622
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Death_5
+      name: RedRex_25
       rect:
         serializedVersion: 2
         x: 640
         y: 0
         width: 128
         height: 128
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f857d131b92cd914ba451c55d25af821
-      internalID: -5789737788129074030
+      spriteID: 7528bd2230b7e7545b03b13f3a11a621
+      internalID: -1480659334
       vertices: []
       indices: 
       edges: []
       weights: []
     outline: []
+    customData: 
     physicsShape: []
     bones: []
     spriteID: 5e97eb03825dee720800000000000000
@@ -708,43 +751,37 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
     nameFileIdTable:
-      Attack_0: -7008412969330441016
-      Attack_1: -7763475090823894447
-      Attack_2: 302641331129538988
-      Attack_3: -6329420634031446844
-      Attack_4: -910092549403018386
-      Attack_5: 221524225039350300
-      Death_0: 6991849013916550155
-      Death_1: -276728812324164698
-      Death_2: 3156895337291164288
-      Death_3: 1400002288684528572
-      Death_4: -1891625820773287384
-      Death_5: -5789737788129074030
-      Idle_0: 4723107735738678597
-      Idle_1: -7385789195546760866
-      Idle_2: 3234629978573100161
-      Idle_3: 6373048116405451881
-      Ready_0: -2978808618200810919
-      Ready_1: 7683567802946276634
-      Ready_2: 4149154237482698375
-      Ready_3: -7736129105856362428
-      Run_0: 4944230376442633554
-      Run_1: -2274363484027164459
-      Run_2: 8284087734974297348
-      Run_3: 5304202850863732263
-      Run_4: 2833043080597125133
-      Run_5: -2217414122262695004
-  spritePackingTag: 
+      RedRex_0: -141670448
+      RedRex_1: -231235006
+      RedRex_10: 393493296
+      RedRex_11: -990888617
+      RedRex_12: -1342600087
+      RedRex_13: -1409432778
+      RedRex_14: 1724454600
+      RedRex_15: 1449690864
+      RedRex_16: -1476859374
+      RedRex_17: 851837513
+      RedRex_18: 366468368
+      RedRex_19: 50238110
+      RedRex_2: 1019612827
+      RedRex_20: -57395954
+      RedRex_21: -1842452541
+      RedRex_22: 302728722
+      RedRex_23: 1566153689
+      RedRex_24: 333651622
+      RedRex_25: -1480659334
+      RedRex_3: -2025511105
+      RedRex_4: 1838274412
+      RedRex_5: -915171411
+      RedRex_6: -418314757
+      RedRex_7: 887650442
+      RedRex_8: -744039196
+      RedRex_9: 1429071387
+  mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 269333
-  packageName: Pixel Monsters Animated Boss Pack #1
-  packageVersion: 2.7
-  assetPath: Assets/PixelFantasy/PixelMonsters/BossPack1/Rex/RedRex.png
-  uploadId: 656019

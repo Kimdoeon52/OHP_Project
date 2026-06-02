@@ -38,7 +38,6 @@ public class GridSystem : Singleton<GridSystem>
     {
         var cell = new Vector3Int(pos.x, pos.y, 0);
 
-        if (tilemaps.chasm != null && tilemaps.chasm.HasTile(cell)) return false;
         if (tilemaps.wall != null && tilemaps.wall.HasTile(cell)) return false;
 
         bool hasFloor = tilemaps.floor != null && tilemaps.floor.HasTile(cell);

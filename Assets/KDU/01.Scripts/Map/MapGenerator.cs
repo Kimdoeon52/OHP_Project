@@ -38,6 +38,10 @@ public class MapGenerator : Singleton<MapGenerator>
     [SerializeField] private GridDoor doorPrefab;
     private readonly List<GridDoor> _currentDoors = new();
 
+    [Tooltip("스페셜 방 열쇠 픽업 프리팹 (GDD 9.15). Special 방이 있는 층에 1개 스폰.")]
+    [SerializeField] private KeyPickup specialKeyPickupPrefab;
+    private readonly List<KeyPickup> _currentKeys = new();
+
     public DungeonRandom Rng { get; } = new DungeonRandom();
     public List<RoomData> CurrentRooms { get; private set; }
     public int CurrentSeed { get; private set; }
@@ -88,6 +92,7 @@ public class MapGenerator : Singleton<MapGenerator>
         SafeGatewayCells.Clear();
         DestroyCurrentExit();
         DestroyCurrentDoors();
+        DestroyCurrentKeys();
         // 이전 층의 Feeling 효과 리셋
         if (VisionSystem.Instance != null) VisionSystem.Instance.VisionRadiusDelta = 0;
         // 열쇠는 해당 층에서만 사용 가능 (GDD 9.15) → 층 진입 시 폐기.
@@ -150,6 +155,9 @@ public class MapGenerator : Singleton<MapGenerator>
 
         // 문은 스폰 뒤에 배치 — 닫힌 문이 스폰 단계의 도달성 판정을 막지 않도록.
         PlaceDoors(rooms);
+
+        // 열쇠 픽업 배치 — Special 방이 있으면 스페셜 키 1개를 Normal/Exit 방 임의 셀에 (GDD 9.15).
+        SpawnKeys(rooms);
 
         CurrentRooms = rooms;
         return rooms;
@@ -419,7 +427,6 @@ public class MapGenerator : Singleton<MapGenerator>
         var cell = new Vector3Int(c.x, c.y, 0);
         if (tilemaps == null || tilemaps.floor == null || !tilemaps.floor.HasTile(cell)) return false;
         if (tilemaps.wall != null && tilemaps.wall.HasTile(cell)) return false;
-        if (tilemaps.chasm != null && tilemaps.chasm.HasTile(cell)) return false;
         return true;
     }
 
@@ -432,6 +439,65 @@ public class MapGenerator : Singleton<MapGenerator>
             else DestroyImmediate(door.gameObject);
         }
         _currentDoors.Clear();
+    }
+
+    /// <summary>
+    /// 열쇠 픽업 배치. Special 방이 한 층에 있으면 SpecialRoom 키 1개를 Normal/Exit 방의
+    /// floor 셀(doorCells 인접·HazardCells 제외) 중 무작위 1곳에. (GDD 9.15)
+    /// </summary>
+    private void SpawnKeys(List<RoomData> rooms)
+    {
+        if (specialKeyPickupPrefab == null) return;
+        if (rooms == null) return;
+        if (!rooms.Exists(r => r.type == RoomType.Special)) return;
+
+        // 입구 인접 셀 제외 — 문 옆에 바로 떨어지면 자동 개폐와 겹쳐 어색.
+        var avoid = new HashSet<Vector2Int>();
+        foreach (var room in rooms)
+        {
+            if (room.doorCells == null) continue;
+            foreach (var d in room.doorCells)
+            {
+                avoid.Add(d);
+                avoid.Add(d + Vector2Int.up);
+                avoid.Add(d + Vector2Int.down);
+                avoid.Add(d + Vector2Int.left);
+                avoid.Add(d + Vector2Int.right);
+            }
+        }
+
+        var candidates = new List<Vector2Int>();
+        foreach (var room in rooms)
+        {
+            if (room.type != RoomType.Normal && room.type != RoomType.Exit) continue;
+            if (room.floorCells == null) continue;
+            foreach (var c in room.floorCells)
+            {
+                if (avoid.Contains(c)) continue;
+                if (HazardCells.Contains(c)) continue;
+                candidates.Add(c);
+            }
+        }
+        if (candidates.Count == 0) return;
+
+        var cell = Rng.Pick(candidates);
+        Vector3 pos = GridSystem.Instance != null
+            ? GridSystem.Instance.GridToWorld(cell)
+            : new Vector3(cell.x, cell.y, 0);
+        var pickup = Instantiate(specialKeyPickupPrefab, pos, Quaternion.identity);
+        pickup.Initialize(cell, KeyType.SpecialRoom);
+        _currentKeys.Add(pickup);
+    }
+
+    private void DestroyCurrentKeys()
+    {
+        foreach (var key in _currentKeys)
+        {
+            if (key == null) continue;
+            if (Application.isPlaying) Destroy(key.gameObject);
+            else DestroyImmediate(key.gameObject);
+        }
+        _currentKeys.Clear();
     }
 
     private static SizeCategory PickNormalSize(DungeonRandom rng)
