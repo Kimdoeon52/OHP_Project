@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 public enum NYHStatType
@@ -119,7 +119,7 @@ public class NYHPlayerStats : MonoBehaviour
                 strength = Mathf.Max(0, strength + amount);
                 break;
             case NYHStatType.MoveSpeed:
-                moveSpeed = Mathf.Max(0, moveSpeed + amount);
+                moveSpeed = Mathf.Max(0, moveSpeed + amount / 100);
                 break;
             case NYHStatType.AttackSpeed:
                 attackSpeed = Mathf.Max(0, attackSpeed + amount);

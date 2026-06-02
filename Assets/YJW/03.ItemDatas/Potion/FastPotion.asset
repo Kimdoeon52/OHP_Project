@@ -9,13 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 24546455f488342479ae12a74c883f28, type: 3}
-  m_Name: ExperiencePotion
+  m_Script: {fileID: 11500000, guid: d7c9b5f7651f2244a9e470eea43a95ae, type: 3}
+  m_Name: FastPotion
   m_EditorClassIdentifier: 
   id: 0
-  itemName: "\uACBD\uD5D8 \uD3EC\uC158"
+  itemName: "\uC2E0\uC18D \uD3EC\uC158"
   description: 
-  icon: {fileID: 21300000, guid: 5d36ffaac84d09e458ab420b91a1a37f, type: 3}
+  icon: {fileID: 21300000, guid: bdeff8ea20dc8ef4c9c84d9ee3821f00, type: 3}
   itemType: 1
   slot: 0
   width: 1
@@ -23,5 +23,5 @@ MonoBehaviour:
   canEnhance: 0
   canCurse: 0
   canAnalyze: 0
-  potionType: 3
-  value: 1
+  potionType: 6
+  value: 20
