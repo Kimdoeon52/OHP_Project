@@ -18,6 +18,8 @@ public class FloorTransitionController : MonoBehaviour
     [SerializeField] private float blackHoldSeconds = 0.1f;
     [Tooltip("Safe Room 안에 있는 동안 타이머 정지 + 첫 이탈 시 시작. 없으면 텔레포트 즉시 타이머 시작.")]
     [SerializeField] private SafeRoomTimerGate safeRoomGate;
+    [Tooltip("층 전환 직후 카메라를 플레이어 위치로 즉시 스냅. 없으면 smoothdamp 가 따라잡을 때까지 빈 화면 보임.")]
+    [SerializeField] private CameraFollow cameraFollow;
 
     [Header("게임 시작 시 1층 자동 생성")]
     [Tooltip("켜면 Start() 에서 RunState.CurrentDepth 기준 1회 BuildFloor — 페이드 아웃은 스킵하고 fade in 만 수행. " +
@@ -116,7 +118,19 @@ public class FloorTransitionController : MonoBehaviour
             yield break;
         }
         var spawnCell = PickCenterCell(spawnRoom.floorCells);
+
+        // 이전 층의 MoveToCell 코루틴이 페이드 동안 살아 있으면 텔레포트 후 transform 을 옛 값으로 덮어씀.
+        // GridPlayerMovement.OnDisable 가 코루틴을 중단·IsMoving 리셋하므로 enabled 토글로 안전 취소.
+        if (player.Movement != null && player.Movement.enabled)
+        {
+            player.Movement.enabled = false;
+            player.Movement.enabled = true;
+        }
+
         player.SetGridPosition(spawnCell);
+
+        // 카메라 즉시 스냅 — 페이드 인 시 빈 영역이 보이는 현상 방지(이전 층 위치에 머문 카메라가 따라잡기 전 보임).
+        if (cameraFollow != null) cameraFollow.SnapToTarget();
 
         // 시야 갱신 (GridPlayer.Start 가 먼저 갱신해뒀어도 ResetForNewFloor 로 덮어쓰여 정확함)
         VisionSystem.Instance?.UpdateVision(spawnCell);
