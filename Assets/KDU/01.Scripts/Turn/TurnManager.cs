@@ -133,6 +133,23 @@ public class TurnManager : MonoBehaviour
                 _entities.RemoveAt(i);
                 continue;
             }
+
+            // 2x2 이상 대형 보스는 GridPosition 하나만 비교하면 몸통 일부 칸을 공격 대상으로 찾을 수 없다.
+            // IMultiCellGridEntity를 구현한 엔티티는 OccupiedCells 전체를 검사해서,
+            // 플레이어가 대형 보스의 어느 칸을 공격해도 같은 보스를 반환한다.
+            if (e is IMultiCellGridEntity multiCellEntity)
+            {
+                IEnumerable<Vector2Int> occupiedCells = multiCellEntity.OccupiedCells;
+                if (occupiedCells != null)
+                {
+                    foreach (Vector2Int occupiedCell in occupiedCells)
+                    {
+                        if (occupiedCell == pos)
+                            return e;
+                    }
+                }
+            }
+
             if (e != null && e.GridPosition == pos) 
             return e;
         }

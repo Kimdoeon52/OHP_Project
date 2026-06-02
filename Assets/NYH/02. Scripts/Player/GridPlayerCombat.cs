@@ -29,10 +29,10 @@ public class GridPlayerCombat : MonoBehaviour
     [SerializeField, Min(0.001f)] private float baseMeleeCooldown = 1.0f;
 
     [Tooltip("AttackSpeed가 1보다 높을 때, 1 증가당 근접 공격 쿨다운과 행동 딜레이를 줄이는 비율입니다.")]
-    [SerializeField, Min(0f)] private float attackSpeedCooldownMultiplier = 0.12f;
+    [SerializeField, Min(0.0001f)] private float attackSpeedCooldownMultiplier = 0.12f;
 
     [Tooltip("AttackSpeed가 높아져도 근접 공격 쿨다운이 이 값보다 짧아지지 않게 막습니다.")]
-    [SerializeField, Min(0.01f)] private float minMeleeCooldown = 0.1f;
+    [SerializeField, Min(0.0001f)] private float minMeleeCooldown = 0.0001f;
 
     [Tooltip("AttackSpeed가 높아져도 근접 공격 시간 비용이 이 값보다 낮아지지 않게 막습니다.")]
     [SerializeField, Min(0.01f)] private float minMeleeTimeCost = 0.1f;
@@ -292,6 +292,11 @@ public class GridPlayerCombat : MonoBehaviour
         float timeCost = Mathf.Max(minMeleeTimeCost, _player.Config.meleeTimeDealy / GetAttackSpeedFactor());
         StatusController statusController = _player.GetComponent<StatusController>();
         return statusController != null ? statusController.ModifyAttackCooldown(timeCost) : timeCost;
+    }
+
+    public float GetMeleeActionInterval()
+    {
+        return Mathf.Max(GetMeleeCooldown(), GetModifiedMeleeTimeCost());
     }
 
     private float GetAttackSpeedFactor()

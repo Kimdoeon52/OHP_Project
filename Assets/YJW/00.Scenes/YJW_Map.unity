@@ -8304,10 +8304,12 @@ MonoBehaviour:
   baseLayerIndex: 0
   idleStateName: warrior idle
   runStateName: warrior run
+  attackStateName: warrior single swing1
   faceRightByDefault: 1
-  attackSpeedAnimationMultiplier: 0.12
-  maxAttackAnimationSpeed: 2.5
+  maxAttackAnimationSpeed: 12
   attackSpeedResetDelay: 0.25
+  minAttackAnimationDuration: 0.08
+  attackClipLengthFallback: 1.1
 --- !u!95 &1658363714
 Animator:
   serializedVersion: 7
