@@ -109,6 +109,13 @@ namespace EnemySystem
 
             if (rooms == null || rng == null) return;
 
+            // 보스 층인 경우 동적 적 스폰을 완전히 제외
+            if (MapGenerator.Instance != null && MapGenerator.Instance.IsBossDepth(depth))
+            {
+                Debug.Log($"EnemySpawner: {depth}층은 보스 층이므로 적을 스폰하지 않음.");
+                return;
+            }
+
             // 현재 층의 FloorSpawnConfig 검색
             FloorSpawnConfig currentConfig = GetConfigForDepth(depth);
             if (currentConfig == null)
