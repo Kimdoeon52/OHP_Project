@@ -100,6 +100,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9e2af8519fc49d49aade33eb32d2c7e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemSO: {fileID: 0}
-  enhanceLevel: 0
+  itemSO: {fileID: 11400000, guid: 055bf66d72d19b84bb89c11f484f587f, type: 2}
+  enhanceLevel: 2
   curse: {fileID: 0}

@@ -63,7 +63,7 @@ public class GridPlayerInput : MonoBehaviour
         if (!canAct) return;
 
         // 좌클릭 근접 공격
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButton(0))
         {
             var cam = Camera.main;
             if (cam != null)

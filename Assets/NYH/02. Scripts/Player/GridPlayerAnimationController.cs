@@ -41,38 +41,42 @@ public class GridPlayerAnimationController : MonoBehaviour
     [Tooltip("이동이 시작됐을 때 즉시 재생할 Run/Walk 상태 이름.")]
     [SerializeField] private string runStateName = "warrior run";
 
+    [Tooltip("공격할 때 즉시 처음부터 재생할 Animator 상태 이름.")]
+    [SerializeField] private string attackStateName = "warrior single swing1";
+
     [Header("Facing")]
     [Tooltip("원본 스프라이트가 오른쪽을 보고 있으면 true, 왼쪽을 보고 있으면 false.")]
     [SerializeField] private bool faceRightByDefault = true;
 
     [Header("공격 애니메이션 속도")]
-    [Tooltip("AttackSpeed 1당 공격 애니메이션 배속을 올리는 비율입니다.")]
-    [SerializeField, Min(0f)] private float attackSpeedAnimationMultiplier = 0.12f;
-
     [Tooltip("공격 애니메이션 배속이 이 값보다 높아지지 않게 제한합니다.")]
-    [SerializeField, Min(1f)] private float maxAttackAnimationSpeed = 2.5f;
+    [SerializeField, Min(1f)] private float maxAttackAnimationSpeed = 12f;
 
     [Tooltip("공격 후 Animator speed를 기본값으로 되돌리기까지 기다리는 시간입니다.")]
     [SerializeField, Min(0.01f)] private float attackSpeedResetDelay = 0.25f;
 
+    [Tooltip("공격 애니메이션이 너무 짧아져 아예 안 보이지 않도록 보장할 최소 표시 시간입니다.")]
+    [SerializeField, Min(0.01f)] private float minAttackAnimationDuration = 0.08f;
+
+    [Tooltip("컨트롤러에서 공격 클립 길이를 찾지 못했을 때 사용할 기본 길이입니다.")]
+    [SerializeField, Min(0.01f)] private float attackClipLengthFallback = 1.1f;
+
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
     private GridPlayer _player;
-    private NYHPlayerStats _stats;
     private Coroutine _attackSpeedCoroutine;
     private bool _isDead;
     private bool _isFacingRight;
     private bool _isSubscribed;
     private bool _isMoveVisualActive;
+    private bool _isAttackVisualActive;
+    private float _cachedAttackClipLength = -1f;
 
     private void Awake()
     {
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _player = GetComponent<GridPlayer>();
-        _stats = GetComponent<NYHPlayerStats>();
-        if (_stats == null)
-            _stats = NYHPlayerStats.Instance;
         _isFacingRight = faceRightByDefault;
         ApplyFacing();
     }
@@ -98,6 +102,8 @@ public class GridPlayerAnimationController : MonoBehaviour
 
         if (_animator != null)
             _animator.speed = 1f;
+
+        _isAttackVisualActive = false;
     }
 
     private void OnDestroy()
@@ -189,12 +195,15 @@ public class GridPlayerAnimationController : MonoBehaviour
 
         UpdateHorizontalFacing(direction);
         ApplyAttackAnimationSpeed();
-        SetTriggerIfConfigured(attackTriggerName);
+
+        if (!PlayStateIfConfigured(attackStateName, keepCurrentRunTime: false))
+            SetTriggerIfConfigured(attackTriggerName);
     }
 
     private void OnDamaged(int damage)
     {
         if (_isDead || _player.Health.IsDead) return;
+        if (_isAttackVisualActive) return;
 
         SetTriggerIfConfigured(hurtTriggerName);
     }
@@ -205,6 +214,7 @@ public class GridPlayerAnimationController : MonoBehaviour
 
         _isDead = true;
         _isMoveVisualActive = false;
+        _isAttackVisualActive = false;
         if (_attackSpeedCoroutine != null)
         {
             StopCoroutine(_attackSpeedCoroutine);
@@ -243,49 +253,77 @@ public class GridPlayerAnimationController : MonoBehaviour
         if (_attackSpeedCoroutine != null)
             StopCoroutine(_attackSpeedCoroutine);
 
-        _animator.speed = GetAttackAnimationSpeed();
-        _attackSpeedCoroutine = StartCoroutine(RestoreAnimatorSpeedAfterAttack());
+        float targetDuration = GetAttackAnimationTargetDuration();
+        _isAttackVisualActive = true;
+        _animator.speed = GetAttackAnimationSpeed(targetDuration);
+        _attackSpeedCoroutine = StartCoroutine(RestoreAnimatorSpeedAfterAttack(targetDuration));
     }
 
-    private IEnumerator RestoreAnimatorSpeedAfterAttack()
+    private IEnumerator RestoreAnimatorSpeedAfterAttack(float delaySeconds)
     {
-        yield return new WaitForSeconds(attackSpeedResetDelay);
+        yield return new WaitForSeconds(delaySeconds);
 
         if (_animator != null && !_isDead)
             _animator.speed = _isMoveVisualActive ? _animator.speed : 1f;
 
+        _isAttackVisualActive = false;
         _attackSpeedCoroutine = null;
     }
 
-    private float GetAttackAnimationSpeed()
+    private float GetAttackAnimationSpeed(float targetDuration)
     {
-        int attackSpeed = GetAttackSpeed();
-        float speed = 1f + Mathf.Max(0, attackSpeed) * attackSpeedAnimationMultiplier;
-        return Mathf.Min(maxAttackAnimationSpeed, speed);
+        float clipLength = GetAttackClipLength();
+        float safeDuration = Mathf.Max(0.01f, targetDuration);
+        float speed = clipLength / safeDuration;
+        return Mathf.Clamp(speed, 1f, maxAttackAnimationSpeed);
     }
 
-    private int GetAttackSpeed()
+    private float GetAttackAnimationTargetDuration()
     {
-        if (_stats == null)
-            _stats = NYHPlayerStats.Instance;
+        float actionInterval = _player != null && _player.Combat != null
+            ? _player.Combat.GetMeleeActionInterval()
+            : attackSpeedResetDelay;
 
-        return _stats != null ? _stats.AttackSpeed : 0;
+        return Mathf.Max(minAttackAnimationDuration, actionInterval);
     }
 
-    private void PlayStateIfConfigured(string stateName, bool keepCurrentRunTime)
+    private float GetAttackClipLength()
+    {
+        if (_cachedAttackClipLength > 0f)
+            return _cachedAttackClipLength;
+
+        _cachedAttackClipLength = attackClipLengthFallback;
+
+        if (_animator == null || _animator.runtimeAnimatorController == null)
+            return _cachedAttackClipLength;
+
+        foreach (AnimationClip clip in _animator.runtimeAnimatorController.animationClips)
+        {
+            if (clip != null && clip.name == attackStateName)
+            {
+                _cachedAttackClipLength = Mathf.Max(0.01f, clip.length);
+                break;
+            }
+        }
+
+        return _cachedAttackClipLength;
+    }
+
+    private bool PlayStateIfConfigured(string stateName, bool keepCurrentRunTime)
     {
         if (string.IsNullOrEmpty(stateName) || _animator == null || _animator.runtimeAnimatorController == null)
-            return;
+            return false;
 
         int stateHash = Animator.StringToHash(stateName);
         if (!_animator.HasState(baseLayerIndex, stateHash))
-            return;
+            return false;
 
         float normalizedTime = 0f;
         if (keepCurrentRunTime && IsCurrentState(stateHash))
             normalizedTime = _animator.GetCurrentAnimatorStateInfo(baseLayerIndex).normalizedTime;
 
         _animator.Play(stateHash, baseLayerIndex, normalizedTime);
+        return true;
     }
 
     private bool IsCurrentState(int stateHash)

@@ -2,6 +2,7 @@
 
 using PrototypeRT;
 using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// 플레이어 기능을 강제로 테스트하기 위한 에디터 전용 디버그 리모컨.
@@ -57,7 +58,7 @@ public class DebugPlayer : MonoBehaviour
 
     [Header("아이템 / 장비 디버그")]
     [Tooltip("Add Debug Item 실행 시 인벤토리에 넣을 아이템 데이터입니다.")]
-    [SerializeField] private ItemBase itemToAdd;
+    [SerializeField] private List<ItemBase> itemsToAdd = new();
 
     [Tooltip("Equip Debug Item 실행 시 장착할 장비 데이터입니다. ItemBase의 Slot이 None이면 장착되지 않습니다.")]
     [SerializeField] private ItemBase itemToEquip;
@@ -371,14 +372,24 @@ public class DebugPlayer : MonoBehaviour
     public void AddDebugItem()
     {
         if (!TryGetInventory(out InventoryController targetInventory)) return;
-        if (itemToAdd == null)
+        
+        if (itemsToAdd == null || itemsToAdd.Count == 0)
         {
             Debug.LogWarning("[DebugPlayer] itemToAdd가 비어 있습니다.");
             return;
         }
 
-        bool added = targetInventory.TryAddItem(itemToAdd.CreateInstance());
-        Debug.Log($"[DebugPlayer] 인벤토리 아이템 추가: {itemToAdd.Name}, 성공 {added}");
+        int successCount  = 0;
+
+        foreach (var item in itemsToAdd)
+        {
+            bool added = targetInventory.TryAddItem(item.CreateInstance());
+            if (added) successCount++;
+
+            Debug.Log($"[DebugPlayer] 인벤토리 아이템 추가: {item.Name}, 성공 {added}");
+        }
+
+        Debug.Log($"[DebugPlayer] 인벤토리 아이템 추가: {successCount}/{itemsToAdd.Count}, 성공 {successCount}");
         RefreshStatsUI();
     }
 
