@@ -125,14 +125,14 @@ TextureImporter:
         width: 128
         height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.55}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 1f41194188fa5b84688a18f840be9187
+      spriteID: fc834450000000000800000000000000
       internalID: 88357071
       vertices: []
       indices: 
@@ -147,14 +147,14 @@ TextureImporter:
         width: 128
         height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.55}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 5f14d30cc102d5344b7f620f071f5a0a
+      spriteID: 9ef60b8dffffffff0800000000000000
       internalID: -659525655
       vertices: []
       indices: 
@@ -164,19 +164,19 @@ TextureImporter:
       name: mutant rat - idle_2
       rect:
         serializedVersion: 2
-        x: 256
+        x: 253
         y: 0
         width: 128
         height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.55}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: d8b53c485a51fda418b0c493f002418b
+      spriteID: 6fdc0b6dffffffff0800000000000000
       internalID: -693056010
       vertices: []
       indices: 
@@ -186,19 +186,19 @@ TextureImporter:
       name: mutant rat - idle_3
       rect:
         serializedVersion: 2
-        x: 384
+        x: 385
         y: 0
         width: 128
         height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.55}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: fc570df5fb9924041a061253075f3f19
+      spriteID: 9bab1823000000000800000000000000
       internalID: 847362745
       vertices: []
       indices: 
@@ -213,14 +213,14 @@ TextureImporter:
         width: 128
         height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.55}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 6342c57d62e6f7944bfa72f77e21b4a6
+      spriteID: b77c01b7000000000800000000000000
       internalID: 2064697211
       vertices: []
       indices: 
@@ -235,14 +235,14 @@ TextureImporter:
         width: 128
         height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.55}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 7d98701e0abd26d42a5150aab03136c9
+      spriteID: 2089c4a6000000000800000000000000
       internalID: 1783404546
       vertices: []
       indices: 
@@ -257,14 +257,14 @@ TextureImporter:
         width: 128
         height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.55}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 56b8fc9a9b245ba4b8e564b8883f5170
+      spriteID: f1a9077bffffffff0800000000000000
       internalID: -1217357281
       vertices: []
       indices: 
@@ -279,15 +279,37 @@ TextureImporter:
         width: 128
         height: 96
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.55}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 03eaa12fd4f5f7a4e9e04e8144e8cc90
+      spriteID: f93d35f0000000000800000000000000
       internalID: 257151903
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mutant rat - idle_8
+      rect:
+        serializedVersion: 2
+        x: 258
+        y: 0
+        width: 766
+        height: 96
+      alignment: 0
+      pivot: {x: 0.5, y: 0.55}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dda8130effffffff0800000000000000
+      internalID: -533624099
       vertices: []
       indices: 
       edges: []
@@ -314,6 +336,7 @@ TextureImporter:
       mutant rat - idle_5: 1783404546
       mutant rat - idle_6: -1217357281
       mutant rat - idle_7: 257151903
+      mutant rat - idle_8: -533624099
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
