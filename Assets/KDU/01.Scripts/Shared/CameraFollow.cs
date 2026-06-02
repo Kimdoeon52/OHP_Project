@@ -20,4 +20,12 @@ public class CameraFollow : MonoBehaviour
         else
             transform.position = Vector3.SmoothDamp(transform.position, desired, ref _velocity, smoothing);
     }
+
+    /// <summary>층 전환 등 타깃이 순간이동할 때 호출 — smoothdamp 누적 속도를 리셋하고 위치를 즉시 스냅.</summary>
+    public void SnapToTarget()
+    {
+        if (target == null) return;
+        transform.position = target.position + offset;
+        _velocity = Vector3.zero;
+    }
 }

@@ -51,7 +51,7 @@ public class PotionData : ItemBase
 		return new WeaponInstance { data = this };
 	}
 
-	private void AddNYHStat(NYHStatType type)
+    private void AddNYHStat(NYHStatType type)
     {
         if (NYHPlayerStats.Instance == null)
         {

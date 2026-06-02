@@ -1,13 +1,13 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// 플레이어 애니메이션 전용 어댑터.
-/// 이동/공격/체력 로직이 Animator를 직접 알지 않도록 이벤트만 구독한다.
-/// 사용법:
-/// 1. Player 오브젝트에 Animator와 이 컴포넌트를 붙인다.
-/// 2. Animator Controller에 Attack, Die, Move Trigger와 IsMoving, IsDead Bool을 만든다.
-/// 3. idleStateName/runStateName을 Animator의 실제 상태 이름과 맞춘다.
+/// ?뚮젅?댁뼱 ?좊땲硫붿씠???꾩슜 ?대뙌??
+/// ?대룞/怨듦꺽/泥대젰 濡쒖쭅??Animator瑜?吏곸젒 ?뚯? ?딅룄濡??대깽?몃쭔 援щ룆?쒕떎.
+/// ?ъ슜踰?
+/// 1. Player ?ㅻ툕?앺듃??Animator? ??而댄룷?뚰듃瑜?遺숈씤??
+/// 2. Animator Controller??Attack, Die, Move Trigger? IsMoving, IsDead Bool??留뚮뱺??
+/// 3. idleStateName/runStateName??Animator???ㅼ젣 ?곹깭 ?대쫫怨?留욎텣??
 /// </summary>
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(SpriteRenderer))]
@@ -15,50 +15,50 @@ using UnityEngine;
 public class GridPlayerAnimationController : MonoBehaviour
 {
     [Header("Animator Parameters")]
-    [Tooltip("공격 성공 시 사용하는 Trigger 이름.")]
+    [Tooltip("怨듦꺽 ?깃났 ???ъ슜?섎뒗 Trigger ?대쫫.")]
     [SerializeField] private string attackTriggerName = "Attack";
     [SerializeField] private string hurtTriggerName = "Hurt";
 
-    [Tooltip("사망 시 사용하는 Trigger 이름.")]
+    [Tooltip("?щ쭩 ???ъ슜?섎뒗 Trigger ?대쫫.")]
     [SerializeField] private string dieTriggerName = "Die";
 
-    [Tooltip("이전 Move Trigger가 남아 있으면 늦게 소비될 수 있어 이동 시작/종료 때 Reset만 한다.")]
+    [Tooltip("?댁쟾 Move Trigger媛 ?⑥븘 ?덉쑝硫???쾶 ?뚮퉬?????덉뼱 ?대룞 ?쒖옉/醫낅즺 ??Reset留??쒕떎.")]
     [SerializeField] private string moveTriggerName = "Move";
 
-    [Tooltip("이동 중 true, 이동 종료 시 false가 되는 Bool 이름.")]
+    [Tooltip("?대룞 以?true, ?대룞 醫낅즺 ??false媛 ?섎뒗 Bool ?대쫫.")]
     [SerializeField] private string isMovingBoolName = "IsMoving";
 
-    [Tooltip("사망 후 true로 고정되는 Bool 이름.")]
+    [Tooltip("?щ쭩 ??true濡?怨좎젙?섎뒗 Bool ?대쫫.")]
     [SerializeField] private string isDeadBoolName = "IsDead";
 
     [Header("Animator States")]
-    [Tooltip("기본 Base Layer는 0. 다른 레이어에서 재생할 때만 바꾼다.")]
+    [Tooltip("湲곕낯 Base Layer??0. ?ㅻⅨ ?덉씠?댁뿉???ъ깮???뚮쭔 諛붽씔??")]
     [SerializeField] private int baseLayerIndex;
 
-    [Tooltip("이동이 끝났을 때 즉시 재생할 Idle 상태 이름.")]
+    [Tooltip("?대룞???앸궗????利됱떆 ?ъ깮??Idle ?곹깭 ?대쫫.")]
     [SerializeField] private string idleStateName = "warrior idle";
 
-    [Tooltip("이동이 시작됐을 때 즉시 재생할 Run/Walk 상태 이름.")]
+    [Tooltip("?대룞???쒖옉?먯쓣 ??利됱떆 ?ъ깮??Run/Walk ?곹깭 ?대쫫.")]
     [SerializeField] private string runStateName = "warrior run";
 
-    [Tooltip("공격할 때 즉시 처음부터 재생할 Animator 상태 이름.")]
+    [Tooltip("怨듦꺽????利됱떆 泥섏쓬遺???ъ깮??Animator ?곹깭 ?대쫫.")]
     [SerializeField] private string attackStateName = "warrior single swing1";
 
     [Header("Facing")]
-    [Tooltip("원본 스프라이트가 오른쪽을 보고 있으면 true, 왼쪽을 보고 있으면 false.")]
+    [Tooltip("?먮낯 ?ㅽ봽?쇱씠?멸? ?ㅻⅨ履쎌쓣 蹂닿퀬 ?덉쑝硫?true, ?쇱そ??蹂닿퀬 ?덉쑝硫?false.")]
     [SerializeField] private bool faceRightByDefault = true;
 
-    [Header("공격 애니메이션 속도")]
-    [Tooltip("공격 애니메이션 배속이 이 값보다 높아지지 않게 제한합니다.")]
+    [Header("怨듦꺽 ?좊땲硫붿씠???띾룄")]
+    [Tooltip("怨듦꺽 ?좊땲硫붿씠??諛곗냽????媛믩낫???믪븘吏吏 ?딄쾶 ?쒗븳?⑸땲??")]
     [SerializeField, Min(1f)] private float maxAttackAnimationSpeed = 12f;
 
-    [Tooltip("공격 후 Animator speed를 기본값으로 되돌리기까지 기다리는 시간입니다.")]
+    [Tooltip("怨듦꺽 ??Animator speed瑜?湲곕낯媛믪쑝濡??섎룎由ш린源뚯? 湲곕떎由щ뒗 ?쒓컙?낅땲??")]
     [SerializeField, Min(0.01f)] private float attackSpeedResetDelay = 0.25f;
 
-    [Tooltip("공격 애니메이션이 너무 짧아져 아예 안 보이지 않도록 보장할 최소 표시 시간입니다.")]
+    [Tooltip("怨듦꺽 ?좊땲硫붿씠?섏씠 ?덈Т 吏㏃븘???꾩삁 ??蹂댁씠吏 ?딅룄濡?蹂댁옣??理쒖냼 ?쒖떆 ?쒓컙?낅땲??")]
     [SerializeField, Min(0.01f)] private float minAttackAnimationDuration = 0.08f;
 
-    [Tooltip("컨트롤러에서 공격 클립 길이를 찾지 못했을 때 사용할 기본 길이입니다.")]
+    [Tooltip("而⑦듃濡ㅻ윭?먯꽌 怨듦꺽 ?대┰ 湲몄씠瑜?李얠? 紐삵뻽?????ъ슜??湲곕낯 湲몄씠?낅땲??")]
     [SerializeField, Min(0.01f)] private float attackClipLengthFallback = 1.1f;
 
     private Animator _animator;
@@ -116,8 +116,8 @@ public class GridPlayerAnimationController : MonoBehaviour
         if (_isDead || !_isSubscribed || _player == null || _player.Movement == null) return;
         if (!_isMoveVisualActive || _player.Movement.IsMoving) return;
 
-        // 고속 홀드 이동 중에는 이동 코루틴 사이 한 프레임에 Idle로 튀지 않게 유지한다.
-        // 단, 키를 놓았거나 다음 칸이 벽이면 즉시 Idle로 되돌려 걷기 모션이 남지 않게 한다.
+        // 怨좎냽 ????대룞 以묒뿉???대룞 肄붾（???ъ씠 ???꾨젅?꾩뿉 Idle濡??吏 ?딄쾶 ?좎??쒕떎.
+        // ?? ?ㅻ? ?볦븯嫄곕굹 ?ㅼ쓬 移몄씠 踰쎌씠硫?利됱떆 Idle濡??섎룎??嫄룰린 紐⑥뀡???⑥? ?딄쾶 ?쒕떎.
         if (!_player.Movement.ShouldKeepMoveAnimationAfterMove())
             OnMoveFinished();
     }
@@ -132,7 +132,7 @@ public class GridPlayerAnimationController : MonoBehaviour
         if (_player == null || _player.Movement == null || _player.Combat == null || _player.Health == null)
             return;
 
-        // GridPlayer.Awake 이후에만 구독해 컴포넌트 초기화 순서 문제를 피한다.
+        // GridPlayer.Awake ?댄썑?먮쭔 援щ룆??而댄룷?뚰듃 珥덇린???쒖꽌 臾몄젣瑜??쇳븳??
         _player.Movement.OnMoveSucceeded += OnMoveSucceeded;
         _player.Movement.OnMoveFinished += OnMoveFinished;
         _player.Movement.OnMoveSpeedChanged += OnMoveSpeedChanged;
@@ -164,7 +164,7 @@ public class GridPlayerAnimationController : MonoBehaviour
         SetBoolIfConfigured(isMovingBoolName, true);
         _isMoveVisualActive = true;
 
-        // Trigger가 남아서 늦게 재생되는 문제를 막기 위해 이동 상태는 직접 재생한다.
+        // Trigger媛 ?⑥븘????쾶 ?ъ깮?섎뒗 臾몄젣瑜?留됯린 ?꾪빐 ?대룞 ?곹깭??吏곸젒 ?ъ깮?쒕떎.
         PlayStateIfConfigured(runStateName, keepCurrentRunTime: true);
     }
 
@@ -173,10 +173,13 @@ public class GridPlayerAnimationController : MonoBehaviour
         ResetTriggerIfConfigured(moveTriggerName);
         SetBoolIfConfigured(isMovingBoolName, false);
         _isMoveVisualActive = false;
+        if (_isAttackVisualActive)
+            return;
+
         if (_animator != null)
             _animator.speed = 1f;
 
-        // 걷기 클립이 끝나길 기다리지 않고 도착 즉시 Idle로 자른다.
+        // 嫄룰린 ?대┰???앸굹湲?湲곕떎由ъ? ?딄퀬 ?꾩갑 利됱떆 Idle濡??먮Ⅸ??
         PlayStateIfConfigured(idleStateName, keepCurrentRunTime: false);
     }
 
@@ -184,8 +187,8 @@ public class GridPlayerAnimationController : MonoBehaviour
     {
         if (_isDead || _animator == null) return;
 
-        // GridPlayerMovement가 계산한 배속만 적용한다.
-        // MoveSpeed 5 이후 애니메이션 배속 고정 정책도 이동 스크립트에서 결정한다.
+        // GridPlayerMovement媛 怨꾩궛??諛곗냽留??곸슜?쒕떎.
+        // MoveSpeed 5 ?댄썑 ?좊땲硫붿씠??諛곗냽 怨좎젙 ?뺤콉???대룞 ?ㅽ겕由쏀듃?먯꽌 寃곗젙?쒕떎.
         _animator.speed = speedMultiplier;
     }
 
@@ -194,6 +197,7 @@ public class GridPlayerAnimationController : MonoBehaviour
         if (_isDead) return;
 
         UpdateHorizontalFacing(direction);
+        ResetTriggerIfConfigured(hurtTriggerName);
         ApplyAttackAnimationSpeed();
 
         if (!PlayStateIfConfigured(attackStateName, keepCurrentRunTime: false))
@@ -242,7 +246,7 @@ public class GridPlayerAnimationController : MonoBehaviour
 
     private void ApplyFacing()
     {
-        // 원본 스프라이트가 오른쪽을 본다는 전제로 flipX만 뒤집어 좌우 리소스 중복을 줄인다.
+        // ?먮낯 ?ㅽ봽?쇱씠?멸? ?ㅻⅨ履쎌쓣 蹂몃떎???꾩젣濡?flipX留??ㅼ쭛??醫뚯슦 由ъ냼??以묐났??以꾩씤??
         _spriteRenderer.flipX = faceRightByDefault ? !_isFacingRight : _isFacingRight;
     }
 
@@ -363,3 +367,4 @@ public class GridPlayerAnimationController : MonoBehaviour
         return false;
     }
 }
+

@@ -119,6 +119,7 @@ public class TurnManager : Singleton<TurnManager>
             if(!IsEntityAlive(e))
             {
                 _entities.RemoveAt(i);
+                i--;
                 continue;
             }
 

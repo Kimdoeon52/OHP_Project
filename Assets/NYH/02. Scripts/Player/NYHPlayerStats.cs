@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 public enum NYHStatType
@@ -22,7 +22,10 @@ public enum NYHStatType
     Evasion,
 
     // 이전 데이터 호환용. 실제 레벨/경험치는 PlayerLevelSystem에서 관리한다.
-    Level
+    Level,
+
+    // 배고픔 수치. 시간에 따라 감소하며 0이 되면 굶주림 상태가 된다.
+    Hunger
 }
 
 /// <summary>
@@ -59,6 +62,10 @@ public class NYHPlayerStats : MonoBehaviour
     [Tooltip("피격을 완전히 회피할 확률입니다. 0이면 회피 없음, 100이면 항상 회피합니다.")]
     [SerializeField, Range(0, 100)] private int evasion = 20;
 
+    [Header("상태 스탯")]
+    [Tooltip("배고픔 수치입니다. 10초마다 1씩 감소하며 0이 되면 굶주림(체력감소, 쿨타임 증가) 상태가 됩니다.")]
+    [SerializeField, Range(0, 10)] private int hunger = 10;
+
     /// <summary>
     /// 스탯 값이 변경됐을 때 호출된다.
     /// UI, 장비 조건 갱신, 파생 능력치 갱신 등에 사용한다.
@@ -78,6 +85,7 @@ public class NYHPlayerStats : MonoBehaviour
     public int Accuracy => accuracy;
     public int Defense => defense;
     public int Evasion => evasion;
+    public int Hunger => hunger;
 
     /// <summary>
     /// 씬에서 전역 접근할 플레이어 스탯 인스턴스를 등록한다.
@@ -119,6 +127,7 @@ public class NYHPlayerStats : MonoBehaviour
                 strength = Mathf.Max(0, strength + amount);
                 break;
             case NYHStatType.MoveSpeed:
+                moveSpeed = Mathf.Max(0, moveSpeed + amount / 100);
                 moveSpeed = Mathf.Max(0, moveSpeed + amount);
                 break;
             case NYHStatType.AttackSpeed:
@@ -129,6 +138,9 @@ public class NYHPlayerStats : MonoBehaviour
                 break;
             case NYHStatType.Evasion:
                 evasion = Mathf.Clamp(evasion + amount, 0, 100);
+                break;
+            case NYHStatType.Hunger:
+                hunger = Mathf.Clamp(hunger + amount, 0, 10);
                 break;
             case NYHStatType.Level:
                 Debug.LogWarning("NYHPlayerStats: Level은 PlayerLevelSystem에서 관리합니다.");
