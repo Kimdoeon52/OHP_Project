@@ -146,7 +146,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         CacheMapBounds();
 
         if (GridSystem.Instance != null)
-            gridPos = GridSystem.Instance.WorldToGrid(transform.position);
+            gridPos = GridSystem.Instance.WorldToGrid(transform.position - new Vector3(0.5f, 0.5f, 0f));
 
         RegisterBossGridTarget();
 
@@ -198,6 +198,19 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         if (attackFloorTilemap != null)
             return attackFloorTilemap.GetTile(new Vector3Int(cell.x, cell.y, 0)) != null;
         return GridSystem.Instance != null && GridSystem.Instance.IsWalkable(cell);
+    }
+
+    private bool IsAreaInAttackFloor(Vector2Int bottomLeft, Vector2Int size)
+    {
+        for (int x = 0; x < size.x; x++)
+        {
+            for (int y = 0; y < size.y; y++)
+            {
+                if (!IsInAttackFloor(bottomLeft + new Vector2Int(x, y)))
+                    return false;
+            }
+        }
+        return true;
     }
 
     private int GetCurrentPhase()
@@ -262,7 +275,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         var centerWorld = GetMapCenterWorld();
         transform.position = centerWorld;
         if (GridSystem.Instance != null)
-            gridPos = GridSystem.Instance.WorldToGrid(centerWorld);
+            gridPos = GridSystem.Instance.WorldToGrid(centerWorld - new Vector3(0.5f, 0.5f, 0f));
 
         // 3) 충격파 effect (있으면) + 페이드 인 등장
         if (shockwavePrefab != null)
@@ -294,13 +307,14 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             if (cancelToken.IsCancellationRequested || isDying) break;
 
             ShuffleDirs(dirs);
-            var bossCell = GridSystem.Instance.WorldToGrid(transform.position);
+            var bossCell = gridPos; // gridPos는 항상 보스 2x2 영역의 좌하단(bottom-left) 셀입니다.
             foreach (var d in dirs)
             {
                 var next = bossCell + d;
-                if (IsInAttackFloor(next))
+                if (IsAreaInAttackFloor(next, bossSize))
                 {
-                    var targetWorld = GridSystem.Instance.GridToWorld(next);
+                    // 2x2 보스의 렌더러 중심점을 새로운 2x2 중심 위치로 연출 이동시킵니다.
+                    var targetWorld = GridSystem.Instance.GridToWorld(next) + new Vector3(0.5f, 0.5f, 0f);
                     transform.DOMove(targetWorld, wanderMoveDuration).SetEase(Ease.InOutSine);
                     gridPos = next;
                     break;
@@ -327,7 +341,8 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         {
             int cx = (_mapBounds.xMin + _mapBounds.xMax) / 2;
             int cy = (_mapBounds.yMin + _mapBounds.yMax) / 2;
-            return GridSystem.Instance.GridToWorld(new Vector2Int(cx, cy));
+            // 2x2 보스의 중심점을 맵 중심 2x2 격자의 가운데에 맞춥니다.
+            return GridSystem.Instance.GridToWorld(new Vector2Int(cx, cy)) + new Vector3(0.5f, 0.5f, 0f);
         }
         return transform.position;
     }

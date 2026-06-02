@@ -127,12 +127,9 @@ public class LazerPattern : MonoBehaviour
     {
         if (boss == null) return 1;
         int hp = boss.currentHp;
-        switch (hp)
-        {
-            case > phase1HpMin: return 1;
-            case > phase2HpMin: return 2;
-            default: return 3;
-        }
+        if (hp > phase1HpMin) return 1;
+        if (hp > phase2HpMin) return 2;
+        return 3;
     }
 
     private async UniTask MainLoop()
@@ -430,7 +427,8 @@ public class LazerPattern : MonoBehaviour
         {
             int cx = (_mapBounds.xMin + _mapBounds.xMax) / 2;
             int cy = (_mapBounds.yMin + _mapBounds.yMax) / 2;
-            return GridSystem.Instance.GridToWorld(new Vector2Int(cx, cy));
+            // 2x2 보스의 중심점에 맞춰 회전 레이저 중심을 정렬합니다.
+            return GridSystem.Instance.GridToWorld(new Vector2Int(cx, cy)) + new Vector3(0.5f, 0.5f, 0f);
         }
         return transform.position;
     }
