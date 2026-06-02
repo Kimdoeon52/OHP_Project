@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using System.Collections.Generic;
 
 /*
  * BossA — HP 기반 보스 (눈알 보스). 본체 행동만 담당.
@@ -16,7 +17,7 @@ using UnityEngine.Tilemaps;
  *   사이클 정지. 한 번 중앙으로 이동한 뒤 영구 정지.
  *   (회전 레이저는 LazerPattern이 별도로 처리)
  */
-public class BossA : BossBase, IGridEntity, IDamageable
+public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 {
     [Header("메인 사이클")]
     [SerializeField] private float activeDurationSec = 10f;    // 활성 모드 지속 시간
@@ -37,6 +38,8 @@ public class BossA : BossBase, IGridEntity, IDamageable
 
     [Header("AttackFloor 타일맵 (이동·중앙 범위 제한)")]
     [SerializeField] private Tilemap attackFloorTilemap;
+
+    [SerializeField] private Vector2Int bossSize = new Vector2Int(2, 2); // 보스가 차지하는 크기 (2,2)
 
     // ─── 내부 상태 ───────────────────────────────────────────────────
     private RectInt _mapBounds;
@@ -65,6 +68,20 @@ public class BossA : BossBase, IGridEntity, IDamageable
     public int CurrentHp => currentHp;
     public int MaxHp => maxHp;
     public bool IsDead => currentHp <= 0;
+
+    // IMultiCellGridEntity 인터페이스 요구사항입니다. 보스가 실제로 차지하는 모든 칸을 반환합니다.
+    public IEnumerable<Vector2Int> OccupiedCells
+    {
+        get
+        {
+            if (IsDead  || gridPos.x < 0 || gridPos.y < 0)
+                yield break;
+
+            for (int x = 0; x < bossSize.x; x++)
+            for (int y = 0; y < bossSize.y; y++)
+                yield return gridPos + new Vector2Int(x, y);
+        }
+    }
 
     // IDamageable 인터페이스 요구사항입니다.
     // 플레이어 공격 시스템은 TakeDamage 이름으로 피해를 주므로,
