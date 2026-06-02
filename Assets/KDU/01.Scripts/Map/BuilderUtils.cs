@@ -147,10 +147,15 @@ public static class BuilderUtils
     public static void AttachBranchRooms(List<RoomData> rooms, List<RoomData> allRooms, DungeonRandom rng)
     {
         var failed = new List<RoomData>();
+        // Safe 가 가장 중요한 가지(시작점) — 호스트 선택 실패를 피하려 가장 먼저 부착.
         foreach (var r in rooms)
         {
-            if (r.type != RoomType.Special && r.type != RoomType.Secret) 
-                continue;
+            if (r.type != RoomType.Safe) continue;
+            if (!AttachBranchRoom(r, allRooms, rng)) failed.Add(r);
+        }
+        foreach (var r in rooms)
+        {
+            if (r.type != RoomType.Special && r.type != RoomType.Secret) continue;
             if (!AttachBranchRoom(r, allRooms, rng)) failed.Add(r);
         }
         foreach (var f in failed) { rooms.Remove(f); allRooms.Remove(f); }

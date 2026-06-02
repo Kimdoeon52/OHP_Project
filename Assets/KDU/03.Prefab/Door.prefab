@@ -106,7 +106,12 @@ MonoBehaviour:
   topOpenSprite: {fileID: -930234529, guid: 1e5388495179da748933f01c1fd5839e, type: 3}
   sideLockedClosedSprite: {fileID: -2070759403, guid: 0f3ff9efb69d7054f851c7d7d4511305, type: 3}
   sideLockedOpenSprite: {fileID: 533186539, guid: 0f3ff9efb69d7054f851c7d7d4511305, type: 3}
-  topLockedClosedSprite: {fileID: 0}
-  topLockedOpenSprite: {fileID: 0}
+  topLockedClosedSprite: {fileID: 533186539, guid: 0f3ff9efb69d7054f851c7d7d4511305, type: 3}
+  topLockedOpenSprite: {fileID: -2070759403, guid: 0f3ff9efb69d7054f851c7d7d4511305, type: 3}
+  sideSafeExitClosedSprite: {fileID: -1913620628, guid: 22a896b091c2a0f4c8c6f3bfedbaf5ef, type: 3}
+  sideSafeExitOpenSprite: {fileID: -1355518036, guid: 22a896b091c2a0f4c8c6f3bfedbaf5ef, type: 3}
+  topSafeExitClosedSprite: {fileID: -1355518036, guid: 22a896b091c2a0f4c8c6f3bfedbaf5ef, type: 3}
+  topSafeExitOpenSprite: {fileID: -1913620628, guid: 22a896b091c2a0f4c8c6f3bfedbaf5ef, type: 3}
   autoOpenWhenAdjacent: 1
   lockedOpenSeconds: 1
+  secretDiscoverySeconds: 3
