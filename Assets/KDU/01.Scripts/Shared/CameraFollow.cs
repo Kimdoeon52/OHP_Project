@@ -39,6 +39,7 @@ public class CameraFollow : MonoBehaviour
     {
         if (planningCamera == null) planningCamera = GetComponent<Camera>();
         if (planningCamera != null) _defaultSize = planningCamera.orthographicSize;
+        if (player == null) player = FindFirstObjectByType<GridPlayer>();
     }
 
     /// <summary>층 진입 시 호출 — safe 셀을 등록하면 플래닝 모드 ON, 플레이어가 처음 이 셀들을 벗어나면 자동 OFF.</summary>
@@ -46,6 +47,13 @@ public class CameraFollow : MonoBehaviour
     {
         if (safeCells == null || safeCells.Count == 0)
         {
+            DisablePlanning();
+            return;
+        }
+        if (player == null) player = FindFirstObjectByType<GridPlayer>();
+        if (player == null)
+        {
+            Debug.LogWarning("[CameraFollow] player 미할당 — 플래닝 모드 이탈 감지 불가, 모드 활성화 안 함");
             DisablePlanning();
             return;
         }
