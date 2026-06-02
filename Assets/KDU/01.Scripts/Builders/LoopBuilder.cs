@@ -35,10 +35,10 @@ public class LoopBuilder : ScriptableObject, ILayoutBuilder
         int radius = BuilderUtils.ComputeLoopRadius(loopOrder, interRoomGap, minLoopRadius);
         BuilderUtils.PositionInLoop(loopOrder, Vector2Int.zero, radius);
 
-        // 메인 루프 방의 floorCells 채우기 (Special/Secret 막다른 가지는 아래에서 따로 배치)
+        // 메인 루프 방의 floorCells 채우기 (Safe/Special/Secret 막다른 가지는 아래에서 따로 배치)
         foreach (var r in rooms)
         {
-            if (r.type == RoomType.Special || r.type == RoomType.Secret) continue;
+            if (r.type == RoomType.Safe || r.type == RoomType.Special || r.type == RoomType.Secret) continue;
             r.floorCells = BuilderUtils.CellsInRect(r.bounds);
         }
 
@@ -98,7 +98,7 @@ public class LoopBuilder : ScriptableObject, ILayoutBuilder
 
         int half = normals.Count / 2;
         var order = new List<RoomData>(rooms.Count);
-        order.Add(safe);
+        // Safe 는 메인 루프에 포함하지 않음 — Special 처럼 막다른 가지로 부착(GDD 11.1, 시작점 격리).
         for (int i = 0; i < half; i++) order.Add(normals[i]);
         if (boss != null) order.Add(boss);
         order.Add(exit);

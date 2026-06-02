@@ -55,17 +55,17 @@ public class FigureEightBuilder : ScriptableObject, ILayoutBuilder
             AssignSize(r, rng);
 
         // 2. 두 루프 구성 — 공유 방을 양쪽 index 0 에 배치.
-        // 루프 A 회전 순서: [shared, Safe, normals(전반)]
+        // 루프 A 회전 순서: [shared, normals(전반)] — Safe 는 막다른 가지로 별도 부착(GDD 11.1)
         // 루프 B 회전 순서: [shared, Exit, (Boss), normals(후반)]
         int half = normals.Count / 2;
-        var loopA = new List<RoomData> { shared, safe };
-        for (int i = 0; i < half; i++) 
+        var loopA = new List<RoomData> { shared };
+        for (int i = 0; i < half; i++)
             loopA.Add(normals[i]);
 
         var loopB = new List<RoomData> { shared, exit };
-        if (boss != null) 
+        if (boss != null)
             loopB.Add(boss);
-        for (int i = half; i < normals.Count; i++) 
+        for (int i = half; i < normals.Count; i++)
             loopB.Add(normals[i]);
 
         // 3. 반지름 산출
@@ -81,10 +81,10 @@ public class FigureEightBuilder : ScriptableObject, ILayoutBuilder
         BuilderUtils.PositionInLoop(loopA, centerA, radiusA, startAngleRad: 0f);
         BuilderUtils.PositionInLoop(loopB, centerB, radiusB, startAngleRad: Mathf.PI);
 
-        // 5. 인테리어 (Special/Secret 막다른 가지는 아래에서 따로 배치)
+        // 5. 인테리어 (Safe/Special/Secret 막다른 가지는 아래에서 따로 배치)
         foreach (var r in rooms)
         {
-            if (r.type == RoomType.Special || r.type == RoomType.Secret) continue;
+            if (r.type == RoomType.Safe || r.type == RoomType.Special || r.type == RoomType.Secret) continue;
             r.floorCells = BuilderUtils.CellsInRect(r.bounds);
         }
 

@@ -12,7 +12,7 @@ using System.Collections.Generic;
 public class GridDoor : MonoBehaviour
 {
     public enum DoorState { Closed, Opening, Open, Hidden }
-    public enum DoorKind { Normal, Locked, Secret }
+    public enum DoorKind { Normal, Locked, Secret, SafeExit }
 
     public Vector2Int GridPosition { get; private set; }
     public DoorState State { get; private set; } = DoorState.Closed;
@@ -35,6 +35,14 @@ public class GridDoor : MonoBehaviour
     [SerializeField] private Sprite topLockedClosedSprite;
     [SerializeField] private Sprite topLockedOpenSprite;
 
+    [Header("스프라이트 — Safe 출구 옆면 문 (좌우 통로, 비우면 일반 옆면 문으로 폴백)")]
+    [SerializeField] private Sprite sideSafeExitClosedSprite;
+    [SerializeField] private Sprite sideSafeExitOpenSprite;
+
+    [Header("스프라이트 — Safe 출구 위/아래 문 (상하 통로, 비우면 일반 위/아래 문으로 폴백)")]
+    [SerializeField] private Sprite topSafeExitClosedSprite;
+    [SerializeField] private Sprite topSafeExitOpenSprite;
+
     [Header("동작")]
     [Tooltip("Normal 문: 플레이어가 인접하면 자동으로 열리고, 멀어지면 닫힘.")]
     [SerializeField] private bool autoOpenWhenAdjacent = true;
@@ -50,6 +58,12 @@ public class GridDoor : MonoBehaviour
     private bool _horizontalPassage;
     private float _openingProgress;
     private float _secretAdjacentTime;
+
+    // SafeExit 전용 — 플레이어가 outsideCell 에 도달하면 _hasExited=true, 멀어지며 닫힐 때 영구 잠김.
+    private Vector2Int _safeOutsideCell;
+    private bool _safeOutsideCellSet;
+    private bool _safeHasExited;
+    private bool _safePermLocked;
 
     private void Awake()
     {
@@ -79,6 +93,13 @@ public class GridDoor : MonoBehaviour
 
         if (GridSystem.Instance != null) GridSystem.Instance.RegisterDoor(cell, this);
         ApplyState();
+    }
+
+    /// <summary>SafeExit 문에 '바깥 셀' 등록 — MapGenerator 가 Initialize 직후 호출. (GDD 11.1)</summary>
+    public void ConfigureSafeExit(Vector2Int outsideCell)
+    {
+        _safeOutsideCell = outsideCell;
+        _safeOutsideCellSet = true;
     }
 
     private void Start()
@@ -112,7 +133,7 @@ public class GridDoor : MonoBehaviour
         if (_renderer == null) return;
         // 방향별로 닫힘/열림 스프라이트가 다름 (옆면 문과 위/아래 문은 닫힘·열림 모습이 서로 반대).
         // Opening 중에는 닫힘 스프라이트 유지(진행바 등 별도 표시는 후속 작업).
-        // Locked 문은 잠긴 문 전용 슬롯(있으면) 우선, 없으면 일반 슬롯으로 폴백.
+        // Locked/SafeExit 문은 종류별 전용 슬롯(있으면) 우선, 없으면 일반 슬롯으로 폴백.
         bool showOpen = State == DoorState.Open;
         Sprite normal = _horizontalPassage
             ? (showOpen ? sideOpenSprite : sideClosedSprite)
@@ -125,6 +146,13 @@ public class GridDoor : MonoBehaviour
                 ? (showOpen ? sideLockedOpenSprite : sideLockedClosedSprite)
                 : (showOpen ? topLockedOpenSprite : topLockedClosedSprite);
             if (locked != null) s = locked;
+        }
+        else if (Kind == DoorKind.SafeExit)
+        {
+            Sprite safe = _horizontalPassage
+                ? (showOpen ? sideSafeExitOpenSprite : sideSafeExitClosedSprite)
+                : (showOpen ? topSafeExitOpenSprite : topSafeExitClosedSprite);
+            if (safe != null) s = safe;
         }
         if (s != null) _renderer.sprite = s;
     }
@@ -151,6 +179,35 @@ public class GridDoor : MonoBehaviour
             case DoorKind.Secret:
                 UpdateSecret(adjacent);
                 break;
+
+            case DoorKind.SafeExit:
+                UpdateSafeExit(adjacent);
+                break;
+        }
+    }
+
+    private void UpdateSafeExit(bool adjacent)
+    {
+        // 영구 잠금 후엔 항상 닫힘 유지 — 열쇠도 무시(GDD 11.1).
+        if (_safePermLocked)
+        {
+            if (State != DoorState.Closed) SetState(DoorState.Closed);
+            return;
+        }
+
+        // 잠기기 전엔 일반 문처럼 자동 개폐.
+        if (autoOpenWhenAdjacent)
+            SetState(adjacent ? DoorState.Open : DoorState.Closed);
+
+        // 플레이어가 바깥 셀에 한 번이라도 도달 → 빠져나간 것으로 간주.
+        if (_safeOutsideCellSet && _player.GridPosition == _safeOutsideCell)
+            _safeHasExited = true;
+
+        // 빠져나간 적이 있고 지금 문 옆에 없으면(자연스럽게 닫힘) 영구 잠금 전환.
+        if (_safeHasExited && !adjacent)
+        {
+            _safePermLocked = true;
+            SetState(DoorState.Closed);
         }
     }
 

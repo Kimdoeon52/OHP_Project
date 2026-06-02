@@ -125,15 +125,15 @@ TextureImporter:
         y: 0
         width: 220
         height: 220
-      alignment: 9
-      pivot: {x: 0.5, y: 0.32}
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 79bcbd93f20fed943b648c3d8578c722
+      spriteID: 30d27b8effffffff0800000000000000
       internalID: -390648573
       vertices: []
       indices: 
@@ -147,15 +147,15 @@ TextureImporter:
         y: 0
         width: 220
         height: 220
-      alignment: 9
-      pivot: {x: 0.5, y: 0.32}
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 731c9d28150f3f74fa083e6c51b8a3f5
+      spriteID: c49b2b61000000000800000000000000
       internalID: 380811596
       vertices: []
       indices: 
@@ -169,15 +169,15 @@ TextureImporter:
         y: 0
         width: 220
         height: 220
-      alignment: 9
-      pivot: {x: 0.5, y: 0.32}
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 474dfade56e9a5749acb207374ff839a
+      spriteID: 31454ebeffffffff0800000000000000
       internalID: -337357805
       vertices: []
       indices: 
@@ -187,19 +187,19 @@ TextureImporter:
       name: Mage Skeleton - atk 1-initial stage_3
       rect:
         serializedVersion: 2
-        x: 660
+        x: 661
         y: 0
         width: 220
         height: 220
-      alignment: 9
-      pivot: {x: 0.5, y: 0.32}
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 245f9a80a3244ea4cb1d308d81db7032
+      spriteID: 4bf405b7000000000800000000000000
       internalID: 2068860852
       vertices: []
       indices: 
@@ -213,15 +213,15 @@ TextureImporter:
         y: 0
         width: 220
         height: 220
-      alignment: 9
-      pivot: {x: 0.5, y: 0.32}
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 4992a2c93306f334f9b21f9c3a7c8b6b
+      spriteID: 7e7dcd13000000000800000000000000
       internalID: 836556775
       vertices: []
       indices: 
@@ -235,15 +235,15 @@ TextureImporter:
         y: 0
         width: 220
         height: 220
-      alignment: 9
-      pivot: {x: 0.5, y: 0.32}
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 84d55cf7480682a478fd81bf0d6da53e
+      spriteID: f2e6764cffffffff0800000000000000
       internalID: -999854545
       vertices: []
       indices: 
