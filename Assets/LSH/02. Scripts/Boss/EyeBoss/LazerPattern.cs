@@ -4,6 +4,20 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
+public enum LazerAction
+{
+    Pattern1,
+    Pattern2,
+    Pattern3
+}
+
+[System.Serializable]
+public class LazerActionCases
+{
+    public LazerAction action;
+    [Range(0, 100)] public int patternChance;
+}
+
 /*
  * LazerPattern — 격자 레이저 패턴을 독립적으로 실행하는 모듈.
  * 보스의 행동 사이클(이동/배회/사라짐)과는 완전히 분리. 자체 타이머로 패턴을 계속 발사.
@@ -22,10 +36,14 @@ public class LazerPattern : MonoBehaviour
     [SerializeField] private BossBase boss;
     [SerializeField] private GridPlayer player;
 
+    [Header("레이저 패턴 가중치 설정")]
+    [SerializeField] private List<LazerActionCases> actionCases = new List<LazerActionCases>();
+
     [Header("레이저 프리팹")]
     [SerializeField] private GameObject lazerAttackPrefab;
     [SerializeField] private GameObject eyeHorizontalPrefab; //가로 레이저용 눈: 왼쪽 끝에 소환
     [SerializeField] private GameObject eyeVerticalPrefab;   //세로 레이저용 눈: 위쪽 끝에 소환
+    [SerializeField] private GameObject specialEyePrefab;     //Phase 3용 특별한 눈 프리팹 (중앙 소환)
 
     [Header("AttackFloor 타일맵 (공격·레이저 범위 제한)")]
     [SerializeField] private Tilemap attackFloorTilemap;
@@ -70,6 +88,17 @@ public class LazerPattern : MonoBehaviour
         if (boss == null) boss = FindFirstObjectByType<BossBase>(); // 별도 오브젝트에 있을 때 폴백
         if (boss == null) Debug.LogError("[LazerPattern] BossBase를 찾지 못했습니다. 페이즈가 항상 1로 고정됩니다.");
         if (player == null) player = FindFirstObjectByType<GridPlayer>();
+
+        if (actionCases == null || actionCases.Count == 0)
+        {
+            actionCases = new List<LazerActionCases>
+            {
+                new LazerActionCases { action = LazerAction.Pattern1, patternChance = 40 },
+                new LazerActionCases { action = LazerAction.Pattern2, patternChance = 30 },
+                new LazerActionCases { action = LazerAction.Pattern3, patternChance = 30 }
+            };
+        }
+
         _cts = new CancellationTokenSource();
         _phase3LaserStarted = false;
         CacheMapBounds();
@@ -136,8 +165,13 @@ public class LazerPattern : MonoBehaviour
     {
         try
         {
+            // 보스 컴포넌트의 OnEnable 초기화(currentHp 설정 등)가 완료되도록 첫 프레임을 대기합니다.
+            await UniTask.Yield();
+
             while (!_cts.IsCancellationRequested && IsBossAlive())
             {
+                if (!_hasMapBounds) CacheMapBounds();
+
                 int hpPhase = CurrentHpPhase();
 
                 // Phase 3 진입 1회: 회전 레이저 백그라운드 시작
@@ -145,6 +179,7 @@ public class LazerPattern : MonoBehaviour
                 {
                     _phase3LaserStarted = true;
                     Phase3RotatingLaserAsync().Forget();
+                    patternDelayMs = 200; 
                 }
 
                 // Phase 3에서는 Phase 1 패턴을 계속 발사 (회전 레이저는 백그라운드).
@@ -156,21 +191,63 @@ public class LazerPattern : MonoBehaviour
         catch (System.OperationCanceledException) { }
     }
 
+    private LazerAction RollLazerAction()
+    {
+        int totalWeight = 0;
+        foreach (var actionCase in actionCases)
+        {
+            totalWeight += actionCase.patternChance;
+        }
+        if (totalWeight == 0) return LazerAction.Pattern1;
+        int randomValue = Random.Range(0, totalWeight);
+        int currentWeight = 0;
+
+        foreach (var actionCase in actionCases)
+        {
+            currentWeight += actionCase.patternChance;
+            if (randomValue < currentWeight)
+            {
+                return actionCase.action;
+            }
+        }
+        return LazerAction.Pattern1;
+    }
+
     private async UniTask DoOneAttack(int hpPhase)
     {
+        LazerAction action = RollLazerAction();
+
         switch (hpPhase)
         {
             case 1:
-                var axis = (Random.Range(0, 2) == 0) ? Vector2Int.right : Vector2Int.up;
-                await FireRandomAxisLasers(axis, Random.Range(2, 4));
+                switch (action)
+                {
+                    case LazerAction.Pattern1:
+                        await FireRandomAxisLasers(Vector2Int.right, Random.Range(2, 4));
+                        break;
+                    case LazerAction.Pattern2:
+                        await FireRandomAxisLasers(Vector2Int.up, Random.Range(2, 4));
+                        break;
+                    default:
+                        // Pattern3이 뽑혔을 때도 가로/세로 중 무작위 분기
+                        var axis = (Random.Range(0, 2) == 0) ? Vector2Int.right : Vector2Int.up;
+                        await FireRandomAxisLasers(axis, Random.Range(2, 4));
+                        break;
+                }
                 break;
 
             case 2:
-                switch (Random.Range(0, 3))
+                switch (action)
                 {
-                    case 0: await Phase2Pattern_Mixed(); break;
-                    case 1: await SweepLasers(Vector2Int.right); break;
-                    case 2: await SweepLasers(Vector2Int.up); break;
+                    case LazerAction.Pattern1:
+                        await Phase2Pattern_Mixed();
+                        break;
+                    case LazerAction.Pattern2:
+                        await SweepLasers(Vector2Int.right);
+                        break;
+                    case LazerAction.Pattern3:
+                        await SweepLasers(Vector2Int.up);
+                        break;
                 }
                 break;
         }
@@ -193,8 +270,16 @@ public class LazerPattern : MonoBehaviour
         if (!_hasMapBounds) return;
 
         int from, to;
-        if (axis == Vector2Int.right) { from = _mapBounds.yMin; to = _mapBounds.yMax; }
-        else                          { from = _mapBounds.xMin; to = _mapBounds.xMax; }
+        if (axis == Vector2Int.right) 
+        { 
+            from = _mapBounds.yMin; 
+            to = _mapBounds.yMax; 
+        }
+        else                          
+        { 
+            from = _mapBounds.xMin; 
+            to = _mapBounds.xMax; 
+        }
 
         for (int coord = from; coord < to; coord++)
         {
@@ -216,6 +301,12 @@ public class LazerPattern : MonoBehaviour
     {
         var token = _cts.Token;
         Vector3 center = GetMapCenterWorld();
+
+        GameObject eyeObj = null;
+        if (specialEyePrefab != null)
+        {
+            eyeObj = Instantiate(specialEyePrefab, center, Quaternion.identity);
+        }
 
         var beams = new GameObject[4];
         for (int i = 0; i < 4; i++)
@@ -263,6 +354,7 @@ public class LazerPattern : MonoBehaviour
         finally
         {
             for (int i = 0; i < 4; i++) if (beams[i] != null) Destroy(beams[i]);
+            if (eyeObj != null) Destroy(eyeObj);
         }
     }
 

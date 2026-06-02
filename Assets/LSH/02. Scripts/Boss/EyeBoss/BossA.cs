@@ -226,6 +226,8 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         {
             while (!cancelToken.IsCancellationRequested && !isDying)
             {
+                if (!_hasMapBounds) CacheMapBounds();
+
                 switch (GetCurrentPhase())
                 {
                     case 3:
