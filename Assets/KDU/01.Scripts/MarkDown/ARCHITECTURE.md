@@ -113,7 +113,7 @@ public class GridPlayer : MonoBehaviour {
 - 격자 좌표는 `Vector2Int`, 화면 변환은 GridSystem 전담
 - 턴 진행은 코루틴/큐 기반 (`Update()` 매프레임 체크 X)
 - 핵심 로직은 plain C# (MonoBehaviour 의존 낮추기, 테스트 가능)
-- Singleton보다 ServiceLocator/정적 이벤트
+- Singleton보다 ServiceLocator/정적 이벤트. **단 싱글톤이 정말 필요하면 `Util/Singleton<T>` 또는 `Util/PersistentSingleton<T>` 상속을 우선** — `public static T Instance` + Awake 중복 검사 코드를 매번 손으로 쓰지 말 것. 새 매니저 클래스는 기본적으로 이 상속 사용, 기존 수동 싱글톤도 발견 시 점진적으로 교체.
 - 타일맵은 RuleTile (비트마스크 직접 X)
 - 시드 생성은 `DungeonRandom` 통일
 - 보스층은 `MapGenerator`에서 먼저 분기해 빌더/페인터가 안 건드리게

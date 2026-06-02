@@ -1,28 +1,17 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 
-public class GridSystem : MonoBehaviour
+public class GridSystem : Singleton<GridSystem>
 {
-    public static GridSystem Instance { get; private set; }
 
     [Header("타일맵 레이어 (MapGenerator 와 동일한 참조)")]
     [SerializeField] private TerrainTilemaps tilemaps = new TerrainTilemaps();
 
     public TerrainTilemaps Tilemaps => tilemaps;
 
-    private void Awake()
+    protected override void Awake()
     {
-        if (Instance != null)
-        {
-            Debug.LogError("GridSystem이 씬에 두 개 이상 있습니다.");
-            return;
-        }
-        Instance = this;
-    }
-
-    private void OnDestroy()
-    {
-        if (Instance == this) Instance = null;
+        base.Awake();
     }
 
     /// <summary>

@@ -1,9 +1,8 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class VisionSystem : MonoBehaviour
+public class VisionSystem : Singleton<VisionSystem>
 {
-    public static VisionSystem Instance { get; private set; }
 
     [SerializeField] private GameConfig config;
 
@@ -24,19 +23,9 @@ public class VisionSystem : MonoBehaviour
         }
     }
 
-    private void Awake()
+    protected override void Awake()
     {
-        if (Instance != null)
-        {
-            Debug.LogError("VisionSystem이 씬에 두 개 이상 있습니다.");
-            return;
-        }
-        Instance = this;
-    }
-
-    private void OnDestroy()
-    {
-        if (Instance == this) Instance = null;
+        base.Awake();
     }
 
     public void UpdateVision(Vector2Int playerPos)

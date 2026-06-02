@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using EnemySystem;
 using UnityEngine;
 
@@ -6,9 +6,8 @@ using UnityEngine;
 /// 절차적 맵 생성 진입점. Initialize → Build → Paint → (Phase 4 Spawn) 파이프라인을 호출한다.
 /// 빌더/페인터/Feeling 은 외부에서 주입받아 결합도 낮춤.
 /// </summary>
-public class MapGenerator : MonoBehaviour
+public class MapGenerator : Singleton<MapGenerator>
 {
-    public static MapGenerator Instance { get; private set; }
 
     [Header("타일맵 레이어")]
     [SerializeField] private TerrainTilemaps tilemaps = new TerrainTilemaps();
@@ -62,19 +61,9 @@ public class MapGenerator : MonoBehaviour
         return 3;
     }
 
-    private void Awake()
+    protected override void Awake()
     {
-        if (Instance != null)
-        {
-            Debug.LogError("MapGenerator 가 씬에 두 개 이상 있습니다.");
-            return;
-        }
-        Instance = this;
-    }
-
-    private void OnDestroy()
-    {
-        if (Instance == this) Instance = null;
+        base.Awake();
     }
 
     /// <summary>
@@ -87,8 +76,6 @@ public class MapGenerator : MonoBehaviour
         IRegionPainter painter = null,
         FloorFeeling feeling = null)
     {
-
-        if (Instance == null) Instance = this;
 
         CurrentSeed = runSeed;
         CurrentDepth = depth;
@@ -309,17 +296,47 @@ public class MapGenerator : MonoBehaviour
                 if (!IsDoorwayCell(cell, out bool horizontalPassage)) continue;
 
                 placed.Add(cell);
-                Vector3 pos = GridSystem.Instance != null
-                    ? GridSystem.Instance.GridToWorld(cell)
-                    : new Vector3(cell.x, cell.y, 0);
-                var door = Instantiate(doorPrefab, pos, Quaternion.identity);
                 var kind = LockedGatewayCells.Contains(cell)
                     ? GridDoor.DoorKind.Locked
                     : GridDoor.DoorKind.Normal;
-                door.Initialize(cell, horizontalPassage, kind);
-                _currentDoors.Add(door);
+                SpawnDoor(cell, horizontalPassage, kind);
             }
         }
+
+        // Secret 게이트: 페인터가 wall 로 봉인한 셀에 숨겨진 문 배치.
+        // 셀 자체는 wall 이므로 IsDoorwayCell 의 floor 전제 검사를 통과 못함 — 별도 판정 사용.
+        foreach (var cell in SecretGatewayCells)
+        {
+            if (placed.Contains(cell)) continue;
+            if (!IsSecretDoorwayCell(cell, out bool horizontalPassage)) continue;
+            placed.Add(cell);
+            SpawnDoor(cell, horizontalPassage, GridDoor.DoorKind.Secret);
+        }
+    }
+
+    private void SpawnDoor(Vector2Int cell, bool horizontalPassage, GridDoor.DoorKind kind)
+    {
+        Vector3 pos = GridSystem.Instance != null
+            ? GridSystem.Instance.GridToWorld(cell)
+            : new Vector3(cell.x, cell.y, 0);
+        var door = Instantiate(doorPrefab, pos, Quaternion.identity);
+        door.Initialize(cell, horizontalPassage, kind);
+        _currentDoors.Add(door);
+    }
+
+    /// <summary>Secret 게이트 셀(wall 봉인 상태)의 통로 방향 판정. 좌우 또는 상하 둘 중 하나에 floor 가 있어야 통로.</summary>
+    private bool IsSecretDoorwayCell(Vector2Int cell, out bool horizontalPassage)
+    {
+        horizontalPassage = false;
+        bool floorL = IsOpenFloor(cell + Vector2Int.left);
+        bool floorR = IsOpenFloor(cell + Vector2Int.right);
+        bool floorU = IsOpenFloor(cell + Vector2Int.up);
+        bool floorD = IsOpenFloor(cell + Vector2Int.down);
+        bool horiz = floorL && floorR;
+        bool vert = floorU && floorD;
+        if (horiz == vert) return false;
+        horizontalPassage = horiz;
+        return true;
     }
 
     /// <summary>cell 이 1칸 폭 통로(양옆이 벽, 통로 방향만 트인 floor)인지. horizontalPassage = 좌우로 통하는지.</summary>

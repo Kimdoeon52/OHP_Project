@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -6,10 +6,8 @@ using UnityEngine;
 /// 타이머가 멈춰도 페이드는 동작해야 하므로 unscaledDeltaTime 사용.
 /// </summary>
 [RequireComponent(typeof(CanvasGroup))]
-public class ScreenFader : MonoBehaviour
+public class ScreenFader : Singleton<ScreenFader>
 {
-    public static ScreenFader Instance { get; private set; }
-
     [SerializeField] private float defaultDuration = 0.4f;
 
     [Range(0f, 1f)]
@@ -17,23 +15,13 @@ public class ScreenFader : MonoBehaviour
 
     private CanvasGroup _group;
 
-    private void Awake()
+    protected override void Awake()
     {
-        if (Instance != null)
-        {
-            Debug.LogError("ScreenFader 가 씬에 두 개 이상 있음");
-            return;
-        }
-        Instance = this;
+        base.Awake();
         _group = GetComponent<CanvasGroup>();
         _group.alpha = initialAlpha;
         _group.blocksRaycasts = initialAlpha > 0.001f;
         _group.interactable = false;
-    }
-
-    private void OnDestroy()
-    {
-        if (Instance == this) Instance = null;
     }
 
     public IEnumerator FadeOut(float duration = -1f) => Fade(1f, duration < 0f ? defaultDuration : duration);

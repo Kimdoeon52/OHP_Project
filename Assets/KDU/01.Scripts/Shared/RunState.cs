@@ -1,9 +1,7 @@
-using UnityEngine;
+﻿using UnityEngine;
 
-public class RunState : MonoBehaviour
+public class RunState : Singleton<RunState>
 {
-    public static RunState Instance { get; private set; }
-
     [Header("초기값")]
     [SerializeField] private int initialSeed;
     [SerializeField] private int startDepth = 1;
@@ -13,21 +11,11 @@ public class RunState : MonoBehaviour
     public int RunSeed { get; private set; }
     public int CurrentDepth { get; private set; }
 
-    private void Awake()
+    protected override void Awake()
     {
-        if (Instance != null)
-        {
-            Debug.LogError("RunState 가 씬에 두 개 이상 있습니다.");
-            return;
-        }
-        Instance = this;
+        base.Awake();
         RunSeed = randomizeSeedOnStart ? Random.Range(int.MinValue, int.MaxValue) : initialSeed;
         CurrentDepth = startDepth;
-    }
-
-    private void OnDestroy()
-    {
-        if (Instance == this) Instance = null;
     }
 
     public void AdvanceDepth() => CurrentDepth++;

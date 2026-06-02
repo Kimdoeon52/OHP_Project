@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,10 +6,8 @@ using UnityEngine;
 /// 플레이어 행동 → 적 턴 처리 흐름 관리.
 /// 적/함정은 Register()로 등록, 사망 시 Unregister().
 /// </summary>
-public class TurnManager : MonoBehaviour
+public class TurnManager : Singleton<TurnManager>
 {
-    public static TurnManager Instance { get; private set; }
-
     // 적 턴 사이 딜레이 (애니메이션 여유 시간)
     [SerializeField] private float enemyTurnDelay = 0.05f;
 
@@ -20,25 +18,15 @@ public class TurnManager : MonoBehaviour
     public float LastPlayerActionTimeCost { get; private set; } = 1.0f;
 
 
-    private void Awake()
+    protected override void Awake()
     {
-        if (Instance != null)
-        {
-            Debug.LogError("TurnManager가 씬에 두 개 이상 있습니다.");
-            return;
-        }
-        Instance = this;
+        base.Awake();
     }
 
     private void Start()
     {
         // 플레이어 캐릭터 생성 대기 후 이동 성공(시작) 이벤트 구독함 - 구조가 바뀌면서 필요없어짐 혹시 몰라 일단 놔둠
         // StartCoroutine(SetupPlayerMovementSubscription());
-    }
-
-    private void OnDestroy()
-    {
-        if (Instance == this) Instance = null;
     }
 
     /// <summary>

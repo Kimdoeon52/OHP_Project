@@ -11,8 +11,8 @@ using System.Collections.Generic;
 [RequireComponent(typeof(SpriteRenderer))]
 public class GridDoor : MonoBehaviour
 {
-    public enum DoorState { Closed, Opening, Open }
-    public enum DoorKind { Normal, Locked }
+    public enum DoorState { Closed, Opening, Open, Hidden }
+    public enum DoorKind { Normal, Locked, Secret }
 
     public Vector2Int GridPosition { get; private set; }
     public DoorState State { get; private set; } = DoorState.Closed;
@@ -42,10 +42,14 @@ public class GridDoor : MonoBehaviour
     [Tooltip("Locked 문 개방 시간(초). GDD 9.15: 1초.")]
     [SerializeField] private float lockedOpenSeconds = 1f;
 
+    [Tooltip("Secret 문 발견 시간(초). 인접한 채로 이만큼 머무르면 발견(GDD 8.6 — '조심스러운 발걸음' 특성 hook 추후).")]
+    [SerializeField] private float secretDiscoverySeconds = 3f;
+
     private SpriteRenderer _renderer;
     private GridPlayer _player;
     private bool _horizontalPassage;
     private float _openingProgress;
+    private float _secretAdjacentTime;
 
     private void Awake()
     {
@@ -68,6 +72,7 @@ public class GridDoor : MonoBehaviour
         GridPosition = cell;
         _horizontalPassage = horizontalPassage;
         Kind = kind;
+        if (kind == DoorKind.Secret) State = DoorState.Hidden;
         transform.position = GridSystem.Instance != null
             ? GridSystem.Instance.GridToWorld(cell)
             : new Vector3(cell.x, cell.y, 0);
@@ -142,7 +147,34 @@ public class GridDoor : MonoBehaviour
             case DoorKind.Locked:
                 UpdateLocked(adjacent);
                 break;
+
+            case DoorKind.Secret:
+                UpdateSecret(adjacent);
+                break;
         }
+    }
+
+    private void UpdateSecret(bool adjacent)
+    {
+        if (State != DoorState.Hidden) return; // 발견 후엔 그대로 열림 유지
+
+        if (!adjacent) { _secretAdjacentTime = 0f; return; }
+
+        _secretAdjacentTime += Time.deltaTime;
+        if (_secretAdjacentTime >= secretDiscoverySeconds) Discover();
+    }
+
+    /// <summary>Secret 문 강제 발견 — 디버그/특성 트리거용. 봉인 wall 제거 후 열림 상태로 전환.</summary>
+    public void Discover()
+    {
+        if (Kind != DoorKind.Secret || State != DoorState.Hidden) return;
+        if (GridSystem.Instance != null
+            && GridSystem.Instance.Tilemaps != null
+            && GridSystem.Instance.Tilemaps.wall != null)
+        {
+            GridSystem.Instance.Tilemaps.wall.SetTile(new Vector3Int(GridPosition.x, GridPosition.y, 0), null);
+        }
+        SetState(DoorState.Open);
     }
 
     private void UpdateLocked(bool adjacent)
@@ -181,7 +213,10 @@ public class GridDoor : MonoBehaviour
 
     private void UpdateVisibility()
     {
-        if (_renderer == null || VisionSystem.Instance == null) return;
+        if (_renderer == null) return;
+        // Secret 문 발견 전엔 시야와 무관하게 숨김 — 벽 타일이 대신 보임.
+        if (State == DoorState.Hidden) { _renderer.enabled = false; return; }
+        if (VisionSystem.Instance == null) return;
         // 한 번이라도 본 문은 계속 보임 (위치 기억).
         _renderer.enabled = VisionSystem.Instance.IsExplored(GridPosition);
     }

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -11,25 +11,14 @@ public enum KeyType
     RingChest    // 반지 상자 열쇠
 }
 
-public class KeyInventory : MonoBehaviour
+public class KeyInventory : Singleton<KeyInventory>
 {
-    public static KeyInventory Instance { get; private set; }
 
     private readonly Dictionary<KeyType, int> _counts = new();
 
-    private void Awake()
+    protected override void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Debug.LogError("KeyInventory 가 씬에 두 개 이상 있습니다.");
-            return;
-        }
-        Instance = this;
-    }
-
-    private void OnDestroy()
-    {
-        if (Instance == this) Instance = null;
+        base.Awake();
     }
 
     public int GetCount(KeyType type) => _counts.TryGetValue(type, out int n) ? n : 0;

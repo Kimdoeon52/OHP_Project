@@ -1,28 +1,16 @@
-using UnityEngine;
+﻿using UnityEngine;
 
-public class TimeSystem : MonoBehaviour
+public class TimeSystem : Singleton<TimeSystem>
 {
-    public static TimeSystem Instance { get; private set; }
-
     [SerializeField] private GameConfig config;
 
     public float TimeRemaining { get; private set; }
     public bool IsRunning { get; private set; }
 
-    private void Awake()
+    protected override void Awake()
     {
-        if (Instance != null)
-        {
-            Debug.LogError("TimeSystem이 씬에 두 개 이상 있음");
-            return;
-        }
-        Instance = this;
+        base.Awake();
         TimeRemaining = config != null ? config.startTime : 60f;
-    }
-
-    private void OnDestroy()
-    {
-        if (Instance == this) Instance = null;
     }
 
     public void StartTimer() => IsRunning = true;
