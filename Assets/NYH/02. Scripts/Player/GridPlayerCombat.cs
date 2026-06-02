@@ -1,9 +1,12 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 /// <summary>
-/// 플레이어 근접 전투를 처리합니다.
-/// 투척 무기는 YJW 아이템 시스템에서 처리하므로 여기서는 근접 공격만 담당합니다.
+/// 플레이어의 근접 전투 판정, 데미지 산출, 쿨다운(행동 지연 비용)을 전담하여 관리하는 클래스입니다.
+/// 마우스 입력 방향의 인접 칸에 적(IDamageable)이 존재하는지 확인하고,
+/// 스탯(NYHPlayerStats)과 장비(NYHEquipmentController)를 참조하여 산출된 데미지를 적중시킵니다.
+/// 공격이 성립되면 TurnManager를 호출해 턴 시간 비용을 지불하게 됩니다.
+/// (원거리/투척은 아이템 사용 로직에서 별도로 처리되므로 제외됩니다.)
 /// </summary>
 public class GridPlayerCombat : MonoBehaviour
 {
@@ -54,8 +57,8 @@ public class GridPlayerCombat : MonoBehaviour
     }
 
     /// <summary>
-    /// 마우스 클릭 위치를 받아 상하좌우 중 가장 가까운 한 칸을 근접 공격합니다.
-    /// 적중 시에만 피해와 행동 지연을 적용합니다.
+    /// 입력받은 타겟 좌표(clickedCell)를 기준으로 플레이어의 4방향 인접 칸 중 한 곳을 특정하여 근접 공격을 시도합니다.
+    /// 쿨다운, 상태이상 제약 등을 통과하고 대상 칸에 타격 가능한 엔티티가 있을 때만 최종 공격이 실행됩니다.
     /// </summary>
     public void TryMeleeAt(Vector2Int clickedCell)
     {
@@ -92,6 +95,10 @@ public class GridPlayerCombat : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 공격 행동이 완료되었을 때 TurnManager에 행동 완료 시그널을 보내 적들의 턴(AI)을 진행시킵니다.
+    /// 행동 딜레이 무시 상태가 설정되어 있다면 적 턴 진행 없이 시간만 소모합니다.
+    /// </summary>
     private void CompletePlayerAction(float actionDelay)
     {
         if (_player.Movement != null && _player.Movement.IgnoresActionDelayForMovement)
@@ -100,12 +107,19 @@ public class GridPlayerCombat : MonoBehaviour
             TurnManager.Instance.OnPlayerActionCompleted(actionDelay);
     }
 
+    /// <summary>
+    /// 계산된 기본 피해량에 상태이상 컨트롤러(독, 약화 등)의 보정치를 합산하여 최종 가해 피해량을 반환합니다.
+    /// </summary>
     private int GetModifiedOutgoingDamage(int baseDamage)
     {
         StatusController statusController = _player.GetComponent<StatusController>();
         return statusController != null ? statusController.ModifyOutgoingDamage(baseDamage) : baseDamage;
     }
 
+    /// <summary>
+    /// 장비 컨트롤러와 플레이어 기본 스탯을 기반으로 무기의 굴림 피해(Roll)를 계산합니다.
+    /// 공격력의 최소~최대 범위에서 난수를 생성하는 역할은 내부의 NYHPlayerAttackCalculator가 담당합니다.
+    /// </summary>
     private int RollMeleeDamage()
     {
         if (_stats == null)
@@ -117,6 +131,9 @@ public class GridPlayerCombat : MonoBehaviour
         return NYHPlayerAttackCalculator.RollMeleeDamage(_stats, equipmentController);
     }
 
+    /// <summary>
+    /// 현재 시간이 계산된 다음 공격 가능 시간(_nextMeleeAttackTime)을 지났는지 판별하여 공격 쿨다운 통과 여부를 반환합니다.
+    /// </summary>
     private bool CanMeleeAttack()
     {
         return Time.time >= _nextMeleeAttackTime;

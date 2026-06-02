@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace PrototypeRT
 {
@@ -27,6 +27,10 @@ namespace PrototypeRT
     /// <summary>
     /// 인벤토리 아이템 사용 중 "다음 마우스 클릭으로 대상 선택"이 필요한 흐름을 담당합니다.
     /// 투척 포션은 맵 타일을, 감정/강화/정화 주문서는 인벤토리 또는 장착 장비 아이템을 대상으로 삼습니다.
+    /// 
+    /// 단순 즉시 사용(UseImmediate)이 불가능한 타겟팅 요구 아이템의 조준 상태(State)를 관리하는 스크립트입니다.
+    /// 아이템 활성화 이후 발생하는 다음 마우스 클릭 이벤트를 가로채어, 맵 상의 특정 타일(폭탄 투척)이나
+    /// 인벤토리 내 다른 장비 아이템(주문서 강화 등)으로 좌표와 타겟 데이터를 전달하는 중간 브릿지 역할을 수행합니다.
     /// </summary>
     public class InventoryTargetingController : MonoBehaviour
     {

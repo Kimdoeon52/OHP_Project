@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// 플레이어 HP + 회복 포션.
-/// 포션: 즉시 +50% MaxHp, 이후 25초에 걸쳐 추가 +50% (curve로 곡선 조절).
+/// 플레이어의 체력 증감, 사망 처리, 그리고 전용 회복 아이템(포션) 사용 로직을 전담하는 클래스입니다.
+/// 스탯 시스템(NYHPlayerStats)과 연동하여 방어력/회피율을 계산한 최종 피해를 적용하며,
+/// 포션 사용 시 즉시 회복과 함께 AnimationCurve를 활용한 지속적인(Regen) 회복 로직을 동시에 실행합니다.
 /// </summary>
 public class GridPlayerHealth : PersistentSingleton<GridPlayerHealth>, IDamageable
 {
@@ -48,9 +49,16 @@ public class GridPlayerHealth : PersistentSingleton<GridPlayerHealth>, IDamageab
     /// </summary>
     public event Action OnDied;
 
+    /// <summary>현재 남아있는 플레이어의 실제 체력 수치입니다.</summary>
     public int CurrentHp { get; private set; }
+    
+    /// <summary>현재 적용된 최대 체력 수치입니다. 플레이어 스탯이 존재하면 동기화되고 없으면 인스펙터 기본값을 사용합니다.</summary>
     public int MaxHp => _stats != null ? _stats.MaxHealth : maxHp;
+    
+    /// <summary>플레이어 사망 여부를 반환합니다. (CurrentHp가 0 이하일 때 true)</summary>
     public bool IsDead => CurrentHp <= 0;
+    
+    /// <summary>현재 소지 중인 포션의 개수입니다.</summary>
     public int PotionCount { get; private set; }
 
 #if UNITY_EDITOR
@@ -82,17 +90,20 @@ public class GridPlayerHealth : PersistentSingleton<GridPlayerHealth>, IDamageab
     }
 
     /// <summary>
-    /// 플레이어에게 피해를 적용합니다.
-    /// NYHPlayerStats가 있으면 방어력/회피율 계산을 거친 뒤 최종 피해만 HP에서 차감합니다.
+    /// 외부 요인(몬스터, 함정 등)에 의해 플레이어가 피해를 입었을 때 호출됩니다.
+    /// 스탯 시스템(NYHPlayerStats)이 존재할 경우 방어력과 회피율 등을 계산한 '최종 데미지'만을 적용합니다.
+    /// 체력이 0 이하로 떨어지면 사망 처리를 수행합니다.
     /// </summary>
     public void TakeDamage(int amount)
     {
         if (IsDead || amount <= 0) return;
 
+        // 최종 데미지 산출 로직 위임 (방어, 회피 반영)
         int finalDamage = CalculateIncomingDamage(amount);
         if (finalDamage <= 0) return;
 
         CurrentHp = Mathf.Max(0, CurrentHp - finalDamage);
+        
         OnDamaged?.Invoke(finalDamage);
         GameEvents.OnPlayerDamaged?.Invoke(finalDamage);
         RaiseHealthChanged();

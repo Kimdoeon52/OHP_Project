@@ -26,8 +26,11 @@ public enum NYHStatType
 }
 
 /// <summary>
-/// 플레이어의 영구/기본 스탯을 관리한다.
-/// 레벨과 경험치 진행도는 PlayerLevelSystem, 독/화상/둔화 같은 임시 상태이상은 StatusController가 담당한다.
+/// 플레이어의 영구/기본 스탯(최대 체력, 근력, 이동/공격 속도, 방어/회피)을 중앙에서 관리하는 데이터 허브 클래스입니다.
+/// 장비 장착, 레벨업, 보상 등에 의해 스탯 수치가 증감될 때 이를 추적하고 이벤트를 발생시킵니다.
+/// 
+/// 임시로 스탯을 변화시키는 상태이상은 StatusController가, 경험치 및 레벨업 시스템은 PlayerLevelSystem이 
+/// 각각 별도로 관리하며, 본 클래스는 순수 베이스 스탯만을 전담합니다.
 /// </summary>
 public class NYHPlayerStats : MonoBehaviour
 {
@@ -100,8 +103,8 @@ public class NYHPlayerStats : MonoBehaviour
     }
 
     /// <summary>
-    /// 지정한 스탯을 amount만큼 변경한다.
-    /// Health는 최대 체력을 변경하고, 실제 현재 체력 반영은 OnStatAdded 구독자가 처리한다.
+    /// 외부 요인(장비 스왑, 레벨업 보상 등)에 의해 지정된 스탯을 amount만큼 영구/일시적으로 증감시킵니다.
+    /// 체력(Health)의 경우 최대 체력을 변경하며, OnStatAdded 이벤트를 통해 GridPlayerHealth 등에서 실제 현재 체력을 동기화합니다.
     /// </summary>
     public void AddStat(NYHStatType type, int amount)
     {
@@ -137,8 +140,8 @@ public class NYHPlayerStats : MonoBehaviour
     }
 
     /// <summary>
-    /// 방어력과 회피율을 적용해 최종 받는 피해량을 계산한다.
-    /// 회피가 성공하면 0, 실패하면 방어력만큼 감소한 값을 반환한다.
+    /// 플레이어의 방어력(고정 감소)과 회피율(확률 완전 회피) 스탯을 적용하여 
+    /// 실제로 깎일 최종 피해량을 산출해 반환합니다. 회피에 성공하면 피해량은 0이 됩니다.
     /// </summary>
     public int CalculateIncomingDamage(int rawDamage)
     {

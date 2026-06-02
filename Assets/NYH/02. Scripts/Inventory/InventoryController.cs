@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,6 +7,10 @@ namespace PrototypeRT
     /// <summary>
     /// 인벤토리 UI의 전체 입력 흐름을 관리하는 컨트롤러입니다.
     /// 아이템 생성/추가/삭제, 마우스 드래그, 배치, 하이라이트 갱신을 한 곳에서 조율합니다.
+    /// 
+    /// 플레이어 인벤토리 시스템을 총괄하는 핵심 클래스입니다.
+    /// 아이템 선택 및 드래그 앤 드롭, 슬롯 간 이동, 신규 아이템 획득 시 빈칸 자동 배치 등 
+    /// 인벤토리 내에서 발생하는 모든 상호작용과 데이터 흐름을 중앙에서 제어합니다.
     /// </summary>
     [RequireComponent(typeof(InventoryHighlight))]
     public class InventoryController : MonoBehaviour

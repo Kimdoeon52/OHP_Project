@@ -1,6 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 맵에 배치된 함정(GridTrap)들을 좌표(Vector2Int) 기반으로 캐싱하고 플레이어 이동 시 발동 여부를 검사하는 코어 시스템입니다.
+/// 함정의 등록/해제, 밟았을 때의 단일 발동, 범위 폭발 발동, 그리고 
+/// 일정 턴 이후에 터지는 특수 함정(DelayedAreaEffect)의 턴 카운트다운을 전담하여 관리합니다.
+/// </summary>
 public class TrapSystem : MonoBehaviour
 {
     public static TrapSystem Instance { get; private set; }
@@ -44,12 +49,19 @@ public class TrapSystem : MonoBehaviour
         currentFloor = Mathf.Max(1, floor);
     }
 
+    /// <summary>
+    /// 생성된 함정 객체를 TrapSystem의 관리 목록에 좌표 기준으로 등록합니다.
+    /// 절차적 맵 생성 시 스폰된 함정들이 초기화되면서 호출합니다.
+    /// </summary>
     public void Register(GridTrap trap)
     {
         if (trap == null) return;
         _traps[trap.GridPosition] = trap;
     }
 
+    /// <summary>
+    /// 발동 완료되거나 파괴된 함정을 관리 목록에서 제거합니다.
+    /// </summary>
     public void Unregister(GridTrap trap)
     {
         if (trap == null) return;
@@ -57,6 +69,10 @@ public class TrapSystem : MonoBehaviour
             _traps.Remove(trap.GridPosition);
     }
 
+    /// <summary>
+    /// 특정 격자 좌표(cell)에 함정이 존재하는지 확인하고, 존재할 경우 발동을 시도합니다.
+    /// 주로 플레이어가 이동을 완료한 직후 해당 타일에 이 함수를 호출하여 함정을 밟았는지 판정합니다.
+    /// </summary>
     public bool TryTriggerAt(Vector2Int cell, IGridEntity activator)
     {
         if (!_traps.TryGetValue(cell, out GridTrap trap) || trap == null)
@@ -77,6 +93,9 @@ public class TrapSystem : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// 특정 원점(origin)을 기준으로 주어진 반경(radius) 내의 모든 함정들을 연쇄 발동시킵니다.
+    /// </summary>
     public int TriggerArea(Vector2Int origin, int radius, IGridEntity activator)
     {
         int triggeredCount = 0;
@@ -89,6 +108,10 @@ public class TrapSystem : MonoBehaviour
         return triggeredCount;
     }
 
+    /// <summary>
+    /// 밟은 즉시 터지지 않고 지정된 턴(delayTurns)이 경과한 뒤에 광역 피해/상태이상을 뿌리는 지연형 함정을 스케줄링합니다.
+    /// OnPlayerActionCompleted 이벤트와 연동되어 매 행동마다 턴 카운트가 차감됩니다.
+    /// </summary>
     public void ScheduleDelayedAreaEffect(TrapContext context, TrapTerrainType terrainType, StatusType statusType)
     {
         // 덫은 플레이어 이동 처리 중에 예약되고, 같은 이동의 OnPlayerActionCompleted가 곧바로 발생합니다.

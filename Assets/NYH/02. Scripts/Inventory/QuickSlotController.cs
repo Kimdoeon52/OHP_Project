@@ -6,6 +6,10 @@ namespace PrototypeRT
     /// <summary>
     /// 10칸 퀵슬롯 그리드를 관리하고 1~0 키 입력으로 아이템을 사용합니다.
     /// 퀵슬롯에 들어간 아이템은 일반 인벤토리에서 빠져 실제로 이 그리드에 배치된 InventoryItem입니다.
+    /// 
+    /// 화면 하단의 빠른 사용 슬롯(Quick Slot) 시스템을 전담하는 클래스입니다.
+    /// 키보드 숫자키 입력(1~0)을 감지하여 인벤토리 창을 열지 않고도 등록된 소모품 등을 즉시 사용할 수 있도록 지원하며,
+    /// 메인 인벤토리와 분리된 별도의 10x1 크기 ItemGrid를 통해 데이터를 동기화합니다.
     /// </summary>
     public class QuickSlotController : MonoBehaviour
     {
