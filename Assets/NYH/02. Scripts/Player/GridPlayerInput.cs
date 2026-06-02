@@ -7,10 +7,13 @@
 public class GridPlayerInput : MonoBehaviour
 {
     private GridPlayer _player;
+    private CameraFollow _cameraFollow;
 
     public void Init(GridPlayer player)
     {
         _player = player;
+        // Safe Room 플래닝 모드 중엔 좌클릭이 카메라 드래그용이므로 근접 공격으로 흘려보내지 않게 참조 캐시.
+        _cameraFollow = FindFirstObjectByType<CameraFollow>();
     }
 
     /// <summary>
@@ -63,6 +66,9 @@ public class GridPlayerInput : MonoBehaviour
 
         if (Input.GetMouseButton(0))
         {
+            // 플래닝 모드(Safe Room) 중엔 좌클릭이 카메라 드래그 입력 — 근접 공격 무시.
+            if (_cameraFollow != null && _cameraFollow.IsPlanningMode) return;
+
             Camera cam = Camera.main;
             if (cam != null)
             {
