@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!29 &1
 OcclusionCullingSettings:
@@ -1100,7 +1100,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeText: {fileID: 1967958447}
   hpText: {fileID: 1455687183}
-  daggerText: {fileID: 239759630}
   potionText: {fileID: 19655854}
   statusText: {fileID: 1121730296}
 --- !u!1 &963444463
@@ -3543,8 +3542,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 134fdd582dc57234dacbbffcdbc98b0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  daggerData: {fileID: 11400000, guid: 4bd54afd48bbb6b499670f633e1a26ee, type: 2}
-  daggerPrefab: {fileID: 7796981772736433693, guid: 998ee0674d00d4849bd46ca2c58d7017, type: 3}
   meleeDamage: 1
 --- !u!114 &1602459380
 MonoBehaviour:
@@ -7042,3 +7039,5 @@ SceneRoots:
   - {fileID: 560344817}
   - {fileID: 963444466}
   - {fileID: 1005643974}
+
+

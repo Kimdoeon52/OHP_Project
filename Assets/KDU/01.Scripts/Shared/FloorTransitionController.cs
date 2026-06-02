@@ -1,4 +1,5 @@
-using System.Collections;
+﻿using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -83,10 +84,6 @@ public class FloorTransitionController : MonoBehaviour
     /// </summary>
     private IEnumerator BuildFloorCoroutine()
     {
-        // 단검 정리 — 씬에 떨어진 모든 GridDagger 파괴.
-        // (적은 EnemySpawner.Spawn 가 ClearPreviousSpawns 호출, Exit 은 MapGenerator 가 자체 정리)
-        foreach (var d in FindObjectsByType<GridDagger>(FindObjectsSortMode.None))
-            Destroy(d.gameObject);
 
         // 시스템 리셋 — 시야/탐험 기록, 시간 풀, Feeling 보정치
         VisionSystem.Instance?.ResetForNewFloor();
@@ -147,3 +144,4 @@ public class FloorTransitionController : MonoBehaviour
         return best;
     }
 }
+

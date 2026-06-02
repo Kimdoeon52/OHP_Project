@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -32,10 +32,6 @@ public static class GameEvents
     public static Action OnPlayerDied;
     public static Action OnLevelComplete;
 
-    // 단검
-    public static Action<Vector2Int, Vector2Int> OnDaggerThrown;    // from, to
-    public static Action<Vector2Int> OnDaggerRetrieved;
-
     public static void ClearAllEvents()
     {
         OnTimeChanged = null;
@@ -54,7 +50,6 @@ public static class GameEvents
         OnVisionUpdated = null;
         OnPlayerDied = null;
         OnLevelComplete = null;
-        OnDaggerThrown = null;
-        OnDaggerRetrieved = null;
     }
 }
+
