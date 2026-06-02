@@ -74,7 +74,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     {
         get
         {
-            if (IsDead  || gridPos.x < 0 || gridPos.y < 0)
+            if (IsDead)
                 yield break;
 
             for (int x = 0; x < bossSize.x; x++)
