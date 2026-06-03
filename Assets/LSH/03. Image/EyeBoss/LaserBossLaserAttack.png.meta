@@ -1,0 +1,455 @@
+fileFormatVersion: 2
+guid: ba777005d426b124d807178c14ef76a1
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 2339637405245615190
+    second: LaserBossLaserAttack_0
+  - first:
+      213: 8680405097702493630
+    second: LaserBossLaserAttack_1
+  - first:
+      213: -1933334340846069134
+    second: LaserBossLaserAttack_2
+  - first:
+      213: 7579642036270923363
+    second: LaserBossLaserAttack_3
+  - first:
+      213: -1152979256272924378
+    second: LaserBossLaserAttack_4
+  - first:
+      213: -8190840857420088763
+    second: LaserBossLaserAttack_5
+  - first:
+      213: 6024926255925159068
+    second: LaserBossLaserAttack_6
+  - first:
+      213: -5846464000324064404
+    second: LaserBossLaserAttack_7
+  - first:
+      213: -6910027051793072002
+    second: LaserBossLaserAttack_8
+  - first:
+      213: 5128071407081457320
+    second: LaserBossLaserAttack_9
+  - first:
+      213: 6106180619462507560
+    second: LaserBossLaserAttack_10
+  - first:
+      213: 8618862800861338000
+    second: LaserBossLaserAttack_11
+  - first:
+      213: 2366820967268693168
+    second: LaserBossLaserAttack_12
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: LaserBossLaserAttack_0
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 24
+        width: 89
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 65ca1eaf2df087020800000000000000
+      internalID: 2339637405245615190
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserBossLaserAttack_1
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 25
+        width: 89
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ebd0c03127ef67870800000000000000
+      internalID: 8680405097702493630
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserBossLaserAttack_2
+      rect:
+        serializedVersion: 2
+        x: 272
+        y: 26
+        width: 89
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 27a5ec509aa6b25e0800000000000000
+      internalID: -1933334340846069134
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserBossLaserAttack_3
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 26
+        width: 89
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 36efb88f54c403960800000000000000
+      internalID: 7579642036270923363
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserBossLaserAttack_4
+      rect:
+        serializedVersion: 2
+        x: 528
+        y: 27
+        width: 89
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6215574a97bcfffe0800000000000000
+      internalID: -1152979256272924378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserBossLaserAttack_5
+      rect:
+        serializedVersion: 2
+        x: 656
+        y: 28
+        width: 89
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 54a38b913a9445e80800000000000000
+      internalID: -8190840857420088763
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserBossLaserAttack_6
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 29
+        width: 89
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c94e7522286dc9350800000000000000
+      internalID: 6024926255925159068
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserBossLaserAttack_7
+      rect:
+        serializedVersion: 2
+        x: 912
+        y: 30
+        width: 89
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c6b2394b7ff2ddea0800000000000000
+      internalID: -5846464000324064404
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserBossLaserAttack_8
+      rect:
+        serializedVersion: 2
+        x: 1040
+        y: 30
+        width: 89
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e70c88dd107aa10a0800000000000000
+      internalID: -6910027051793072002
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserBossLaserAttack_9
+      rect:
+        serializedVersion: 2
+        x: 1168
+        y: 30
+        width: 89
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8a68de966c19a2740800000000000000
+      internalID: 5128071407081457320
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserBossLaserAttack_10
+      rect:
+        serializedVersion: 2
+        x: 1296
+        y: 30
+        width: 89
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82cff65ebe28db450800000000000000
+      internalID: 6106180619462507560
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserBossLaserAttack_11
+      rect:
+        serializedVersion: 2
+        x: 1424
+        y: 30
+        width: 89
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0991b2d7d0a5c9770800000000000000
+      internalID: 8618862800861338000
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LaserBossLaserAttack_12
+      rect:
+        serializedVersion: 2
+        x: 1552
+        y: 30
+        width: 89
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0b43ff83123a8d020800000000000000
+      internalID: 2366820967268693168
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      LaserBossLaserAttack_0: 2339637405245615190
+      LaserBossLaserAttack_1: 8680405097702493630
+      LaserBossLaserAttack_10: 6106180619462507560
+      LaserBossLaserAttack_11: 8618862800861338000
+      LaserBossLaserAttack_12: 2366820967268693168
+      LaserBossLaserAttack_2: -1933334340846069134
+      LaserBossLaserAttack_3: 7579642036270923363
+      LaserBossLaserAttack_4: -1152979256272924378
+      LaserBossLaserAttack_5: -8190840857420088763
+      LaserBossLaserAttack_6: 6024926255925159068
+      LaserBossLaserAttack_7: -5846464000324064404
+      LaserBossLaserAttack_8: -6910027051793072002
+      LaserBossLaserAttack_9: 5128071407081457320
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
