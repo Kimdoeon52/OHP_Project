@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65d7231107085e740bee3baba5b4fd7a, type: 3}
+  m_Name: Chest_Ring
+  m_EditorClassIdentifier: 
+  kind: 3
+  chestName: "\uBC18\uC9C0 \uC0C1\uC790"
+  openSeconds: 1
+  requiresKey: 1
+  keyType: 1
+  itemCategories: 09000000
+  itemDropMin: 1
+  itemDropMax: 1
+  excludeReinforceScroll: 1
+  goldMin: 0
+  goldMax: 0
+  closedSprite: {fileID: -2147240515, guid: c5fd1966421bf3d41a951a19748a397f, type: 3}
+  openedSprite: {fileID: -1736702348, guid: c5fd1966421bf3d41a951a19748a397f, type: 3}
