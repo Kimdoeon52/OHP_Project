@@ -79,8 +79,8 @@ public class TurnManager : Singleton<TurnManager>
             totalCost = status.ModifyMoveTimeCost(totalCost);
         }
 
-        bool skipEnemyTurnDelay = false;
-       //  OnPlayerActionCompleted(totalCost, skipEnemyTurnDelay);
+        // bool skipEnemyTurnDelay = false;
+        // OnPlayerActionCompleted(totalCost, skipEnemyTurnDelay);
     }
 
 
