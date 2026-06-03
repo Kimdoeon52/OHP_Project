@@ -62,7 +62,13 @@ namespace PrototypeRT
         private InventoryItem _activeItem;
         private int _startedFrame;
 
+        // 타겟팅을 끝낸 클릭이 같은 프레임의 다른 UI 클릭 처리로 이어지지 않게 막는 프레임 기록입니다.
+        private int _blockPointerInputFrame = -1;
+
         public bool IsTargeting => _mode != InventoryTargetingMode.None;
+
+        // IsTargeting이 false가 된 직후에도, 해당 클릭 프레임 동안은 인벤/장비의 일반 클릭 처리를 막아야 합니다.
+        public bool BlocksPointerInput => IsTargeting || Time.frameCount == _blockPointerInputFrame;
 
         /// <summary>
         /// InventoryController가 런타임에 자동 생성한 경우 참조를 주입합니다.
@@ -110,10 +116,16 @@ namespace PrototypeRT
             if (scroll == null || scroll.ItemData == null || kind == InventoryScrollTargetKind.None)
                 return false;
 
+            // 더블클릭 판정 때문에 손에 들린 주문서를 즉시 원위치로 돌립니다.
+            // 주문서는 그리드에 남겨두고 반투명 표시만 하며, 실제 소비는 대상 선택 성공 후에만 합니다.
+            if (inventoryController != null && inventoryController.SelectedItem == scroll)
+                inventoryController.CancelDragAndReturnItem();
+
             _activeItem = scroll;
             _mode = InventoryTargetingMode.TargetScroll;
             _scrollKind = kind;
             _startedFrame = Time.frameCount;
+            _activeItem.SetUsePendingVisual(true);
             SetCursor(GetCursorForScroll(kind));
             return true;
         }
@@ -133,12 +145,18 @@ namespace PrototypeRT
 
             if (Input.GetMouseButtonDown(1))
             {
+                // 취소 클릭도 같은 프레임에 장비 해제/아이템 줍기로 이어지면 안 됩니다.
+                _blockPointerInputFrame = Time.frameCount;
                 CancelTargeting();
                 return;
             }
 
             if (!Input.GetMouseButtonDown(0))
                 return;
+
+            // 대상 선택 클릭은 주문서 효과 처리 전용입니다.
+            // 성공해서 타겟팅이 끝나도 이 프레임에는 장비/인벤 일반 클릭을 실행하지 않습니다.
+            _blockPointerInputFrame = Time.frameCount;
 
             if (_mode == InventoryTargetingMode.ThrowPotion)
                 TryCompleteThrowPotion();
@@ -192,6 +210,9 @@ namespace PrototypeRT
 
             // 조건 검사는 이 컨트롤러에서 먼저 하고, 실제 상태 변경은 YJW Scroll의 Use(ItemInstance)에 위임합니다.
             _activeItem.ItemData.Use(target.ItemInstance);
+
+            // 삭제 직전에 먼저 시각 상태를 원복합니다. 취소/실패 경로는 ClearTargetingState에서 원복합니다.
+            _activeItem.SetUsePendingVisual(false);
             ConsumeActiveItem();
             ClearTargetingState();
         }
@@ -285,10 +306,7 @@ namespace PrototypeRT
             if (_activeItem == null || inventoryController == null)
                 return false;
 
-            if (inventoryController.SelectedItem == _activeItem)
-                return inventoryController.TryConsumeHeldItem(_activeItem, true);
-
-            return inventoryController.TryRemoveItem(_activeItem);
+            return inventoryController.TryConsumeOneItem(_activeItem);
         }
 
         /// <summary>
@@ -309,6 +327,10 @@ namespace PrototypeRT
         /// </summary>
         private void ClearTargetingState()
         {
+            // 유효하지 않은 대상 클릭은 여기까지 오지 않지만, 취소/오류/성공 정리 경로는 모두 반투명 표시를 해제합니다.
+            if (_activeItem != null)
+                _activeItem.SetUsePendingVisual(false);
+
             _mode = InventoryTargetingMode.None;
             _scrollKind = InventoryScrollTargetKind.None;
             _activeItem = null;

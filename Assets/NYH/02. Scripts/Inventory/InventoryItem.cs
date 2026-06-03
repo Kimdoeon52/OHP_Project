@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 namespace PrototypeRT
 {
@@ -45,12 +46,19 @@ namespace PrototypeRT
 
         // 유니티에서 이미지를 화면에 띄워주기 위해 사용하는 도구입니다.
         private Image _image;
+        // 스택 수량 표시용 텍스트입니다. 프리팹에 없으면 런타임에 CountText를 자동 생성합니다.
+        [SerializeField] private TMP_Text countText;
+
+        // 주문서 타겟팅 중 반투명 표시를 했다가 원래 색으로 정확히 되돌리기 위해 최초 Image 색을 저장합니다.
+        private Color _defaultImageColor = Color.white;
+        private bool _hasDefaultImageColor;
 
         // 게임이 실행되고 이 아이템이 처음 만들어질 때 딱 한 번 자동으로 실행되는 함수입니다.
         private void Awake()
         {
             // 자신에게 붙어있는 Image 컴포넌트를 찾아서 _image 변수에 저장해둡니다. 나중에 써먹기 위해서입니다.
             _image = GetComponent<Image>();
+            CacheDefaultImageColor();
         }
 
         /// <summary>
@@ -76,6 +84,7 @@ namespace PrototypeRT
 
             // 만약 아까 저장해둔 _image가 어쩌다 보니 비어있다면 다시 한번 찾아줍니다.
             if (_image == null) _image = GetComponent<Image>();
+            CacheDefaultImageColor();
 
             // ItemData의 아이콘을 그대로 UI Image에 연결합니다.
             // 아이콘이 아직 없는 테스트 데이터라면 이미지를 비활성화해서 빈 사각형 노출을 피합니다.
@@ -89,6 +98,22 @@ namespace PrototypeRT
             // 아이템의 타일 크기(예: 1x1, 2x2)에 맞춰 실제 RectTransform의 화면상 픽셀 크기를 동기화합니다.
             RectTransform rect = GetComponent<RectTransform>();
             rect.sizeDelta = new Vector2(itemData.Width * ItemGrid.TileWidth, itemData.Height * ItemGrid.TileHeight);
+            RefreshCountText();
+        }
+
+        public void RefreshCountText()
+        {
+            EnsureCountText();
+
+            if (countText == null || ItemInstance == null)
+                return;
+
+            // 1개일 때는 숫자를 숨겨 기존 단일 아이템 UI와 똑같이 보이게 합니다.
+            // 2개 이상부터만 우하단에 수량을 표시합니다.
+            int count = Mathf.Max(1, ItemInstance.count);
+            bool showCount = count > 1;
+            countText.gameObject.SetActive(showCount);
+            countText.text = showCount ? count.ToString() : string.Empty;
         }
 
         /// <summary>
@@ -102,6 +127,58 @@ namespace PrototypeRT
             // 손에 든 아이템이 마우스 클릭을 먹으면(가로채면), 그 밑에 있는 장비 슬롯이나 퀵슬롯이 클릭을 받지 못합니다.
             // 그래서 마우스로 아이템을 집어 들었을 때는 클릭을 통과시키게 끄고(false), 다시 내려놨을 때는 켜줍니다(true).
             _image.raycastTarget = value;
+        }
+
+        public void SetUsePendingVisual(bool active)
+        {
+            if (_image == null) _image = GetComponent<Image>();
+            if (_image == null) return;
+
+            CacheDefaultImageColor();
+
+            // 주문서를 "사용 대기 중"으로만 표시합니다. 실제 삭제는 대상 선택 성공 후 InventoryTargetingController가 처리합니다.
+            Color color = active ? _defaultImageColor : _image.color;
+            color.a = active ? 0.2f : _defaultImageColor.a;
+            _image.color = color;
+        }
+
+        private void CacheDefaultImageColor()
+        {
+            if (_image == null || _hasDefaultImageColor)
+                return;
+
+            // 이후 반투명 해제 시 아이템별 원래 알파값까지 복구해야 하므로 한 번만 캐싱합니다.
+            _defaultImageColor = _image.color;
+            _hasDefaultImageColor = true;
+        }
+
+        private void EnsureCountText()
+        {
+            if (countText != null)
+                return;
+
+            // 디자이너가 프리팹에 TMP_Text를 직접 연결한 경우 그 텍스트를 우선 사용합니다.
+            TextMeshProUGUI generatedText = GetComponentInChildren<TextMeshProUGUI>(true);
+            if (generatedText == null)
+            {
+                // 현재 InventoryItem_RT 프리팹을 직접 수정하지 않아도 동작하도록 런타임 기본 텍스트를 생성합니다.
+                // 나중에 프리팹에 예쁘게 만든 countText를 연결하면 이 자동 생성 경로는 타지 않습니다.
+                GameObject textObject = new GameObject("CountText", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+                RectTransform textRect = textObject.GetComponent<RectTransform>();
+                textRect.SetParent(transform, false);
+                textRect.anchorMin = Vector2.zero;
+                textRect.anchorMax = Vector2.one;
+                textRect.offsetMin = new Vector2(2f, 2f);
+                textRect.offsetMax = new Vector2(-4f, -2f);
+
+                generatedText = textObject.GetComponent<TextMeshProUGUI>();
+                generatedText.fontSize = 18f;
+                generatedText.alignment = TextAlignmentOptions.BottomRight;
+                generatedText.color = Color.white;
+                generatedText.raycastTarget = false;
+            }
+
+            countText = generatedText;
         }
 
     }

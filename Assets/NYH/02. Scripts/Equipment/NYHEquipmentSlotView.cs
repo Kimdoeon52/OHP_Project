@@ -19,6 +19,9 @@ public class NYHEquipmentSlotView : MonoBehaviour, IPointerClickHandler
     [Tooltip("현재 마우스로 들고 있는 인벤토리 아이템을 넘겨받기 위한 인벤토리 컨트롤러입니다.")]
     [SerializeField] private InventoryController inventoryController;
 
+    // 주문서 타겟팅 클릭이 장비 해제/장착 클릭으로도 처리되는 것을 막기 위해 확인합니다.
+    [SerializeField] private InventoryTargetingController targetingController;
+
     [Tooltip("장착된 아이템 아이콘을 표시할 Image입니다. 슬롯 배경이 아닌 자식 Image를 연결하는 것을 권장합니다.")]
     [SerializeField] private Image iconImage;
 
@@ -60,6 +63,11 @@ public class NYHEquipmentSlotView : MonoBehaviour, IPointerClickHandler
             return;
 
         ResolveReferences();
+
+        // 감정/강화/정화 대상 선택 중에는 이 클릭을 주문서 타겟팅 전용으로 둡니다.
+        // 타겟팅 성공 직후 같은 프레임에도 장비가 손에 들리지 않게 BlocksPointerInput을 봅니다.
+        if (targetingController != null && targetingController.BlocksPointerInput)
+            return;
 
         if (inventoryController != null && inventoryController.SelectedItem == null)
         {
@@ -144,6 +152,9 @@ public class NYHEquipmentSlotView : MonoBehaviour, IPointerClickHandler
 
         if (inventoryController == null)
             inventoryController = FindFirstObjectByType<InventoryController>();
+
+        if (targetingController == null)
+            targetingController = FindFirstObjectByType<InventoryTargetingController>();
 
         if (iconImage == null)
             iconImage = FindIconImage();

@@ -133,6 +133,17 @@ namespace PrototypeRT
             // 나중에 UseResult가 생기면 성공한 경우에만 제거하도록 이 지점에서 분기하면 됩니다.
             item.ItemData.Use();
 
+            // 퀵슬롯 안의 스택 아이템은 마지막 1개가 되기 전까지 슬롯에서 제거하지 않습니다.
+            // 수량만 줄이고 HUD 갱신 이벤트를 보내 기존 슬롯 배치는 유지합니다.
+            if (item.ItemInstance != null && item.ItemInstance.count > 1)
+            {
+                item.ItemInstance.count--;
+                item.RefreshCountText();
+                ApplyUseDelay();
+                OnQuickSlotsChanged?.Invoke();
+                return true;
+            }
+
             // InventoryController는 "플레이어가 소유한 아이템 목록"을 들고 있으므로, 사용한 아이템을 목록에서 잊게 합니다.
             inventoryController?.ForgetItem(item);
 

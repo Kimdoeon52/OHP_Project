@@ -87,7 +87,7 @@ namespace PrototypeRT
         private bool UseImmediateItem(InventoryItem item)
         {
             item.ItemData.Use();
-            return inventoryController.TryConsumeHeldItem(item, true);
+            return inventoryController.TryConsumeOneItem(item);
         }
 
         /// <summary>

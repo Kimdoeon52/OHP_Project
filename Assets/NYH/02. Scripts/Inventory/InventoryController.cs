@@ -132,7 +132,9 @@ namespace PrototypeRT
             DragSelectedItemIcon();
             RefreshSelectedGridUnderMouse();
 
-            if (targetingController != null && targetingController.IsTargeting)
+            // 주문서 타겟팅 중이거나 방금 타겟팅 클릭을 처리한 프레임이면,
+            // 같은 클릭으로 인벤 아이템을 집는 일반 입력이 이어지지 않게 막습니다.
+            if (targetingController != null && targetingController.BlocksPointerInput)
             {
                 _inventoryHighlight.Show(false);
                 return;
@@ -166,6 +168,15 @@ namespace PrototypeRT
                 Debug.LogError("InventoryController: 인벤토리 그리드, 아이템 프리팹, Canvas, ItemData 연결을 확인해야 합니다.");
                 return false;
             }
+
+            // YJW ItemInstance에는 count 값만 두고, 어떤 아이템을 합칠지는 NYH 인벤토리에서 판단합니다.
+            // 외부에서 0 이하 수량이 들어와도 인벤토리 안에서는 최소 1개로 보정합니다.
+            itemInstance.count = Mathf.Max(1, itemInstance.count);
+
+            // 포션/스크롤은 새 UI를 만들기 전에 기존 스택에 먼저 합칩니다.
+            // 합쳐졌다면 새 InventoryItem GameObject를 만들 필요가 없으므로 여기서 끝냅니다.
+            if (TryMergeStack(itemInstance))
+                return true;
 
             InventoryItem item = CreateInventoryItem(itemInstance);
 
@@ -220,6 +231,33 @@ namespace PrototypeRT
         public bool TryConsumeSelectedItem(InventoryItem expected)
         {
             return TryConsumeHeldItem(expected, false);
+        }
+
+        public bool TryConsumeOneItem(InventoryItem item)
+        {
+            if (item == null || item.ItemInstance == null)
+                return false;
+
+            // 스택이 2개 이상이면 아이템 UI는 그대로 두고 수량만 1 감소시킵니다.
+            // 마지막 1개를 쓸 때만 기존 삭제 흐름으로 넘겨 GameObject와 그리드 점유를 정리합니다.
+            if (item.ItemInstance.count > 1)
+            {
+                item.ItemInstance.count--;
+                item.RefreshCountText();
+
+                // 더블클릭 사용 직후에는 아이템이 손에 들려 있을 수 있으므로,
+                // 수량만 줄인 뒤에는 원래 칸으로 되돌려 드래그 상태를 끝냅니다.
+                if (_selectedItem == item)
+                    CancelDragAndReturnItem();
+
+                RaiseInventoryChanged();
+                return true;
+            }
+
+            if (_selectedItem == item)
+                return TryConsumeHeldItem(item, true);
+
+            return TryRemoveItem(item);
         }
 
         /// <summary>
@@ -362,6 +400,41 @@ namespace PrototypeRT
         private InventoryItem CreateInventoryItem(ItemInstance itemInstance)
         {
             return CreateItemView(itemInstance, canvasTransform, true);
+        }
+
+        private bool TryMergeStack(ItemInstance itemInstance)
+        {
+            // 이번 스택 시스템은 YJW ItemBase를 건드리지 않기 위해,
+            // "스택 가능 여부"를 인벤토리 쪽 타입 검사로만 결정합니다.
+            if (!IsStackableItem(itemInstance.data))
+                return false;
+
+            foreach (InventoryItem item in _items)
+            {
+                if (item == null || item.ItemInstance == null)
+                    continue;
+
+                // 같은 ScriptableObject 참조면 같은 포션/스크롤로 보고 한 칸에 합칩니다.
+                if (item.ItemData != itemInstance.data)
+                    continue;
+
+                item.ItemInstance.count = Mathf.Max(1, item.ItemInstance.count) + itemInstance.count;
+                item.RefreshCountText();
+                RaiseInventoryChanged();
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsStackableItem(ItemBase itemData)
+        {
+            if (itemData == null)
+                return false;
+
+            // 장비는 강화/저주/감정 같은 개별 상태가 있으므로 합치지 않습니다.
+            // 현재는 포션과 스크롤만 안전하게 스택 대상으로 봅니다.
+            return itemData is PotionData || itemData.ItemType == ItemType.Scroll;
         }
 
         private void ResolveUseControllers()
