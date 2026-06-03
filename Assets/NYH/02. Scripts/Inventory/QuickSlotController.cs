@@ -72,8 +72,14 @@ namespace PrototypeRT
         /// </summary>
         private void OnEnable()
         {
+            ResolveInventoryController();
+
             if (quickSlotGrid != null)
                 quickSlotGrid.OnGridChanged += RaiseQuickSlotsChanged;
+
+            // Count만 바뀌는 스택 병합은 ItemGrid 배치 이벤트가 안 뜨므로 인벤토리 변경도 같이 듣습니다.
+            if (inventoryController != null)
+                inventoryController.OnInventoryChanged += RaiseQuickSlotsChanged;
 
             // 시작 시점에 HUD가 빈 상태로 남지 않게 현재 그리드 상태를 바로 발행합니다.
             RaiseQuickSlotsChanged();
@@ -87,6 +93,10 @@ namespace PrototypeRT
         {
             if (quickSlotGrid != null)
                 quickSlotGrid.OnGridChanged -= RaiseQuickSlotsChanged;
+
+            // 비활성화된 컨트롤러가 계속 이벤트를 받지 않도록 해제합니다.
+            if (inventoryController != null)
+                inventoryController.OnInventoryChanged -= RaiseQuickSlotsChanged;
         }
 
         /// <summary>
@@ -131,14 +141,23 @@ namespace PrototypeRT
 
             // 현재 ItemBase.Use()는 성공/실패 결과를 돌려주지 않으므로, 호출 후 소비까지 바로 진행합니다.
             // 나중에 UseResult가 생기면 성공한 경우에만 제거하도록 이 지점에서 분기하면 됩니다.
+            // 퀵슬롯에는 대상 선택 UI가 없어서 스크롤은 여기서 즉시 사용하지 않습니다.
+            if (item.ItemData.ItemType == ItemType.Scroll)
+            {
+                // 대상 지정 UI가 없는 퀵슬롯에서는 스크롤을 즉시 사용하지 않습니다.
+                // 실수로 Use()만 호출되어 효과 없이 소비되는 일을 막기 위해 아무 반응 없이 실패 처리합니다.
+                return false;
+            }
+
             item.ItemData.Use();
 
             // 퀵슬롯 안의 스택 아이템은 마지막 1개가 되기 전까지 슬롯에서 제거하지 않습니다.
             // 수량만 줄이고 HUD 갱신 이벤트를 보내 기존 슬롯 배치는 유지합니다.
-            if (item.ItemInstance != null && item.ItemInstance.count > 1)
+            if (item.ItemInstance != null && item.Count > 1)
             {
-                item.ItemInstance.count--;
-                item.RefreshCountText();
+                // 퀵슬롯도 실제로는 InventoryItem을 공유하므로, 수량 감소는 ItemInstance가 아니라 Count에만 반영합니다.
+                // 마지막 1개는 아래 제거 흐름으로 보내야 인벤토리 목록과 퀵슬롯 그리드가 같이 정리됩니다.
+                item.TryDecreaseCount(1);
                 ApplyUseDelay();
                 OnQuickSlotsChanged?.Invoke();
                 return true;
@@ -240,6 +259,13 @@ namespace PrototypeRT
         private void RaiseQuickSlotsChanged()
         {
             OnQuickSlotsChanged?.Invoke();
+        }
+
+        private void ResolveInventoryController()
+        {
+            // 인스펙터 연결이 빠진 씬에서도 퀵슬롯 HUD 수량 갱신 이벤트를 받을 수 있게 보정합니다.
+            if (inventoryController == null)
+                inventoryController = FindFirstObjectByType<InventoryController>();
         }
     }
 }

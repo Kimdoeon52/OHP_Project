@@ -72,8 +72,14 @@ namespace PrototypeRT
             if (itemData is PurifyScroll)
                 return targetingController != null && targetingController.BeginTargetScroll(item, InventoryScrollTargetKind.Purify);
 
+            // 대상 지정 방식이 연결되지 않은 일반 스크롤은 눌러도 아무 동작을 하지 않습니다.
+            // Analyze/Reinforce/Purify는 위 분기에서 커서와 대상 선택을 켭니다.
             if (itemData.ItemType == ItemType.Scroll)
-                return UseImmediateItem(item);
+            {
+                // 아직 대상 지정 방식이 연결되지 않은 일반 스크롤은 인벤토리에서 눌러도 아무 동작을 하지 않는다.
+                // 즉시 Use()를 호출하면 맵 스크롤처럼 커서 변화가 없는 스크롤이 실수로 소비될 수 있어 여기서 막는다.
+                return false;
+            }
 
             return false;
         }

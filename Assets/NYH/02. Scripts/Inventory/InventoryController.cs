@@ -158,7 +158,7 @@ namespace PrototypeRT
             UpdateHighlight();
         }
 
-        public bool TryAddItem(ItemInstance itemInstance)
+        public bool TryAddItem(ItemInstance itemInstance, int amount = 1)
         {
             if (_selectedGrid == null || _selectedGrid.AcceptOnlyOneByOneItems)
                 SelectedGrid = ResolveItemGrid();
@@ -169,16 +169,21 @@ namespace PrototypeRT
                 return false;
             }
 
-            // YJW ItemInstance에는 count 값만 두고, 어떤 아이템을 합칠지는 NYH 인벤토리에서 판단합니다.
-            // 외부에서 0 이하 수량이 들어와도 인벤토리 안에서는 최소 1개로 보정합니다.
-            itemInstance.count = Mathf.Max(1, itemInstance.count);
+            // YJW 쪽은 "어떤 아이템인가"를 ItemInstance로 넘기고, NYH 인벤토리가 "몇 개로 쌓을 것인가"를 결정합니다.
+            // 그래서 스택 수량은 ItemInstance가 아니라 InventoryItem.Count에 저장합니다.
+            // amount를 열어둔 이유는 나중에 보상/상자처럼 한 번에 여러 개를 넣는 흐름도 같은 API로 받기 위해서입니다.
+            amount = Mathf.Max(1, amount);
 
             // 포션/스크롤은 새 UI를 만들기 전에 기존 스택에 먼저 합칩니다.
             // 합쳐졌다면 새 InventoryItem GameObject를 만들 필요가 없으므로 여기서 끝냅니다.
-            if (TryMergeStack(itemInstance))
+            if (TryMergeStack(itemInstance, amount))
                 return true;
 
             InventoryItem item = CreateInventoryItem(itemInstance);
+
+            // 새 슬롯을 만들 때도 수량은 ItemInstance에 쓰지 않고 InventoryItem에만 기록합니다.
+            // 이렇게 해야 같은 ItemInstance 구조를 장비/무기/스크롤/포션이 공유해도 수량 책임이 섞이지 않습니다.
+            item.SetCount(amount);
 
             // 자동 획득 시에는 좌상단부터 훑어서 들어갈 수 있는 첫 빈 공간에 넣습니다.
             Vector2Int? pos = _selectedGrid.FindSpaceForItem(item);
@@ -240,10 +245,9 @@ namespace PrototypeRT
 
             // 스택이 2개 이상이면 아이템 UI는 그대로 두고 수량만 1 감소시킵니다.
             // 마지막 1개를 쓸 때만 기존 삭제 흐름으로 넘겨 GameObject와 그리드 점유를 정리합니다.
-            if (item.ItemInstance.count > 1)
+            if (item.Count > 1)
             {
-                item.ItemInstance.count--;
-                item.RefreshCountText();
+                item.TryDecreaseCount(1);
 
                 // 더블클릭 사용 직후에는 아이템이 손에 들려 있을 수 있으므로,
                 // 수량만 줄인 뒤에는 원래 칸으로 되돌려 드래그 상태를 끝냅니다.
@@ -402,7 +406,7 @@ namespace PrototypeRT
             return CreateItemView(itemInstance, canvasTransform, true);
         }
 
-        private bool TryMergeStack(ItemInstance itemInstance)
+        private bool TryMergeStack(ItemInstance itemInstance, int amount)
         {
             // 이번 스택 시스템은 YJW ItemBase를 건드리지 않기 위해,
             // "스택 가능 여부"를 인벤토리 쪽 타입 검사로만 결정합니다.
@@ -418,8 +422,9 @@ namespace PrototypeRT
                 if (item.ItemData != itemInstance.data)
                     continue;
 
-                item.ItemInstance.count = Mathf.Max(1, item.ItemInstance.count) + itemInstance.count;
-                item.RefreshCountText();
+                // 기존 슬롯에 합쳐질 때도 ItemInstance는 건드리지 않습니다.
+                // 스택은 보관 방식의 문제라서 InventoryItem.Count만 증가시키는 것이 책임 분리에 맞습니다.
+                item.AddCount(amount);
                 RaiseInventoryChanged();
                 return true;
             }

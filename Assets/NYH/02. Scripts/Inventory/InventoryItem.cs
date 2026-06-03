@@ -24,6 +24,13 @@ namespace PrototypeRT
         public ItemInstance ItemInstance { get; private set; }
 
         /// <summary>
+        /// 이 InventoryItem UI 슬롯에 겹쳐진 수량입니다.
+        /// ItemInstance에 수량을 넣으면 장비/무기처럼 겹치지 않는 아이템까지 count를 갖게 되어 책임이 흐려지므로,
+        /// "인벤토리 안에서 몇 개로 보이는가"는 인벤토리 표시 단위인 이 클래스가 관리합니다.
+        /// </summary>
+        public int Count { get; private set; } = 1;
+
+        /// <summary>
         /// 이 UI가 표시하는 아이템 데이터입니다.
         /// 
         /// ItemInstance에 포함된 아이템의 원본(Base) 데이터를 즉시 반환하는 편의용 프로퍼티입니다.
@@ -71,6 +78,10 @@ namespace PrototypeRT
         {
             // 받아온 아이템 상태 정보를 내 것으로 저장합니다.
             ItemInstance = itemInstance;
+
+            // 같은 UI 오브젝트가 재사용되더라도 이전 스택 수량이 새 아이템에 섞이지 않도록 초기화합니다.
+            // 실제 추가 수량은 InventoryController.TryAddItem에서 SetCount로 다시 지정합니다.
+            Count = 1;
             
             // 그 상태 정보에서 원본 아이템 데이터가 뭔지 빼옵니다.
             ItemBase itemData = ItemData;
@@ -101,6 +112,35 @@ namespace PrototypeRT
             RefreshCountText();
         }
 
+        public void SetCount(int count)
+        {
+            // 외부에서 0 이하 값이 들어와도 인벤토리 UI에서는 최소 1개로 보정합니다.
+            Count = Mathf.Max(1, count);
+            RefreshCountText();
+        }
+
+        public void AddCount(int amount)
+        {
+            // 잘못된 수량 증가 요청은 무시해서 스택 수량이 음수/0 방향으로 흔들리지 않게 합니다.
+            if (amount <= 0) return;
+
+            Count = Mathf.Max(1, Count) + amount;
+            RefreshCountText();
+        }
+
+        public bool TryDecreaseCount(int amount)
+        {
+            // 마지막 1개를 여기서 0으로 만들지 않습니다.
+            // 수량이 1개 남은 아이템은 InventoryController/QuickSlotController의 기존 제거 흐름으로 처리해야
+            // 그리드 점유, 목록, GameObject 제거가 한 번에 정리됩니다.
+            if (amount <= 0 || Count <= amount)
+                return false;
+
+            Count -= amount;
+            RefreshCountText();
+            return true;
+        }
+
         public void RefreshCountText()
         {
             EnsureCountText();
@@ -110,7 +150,7 @@ namespace PrototypeRT
 
             // 1개일 때는 숫자를 숨겨 기존 단일 아이템 UI와 똑같이 보이게 합니다.
             // 2개 이상부터만 우하단에 수량을 표시합니다.
-            int count = Mathf.Max(1, ItemInstance.count);
+            int count = Mathf.Max(1, Count);
             bool showCount = count > 1;
             countText.gameObject.SetActive(showCount);
             countText.text = showCount ? count.ToString() : string.Empty;
