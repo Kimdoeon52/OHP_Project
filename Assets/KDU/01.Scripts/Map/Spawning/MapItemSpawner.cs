@@ -46,6 +46,13 @@ public class MapItemSpawner : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float randomItemChance = 0.2f;
     [SerializeField, Min(1)] private int attemptsPerRoom = 1;
 
+    [Header("골드 (Normal/Exit 방당 확률)")]
+    [SerializeField] private GoldPickup goldPickupPrefab;
+    [SerializeField, Range(0f, 1f)] private float goldChance = 0.2f;
+    [SerializeField, Min(0)] private int goldMin = 10;
+    [SerializeField, Min(0)] private int goldMax = 30;
+    [SerializeField, Min(1)] private int goldAttemptsPerRoom = 1;
+
     private readonly List<GameObject> _spawned = new();
 
     public void Spawn(List<RoomData> rooms, int depth, int runSeed, DungeonRandom rng)
@@ -56,6 +63,33 @@ public class MapItemSpawner : MonoBehaviour
         SpawnScheduled(rooms, depth, runSeed, rng);
         SpawnGuaranteed(rooms, rng);
         SpawnRandom(rooms, rng);
+        SpawnGold(rooms, rng);
+    }
+
+    // ───── 골드 ─────
+
+    private void SpawnGold(List<RoomData> rooms, DungeonRandom rng)
+    {
+        if (goldPickupPrefab == null || goldMax <= 0) return;
+
+        foreach (var room in rooms)
+        {
+            if (room.type != RoomType.Normal && room.type != RoomType.Exit) continue;
+
+            var cells = SpawnCells.Candidates(room);
+            for (int a = 0; a < goldAttemptsPerRoom && cells.Count > 0; a++)
+            {
+                if (!rng.Chance(goldChance)) continue;
+                int amount = rng.Range(goldMin, goldMax + 1);
+                Vector2Int cell = SpawnCells.PopRandom(cells, rng);
+                Vector3 pos = GridSystem.Instance != null
+                    ? GridSystem.Instance.GridToWorld(cell)
+                    : new Vector3(cell.x, cell.y, 0);
+                GoldPickup gold = Instantiate(goldPickupPrefab, pos, Quaternion.identity);
+                gold.Initialize(cell, amount);
+                _spawned.Add(gold.gameObject);
+            }
+        }
     }
 
     // ───── 매 층 확정 ─────

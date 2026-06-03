@@ -22,6 +22,8 @@ public class GridChest : MonoBehaviour
     [SerializeField] private ItemPool itemPool;
     [Tooltip("드롭할 아이템 픽업 프리팹.")]
     [SerializeField] private ItemPickup itemPickupPrefab;
+    [Tooltip("드롭할 골드 픽업 프리팹 (골드 상자용).")]
+    [SerializeField] private GoldPickup goldPickupPrefab;
     [Tooltip("장비에 부여할 수 있는 저주 풀 (비우면 저주 없음).")]
     [SerializeField] private CurseData[] cursePool;
 
@@ -188,8 +190,16 @@ public class GridChest : MonoBehaviour
         for (int i = 0; i < _itemRewards.Count; i++)
             SpawnPickup(_itemRewards[i], DropCell(i));
 
-        if (_goldReward > 0)
-            GameEvents.OnGoldDropped?.Invoke(GridPosition, _goldReward);
+        // 골드도 바닥 픽업으로 — 아이템과 동일하게 주워야 획득 (GDD 9.13/9.14).
+        if (_goldReward > 0 && goldPickupPrefab != null)
+        {
+            Vector2Int cell = DropCell(_itemRewards.Count);
+            Vector3 pos = GridSystem.Instance != null
+                ? GridSystem.Instance.GridToWorld(cell)
+                : new Vector3(cell.x, cell.y, 0);
+            GoldPickup gold = Instantiate(goldPickupPrefab, pos, Quaternion.identity);
+            gold.Initialize(cell, _goldReward);
+        }
     }
 
     private void SpawnPickup(Reward reward, Vector2Int cell)
