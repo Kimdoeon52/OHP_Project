@@ -22,6 +22,8 @@ public class GridChest : MonoBehaviour
     [SerializeField] private ItemPool itemPool;
     [Tooltip("드롭할 아이템 픽업 프리팹.")]
     [SerializeField] private ItemPickup itemPickupPrefab;
+    [Tooltip("드롭할 골드 픽업 프리팹 (골드 상자용).")]
+    [SerializeField] private GoldPickup goldPickupPrefab;
     [Tooltip("장비에 부여할 수 있는 저주 풀 (비우면 저주 없음).")]
     [SerializeField] private CurseData[] cursePool;
 
@@ -156,8 +158,8 @@ public class GridChest : MonoBehaviour
             _itemRewards.Add(new Reward
             {
                 so = so,
-                enhanceLevel = so.CanEnhance ? RollEnhance(rng) : 0,
-                curse = so.CanCurse ? RollCurse(rng) : null,
+                enhanceLevel = so.CanEnhance ? ItemRoll.Enhance(rng) : 0,
+                curse = so.CanCurse ? ItemRoll.Curse(rng, cursePool) : null,
             });
         }
 
@@ -181,23 +183,6 @@ public class GridChest : MonoBehaviour
         return result;
     }
 
-    // 강화/저주 확률은 ItemSpawner 와 동일하되 DungeonRandom 사용.
-    private int RollEnhance(DungeonRandom rng)
-    {
-        float r = rng.Value();
-        if (r < 0.55f) return 0;
-        if (r < 0.85f) return 1;
-        if (r < 0.95f) return 2;
-        return 3;
-    }
-
-    private CurseData RollCurse(DungeonRandom rng)
-    {
-        if (cursePool == null || cursePool.Length == 0) return null;
-        if (rng.Value() > 0.5f) return null;
-        return cursePool[rng.Range(0, cursePool.Length)];
-    }
-
     // ───── 개방 시 드롭 ─────
 
     private void DropRewards()
@@ -205,8 +190,16 @@ public class GridChest : MonoBehaviour
         for (int i = 0; i < _itemRewards.Count; i++)
             SpawnPickup(_itemRewards[i], DropCell(i));
 
-        if (_goldReward > 0)
-            GameEvents.OnGoldDropped?.Invoke(GridPosition, _goldReward);
+        // 골드도 바닥 픽업으로 — 아이템과 동일하게 주워야 획득 (GDD 9.13/9.14).
+        if (_goldReward > 0 && goldPickupPrefab != null)
+        {
+            Vector2Int cell = DropCell(_itemRewards.Count);
+            Vector3 pos = GridSystem.Instance != null
+                ? GridSystem.Instance.GridToWorld(cell)
+                : new Vector3(cell.x, cell.y, 0);
+            GoldPickup gold = Instantiate(goldPickupPrefab, pos, Quaternion.identity);
+            gold.Initialize(cell, _goldReward);
+        }
     }
 
     private void SpawnPickup(Reward reward, Vector2Int cell)
@@ -222,6 +215,7 @@ public class GridChest : MonoBehaviour
         pickup.itemSO = reward.so;
         pickup.enhanceLevel = reward.enhanceLevel;
         pickup.curse = reward.curse;
+        pickup.Initialize(cell);
     }
 
     /// <summary>드롭 셀: 상자 칸 우선, 보상이 여럿이면 보행 가능한 인접 칸으로 분산.</summary>

@@ -42,6 +42,12 @@ public class MapGenerator : Singleton<MapGenerator>
     [SerializeField] private KeyPickup specialKeyPickupPrefab;
     private readonly List<KeyPickup> _currentKeys = new();
 
+    [Tooltip("Special/Secret 방 상자 배치 스포너 (GDD 6.2.1/6.2.2 · 9.14).")]
+    [SerializeField] private ChestSpawner chestSpawner;
+
+    [Tooltip("바닥 아이템 스포너 — 고정 스케줄(힘포션/강화스크롤) + 랜덤 아이템 (GDD 9).")]
+    [SerializeField] private MapItemSpawner mapItemSpawner;
+
     public DungeonRandom Rng { get; } = new DungeonRandom();
     public List<RoomData> CurrentRooms { get; private set; }
     public int CurrentSeed { get; private set; }
@@ -97,6 +103,8 @@ public class MapGenerator : Singleton<MapGenerator>
         DestroyCurrentExit();
         DestroyCurrentDoors();
         DestroyCurrentKeys();
+        if (chestSpawner != null) chestSpawner.Clear();
+        if (mapItemSpawner != null) mapItemSpawner.Clear();
         // 이전 층의 Feeling 효과 리셋
         if (VisionSystem.Instance != null) VisionSystem.Instance.VisionRadiusDelta = 0;
         // 열쇠는 해당 층에서만 사용 가능 (GDD 9.15) → 층 진입 시 폐기.
@@ -162,6 +170,12 @@ public class MapGenerator : Singleton<MapGenerator>
 
         // 열쇠 픽업 배치 — Special 방이 있으면 스페셜 키 1개를 Normal/Exit 방 임의 셀에 (GDD 9.15).
         SpawnKeys(rooms);
+
+        // 상자 배치 — Special/Secret 방 상자 구성 + Normal/Exit 랜덤 상자 20% (GDD 6.2.1/6.2.2 · 9.14).
+        if (chestSpawner != null) chestSpawner.Spawn(rooms, Rng);
+
+        // 바닥 아이템 — 고정 스케줄(힘포션/강화스크롤) + 랜덤 아이템 (GDD 9).
+        if (mapItemSpawner != null) mapItemSpawner.Spawn(rooms, depth, CurrentSeed, Rng);
 
         ComputeMapBounds(rooms);
 
