@@ -31,6 +31,7 @@ public class ItemBase : ScriptableObject
     [SerializeField] private bool canCurse;
     [SerializeField] private bool canAnalyze;
 
+    public int Id => id;
     public string Name { get => itemName; set => itemName = value; }
     public string Description { get => description; set => description = value; }
     public Sprite Icon { get => icon; set => icon = value; }
