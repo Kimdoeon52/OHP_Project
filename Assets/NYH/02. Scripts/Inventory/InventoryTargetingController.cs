@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace PrototypeRT
 {
@@ -104,6 +104,7 @@ namespace PrototypeRT
         /// </summary>
         public bool BeginTargetScroll(InventoryItem scroll, InventoryScrollTargetKind kind)
         {
+            Debug.Log("아이템 사용 중");
             ResolveReferences();
 
             if (scroll == null || scroll.ItemData == null || kind == InventoryScrollTargetKind.None)
@@ -336,8 +337,12 @@ namespace PrototypeRT
         private static void SetCursor(Texture2D cursor)
         {
             if (cursor == null)
+            {
+                Debug.LogWarning("InventoryTargetingController.SetCursor: cursor texture is null — 인스펙터 연결 확인 필요");
                 return;
+            }
 
+            Debug.Log($"InventoryTargetingController.SetCursor: {cursor.name} 적용");
             Cursor.SetCursor(cursor, Vector2.zero, CursorMode.Auto);
         }
 

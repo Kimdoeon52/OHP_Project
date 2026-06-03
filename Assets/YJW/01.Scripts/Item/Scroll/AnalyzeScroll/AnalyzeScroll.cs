@@ -3,7 +3,7 @@
 [CreateAssetMenu(fileName = "AnalyzeScroll", menuName = "Item/Scroll/AnalyzeScroll")]
 public class AnalyzeScroll : ItemBase
 {
-    public override void Use(ItemInstance targetItem)
+	public override void Use(ItemInstance targetItem)
     {
 		if (targetItem is not EquipmentInstance equip) return;
 		if (equip.data == null|| equip.data.CanAnalyze == false || equip.isAnalyzed)
