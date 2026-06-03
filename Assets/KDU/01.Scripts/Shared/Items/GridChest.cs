@@ -156,8 +156,8 @@ public class GridChest : MonoBehaviour
             _itemRewards.Add(new Reward
             {
                 so = so,
-                enhanceLevel = so.CanEnhance ? RollEnhance(rng) : 0,
-                curse = so.CanCurse ? RollCurse(rng) : null,
+                enhanceLevel = so.CanEnhance ? ItemRoll.Enhance(rng) : 0,
+                curse = so.CanCurse ? ItemRoll.Curse(rng, cursePool) : null,
             });
         }
 
@@ -179,23 +179,6 @@ public class GridChest : MonoBehaviour
                 result.Add(so);
         }
         return result;
-    }
-
-    // 강화/저주 확률은 ItemSpawner 와 동일하되 DungeonRandom 사용.
-    private int RollEnhance(DungeonRandom rng)
-    {
-        float r = rng.Value();
-        if (r < 0.55f) return 0;
-        if (r < 0.85f) return 1;
-        if (r < 0.95f) return 2;
-        return 3;
-    }
-
-    private CurseData RollCurse(DungeonRandom rng)
-    {
-        if (cursePool == null || cursePool.Length == 0) return null;
-        if (rng.Value() > 0.5f) return null;
-        return cursePool[rng.Range(0, cursePool.Length)];
     }
 
     // ───── 개방 시 드롭 ─────
@@ -222,6 +205,7 @@ public class GridChest : MonoBehaviour
         pickup.itemSO = reward.so;
         pickup.enhanceLevel = reward.enhanceLevel;
         pickup.curse = reward.curse;
+        pickup.Initialize(cell);
     }
 
     /// <summary>드롭 셀: 상자 칸 우선, 보상이 여럿이면 보행 가능한 인접 칸으로 분산.</summary>
