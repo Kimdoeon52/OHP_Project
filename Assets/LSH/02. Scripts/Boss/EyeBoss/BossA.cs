@@ -36,6 +36,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     [SerializeField] private int laserTelegraphMs = 800;
     [SerializeField] private int laserActiveMs = 400;
     [SerializeField] private int laserDamage = 1;
+    [SerializeField] private float laserVisualThickness = 3.5f; // 레이저 이미지의 시각적 두께 (히트 판정은 2칸 고정)
 
     [Header("AttackFloor 타일맵 (이동 범위 제한)")]
     [SerializeField] private Tilemap attackFloorTilemap;
@@ -365,7 +366,33 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
                     if (shockwaveLifetimeSec > 0f) Destroy(go, shockwaveLifetimeSec);
                 }
 
-                DamagePlayerIfInCells(attackCells, 1);
+                bool playerHit = false;
+                if (player != null && !player.IsDead)
+                {
+                    foreach (var c in attackCells)
+                    {
+                        if (player.GridPosition == c)
+                        {
+                            playerHit = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (playerHit)
+                {
+                    player.TakeDamage(1);
+                    Vector2Int? knockbackTarget = FindKnockbackTarget(player.GridPosition, playerCell, landingGridPos);
+                    if (knockbackTarget.HasValue)
+                    {
+                        player.Movement.Knockback(knockbackTarget.Value);
+                        Debug.Log($"<color=orange>[보스 점프 공격]</color> 플레이어를 {knockbackTarget.Value}로 밀쳐냈습니다.");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[보스 점프 공격] 플레이어를 밀쳐낼 빈 공간이 없습니다.");
+                    }
+                }
             }
             finally
             {
@@ -417,22 +444,22 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             List<GameObject> lasers = new List<GameObject>();
             if (laserPrefab != null && _hasMapBounds)
             {
-                // 세로 레이저 (두께 2칸)
+                // 세로 레이저 (두께 2칸, 시각적 두께 laserVisualThickness)
                 Vector3 vStart = GridSystem.Instance.GridToWorld(new Vector2Int(gridPos.x, _mapBounds.yMin));
                 Vector3 vEnd = GridSystem.Instance.GridToWorld(new Vector2Int(gridPos.x + 1, _mapBounds.yMax - 1));
                 Vector3 vCenter = (vStart + vEnd) * 0.5f;
                 GameObject vLaser = Instantiate(laserPrefab, vCenter, Quaternion.Euler(0, 0, 90));
                 float vLength = Vector3.Distance(vStart, vEnd);
-                vLaser.transform.localScale = new Vector3(vLength, 2f, 1f);
+                vLaser.transform.localScale = new Vector3(vLength, laserVisualThickness, 1f);
                 lasers.Add(vLaser);
 
-                // 가로 레이저 (두께 2칸)
+                // 가로 레이저 (두께 2칸, 시각적 두께 laserVisualThickness)
                 Vector3 hStart = GridSystem.Instance.GridToWorld(new Vector2Int(_mapBounds.xMin, gridPos.y));
                 Vector3 hEnd = GridSystem.Instance.GridToWorld(new Vector2Int(_mapBounds.xMax - 1, gridPos.y + 1));
                 Vector3 hCenter = (hStart + hEnd) * 0.5f;
                 GameObject hLaser = Instantiate(laserPrefab, hCenter, Quaternion.identity);
                 float hLength = Vector3.Distance(hStart, hEnd);
-                hLaser.transform.localScale = new Vector3(hLength, 2f, 1f);
+                hLaser.transform.localScale = new Vector3(hLength, laserVisualThickness, 1f);
                 lasers.Add(hLaser);
             }
 
@@ -469,5 +496,66 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         }
 
         return cells;
+    }
+
+    private Vector2Int? FindKnockbackTarget(Vector2Int playerPos, Vector2Int attackCenter, Vector2Int bossPos)
+    {
+        List<Vector2Int> candidates = new List<Vector2Int>();
+        int searchRadius = 4;
+        for (int x = -searchRadius; x <= searchRadius; x++)
+        {
+            for (int y = -searchRadius; y <= searchRadius; y++)
+            {
+                Vector2Int candidate = playerPos + new Vector2Int(x, y);
+
+                if (GridSystem.Instance == null) continue;
+                if (!GridSystem.Instance.IsInBounds(candidate)) continue;
+                if (!GridSystem.Instance.IsWalkable(candidate)) continue;
+                if (GridSystem.Instance.IsCellOccupied(candidate)) continue;
+                if (Mathf.Abs(candidate.x - attackCenter.x) <= 1 && Mathf.Abs(candidate.y - attackCenter.y) <= 1) continue;
+                if (IsBossOccupying(candidate, bossPos)) continue;
+
+                candidates.Add(candidate);
+            }
+        }
+
+        if (candidates.Count == 0) return null;
+
+        Vector2 pushDir = (Vector2)(playerPos - attackCenter);
+        if (pushDir.sqrMagnitude < 0.01f)
+        {
+            Vector2 bossCenter = (Vector2)bossPos + new Vector2(0.5f, 0.5f);
+            pushDir = (Vector2)playerPos - bossCenter;
+            if (pushDir.sqrMagnitude < 0.01f)
+            {
+                pushDir = Vector2.down;
+            }
+        }
+        pushDir.Normalize();
+
+        candidates.Sort((a, b) =>
+        {
+            float distA = Vector2Int.Distance(a, playerPos);
+            float distB = Vector2Int.Distance(b, playerPos);
+
+            Vector2 dirA = (Vector2)(a - playerPos);
+            float dotA = dirA.sqrMagnitude > 0 ? Vector2.Dot(dirA.normalized, pushDir) : 0;
+
+            Vector2 dirB = (Vector2)(b - playerPos);
+            float dotB = dirB.sqrMagnitude > 0 ? Vector2.Dot(dirB.normalized, pushDir) : 0;
+
+            float scoreA = distA - dotA * 1.5f;
+            float scoreB = distB - dotB * 1.5f;
+
+            return scoreA.CompareTo(scoreB);
+        });
+
+        return candidates[0];
+    }
+
+    private bool IsBossOccupying(Vector2Int cell, Vector2Int bossPos)
+    {
+        return cell.x >= bossPos.x && cell.x < bossPos.x + bossSize.x &&
+               cell.y >= bossPos.y && cell.y < bossPos.y + bossSize.y;
     }
 }

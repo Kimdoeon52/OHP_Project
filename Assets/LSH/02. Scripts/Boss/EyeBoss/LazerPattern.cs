@@ -56,6 +56,7 @@ public class LazerPattern : MonoBehaviour
     [SerializeField] private int laserTelegraphMs = 800; // 타일 경고 노출 시간 (회피 창)
     [SerializeField] private int laserActiveMs = 400;    // 실제 레이저 발사 + 판정 시간
     [SerializeField] private int laserDamage = 1;
+    [SerializeField] private float laserVisualScale = 1.5f; // 레이저 이미지의 시각적 두께 배율 (히트 판정은 1칸 고정)
 
     [Header("패턴 사이클")]
     [SerializeField] private int patternDelayMs = 1000; // 패턴 사이 딜레이 (스펙: 1초)
@@ -414,7 +415,7 @@ public class LazerPattern : MonoBehaviour
             startCell = new Vector2Int(coord, _mapBounds.yMin);
             endCell   = new Vector2Int(coord, _mapBounds.yMax - 1);
         }
-        return FireLaserBetween(startCell, endCell, axis, 0, 1f, laserDamage, _cts.Token);
+        return FireLaserBetween(startCell, endCell, axis, 0, laserVisualScale, laserDamage, _cts.Token);
     }
 
     // 두 격자 셀 사이 레이저 공용 구현: 타일 경고 + 눈 prefab → 레이저 시각 + 격자 데미지 → 정리.

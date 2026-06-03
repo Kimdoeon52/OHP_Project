@@ -308,12 +308,54 @@ public class GridPlayerMovement : MonoBehaviour
         return _stats != null ? _stats.MoveSpeed : 0;
     }
 
+    /// <summary>
+    /// 플레이어를 특정 격자 좌표로 밀쳐냅니다. (이동 딜레이나 턴 소모 없이 강제 이동)
+    /// </summary>
+    public void Knockback(Vector2Int targetGridPos, float duration = 0.2f)
+    {
+        if (_moveCoroutine != null)
+        {
+            StopCoroutine(_moveCoroutine);
+            _moveCoroutine = null;
+        }
+
+        Vector3 startWorld = transform.position;
+        _player.SetGridPosition(targetGridPos);
+        Vector3 targetWorld = transform.position;
+        transform.position = startWorld;
+
+        IsMoving = true;
+        _moveCoroutine = StartCoroutine(KnockbackRoutine(startWorld, targetWorld, duration));
+    }
+
+    private IEnumerator KnockbackRoutine(Vector3 startWorld, Vector3 targetWorld, float duration)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            // Ease out quad
+            float easeT = 1f - (1f - t) * (1f - t);
+            transform.position = Vector3.Lerp(startWorld, targetWorld, easeT);
+            yield return null;
+        }
+        transform.position = targetWorld;
+
+        IsMoving = false;
+        _moveCoroutine = null;
+
+        FinishMoveVisual();
+        VisionSystem.Instance.UpdateVision(_player.GridPosition);
+    }
+
     private void OnDisable()
     {
-        if (_moveCoroutine == null) return;
-
-        StopCoroutine(_moveCoroutine);
-        _moveCoroutine = null;
+        if (_moveCoroutine != null)
+        {
+            StopCoroutine(_moveCoroutine);
+            _moveCoroutine = null;
+        }
         IsMoving = false;
         OnMoveFinished?.Invoke();
         OnMoveSpeedChanged?.Invoke(1f);
