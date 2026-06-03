@@ -63,6 +63,8 @@ public class LazerPattern : MonoBehaviour
 
     [Header("Phase 2 스윕")]
     [SerializeField] private int sweepStepMs = 2000;    // 스윕 한 줄당 시간 (스펙: 2초)
+    [SerializeField] private int pattern2Repeats = 3;    // 홀수/짝수 반복 횟수
+    [SerializeField] private int pattern3StepDelayMs = 600; // 조여드는 사각형 스텝 간격(ms)
 
     [Header("HP 페이즈 경계 (보스 currentHp 기준)")]
     [SerializeField] private int phase1HpMin = 70;
@@ -241,52 +243,137 @@ public class LazerPattern : MonoBehaviour
                 switch (action)
                 {
                     case LazerAction.Pattern1:
-                        await Phase2Pattern_Mixed();
+                        await SweepCrossLasers();
                         break;
                     case LazerAction.Pattern2:
-                        await SweepLasers(Vector2Int.right);
+                        await FireOddEvenLasersPattern();
                         break;
                     case LazerAction.Pattern3:
-                        await SweepLasers(Vector2Int.up);
+                        await ShrinkingSquarePattern();
                         break;
                 }
                 break;
         }
     }
 
-    // Phase2 P1: 가로 2~3 + 세로 2~3 동시
-    private async UniTask Phase2Pattern_Mixed()
-    {
-        var tasks = new List<UniTask>();
-        int h = Random.Range(2, 4);
-        int v = Random.Range(2, 4);
-        for (int i = 0; i < h; i++) tasks.Add(FireRandomAxisLaser(Vector2Int.right));
-        for (int i = 0; i < v; i++) tasks.Add(FireRandomAxisLaser(Vector2Int.up));
-        await UniTask.WhenAll(tasks);
-    }
-
-    // Phase2 P2/P3: 처음부터 끝까지 한 줄씩 sweepStepMs 간격으로 발사 (스윕).
-    private async UniTask SweepLasers(Vector2Int axis)
+    private async UniTask SweepCrossLasers()
     {
         if (!_hasMapBounds) return;
 
-        int from, to;
-        if (axis == Vector2Int.right) 
-        { 
-            from = _mapBounds.yMin; 
-            to = _mapBounds.yMax; 
-        }
-        else                          
-        { 
-            from = _mapBounds.xMin; 
-            to = _mapBounds.xMax; 
-        }
+        int xLength = _mapBounds.xMax - _mapBounds.xMin;
+        int yLength = _mapBounds.yMax - _mapBounds.yMin;
+        int maxLength = Mathf.Max(xLength, yLength);
 
-        for (int coord = from; coord < to; coord++)
+        for (int i = 0; i < maxLength; i++)
         {
             if (_cts.IsCancellationRequested || !IsBossAlive()) break;
-            FireAxisLaserAt(axis, coord).Forget();
+
+            if (i < xLength)
+            {
+                int xCoord = _mapBounds.xMin + i;
+                FireAxisLaserAt(Vector2Int.up, xCoord).Forget();
+            }
+            if (i < yLength)
+            {
+                int yCoord = _mapBounds.yMin + i;
+                FireAxisLaserAt(Vector2Int.right, yCoord).Forget();
+            }
+
             await UniTask.Delay(sweepStepMs, cancellationToken: _cts.Token);
+        }
+    }
+
+    private async UniTask FireOddEvenLasersPattern()
+    {
+        if (!_hasMapBounds) return;
+
+        List<int> oddCoords = new List<int>();
+        List<int> evenCoords = new List<int>();
+
+        for (int x = _mapBounds.xMin; x < _mapBounds.xMax; x++)
+        {
+            if (x % 2 != 0)
+                oddCoords.Add(x);
+            else
+                evenCoords.Add(x);
+        }
+
+        for (int i = 0; i < pattern2Repeats; i++)
+        {
+            if (_cts.IsCancellationRequested || !IsBossAlive()) break;
+
+            // 1. Odd columns
+            await FireAxisLasersAtCoords(Vector2Int.up, oddCoords);
+
+            if (_cts.IsCancellationRequested || !IsBossAlive()) break;
+
+            // 2. Even columns
+            await FireAxisLasersAtCoords(Vector2Int.up, evenCoords);
+        }
+    }
+
+    private async UniTask FireAxisLasersAtCoords(Vector2Int axis, List<int> coords)
+    {
+        List<UniTask> tasks = new List<UniTask>();
+        foreach (int coord in coords)
+        {
+            tasks.Add(FireAxisLaserAt(axis, coord));
+        }
+        if (tasks.Count > 0)
+        {
+            await UniTask.WhenAll(tasks);
+        }
+    }
+
+    private async UniTask ShrinkingSquarePattern()
+    {
+        if (!_hasMapBounds) return;
+
+        List<UniTask> allLaserTasks = new List<UniTask>();
+        int d = 0;
+        while (true)
+        {
+            if (_cts.IsCancellationRequested || !IsBossAlive()) break;
+
+            int left = _mapBounds.xMin + d;
+            int right = _mapBounds.xMax - 1 - d;
+            int bottom = _mapBounds.yMin + d;
+            int top = _mapBounds.yMax - 1 - d;
+
+            if (left > right && bottom > top) break;
+
+            List<int> xCoords = new List<int>();
+            List<int> yCoords = new List<int>();
+
+            if (left <= right)
+            {
+                xCoords.Add(left);
+                if (left != right) xCoords.Add(right);
+            }
+            if (bottom <= top)
+            {
+                yCoords.Add(bottom);
+                if (bottom != top) yCoords.Add(top);
+            }
+
+            if (xCoords.Count == 0 && yCoords.Count == 0) break;
+
+            foreach (int x in xCoords)
+            {
+                allLaserTasks.Add(FireAxisLaserAt(Vector2Int.up, x));
+            }
+            foreach (int y in yCoords)
+            {
+                allLaserTasks.Add(FireAxisLaserAt(Vector2Int.right, y));
+            }
+
+            d++;
+            await UniTask.Delay(pattern3StepDelayMs, cancellationToken: _cts.Token);
+        }
+
+        if (allLaserTasks.Count > 0)
+        {
+            await UniTask.WhenAll(allLaserTasks);
         }
     }
 
