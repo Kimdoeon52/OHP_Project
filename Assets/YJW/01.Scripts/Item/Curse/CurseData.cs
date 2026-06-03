@@ -48,7 +48,6 @@ public class CurseData : ScriptableObject
         switch (curseType)
         {
             case CurseType.Slow:
-                // TODO: 이동 쿨타임 -0.2초 복구
                 break;
         }
     }
