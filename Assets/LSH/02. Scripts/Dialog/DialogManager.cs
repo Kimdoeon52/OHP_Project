@@ -1,26 +1,65 @@
+ï»¿using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class DialogManager : MonoBehaviour
 {
-    [Header("ÁÖÀÎ°ø ÀÌ¹ÌÁö")]
-    [SerializeField] Image mainCharacterImage;
-    [Header("º¸½º ÀÌ¹ÌÁö")]
-    [SerializeField] Image[] bossImage;
-    [Header("´ëÈ­Ã¢ ÀÌ¹ÌÁö")]
-    [SerializeField] Image dialogImage;
-    [Header("´ëÈ­Ã¢ ÅØ½ºÆ®")]
-    [SerializeField] Text dialogText;
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    [Header("ê²€ì€ ë°°ê²½")]
+    [SerializeField] Image dialogBackground;
+    [Header("í…ìŠ¤íŠ¸ ì…ë ¥")]
+    [SerializeField] string[] dialogText;
+    [Header("íƒìŠ¤íŠ¸ ë³´ì—¬ì£¼ëŠ” ê³³")]
+    [SerializeField] Text dialog;
+    [Header("ì—°ì¶œì—ë‹ˆë©”ì´ì…˜")]
+    [SerializeField] GameObject animeEffect;
+    [SerializeField] GameObject bossName;
+    int index = 0;  
+    bool isDialogActive = false;
+    public void ShowDialog()
     {
-        
+        dialogBackground.gameObject.SetActive(true);
+        dialog.gameObject.SetActive(true);
     }
 
     // Update is called once per frame
-    void Update()
+    private async UniTask Update()
     {
-        
+        if(Input.GetMouseButtonDown(0)&&isDialogActive)
+        {
+            if (index < dialogText.Length)
+            {
+                dialog.text = dialogText[index];
+                index++;
+            }
+            else
+            {
+                dialog.gameObject.SetActive(false);
+                await Effect();
+                dialogBackground.gameObject.SetActive(false);
+                bossName.SetActive(false);
+                animeEffect.SetActive(false);
+                isDialogActive = false;
+            }
+        }
+    }
+    public void Awake()
+    {
+        dialogBackground.gameObject.SetActive(false);
+        dialog.gameObject.SetActive(false);
+        animeEffect.SetActive(false);
+        bossName.SetActive(false);
+        gameObject.SetActive(false);
+    }
+    public void OnEnable()
+    {
+        isDialogActive = true;
+        ShowDialog();
+    }
+    private async UniTask Effect()//ì—°ì¶œ ì• ë‹ˆë©”ì´ì…˜
+    {
+        animeEffect.SetActive(true);
+        await UniTask.Delay(1000);
+        bossName.SetActive(true);
+        await UniTask.Delay(2000);
     }
 }
