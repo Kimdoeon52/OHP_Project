@@ -83,7 +83,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 2.8999999, y: 1.9201171}
+  m_Size: {x: 2.9, y: 1.92}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -123,3 +123,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1b1af8f15b8c8441a9ffeff3049201a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  areaParamName: Area
