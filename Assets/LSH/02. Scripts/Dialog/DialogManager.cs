@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Cysharp.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class DialogManager : MonoBehaviour
@@ -9,8 +10,11 @@ public class DialogManager : MonoBehaviour
     [SerializeField] string[] dialogText;
     [Header("택스트 보여주는 곳")]
     [SerializeField] Text dialog;
-
+    [Header("연출에니메이션")]
+    [SerializeField] GameObject animeEffect;
+    [SerializeField] GameObject bossName;
     int index = 0;  
+    bool isDialogActive = false;
     public void ShowDialog()
     {
         dialogBackground.gameObject.SetActive(true);
@@ -18,9 +22,9 @@ public class DialogManager : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    private async UniTask Update()
     {
-        if(Input.GetMouseButtonDown(0))
+        if(Input.GetMouseButtonDown(0)&&isDialogActive)
         {
             if (index < dialogText.Length)
             {
@@ -29,13 +33,33 @@ public class DialogManager : MonoBehaviour
             }
             else
             {
-                dialogBackground.gameObject.SetActive(false);
                 dialog.gameObject.SetActive(false);
+                await Effect();
+                dialogBackground.gameObject.SetActive(false);
+                bossName.SetActive(false);
+                animeEffect.SetActive(false);
+                isDialogActive = false;
             }
         }
     }
-    public void Start()
+    public void Awake()
     {
+        dialogBackground.gameObject.SetActive(false);
+        dialog.gameObject.SetActive(false);
+        animeEffect.SetActive(false);
+        bossName.SetActive(false);
+        gameObject.SetActive(false);
+    }
+    public void OnEnable()
+    {
+        isDialogActive = true;
         ShowDialog();
+    }
+    private async UniTask Effect()//연출 애니메이션
+    {
+        animeEffect.SetActive(true);
+        await UniTask.Delay(1000);
+        bossName.SetActive(true);
+        await UniTask.Delay(2000);
     }
 }
