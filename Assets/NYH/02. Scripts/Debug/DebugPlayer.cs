@@ -211,6 +211,7 @@ public class DebugPlayer : MonoBehaviour
         stats.AddStat(NYHStatType.Strength, 1);
         stats.AddStat(NYHStatType.MoveSpeed, 1);
         stats.AddStat(NYHStatType.AttackSpeed, 1);
+        stats.AddStat(NYHStatType.Accuracy, 1);
         stats.AddStat(NYHStatType.Evasion, 1);
 
         RefreshStatsUI();
@@ -228,6 +229,7 @@ public class DebugPlayer : MonoBehaviour
         stats.AddStat(NYHStatType.Strength, -1);
         stats.AddStat(NYHStatType.MoveSpeed, -1);
         stats.AddStat(NYHStatType.AttackSpeed, -1);
+        stats.AddStat(NYHStatType.Accuracy, -1);
         stats.AddStat(NYHStatType.Evasion, -1);
 
         RefreshStatsUI();

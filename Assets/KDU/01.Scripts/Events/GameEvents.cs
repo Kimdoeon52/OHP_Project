@@ -12,6 +12,7 @@ public static class GameEvents
     // 전투
     public static Action<Vector2Int, float> OnEnemyKilled;  // pos, timeBonus
     public static Action<int> OnPlayerDamaged;              // damage amount
+    public static Action<CombatTextRequest> OnCombatTextRequested;
     public static Action<Vector2Int> OnTrapTriggered;
     public static Action<StatusRequest> OnStatusRequested;
     public static Action<TrapTerrainRequest> OnTrapTerrainRequested;
@@ -39,6 +40,7 @@ public static class GameEvents
         OnPlayerActionCompleted = null;
         OnEnemyKilled = null;
         OnPlayerDamaged = null;
+        OnCombatTextRequested = null;
         OnTrapTriggered = null;
         OnStatusRequested = null;
         OnTrapTerrainRequested = null;
@@ -50,6 +52,6 @@ public static class GameEvents
         OnVisionUpdated = null;
         OnPlayerDied = null;
         OnLevelComplete = null;
+        CombatTextCriticalContext.Clear();
     }
 }
-

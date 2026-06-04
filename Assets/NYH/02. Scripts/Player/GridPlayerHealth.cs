@@ -7,8 +7,10 @@ using UnityEngine;
 /// 스탯 시스템(NYHPlayerStats)과 연동하여 방어력을 계산한 최종 피해를 적용하며,
 /// 포션 사용 시 즉시 회복과 함께 AnimationCurve를 활용한 지속적인(Regen) 회복 로직을 동시에 실행합니다.
 /// </summary>
-public class GridPlayerHealth : PersistentSingleton<GridPlayerHealth>, IDamageable
+public class GridPlayerHealth : MonoBehaviour, IDamageable
 {
+    public static GridPlayerHealth Instance { get; private set; }
+
     [Header("기본 체력")]
     [Tooltip("NYHPlayerStats가 없을 때 사용할 기본 최대 체력입니다. Stats 컴포넌트가 있으면 MaxHealth 값을 우선 사용합니다.")]
     [SerializeField] private int maxHp = 100;
@@ -71,6 +73,18 @@ public class GridPlayerHealth : PersistentSingleton<GridPlayerHealth>, IDamageab
     }
 #endif
 
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning("GridPlayerHealth: 씬에 체력 컴포넌트가 둘 이상 있습니다. 현재 씬의 Player 구성을 확인하세요.");
+            return;
+        }
+
+        // 기존 외부 코드 호환을 위해 Instance는 남기되, DontDestroyOnLoad는 사용하지 않는다.
+        Instance = this;
+    }
+
     /// <summary>
     /// GridPlayer에서 호출하는 초기화 진입점입니다.
     /// 스탯 컴포넌트와 연결하고 현재 체력/포션 수를 시작 값으로 세팅합니다.
@@ -97,16 +111,26 @@ public class GridPlayerHealth : PersistentSingleton<GridPlayerHealth>, IDamageab
     /// </summary>
     public void TakeDamage(int amount)
     {
+        TakeDamageWithCombatText(amount, amount);
+    }
+
+    public void TakeDamageWithCombatText(int amount, int criticalReferenceMaxDamage)
+    {
         if (IsDead || amount <= 0) return;
 
         // 최종 데미지 산출 로직 위임 (방어, 회피 반영)
         int finalDamage = CalculateIncomingDamage(amount);
-        if (finalDamage <= 0) return;
+        if (finalDamage <= 0)
+        {
+            PublishCombatText(0, CombatTextType.Damage);
+            return;
+        }
 
         CurrentHp = Mathf.Max(0, CurrentHp - finalDamage);
         
         OnDamaged?.Invoke(finalDamage);
         GameEvents.OnPlayerDamaged?.Invoke(finalDamage);
+        PublishCombatText(finalDamage, GetCombatTextType(finalDamage, criticalReferenceMaxDamage));
         RaiseHealthChanged();
 
         if (CurrentHp <= 0)
@@ -123,7 +147,11 @@ public class GridPlayerHealth : PersistentSingleton<GridPlayerHealth>, IDamageab
     public void Heal(int amount)
     {
         if (IsDead || amount <= 0) return;
+        int beforeHp = CurrentHp;
         CurrentHp = Mathf.Min(MaxHp, CurrentHp + amount);
+        int healedAmount = Mathf.Max(0, CurrentHp - beforeHp);
+        if (healedAmount > 0)
+            PublishHealCombatText(healedAmount);
         RaiseHealthChanged();
     }
 
@@ -193,8 +221,13 @@ public class GridPlayerHealth : PersistentSingleton<GridPlayerHealth>, IDamageab
         _regenCoroutine = null;
     }
 
-    private new void OnDestroy()
+    private void OnDestroy()
     {
+        // 플레이어 체력은 현재 씬의 Player 컴포넌트가 소유하므로 전역 싱글톤으로 남기지 않는다.
+        // 이벤트 구독만 정리해서 씬 전환/비활성화 후 파괴된 Player 참조가 남는 것을 막는다.
+        if (Instance == this)
+            Instance = null;
+
         if (_stats != null)
             _stats.OnStatAdded -= OnStatAdded;
     }
@@ -220,6 +253,30 @@ public class GridPlayerHealth : PersistentSingleton<GridPlayerHealth>, IDamageab
         if (rawDamage <= 0) return 0;
         if (_stats == null) return rawDamage;
         return _stats.CalculateIncomingDamage(rawDamage);
+    }
+
+    private CombatTextType GetCombatTextType(int finalDamage, int criticalReferenceMaxDamage)
+    {
+        if (finalDamage <= 0 || criticalReferenceMaxDamage <= 0)
+            return CombatTextType.Damage;
+
+        return finalDamage >= Mathf.CeilToInt(criticalReferenceMaxDamage * 0.8f)
+            ? CombatTextType.CriticalDamage
+            : CombatTextType.Damage;
+    }
+
+    private void PublishCombatText(int finalDamage, CombatTextType type)
+    {
+        // TODO(UI): 플레이어 피격 숫자는 CombatFloatingTextSpawner의 spawnOffset으로 머리 위 위치를 조정합니다.
+        Transform target = _player != null ? _player.transform : transform;
+        GameEvents.OnCombatTextRequested?.Invoke(new CombatTextRequest(target.position, finalDamage.ToString(), finalDamage, type));
+    }
+
+    private void PublishHealCombatText(int healedAmount)
+    {
+        // TODO(UI): 회복 숫자도 같은 CombatFloatingTextSpawner 설정을 사용합니다. 색상은 healColor에서 바꾸면 됩니다.
+        Transform target = _player != null ? _player.transform : transform;
+        GameEvents.OnCombatTextRequested?.Invoke(new CombatTextRequest(target.position, healedAmount.ToString(), healedAmount, CombatTextType.Heal));
     }
 
     /// <summary>

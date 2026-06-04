@@ -372,11 +372,13 @@ public abstract class EnemyBase : EntityBase, IDamageable
         int targetEvasion = playerStats != null ? playerStats.Evasion : 0;
         if (!RollHit(targetEvasion))
         {
+            GameEvents.OnCombatTextRequested?.Invoke(new CombatTextRequest(Player.transform.position, "Miss", 0, CombatTextType.Miss));
             Debug.Log($"{name} 공격 빗나감: 정확도 {data?.accuracy ?? 0}, 플레이어 회피 {targetEvasion}");
             return false;
         }
 
-        Player.TakeDamage(rawDamage);
+        int criticalReferenceMaxDamage = data != null ? data.attackMax : rawDamage;
+        Player.Health.TakeDamageWithCombatText(rawDamage, criticalReferenceMaxDamage);
         TryApplyOnHitEffect(Player);
         return true;
     }

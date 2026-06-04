@@ -103,6 +103,7 @@ public class GridPlayerAnimationController : MonoBehaviour
         if (_animator != null)
             _animator.speed = 1f;
 
+        _isMoveVisualActive = false;
         _isAttackVisualActive = false;
     }
 
@@ -315,7 +316,7 @@ public class GridPlayerAnimationController : MonoBehaviour
 
     private bool PlayStateIfConfigured(string stateName, bool keepCurrentRunTime)
     {
-        if (string.IsNullOrEmpty(stateName) || _animator == null || _animator.runtimeAnimatorController == null)
+        if (string.IsNullOrEmpty(stateName) || !CanUseAnimator())
             return false;
 
         int stateHash = Animator.StringToHash(stateName);
@@ -338,25 +339,25 @@ public class GridPlayerAnimationController : MonoBehaviour
 
     private void SetTriggerIfConfigured(string triggerName)
     {
-        if (string.IsNullOrEmpty(triggerName) || !HasParameter(triggerName, AnimatorControllerParameterType.Trigger)) return;
+        if (string.IsNullOrEmpty(triggerName) || !CanUseAnimator() || !HasParameter(triggerName, AnimatorControllerParameterType.Trigger)) return;
         _animator.SetTrigger(triggerName);
     }
 
     private void ResetTriggerIfConfigured(string triggerName)
     {
-        if (string.IsNullOrEmpty(triggerName) || !HasParameter(triggerName, AnimatorControllerParameterType.Trigger)) return;
+        if (string.IsNullOrEmpty(triggerName) || !CanUseAnimator() || !HasParameter(triggerName, AnimatorControllerParameterType.Trigger)) return;
         _animator.ResetTrigger(triggerName);
     }
 
     private void SetBoolIfConfigured(string boolName, bool value)
     {
-        if (string.IsNullOrEmpty(boolName) || !HasParameter(boolName, AnimatorControllerParameterType.Bool)) return;
+        if (string.IsNullOrEmpty(boolName) || !CanUseAnimator() || !HasParameter(boolName, AnimatorControllerParameterType.Bool)) return;
         _animator.SetBool(boolName, value);
     }
 
     private bool HasParameter(string parameterName, AnimatorControllerParameterType parameterType)
     {
-        if (_animator == null || _animator.runtimeAnimatorController == null) return false;
+        if (!CanUseAnimator()) return false;
 
         foreach (AnimatorControllerParameter parameter in _animator.parameters)
         {
@@ -365,6 +366,15 @@ public class GridPlayerAnimationController : MonoBehaviour
         }
 
         return false;
+    }
+
+    private bool CanUseAnimator()
+    {
+        // 씬 전환/사망 처리 중 비활성화된 Animator에 Play/Trigger를 보내면 Unity 경고가 발생한다.
+        return _animator != null
+            && _animator.runtimeAnimatorController != null
+            && _animator.isActiveAndEnabled
+            && _animator.gameObject.activeInHierarchy;
     }
 }
 

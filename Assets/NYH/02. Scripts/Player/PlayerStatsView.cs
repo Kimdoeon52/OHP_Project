@@ -49,6 +49,8 @@ public class PlayerStatsView : MonoBehaviour
     [SerializeField] private TMP_Text evasionText;
     [Tooltip("공격력을 표시할 Text입니다.")]
     [SerializeField] private TMP_Text attackText;
+    [Tooltip("명중률을 표시할 Text입니다. 예: 명중률 85%")]
+    [SerializeField] private TMP_Text accuracyText;
 
     /// <summary>
     /// UI가 켜질 때 참조를 찾고 이벤트 구독을 시작한다.
@@ -182,6 +184,7 @@ public class PlayerStatsView : MonoBehaviour
         string strength = playerStats != null ? playerStats.Strength.ToString() : "-";
         string moveSpeed = playerStats != null ? playerStats.MoveSpeed.ToString() : "-";
         string attackSpeed = playerStats != null ? playerStats.AttackSpeed.ToString() : "-";
+        string accuracy = playerStats != null ? $"{playerStats.Accuracy}%" : "-";
         string level = playerLevel != null ? playerLevel.Level.ToString() : "-";
         string defense = playerStats != null ? playerStats.Defense.ToString() : "-";
         string evasion = playerStats != null ? $"{playerStats.Evasion}%" : "-";
@@ -200,8 +203,10 @@ public class PlayerStatsView : MonoBehaviour
         SetText(evasionText, $"회피 {evasion}");
         SetText(expText, $"EXP {exp}");
         SetText(attackText, $"공격력 {attack}");
+        SetText(accuracyText, $"명중률 {accuracy}");
 
         SetText(summaryText,
+            $"명중률 {accuracy}\n" +
             $"공격력 {attack}\n" +
             $"힘 {strength}\n" +
             $"이동 속도 {moveSpeed}\n" +
@@ -209,7 +214,9 @@ public class PlayerStatsView : MonoBehaviour
             $"레벨 {level}\n" +
             $"방어력 {defense}\n" +
             $"회피 {evasion}\n" +
-            $"경험치 {exp}");
+            $"경험치 {exp}" +
+            $"명중률 {accuracy}"
+            );
 
     }
 

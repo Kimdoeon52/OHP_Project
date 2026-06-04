@@ -83,16 +83,50 @@ public class GridPlayerCombat : MonoBehaviour
         IGridEntity entity = TurnManager.Instance.GetEntityAt(target);
         if (entity is IDamageable damageable && (UnityEngine.Object)damageable != _player)
         {
-            int damage = GetModifiedOutgoingDamage(RollMeleeDamage());
+            if (entity is EnemyBase enemy && !RollPlayerHit(enemy.Data != null ? enemy.Data.evasion : 0))
+            {
+                // 플레이어 공격도 적의 회피 스탯을 반영합니다. 보스는 아직 회피 데이터가 없어서 이 분기를 타지 않습니다.
+                PublishCombatText(GetCombatWorldPosition(damageable), "Miss", 0, CombatTextType.Miss);
+                FinishMeleeAttack(dir);
+                return;
+            }
+
+            NYHAttackDamageRange damageRange = GetMeleeDamageRange();
+            int damage = GetModifiedOutgoingDamage(RollMeleeDamage(damageRange));
             int beforeHp = damageable.CurrentHp;
-            damageable.TakeDamage(damage);
+            CombatTextCriticalContext.SetCurrentMaxDamage(damageRange.MaxDamage);
+            try
+            {
+                damageable.TakeDamage(damage);
+            }
+            finally
+            {
+                CombatTextCriticalContext.Clear();
+            }
+            int finalDamage = Mathf.Max(0, beforeHp - damageable.CurrentHp);
+
+            // BossBase는 BossTakeDamage 내부에서도 표시 이벤트를 쏘므로 여기서 중복 표시하지 않습니다.
+            if (finalDamage > 0 && damageable is not BossBase)
+            {
+                CombatTextType textType = IsCriticalDamage(finalDamage, damageRange.MaxDamage)
+                    ? CombatTextType.CriticalDamage
+                    : CombatTextType.Damage;
+
+                PublishCombatText(GetCombatWorldPosition(damageable), finalDamage.ToString(), finalDamage, textType);
+            }
+
             LogDamageDealt("Melee", damageable, damage, beforeHp);
-            StartMeleeCooldown();
-            OnAttackPerformed?.Invoke(dir);
-            float actionDelay = GetModifiedMeleeTimeCost();
-            _player.ActionDelay?.StartDelay(actionDelay);
-            CompletePlayerAction(actionDelay);
+            FinishMeleeAttack(dir);
         }
+    }
+
+    private void FinishMeleeAttack(Vector2Int dir)
+    {
+        StartMeleeCooldown();
+        OnAttackPerformed?.Invoke(dir);
+        float actionDelay = GetModifiedMeleeTimeCost();
+        _player.ActionDelay?.StartDelay(actionDelay);
+        CompletePlayerAction(actionDelay);
     }
 
     /// <summary>
@@ -120,7 +154,7 @@ public class GridPlayerCombat : MonoBehaviour
     /// 장비 컨트롤러와 플레이어 기본 스탯을 기반으로 무기의 굴림 피해(Roll)를 계산합니다.
     /// 공격력의 최소~최대 범위에서 난수를 생성하는 역할은 내부의 NYHPlayerAttackCalculator가 담당합니다.
     /// </summary>
-    private int RollMeleeDamage()
+    private NYHAttackDamageRange GetMeleeDamageRange()
     {
         if (_stats == null)
             _stats = NYHPlayerStats.Instance;
@@ -128,7 +162,41 @@ public class GridPlayerCombat : MonoBehaviour
         if (equipmentController == null)
             equipmentController = FindFirstObjectByType<NYHEquipmentController>();
 
-        return NYHPlayerAttackCalculator.RollMeleeDamage(_stats, equipmentController);
+        return NYHPlayerAttackCalculator.CalculateMeleeRange(_stats, equipmentController);
+    }
+
+    private int RollMeleeDamage(NYHAttackDamageRange range)
+    {
+        if (range.MinDamage == range.MaxDamage)
+            return range.MinDamage;
+
+        // UnityEngine.Random.Range(int, int)는 maxExclusive라서 +1 한다.
+        return UnityEngine.Random.Range(range.MinDamage, range.MaxDamage + 1);
+    }
+
+    private bool RollPlayerHit(int targetEvasion)
+    {
+        int attackerAccuracy = _stats != null ? _stats.Accuracy : 0;
+        int missChancePercent = Mathf.Clamp(targetEvasion - attackerAccuracy, 0, 50);
+        return UnityEngine.Random.Range(0, 100) >= missChancePercent;
+    }
+
+    private static bool IsCriticalDamage(int finalDamage, int maxPossibleDamage)
+    {
+        if (finalDamage <= 0 || maxPossibleDamage <= 0)
+            return false;
+
+        return finalDamage >= Mathf.CeilToInt(maxPossibleDamage * 0.8f);
+    }
+
+    private static Vector3 GetCombatWorldPosition(IDamageable target)
+    {
+        return target is Component component ? component.transform.position : Vector3.zero;
+    }
+
+    private static void PublishCombatText(Vector3 worldPosition, string text, int damage, CombatTextType type)
+    {
+        GameEvents.OnCombatTextRequested?.Invoke(new CombatTextRequest(worldPosition, text, damage, type));
     }
 
     /// <summary>

@@ -26,7 +26,10 @@ public enum NYHStatType
     Level,
 
     // 배고픔 수치. 시간에 따라 감소하며 0이 되면 굶주림 상태가 된다.
-    Hunger
+    Hunger,
+
+    // 명중률 보정값. 기존 enum 직렬화 값을 밀지 않기 위해 마지막에 추가한다.
+    Accuracy
 }
 
 /// <summary>
@@ -128,11 +131,15 @@ public class NYHPlayerStats : MonoBehaviour
                 strength = Mathf.Max(0, strength + amount);
                 break;
             case NYHStatType.MoveSpeed:
-                moveSpeed = Mathf.Max(0, moveSpeed + amount / 100);
+                // MoveSpeed는 정수 스탯이므로 전달된 증가량을 한 번만 반영한다.
+                // 기존에는 amount / 100과 amount가 모두 더해져 큰 보상 값에서 이동속도가 비정상적으로 튀었다.
                 moveSpeed = Mathf.Max(0, moveSpeed + amount);
                 break;
             case NYHStatType.AttackSpeed:
                 attackSpeed = Mathf.Max(0, attackSpeed + amount);
+                break;
+            case NYHStatType.Accuracy:
+                accuracy = Mathf.Clamp(accuracy + amount, 0, 100);
                 break;
             case NYHStatType.Defense:
                 defense = Mathf.Max(0, defense + amount);

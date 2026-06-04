@@ -167,7 +167,10 @@ public class BossBase : EnemyNormalBASE
     {
         if (amount <= 0 || isDying) return;
 
+        int beforeHp = currentHp;
         currentHp -= amount;
+        int finalDamage = Mathf.Max(0, beforeHp - currentHp);
+        PublishBossCombatText(finalDamage);
         Debug.Log($"<color=red>[보스 데미지]</color> 보스가 {amount}만큼 데미지를 받음. 현재 HP: {currentHp}");
         if (hpBar != null) hpBar.UpdateBar();
 
@@ -180,6 +183,27 @@ public class BossBase : EnemyNormalBASE
 
     // 사망 시점 훅. 기본 동작은 즉시 Destroy. 서브클래스가 죽음 패턴(연출, 즉사 영역 등)을 위해 오버라이드.
     // 죽음 패턴 끝에 반드시 Destroy(gameObject)를 호출해야 함.
+    private void PublishBossCombatText(int finalDamage)
+    {
+        if (finalDamage <= 0) return;
+
+        // TODO(UI): 보스 피격 숫자 위치/폰트는 CombatFloatingTextSpawner 또는 전용 floatingTextPrefab에서 조정합니다.
+        CombatTextType textType = IsBossCriticalDamage(finalDamage)
+            ? CombatTextType.CriticalDamage
+            : CombatTextType.Damage;
+
+        GameEvents.OnCombatTextRequested?.Invoke(new CombatTextRequest(transform.position, finalDamage.ToString(), finalDamage, textType));
+    }
+
+    private bool IsBossCriticalDamage(int finalDamage)
+    {
+        int maxDamage = CombatTextCriticalContext.CurrentMaxDamage;
+        if (finalDamage <= 0 || maxDamage <= 0)
+            return false;
+
+        return finalDamage >= Mathf.CeilToInt(maxDamage * 0.8f);
+    }
+
     protected virtual void OnDeath()
     {
         Destroy(gameObject);
