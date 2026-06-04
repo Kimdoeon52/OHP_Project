@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 /// <summary>
 /// 플레이어 입력을 GridPlayer의 이동/근접 공격/포션 사용 흐름으로 전달합니다.
@@ -8,6 +8,12 @@ public class GridPlayerInput : MonoBehaviour
 {
     private GridPlayer _player;
     private CameraFollow _cameraFollow;
+
+    /// <summary>
+    /// 플레이어가 숫자키(1~0)를 눌러 퀵슬롯 사용을 요청할 때 발생합니다.
+    /// int 매개변수는 0~9의 슬롯 인덱스입니다. (키보드 1 -> 0, 키보드 0 -> 9)
+    /// </summary>
+    public event System.Action<int> OnQuickSlotKeyPressed;
 
     public void Init(GridPlayer player)
     {
@@ -83,5 +89,24 @@ public class GridPlayerInput : MonoBehaviour
         {
             _player.Health.TryUsePotion();
         }
+
+        CheckQuickSlotInputs();
+    }
+
+    /// <summary>
+    /// 매 프레임 숫자키(1~0) 입력을 검사하여 퀵슬롯 이벤트를 발생시킵니다.
+    /// </summary>
+    private void CheckQuickSlotInputs()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1)) OnQuickSlotKeyPressed?.Invoke(0);
+        else if (Input.GetKeyDown(KeyCode.Alpha2)) OnQuickSlotKeyPressed?.Invoke(1);
+        else if (Input.GetKeyDown(KeyCode.Alpha3)) OnQuickSlotKeyPressed?.Invoke(2);
+        else if (Input.GetKeyDown(KeyCode.Alpha4)) OnQuickSlotKeyPressed?.Invoke(3);
+        else if (Input.GetKeyDown(KeyCode.Alpha5)) OnQuickSlotKeyPressed?.Invoke(4);
+        else if (Input.GetKeyDown(KeyCode.Alpha6)) OnQuickSlotKeyPressed?.Invoke(5);
+        else if (Input.GetKeyDown(KeyCode.Alpha7)) OnQuickSlotKeyPressed?.Invoke(6);
+        else if (Input.GetKeyDown(KeyCode.Alpha8)) OnQuickSlotKeyPressed?.Invoke(7);
+        else if (Input.GetKeyDown(KeyCode.Alpha9)) OnQuickSlotKeyPressed?.Invoke(8);
+        else if (Input.GetKeyDown(KeyCode.Alpha0)) OnQuickSlotKeyPressed?.Invoke(9);
     }
 }

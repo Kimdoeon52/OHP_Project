@@ -6,6 +6,10 @@ namespace PrototypeRT
     /// <summary>
     /// KDU/YJW가 쓰는 기존 ItemPickup을 직접 수정하지 않고, 바닥 아이템 줍기/버리기 순서를 중앙에서 관리합니다.
     /// 등록된 ItemPickup 컴포넌트는 입력 중복을 막기 위해 비활성화하고, 표시/수집은 이 컨트롤러가 대신 처리합니다.
+    /// 
+    /// **[최적화 내역]** 
+    /// 기존의 매 프레임 아이템 스캔(Polling) 방식을 제거하고, 플레이어가 행동을 완료하거나 적이 죽었을 때 발생하는
+    /// 시스템 이벤트(GameEvents)를 수신하여 아이템을 스캔하는 Event-Driven 구조로 개편되었습니다.
     /// </summary>
     public class GroundItemController : MonoBehaviour
     {
@@ -30,18 +34,12 @@ namespace PrototypeRT
         [SerializeField] private bool manualPickupEnabled = true;
 
         [Header("스캔")]
-        [Tooltip("KDU 스포너/상자가 새로 만든 ItemPickup을 찾아 등록하는 간격입니다.")]
-        [SerializeField, Min(0.05f)] private float pickupScanInterval = 0.2f;
-
         // 같은 칸에 여러 아이템을 버릴 수 있으므로, 셀 하나가 ItemPickup 리스트 하나를 가집니다.
         // 리스트 뒤쪽이 "나중에 떨어진 아이템"이라 수동 줍기에서 마지막 아이템부터 꺼낼 수 있습니다.
         private readonly Dictionary<Vector2Int, List<ItemPickup>> _itemsByCell = new();
 
         // KDU 스포너/상자가 만든 ItemPickup을 주기적으로 스캔하므로, 같은 오브젝트를 중복 등록하지 않기 위해 보관합니다.
         private readonly HashSet<ItemPickup> _registeredPickups = new();
-
-        // 매 프레임 전체 씬을 스캔하면 비용이 커지므로, 짧은 간격을 두고 새 바닥 아이템만 흡수합니다.
-        private float _nextScanTime;
 
         // 플레이어 이동 완료 이벤트를 중복 구독하면 자동 줍기가 여러 번 실행되므로 구독 상태를 따로 기록합니다.
         private bool _movementSubscribed;
@@ -67,6 +65,8 @@ namespace PrototypeRT
             ResolveReferences();
             SubscribeMovement();
             GameEvents.OnVisionUpdated += OnVisionUpdated;
+            GameEvents.OnPlayerActionCompleted += OnPlayerActionCompleted;
+            GameEvents.OnEnemyKilled += OnEnemyKilled;
         }
 
         private void Start()
@@ -81,6 +81,8 @@ namespace PrototypeRT
         private void OnDisable()
         {
             GameEvents.OnVisionUpdated -= OnVisionUpdated;
+            GameEvents.OnPlayerActionCompleted -= OnPlayerActionCompleted;
+            GameEvents.OnEnemyKilled -= OnEnemyKilled;
             UnsubscribeMovement();
             _itemsByCell.Clear();
             _registeredPickups.Clear();
@@ -88,9 +90,6 @@ namespace PrototypeRT
 
         private void Update()
         {
-            // 상자 개방/맵 생성처럼 다른 시스템이 만든 ItemPickup을 중앙 관리 목록에 늦게 합류시킵니다.
-            ScanPeriodically();
-
             if (!manualPickupEnabled || !Input.GetKeyDown(manualPickupKey))
                 return;
 
@@ -261,15 +260,23 @@ namespace PrototypeRT
         }
 
         /// <summary>
-        /// KDU 스포너/상자가 런타임에 새로 만든 ItemPickup을 늦게 발견하기 위한 주기 스캔입니다.
-        /// 이벤트 연결 없이도 기존 시스템과 붙기 위해 최소 비용의 polling을 사용합니다.
+        /// 플레이어가 한 턴의 행동(이동, 공격, 상자 열기 등)을 완료했을 때 시스템(GameEvents)에서 호출됩니다.
+        /// 이 시점에 상자에서 튀어나온 새로운 바닥 아이템(ItemPickup)이 있는지 씬을 스캔하여 중앙 관리 목록에 등록합니다.
         /// </summary>
-        private void ScanPeriodically()
+        /// <param name="timeCost">이번 행동에 소모된 턴 시간 (여기서는 사용하지 않음)</param>
+        private void OnPlayerActionCompleted(float timeCost)
         {
-            if (Time.unscaledTime < _nextScanTime)
-                return;
+            ScanAndRegisterPickups();
+        }
 
-            _nextScanTime = Time.unscaledTime + pickupScanInterval;
+        /// <summary>
+        /// 몬스터가 죽어서 보상(아이템)을 바닥에 떨어뜨렸을 때 시스템(GameEvents)에서 호출됩니다.
+        /// 몬스터가 드랍한 새로운 바닥 아이템(ItemPickup)을 씬에서 스캔하여 중앙 관리 목록에 등록합니다.
+        /// </summary>
+        /// <param name="pos">적 사망 위치</param>
+        /// <param name="timeBonus">획득한 보너스 시간</param>
+        private void OnEnemyKilled(Vector2Int pos, float timeBonus)
+        {
             ScanAndRegisterPickups();
         }
 

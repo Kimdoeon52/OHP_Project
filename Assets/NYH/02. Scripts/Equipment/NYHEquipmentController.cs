@@ -439,13 +439,7 @@ public class NYHEquipmentController : MonoBehaviour
             if (modifier.amount == 0)
                 continue;
 
-            // 현재 NYHPlayerStats의 Health는 최대 체력 증가가 아니라 회복 이벤트로 처리된다.
-            // 체력 장비 보너스가 필요하면 NYHPlayerStats에 MaxHealth 변경 API를 따로 추가해야 한다.
-            if (modifier.statType == NYHStatType.Health)
-            {
-                Debug.LogWarning("NYHEquipmentController: Health 장비 보너스는 현재 최대 체력 증가로 적용되지 않습니다.");
-                continue;
-            }
+
 
             Stats.AddStat(modifier.statType, modifier.amount * sign);
         }

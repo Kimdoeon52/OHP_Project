@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 2713320094361476112}
   - component: {fileID: 4180552895596935373}
   - component: {fileID: 1928696720531422438}
+  - component: {fileID: -5261594692456160417}
+  - component: {fileID: 7927141335324334880}
   m_Layer: 5
   m_Name: InventoryItem_RT
   m_TagString: Untagged
@@ -88,3 +90,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19229acb340096d4abb5e18ea0fc4b1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  countText: {fileID: 0}
+--- !u!114 &-5261594692456160417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6640795896527857234}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e56a3320ba9b2074db5c1edc809f3a28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridWidth: 20
+  gridHeight: 10
+  acceptOnlyOneByOneItems: 0
+--- !u!114 &7927141335324334880
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6640795896527857234}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8283e4ee5be24149a7aa5f123c421c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  slotPrefab: {fileID: 0}
+  slotContainer: {fileID: 0}
+  generateVisualSlots: 1

@@ -1,74 +1,74 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace PrototypeRT
 {
     /// <summary>
-    /// 인벤토리 UI의 전체 입력 흐름을 관리하는 컨트롤러입니다.
-    /// 아이템 생성/추가/삭제, 마우스 드래그, 배치, 하이라이트 갱신을 한 곳에서 조율합니다.
+    /// ?몃깽?좊━ UI???꾩껜 ?낅젰 ?먮쫫??愿由ы븯??而⑦듃濡ㅻ윭?낅땲??
+    /// ?꾩씠???앹꽦/異붽?/??젣, 留덉슦???쒕옒洹? 諛곗튂, ?섏씠?쇱씠??媛깆떊????怨녹뿉??議곗쑉?⑸땲??
     /// 
-    /// 플레이어 인벤토리 시스템을 총괄하는 핵심 클래스입니다.
-    /// 아이템 선택 및 드래그 앤 드롭, 슬롯 간 이동, 신규 아이템 획득 시 빈칸 자동 배치 등 
-    /// 인벤토리 내에서 발생하는 모든 상호작용과 데이터 흐름을 중앙에서 제어합니다.
+    /// ?뚮젅?댁뼱 ?몃깽?좊━ ?쒖뒪?쒖쓣 珥앷큵?섎뒗 ?듭떖 ?대옒?ㅼ엯?덈떎.
+    /// ?꾩씠???좏깮 諛??쒕옒洹????쒕∼, ?щ’ 媛??대룞, ?좉퇋 ?꾩씠???띾뱷 ??鍮덉뭏 ?먮룞 諛곗튂 ??
+    /// ?몃깽?좊━ ?댁뿉??諛쒖깮?섎뒗 紐⑤뱺 ?곹샇?묒슜怨??곗씠???먮쫫??以묒븰?먯꽌 ?쒖뼱?⑸땲??
     /// </summary>
     [RequireComponent(typeof(InventoryHighlight))]
     public class InventoryController : MonoBehaviour
     {
-        [Header("UI 프리팹")]
-        [Tooltip("인벤토리 칸에 생성할 아이템 UI 프리팹입니다. InventoryItem 컴포넌트와 Image가 붙어 있어야 합니다.")]
+        [Header("UI Prefabs")]
+        [Tooltip("?몃깽?좊━ 移몄뿉 ?앹꽦???꾩씠??UI ?꾨━?뱀엯?덈떎. InventoryItem 而댄룷?뚰듃? Image媛 遺숈뼱 ?덉뼱???⑸땲??")]
         [SerializeField] private InventoryItem itemPrefab;
 
-        [Tooltip("아이템 UI를 생성할 Canvas Transform입니다. 비워두면 부모 Canvas를 자동으로 찾습니다.")]
+        [Tooltip("?꾩씠??UI瑜??앹꽦??Canvas Transform?낅땲?? 鍮꾩썙?먮㈃ 遺紐?Canvas瑜??먮룞?쇰줈 李얠뒿?덈떎.")]
         [SerializeField] private Transform canvasTransform;
 
-        [Tooltip("아이템 자동 추가에 사용할 기본 인벤토리 그리드입니다. 퀵슬롯 그리드가 아닌 큰 가방 그리드를 연결하세요.")]
+        [Tooltip("?꾩씠???먮룞 異붽????ъ슜??湲곕낯 ?몃깽?좊━ 洹몃━?쒖엯?덈떎. ?듭뒳濡?洹몃━?쒓? ?꾨땶 ??媛諛?洹몃━?쒕? ?곌껐?섏꽭??")]
         [SerializeField] private ItemGrid defaultInventoryGrid;
 
-        [Header("아이템 사용")]
-        [Tooltip("아이템을 들고 다시 클릭했을 때 더블클릭으로 인정할 최대 시간입니다.")]
+        [Header("?꾩씠???ъ슜")]
+        [Tooltip("?꾩씠?쒖쓣 ?ㅺ퀬 ?ㅼ떆 ?대┃?덉쓣 ???붾툝?대┃?쇰줈 ?몄젙??理쒕? ?쒓컙?낅땲??")]
         [SerializeField, Min(0.05f)] private float doubleClickMaxDelay = 0.25f;
 
-        [Tooltip("더블클릭 아이템 사용 분기를 담당하는 컨트롤러입니다. 비워두면 런타임에 자동으로 붙입니다.")]
+        [Tooltip("?붾툝?대┃ ?꾩씠???ъ슜 遺꾧린瑜??대떦?섎뒗 而⑦듃濡ㅻ윭?낅땲?? 鍮꾩썙?먮㈃ ?고??꾩뿉 ?먮룞?쇰줈 遺숈엯?덈떎.")]
         [SerializeField] private InventoryItemUseController itemUseController;
 
-        [Tooltip("주문서 대상 지정과 투척 포션 조준을 담당하는 컨트롤러입니다. 비워두면 런타임에 자동으로 붙입니다.")]
+        [Tooltip("二쇰Ц?????吏?뺢낵 ?ъ쿃 ?ъ뀡 議곗????대떦?섎뒗 而⑦듃濡ㅻ윭?낅땲?? 鍮꾩썙?먮㈃ ?고??꾩뿉 ?먮룞?쇰줈 遺숈엯?덈떎.")]
         [SerializeField] private InventoryTargetingController targetingController;
 
-        [Header("아이템 버리기")]
-        [Tooltip("이 영역 밖에 들고 있는 아이템을 놓으면 플레이어 발밑에 버립니다. 인벤토리 전체 패널 RectTransform을 연결하세요.")]
+        [Header("Item Drop")]
+        [Tooltip("???곸뿭 諛뽰뿉 ?ㅺ퀬 ?덈뒗 ?꾩씠?쒖쓣 ?볦쑝硫??뚮젅?댁뼱 諛쒕컩??踰꾨┰?덈떎. ?몃깽?좊━ ?꾩껜 ?⑤꼸 RectTransform???곌껐?섏꽭??")]
         [SerializeField] private RectTransform inventoryPanelRect;
 
-        [Tooltip("바닥에 버린 아이템과 줍기 순서를 관리하는 컨트롤러입니다. 비워두면 씬에서 자동으로 찾습니다.")]
+        [Tooltip("諛붾떏??踰꾨┛ ?꾩씠?쒓낵 以띻린 ?쒖꽌瑜?愿由ы븯??而⑦듃濡ㅻ윭?낅땲?? 鍮꾩썙?먮㈃ ?ъ뿉???먮룞?쇰줈 李얠뒿?덈떎.")]
         [SerializeField] private GroundItemController groundItemController;
 
-        // 현재 마우스가 올라간 인벤토리 그리드입니다. 여러 그리드를 지원할 수 있도록 포인터 진입/이탈 때 갱신합니다.
+        // ?꾩옱 留덉슦?ㅺ? ?щ씪媛??몃깽?좊━ 洹몃━?쒖엯?덈떎. ?щ윭 洹몃━?쒕? 吏?먰븷 ???덈룄濡??ъ씤??吏꾩엯/?댄깉 ??媛깆떊?⑸땲??
         private ItemGrid _selectedGrid;
 
-        // 마우스로 집어서 드래그 중인 아이템입니다. null이면 손에 들고 있는 아이템이 없는 상태입니다.
+        // 留덉슦?ㅻ줈 吏묒뼱???쒕옒洹?以묒씤 ?꾩씠?쒖엯?덈떎. null?대㈃ ?먯뿉 ?ㅺ퀬 ?덈뒗 ?꾩씠?쒖씠 ?녿뒗 ?곹깭?낅땲??
         private InventoryItem _selectedItem;
 
-        // 배치할 위치에 이미 아이템이 하나만 겹쳐 있을 때, 교체 드래그를 위해 잠시 보관합니다.
+        // 諛곗튂???꾩튂???대? ?꾩씠?쒖씠 ?섎굹留?寃뱀퀜 ?덉쓣 ?? 援먯껜 ?쒕옒洹몃? ?꾪빐 ?좎떆 蹂닿??⑸땲??
         private InventoryItem _overlapItem;
 
-        // 드래그 중인 아이템의 RectTransform 캐시입니다. 매 프레임 GetComponent를 피하기 위해 보관합니다.
+        // ?쒕옒洹?以묒씤 ?꾩씠?쒖쓽 RectTransform 罹먯떆?낅땲?? 留??꾨젅??GetComponent瑜??쇳븯湲??꾪빐 蹂닿??⑸땲??
         private RectTransform _dragRect;
 
         private InventoryHighlight _inventoryHighlight;
 
-        // 플레이어가 실제로 소유한 인벤토리 아이템 UI 목록입니다. 판매/장착 UI 등에서 읽어갈 수 있습니다.
+        // ?뚮젅?댁뼱媛 ?ㅼ젣濡??뚯쑀???몃깽?좊━ ?꾩씠??UI 紐⑸줉?낅땲?? ?먮ℓ/?μ갑 UI ?깆뿉???쎌뼱媛????덉뒿?덈떎.
         private readonly List<InventoryItem> _items = new();
 
-        // 상점/대화/다른 UI가 열렸을 때 인벤토리 클릭 처리를 잠깐 막기 위한 플래그입니다.
+        // ?곸젏/????ㅻⅨ UI媛 ?대졇?????몃깽?좊━ ?대┃ 泥섎━瑜??좉퉸 留됯린 ?꾪븳 ?뚮옒洹몄엯?덈떎.
         private bool _isPointerInputBlocked;
 
-        // 인벤토리 패널이 열려 있는지 기록합니다.
-        // 패널이 닫힌 동안에는 클릭/하이라이트/드래그 입력을 처리하지 않기 위해 사용합니다.
+        // ?몃깽?좊━ ?⑤꼸???대젮 ?덈뒗吏 湲곕줉?⑸땲??
+        // ?⑤꼸???ロ엺 ?숈븞?먮뒗 ?대┃/?섏씠?쇱씠???쒕옒洹??낅젰??泥섎━?섏? ?딄린 ?꾪빐 ?ъ슜?⑸땲??
         private bool _isInventoryOpen;
 
-        // 드래그 시작 시점의 "원래 칸"을 저장합니다.
-        // 화면 좌표를 저장하지 않고 ItemGrid + 그리드 X/Y를 저장하는 이유:
-        // Canvas 해상도, 앵커, 스케일이 달라도 아이템이 실제로 돌아가야 할 위치는 "몇 번째 칸"이기 때문입니다.
+        // ?쒕옒洹??쒖옉 ?쒖젏??"?먮옒 移?????ν빀?덈떎.
+        // ?붾㈃ 醫뚰몴瑜???ν븯吏 ?딄퀬 ItemGrid + 洹몃━??X/Y瑜???ν븯???댁쑀:
+        // Canvas ?댁긽?? ?듭빱, ?ㅼ??쇱씠 ?щ씪???꾩씠?쒖씠 ?ㅼ젣濡??뚯븘媛?????꾩튂??"紐?踰덉㎏ 移??닿린 ?뚮Ц?낅땲??
         private ItemGrid _dragStartGrid;
         private int _dragStartX;
         private int _dragStartY;
@@ -76,10 +76,10 @@ namespace PrototypeRT
         private InventoryItem _lastPickedItem;
         private float _lastPickTime;
 
-        /// <summary>아이템 추가/삭제/재배치 등 인벤토리 구성이 바뀔 때 호출됩니다.</summary>
+        /// <summary>?꾩씠??異붽?/??젣/?щ같移????몃깽?좊━ 援ъ꽦??諛붾????몄텧?⑸땲??</summary>
         public event Action OnInventoryChanged;
 
-        /// <summary>새 아이템이 인벤토리에 성공적으로 들어왔을 때, 추가된 아이템 UI와 함께 호출됩니다.</summary>
+        /// <summary>???꾩씠?쒖씠 ?몃깽?좊━???깃났?곸쑝濡??ㅼ뼱?붿쓣 ?? 異붽????꾩씠??UI? ?④퍡 ?몄텧?⑸땲??</summary>
         public event Action<InventoryItem> OnItemAdded;
 
         public IReadOnlyList<InventoryItem> Items => _items;
@@ -104,14 +104,14 @@ namespace PrototypeRT
         }
 
         /// <summary>
-        /// 컴포넌트가 켜질 때 필요한 참조를 미리 찾아둡니다.
-        /// 하이라이트, Canvas, 기본 ItemGrid를 준비하는 초기화 함수입니다.
+        /// 而댄룷?뚰듃媛 耳쒖쭏 ???꾩슂??李몄“瑜?誘몃━ 李얠븘?〓땲??
+        /// ?섏씠?쇱씠?? Canvas, 湲곕낯 ItemGrid瑜?以鍮꾪븯??珥덇린???⑥닔?낅땲??
         /// </summary>
         private void Awake()
         {
             _inventoryHighlight = GetComponent<InventoryHighlight>();
 
-            // 드래그 중인 아이템은 그리드 밖에서도 마우스를 따라와야 하므로 Canvas 바로 아래에 둡니다.
+            // ?쒕옒洹?以묒씤 ?꾩씠?쒖? 洹몃━??諛뽰뿉?쒕룄 留덉슦?ㅻ? ?곕씪????섎?濡?Canvas 諛붾줈 ?꾨옒???〓땲??
             if (canvasTransform == null)
                 canvasTransform = GetComponentInParent<Canvas>()?.transform;
 
@@ -123,25 +123,25 @@ namespace PrototypeRT
         }
 
         /// <summary>
-        /// 매 프레임 인벤토리 입력과 드래그 표시를 처리합니다.
-        /// 디버그 아이템 추가, 좌클릭 집기/배치, 하이라이트 갱신이 여기서 시작됩니다.
+        /// 留??꾨젅???몃깽?좊━ ?낅젰怨??쒕옒洹??쒖떆瑜?泥섎━?⑸땲??
+        /// ?붾쾭洹??꾩씠??異붽?, 醫뚰겢由?吏묎린/諛곗튂, ?섏씠?쇱씠??媛깆떊???ш린???쒖옉?⑸땲??
         /// </summary>
         private void Update()
         {
-            // 인벤토리 패널이 닫혀 있으면 입력을 전부 무시합니다.
-            // 이 상태에서 클릭이 들어오면 닫힌 UI의 아이템을 집는 문제가 생길 수 있습니다.
+            // ?몃깽?좊━ ?⑤꼸???ロ? ?덉쑝硫??낅젰???꾨? 臾댁떆?⑸땲??
+            // ???곹깭?먯꽌 ?대┃???ㅼ뼱?ㅻ㈃ ?ロ엺 UI???꾩씠?쒖쓣 吏묐뒗 臾몄젣媛 ?앷만 ???덉뒿?덈떎.
             if (!_isInventoryOpen)
             {
                 _inventoryHighlight.Show(false);
                 return;
             }
 
-            // 들고 있는 아이템 이미지는 입력 가능 여부와 상관없이 마우스를 따라오게 둡니다.
+            // ?ㅺ퀬 ?덈뒗 ?꾩씠???대?吏???낅젰 媛???щ?? ?곴??놁씠 留덉슦?ㅻ? ?곕씪?ㅺ쾶 ?〓땲??
             DragSelectedItemIcon();
             RefreshSelectedGridUnderMouse();
 
-            // 주문서 타겟팅 중이거나 방금 타겟팅 클릭을 처리한 프레임이면,
-            // 같은 클릭으로 인벤 아이템을 집는 일반 입력이 이어지지 않게 막습니다.
+            // 二쇰Ц???寃잜똿 以묒씠嫄곕굹 諛⑷툑 ?寃잜똿 ?대┃??泥섎━???꾨젅?꾩씠硫?
+            // 媛숈? ?대┃?쇰줈 ?몃깽 ?꾩씠?쒖쓣 吏묐뒗 ?쇰컲 ?낅젰???댁뼱吏吏 ?딄쾶 留됱뒿?덈떎.
             if (targetingController != null && targetingController.BlocksPointerInput)
             {
                 _inventoryHighlight.Show(false);
@@ -173,27 +173,27 @@ namespace PrototypeRT
 
             if (_selectedGrid == null || itemPrefab == null || canvasTransform == null || itemInstance == null || itemInstance.data == null)
             {
-                Debug.LogError("InventoryController: 인벤토리 그리드, 아이템 프리팹, Canvas, ItemData 연결을 확인해야 합니다.");
+                Debug.LogError("InventoryController: ?몃깽?좊━ 洹몃━?? ?꾩씠???꾨━?? Canvas, ItemData ?곌껐???뺤씤?댁빞 ?⑸땲??");
                 return false;
             }
 
-            // YJW 쪽은 "어떤 아이템인가"를 ItemInstance로 넘기고, NYH 인벤토리가 "몇 개로 쌓을 것인가"를 결정합니다.
-            // 그래서 스택 수량은 ItemInstance가 아니라 InventoryItem.Count에 저장합니다.
-            // amount를 열어둔 이유는 나중에 보상/상자처럼 한 번에 여러 개를 넣는 흐름도 같은 API로 받기 위해서입니다.
+            // YJW 履쎌? "?대뼡 ?꾩씠?쒖씤媛"瑜?ItemInstance濡??섍린怨? NYH ?몃깽?좊━媛 "紐?媛쒕줈 ?볦쓣 寃껋씤媛"瑜?寃곗젙?⑸땲??
+            // 洹몃옒???ㅽ깮 ?섎웾? ItemInstance媛 ?꾨땲??InventoryItem.Count????ν빀?덈떎.
+            // amount瑜??댁뼱???댁쑀???섏쨷??蹂댁긽/?곸옄泥섎읆 ??踰덉뿉 ?щ윭 媛쒕? ?ｋ뒗 ?먮쫫??媛숈? API濡?諛쏄린 ?꾪빐?쒖엯?덈떎.
             amount = Mathf.Max(1, amount);
 
-            // 포션/스크롤은 새 UI를 만들기 전에 기존 스택에 먼저 합칩니다.
-            // 합쳐졌다면 새 InventoryItem GameObject를 만들 필요가 없으므로 여기서 끝냅니다.
+            // ?ъ뀡/?ㅽ겕濡ㅼ? ??UI瑜?留뚮뱾湲??꾩뿉 湲곗〈 ?ㅽ깮??癒쇱? ?⑹묩?덈떎.
+            // ?⑹퀜議뚮떎硫???InventoryItem GameObject瑜?留뚮뱾 ?꾩슂媛 ?놁쑝誘濡??ш린???앸깄?덈떎.
             if (TryMergeStack(itemInstance, amount))
                 return true;
 
             InventoryItem item = CreateInventoryItem(itemInstance);
 
-            // 새 슬롯을 만들 때도 수량은 ItemInstance에 쓰지 않고 InventoryItem에만 기록합니다.
-            // 이렇게 해야 같은 ItemInstance 구조를 장비/무기/스크롤/포션이 공유해도 수량 책임이 섞이지 않습니다.
+            // ???щ’??留뚮뱾 ?뚮룄 ?섎웾? ItemInstance???곗? ?딄퀬 InventoryItem?먮쭔 湲곕줉?⑸땲??
+            // ?대젃寃??댁빞 媛숈? ItemInstance 援ъ“瑜??λ퉬/臾닿린/?ㅽ겕濡??ъ뀡??怨듭쑀?대룄 ?섎웾 梨낆엫???욎씠吏 ?딆뒿?덈떎.
             item.SetCount(amount);
 
-            // 자동 획득 시에는 좌상단부터 훑어서 들어갈 수 있는 첫 빈 공간에 넣습니다.
+            // ?먮룞 ?띾뱷 ?쒖뿉??醫뚯긽?⑤????묒뼱???ㅼ뼱媛????덈뒗 泥?鍮?怨듦컙???ｌ뒿?덈떎.
             Vector2Int? pos = _selectedGrid.FindSpaceForItem(item);
             if (pos == null)
             {
@@ -215,11 +215,11 @@ namespace PrototypeRT
             ItemGrid targetGrid = _selectedGrid != null ? _selectedGrid : ResolveItemGrid();
             if (targetGrid == null)
             {
-                Debug.LogError("InventoryController: 아이템을 제거할 인벤토리 그리드를 찾을 수 없습니다.");
+                Debug.LogError("InventoryController: ?꾩씠?쒖쓣 ?쒓굅???몃깽?좊━ 洹몃━?쒕? 李얠쓣 ???놁뒿?덈떎.");
                 return false;
             }
 
-            // 지금 손에 들고 있던 아이템을 외부 시스템이 제거한 경우, 드래그 상태도 같이 정리합니다.
+            // 吏湲??먯뿉 ?ㅺ퀬 ?덈뜕 ?꾩씠?쒖쓣 ?몃? ?쒖뒪?쒖씠 ?쒓굅??寃쎌슦, ?쒕옒洹??곹깭??媛숈씠 ?뺣━?⑸땲??
             if (_selectedItem == item)
             {
                 _selectedItem = null;
@@ -251,14 +251,14 @@ namespace PrototypeRT
             if (item == null || item.ItemInstance == null)
                 return false;
 
-            // 스택이 2개 이상이면 아이템 UI는 그대로 두고 수량만 1 감소시킵니다.
-            // 마지막 1개를 쓸 때만 기존 삭제 흐름으로 넘겨 GameObject와 그리드 점유를 정리합니다.
+            // ?ㅽ깮??2媛??댁긽?대㈃ ?꾩씠??UI??洹몃?濡??먭퀬 ?섎웾留?1 媛먯냼?쒗궢?덈떎.
+            // 留덉?留?1媛쒕? ???뚮쭔 湲곗〈 ??젣 ?먮쫫?쇰줈 ?섍꺼 GameObject? 洹몃━???먯쑀瑜??뺣━?⑸땲??
             if (item.Count > 1)
             {
                 item.TryDecreaseCount(1);
 
-                // 더블클릭 사용 직후에는 아이템이 손에 들려 있을 수 있으므로,
-                // 수량만 줄인 뒤에는 원래 칸으로 되돌려 드래그 상태를 끝냅니다.
+                // ?붾툝?대┃ ?ъ슜 吏곹썑?먮뒗 ?꾩씠?쒖씠 ?먯뿉 ?ㅻ젮 ?덉쓣 ???덉쑝誘濡?
+                // ?섎웾留?以꾩씤 ?ㅼ뿉???먮옒 移몄쑝濡??섎룎???쒕옒洹??곹깭瑜??앸깄?덈떎.
                 if (_selectedItem == item)
                     CancelDragAndReturnItem();
 
@@ -273,12 +273,12 @@ namespace PrototypeRT
         }
 
         /// <summary>
-        /// 현재 마우스에 들고 있는 아이템을 인벤토리 소유 목록과 드래그 상태에서 제거합니다.
-        /// 장비 장착처럼 GameObject를 보관해야 하는 경우 destroyObject=false, 포션/스크롤 소비처럼 사라져야 하는 경우 true를 사용합니다.
+        /// ?꾩옱 留덉슦?ㅼ뿉 ?ㅺ퀬 ?덈뒗 ?꾩씠?쒖쓣 ?몃깽?좊━ ?뚯쑀 紐⑸줉怨??쒕옒洹??곹깭?먯꽌 ?쒓굅?⑸땲??
+        /// ?λ퉬 ?μ갑泥섎읆 GameObject瑜?蹂닿??댁빞 ?섎뒗 寃쎌슦 destroyObject=false, ?ъ뀡/?ㅽ겕濡??뚮퉬泥섎읆 ?щ씪?몄빞 ?섎뒗 寃쎌슦 true瑜??ъ슜?⑸땲??
         /// </summary>
         public bool TryConsumeHeldItem(InventoryItem expected, bool destroyObject)
         {
-            // 손에 든 아이템과 요청 아이템이 다르면 다른 시스템이 잘못된 아이템을 소비하려는 것이므로 실패합니다.
+            // ?먯뿉 ???꾩씠?쒓낵 ?붿껌 ?꾩씠?쒖씠 ?ㅻⅤ硫??ㅻⅨ ?쒖뒪?쒖씠 ?섎せ???꾩씠?쒖쓣 ?뚮퉬?섎젮??寃껋씠誘濡??ㅽ뙣?⑸땲??
             if (expected == null || _selectedItem != expected)
                 return false;
 
@@ -303,7 +303,7 @@ namespace PrototypeRT
 
             if (_selectedItem != null)
             {
-                Debug.LogWarning("InventoryController: 이미 손에 든 아이템이 있어 새 아이템을 들 수 없습니다.");
+                Debug.LogWarning("InventoryController: ?대? ?먯뿉 ???꾩씠?쒖씠 ?덉뼱 ???꾩씠?쒖쓣 ?????놁뒿?덈떎.");
                 return;
             }
 
@@ -333,14 +333,14 @@ namespace PrototypeRT
         {
             if (item == null) return false;
 
-            // 자동 장착 교체처럼 "실제로 넣기 전"에 공간만 확인해야 하는 흐름에서 사용합니다.
+            // ?먮룞 ?μ갑 援먯껜泥섎읆 "?ㅼ젣濡??ｊ린 ????怨듦컙留??뺤씤?댁빞 ?섎뒗 ?먮쫫?먯꽌 ?ъ슜?⑸땲??
             ItemGrid targetGrid = ResolveItemGrid();
             return targetGrid != null && targetGrid.FindSpaceForItem(item).HasValue;
         }
 
         /// <summary>
-        /// 아이템을 기본 인벤토리 그리드의 첫 빈 공간에 자동 배치합니다.
-        /// 장비 교체 후 기존 장비를 가방으로 돌려보낼 때 사용합니다.
+        /// ?꾩씠?쒖쓣 湲곕낯 ?몃깽?좊━ 洹몃━?쒖쓽 泥?鍮?怨듦컙???먮룞 諛곗튂?⑸땲??
+        /// ?λ퉬 援먯껜 ??湲곗〈 ?λ퉬瑜?媛諛⑹쑝濡??뚮젮蹂대궪 ???ъ슜?⑸땲??
         /// </summary>
         public bool TryPlaceInDefaultGrid(InventoryItem item)
         {
@@ -349,11 +349,11 @@ namespace PrototypeRT
             ItemGrid targetGrid = ResolveItemGrid();
             if (targetGrid == null) return false;
 
-            // 실제 배치 전에 FindSpaceForItem으로 좌상단 빈칸을 찾습니다.
+            // ?ㅼ젣 諛곗튂 ?꾩뿉 FindSpaceForItem?쇰줈 醫뚯긽??鍮덉뭏??李얠뒿?덈떎.
             Vector2Int? pos = targetGrid.FindSpaceForItem(item);
             if (pos == null) return false;
 
-            // 장착 중 숨겨뒀던 InventoryItem도 다시 보이게 켠 뒤 그리드 아래로 배치합니다.
+            // ?μ갑 以??④꺼???InventoryItem???ㅼ떆 蹂댁씠寃?耳???洹몃━???꾨옒濡?諛곗튂?⑸땲??
             item.gameObject.SetActive(true);
             targetGrid.PlaceItemInternal(item, pos.Value.x, pos.Value.y);
             item.SetRaycastTarget(true);
@@ -368,20 +368,20 @@ namespace PrototypeRT
         {
             if (itemPrefab == null || itemInstance == null || itemInstance.data == null || parent == null)
             {
-                Debug.LogError("InventoryController: 아이템 UI 뷰를 만들기 위한 Prefab, ItemData, Parent 연결을 확인해야 합니다.");
+                Debug.LogError("InventoryController: ?꾩씠??UI 酉곕? 留뚮뱾湲??꾪븳 Prefab, ItemData, Parent ?곌껐???뺤씤?댁빞 ?⑸땲??");
                 return null;
             }   
 
             InventoryItem item = Instantiate(itemPrefab, parent);
 
-            // playerOwned가 false인 뷰는 상점/보상 미리보기처럼 인벤토리 소유물이 아닌 표시용으로 쓸 수 있습니다.
+            // playerOwned媛 false??酉곕뒗 ?곸젏/蹂댁긽 誘몃━蹂닿린泥섎읆 ?몃깽?좊━ ?뚯쑀臾쇱씠 ?꾨땶 ?쒖떆?⑹쑝濡??????덉뒿?덈떎.
             item.Set(itemInstance, playerOwned ? this : null);
             return item;
         }
 
         /// <summary>
-        /// 인벤토리 패널의 열림 상태를 외부 토글 컴포넌트가 알려줄 때 사용합니다.
-        /// 닫히는 순간에는 들고 있던 아이템을 원래 칸으로 되돌리고, 이후 클릭 입력을 차단합니다.
+        /// ?몃깽?좊━ ?⑤꼸???대┝ ?곹깭瑜??몃? ?좉? 而댄룷?뚰듃媛 ?뚮젮以????ъ슜?⑸땲??
+        /// ?ロ엳???쒓컙?먮뒗 ?ㅺ퀬 ?덈뜕 ?꾩씠?쒖쓣 ?먮옒 移몄쑝濡??섎룎由ш퀬, ?댄썑 ?대┃ ?낅젰??李⑤떒?⑸땲??
         /// </summary>
         public void SetInventoryOpen(bool isOpen)
         {
@@ -390,16 +390,16 @@ namespace PrototypeRT
         }
 
         /// <summary>
-        /// 인벤토리 클릭 입력을 막거나 다시 허용합니다.
-        /// 입력을 막을 때는 현재 드래그 중인 아이템이 사라지지 않도록 먼저 원위치로 되돌립니다.
+        /// ?몃깽?좊━ ?대┃ ?낅젰??留됯굅???ㅼ떆 ?덉슜?⑸땲??
+        /// ?낅젰??留됱쓣 ?뚮뒗 ?꾩옱 ?쒕옒洹?以묒씤 ?꾩씠?쒖씠 ?щ씪吏吏 ?딅룄濡?癒쇱? ?먯쐞移섎줈 ?섎룎由쎈땲??
         /// </summary>
         public void SetPointerInputBlocked(bool value)
         {
             _isPointerInputBlocked = value;
             if (!value) return;
 
-            // 단순히 _selectedItem = null만 하면 그리드에서 빠져 있던 아이템이 돌아갈 곳을 잃습니다.
-            // 그래서 입력을 막기 전에 반드시 드래그 취소 처리를 먼저 실행합니다.
+            // ?⑥닚??_selectedItem = null留??섎㈃ 洹몃━?쒖뿉??鍮좎졇 ?덈뜕 ?꾩씠?쒖씠 ?뚯븘媛?怨녹쓣 ?껋뒿?덈떎.
+            // 洹몃옒???낅젰??留됯린 ?꾩뿉 諛섎뱶???쒕옒洹?痍⑥냼 泥섎━瑜?癒쇱? ?ㅽ뻾?⑸땲??
             CancelDragAndReturnItem();
 
             _overlapItem = null;
@@ -407,7 +407,7 @@ namespace PrototypeRT
         }
 
         /// <summary>
-        /// 플레이어 소유 인벤토리에 넣을 아이템 UI를 Canvas 아래에 생성합니다.
+        /// ?뚮젅?댁뼱 ?뚯쑀 ?몃깽?좊━???ｌ쓣 ?꾩씠??UI瑜?Canvas ?꾨옒???앹꽦?⑸땲??
         /// </summary>
         private InventoryItem CreateInventoryItem(ItemInstance itemInstance)
         {
@@ -416,8 +416,8 @@ namespace PrototypeRT
 
         private bool TryMergeStack(ItemInstance itemInstance, int amount)
         {
-            // 이번 스택 시스템은 YJW ItemBase를 건드리지 않기 위해,
-            // "스택 가능 여부"를 인벤토리 쪽 타입 검사로만 결정합니다.
+            // ?대쾲 ?ㅽ깮 ?쒖뒪?쒖? YJW ItemBase瑜?嫄대뱶由ъ? ?딄린 ?꾪빐,
+            // "?ㅽ깮 媛???щ?"瑜??몃깽?좊━ 履????寃?щ줈留?寃곗젙?⑸땲??
             if (!IsStackableItem(itemInstance.data))
                 return false;
 
@@ -426,12 +426,12 @@ namespace PrototypeRT
                 if (item == null || item.ItemInstance == null)
                     continue;
 
-                // 같은 ScriptableObject 참조면 같은 포션/스크롤로 보고 한 칸에 합칩니다.
+                // 媛숈? ScriptableObject 李몄“硫?媛숈? ?ъ뀡/?ㅽ겕濡ㅻ줈 蹂닿퀬 ??移몄뿉 ?⑹묩?덈떎.
                 if (item.ItemData != itemInstance.data)
                     continue;
 
-                // 기존 슬롯에 합쳐질 때도 ItemInstance는 건드리지 않습니다.
-                // 스택은 보관 방식의 문제라서 InventoryItem.Count만 증가시키는 것이 책임 분리에 맞습니다.
+                // 湲곗〈 ?щ’???⑹퀜吏??뚮룄 ItemInstance??嫄대뱶由ъ? ?딆뒿?덈떎.
+                // ?ㅽ깮? 蹂닿? 諛⑹떇??臾몄젣?쇱꽌 InventoryItem.Count留?利앷??쒗궎??寃껋씠 梨낆엫 遺꾨━??留욎뒿?덈떎.
                 item.AddCount(amount);
                 RaiseInventoryChanged();
                 return true;
@@ -445,14 +445,14 @@ namespace PrototypeRT
             if (itemData == null)
                 return false;
 
-            // 장비는 강화/저주/감정 같은 개별 상태가 있으므로 합치지 않습니다.
-            // 현재는 포션과 스크롤만 안전하게 스택 대상으로 봅니다.
+            // ?λ퉬??媛뺥솕/?二?媛먯젙 媛숈? 媛쒕퀎 ?곹깭媛 ?덉쑝誘濡??⑹튂吏 ?딆뒿?덈떎.
+            // ?꾩옱???ъ뀡怨??ㅽ겕濡ㅻ쭔 ?덉쟾?섍쾶 ?ㅽ깮 ??곸쑝濡?遊낅땲??
             return itemData is PotionData || itemData.ItemType == ItemType.Scroll;
         }
 
         private void ResolveUseControllers()
         {
-            // 씬에 직접 붙여두지 않아도 더블클릭 사용 흐름이 동작하도록 같은 오브젝트에 자동으로 붙입니다.
+            // ?ъ뿉 吏곸젒 遺숈뿬?먯? ?딆븘???붾툝?대┃ ?ъ슜 ?먮쫫???숈옉?섎룄濡?媛숈? ?ㅻ툕?앺듃???먮룞?쇰줈 遺숈엯?덈떎.
             if (targetingController == null)
                 targetingController = GetComponent<InventoryTargetingController>();
 
@@ -461,7 +461,7 @@ namespace PrototypeRT
 
             targetingController.Configure(this);
 
-            // 사용 컨트롤러는 대상 지정 컨트롤러를 필요로 하므로 targetingController 준비 뒤 초기화합니다.
+            // ?ъ슜 而⑦듃濡ㅻ윭?????吏??而⑦듃濡ㅻ윭瑜??꾩슂濡??섎?濡?targetingController 以鍮???珥덇린?뷀빀?덈떎.
             if (itemUseController == null)
                 itemUseController = GetComponent<InventoryItemUseController>();
 
@@ -472,8 +472,8 @@ namespace PrototypeRT
         }
 
         /// <summary>
-        /// 현재 씬에서 사용할 ItemGrid를 찾습니다.
-        /// 활성 오브젝트에서 먼저 찾고, 없으면 비활성 UI 오브젝트까지 포함해서 다시 탐색합니다.
+        /// ?꾩옱 ?ъ뿉???ъ슜??ItemGrid瑜?李얠뒿?덈떎.
+        /// ?쒖꽦 ?ㅻ툕?앺듃?먯꽌 癒쇱? 李얘퀬, ?놁쑝硫?鍮꾪솢??UI ?ㅻ툕?앺듃源뚯? ?ы븿?댁꽌 ?ㅼ떆 ?먯깋?⑸땲??
         /// </summary>
         private ItemGrid ResolveItemGrid()
         {
@@ -483,8 +483,8 @@ namespace PrototypeRT
             ItemGrid activeGrid = FindFirstObjectByType<ItemGrid>();
             if (activeGrid != null && !activeGrid.AcceptOnlyOneByOneItems) return activeGrid;
 
-            // 인벤토리 패널이 비활성화된 상태에서도 드랍 아이템 획득은 가능해야 하므로,
-            // 씬에 존재하지만 비활성화된 UI까지 포함해서 한 번 더 찾습니다.
+            // ?몃깽?좊━ ?⑤꼸??鍮꾪솢?깊솕???곹깭?먯꽌???쒕엻 ?꾩씠???띾뱷? 媛?ν빐???섎?濡?
+            // ?ъ뿉 議댁옱?섏?留?鍮꾪솢?깊솕??UI源뚯? ?ы븿?댁꽌 ??踰???李얠뒿?덈떎.
             ItemGrid[] allGrids = Resources.FindObjectsOfTypeAll<ItemGrid>();
             foreach (ItemGrid grid in allGrids)
             {
@@ -495,7 +495,7 @@ namespace PrototypeRT
             return null;
         }
 
-        private void RefreshSelectedGridUnderMouse()
+        public void RefreshSelectedGridUnderMouse()
         {
             ItemGrid hoveredGrid = FindGridUnderMouse();
             if (hoveredGrid != null)
@@ -522,13 +522,13 @@ namespace PrototypeRT
         }
 
         /// <summary>
-        /// 마우스 왼쪽 클릭 입력을 처리합니다.
-        /// 손에 든 아이템이 없으면 집고, 이미 들고 있으면 현재 칸에 배치를 시도합니다.
-        /// 실질적인 게임에서 더블클릭시 사용을 호출하는 시작점
+        /// 留덉슦???쇱そ ?대┃ ?낅젰??泥섎━?⑸땲??
+        /// ?먯뿉 ???꾩씠?쒖씠 ?놁쑝硫?吏묎퀬, ?대? ?ㅺ퀬 ?덉쑝硫??꾩옱 移몄뿉 諛곗튂瑜??쒕룄?⑸땲??
+        /// ?ㅼ쭏?곸씤 寃뚯엫?먯꽌 ?붾툝?대┃???ъ슜???몄텧?섎뒗 ?쒖옉??
         /// </summary>
         private void HandleLeftClick()
         {
-            // 들고 있는 아이템을 인벤토리 패널 밖에 놓으면, 그리드 배치가 아니라 플레이어 발밑 드랍으로 해석합니다.
+            // ?ㅺ퀬 ?덈뒗 ?꾩씠?쒖쓣 ?몃깽?좊━ ?⑤꼸 諛뽰뿉 ?볦쑝硫? 洹몃━??諛곗튂媛 ?꾨땲???뚮젅?댁뼱 諛쒕컩 ?쒕엻?쇰줈 ?댁꽍?⑸땲??
             if (_selectedItem != null && IsPointerOutsideInventoryPanel())
             {
                 TryDropSelectedItemToGround();
@@ -536,7 +536,7 @@ namespace PrototypeRT
                 return;
             }
 
-            // 드래그 우선 방식: 첫 클릭은 기존처럼 집고, 같은 아이템을 짧은 시간 안에 다시 클릭하면 사용으로 전환합니다.
+            // ?쒕옒洹??곗꽑 諛⑹떇: 泥??대┃? 湲곗〈泥섎읆 吏묎퀬, 媛숈? ?꾩씠?쒖쓣 吏㏃? ?쒓컙 ?덉뿉 ?ㅼ떆 ?대┃?섎㈃ ?ъ슜?쇰줈 ?꾪솚?⑸땲??
             if (_selectedItem != null && IsDoubleClickOnSelectedItem())
             {
                 itemUseController?.TryUseDoubleClickedItem(_selectedItem);
@@ -548,43 +548,43 @@ namespace PrototypeRT
 
             Vector2Int gridPos = GetMouseGridPosition();
 
-            // 손이 비어 있으면 클릭한 칸의 아이템을 집고, 들고 있으면 현재 위치에 내려놓습니다.
+            // ?먯씠 鍮꾩뼱 ?덉쑝硫??대┃??移몄쓽 ?꾩씠?쒖쓣 吏묎퀬, ?ㅺ퀬 ?덉쑝硫??꾩옱 ?꾩튂???대젮?볦뒿?덈떎.
             if (_selectedItem == null) TryPickUpItem(gridPos);
             else TryPlaceSelectedItem(gridPos);
         }
 
         /// <summary>
-        /// 지정한 그리드 좌표에 있는 아이템을 집어 마우스 드래그 상태로 전환합니다.
-        /// 클릭한 칸이 비어 있으면 아무 일도 하지 않습니다.
+        /// 吏?뺥븳 洹몃━??醫뚰몴???덈뒗 ?꾩씠?쒖쓣 吏묒뼱 留덉슦???쒕옒洹??곹깭濡??꾪솚?⑸땲??
+        /// ?대┃??移몄씠 鍮꾩뼱 ?덉쑝硫??꾨Т ?쇰룄 ?섏? ?딆뒿?덈떎.
         /// </summary>
         private void TryPickUpItem(Vector2Int gridPos)
         {
-            // PickUpItem()을 호출하면 해당 아이템이 그리드 슬롯 배열에서 빠집니다.
-            // 그래서 호출 전에 GetItemAt()으로 아이템을 먼저 찾고, 원래 칸 정보를 저장해야 합니다.
+            // PickUpItem()???몄텧?섎㈃ ?대떦 ?꾩씠?쒖씠 洹몃━???щ’ 諛곗뿴?먯꽌 鍮좎쭛?덈떎.
+            // 洹몃옒???몄텧 ?꾩뿉 GetItemAt()?쇰줈 ?꾩씠?쒖쓣 癒쇱? 李얘퀬, ?먮옒 移??뺣낫瑜???ν빐???⑸땲??
             InventoryItem item = _selectedGrid.GetItemAt(gridPos.x, gridPos.y);
             if (item == null) return;
 
             SaveDragStartPosition(item);
 
-            // 실제로 아이템을 그리드에서 빼서 손에 듭니다.
-            // 이 호출은 한 번만 해야 합니다. 두 번 호출하면 첫 호출에서 이미 빠져서 두 번째는 null이 될 수 있습니다.
+            // ?ㅼ젣濡??꾩씠?쒖쓣 洹몃━?쒖뿉??鍮쇱꽌 ?먯뿉 ??땲??
+            // ???몄텧? ??踰덈쭔 ?댁빞 ?⑸땲?? ??踰??몄텧?섎㈃ 泥??몄텧?먯꽌 ?대? 鍮좎졇????踰덉㎏??null???????덉뒿?덈떎.
             _selectedItem = _selectedGrid.PickUpItem(gridPos.x, gridPos.y);
             if (_selectedItem == null) return;
 
             _selectedItem.SetRaycastTarget(false);
-            // 더블클릭 판정을 위해 "방금 집은 아이템"과 집은 시간을 기록합니다.
+            // ?붾툝?대┃ ?먯젙???꾪빐 "諛⑷툑 吏묒? ?꾩씠??怨?吏묒? ?쒓컙??湲곕줉?⑸땲??
             _lastPickedItem = _selectedItem;
             _lastPickTime = Time.unscaledTime;
             _dragRect = _selectedItem.GetComponent<RectTransform>();
 
-            // 드래그 중인 아이템은 Canvas 최상단으로 올려 다른 슬롯/아이템 뒤에 가려지지 않게 합니다.
+            // ?쒕옒洹?以묒씤 ?꾩씠?쒖? Canvas 理쒖긽?⑥쑝濡??щ젮 ?ㅻⅨ ?щ’/?꾩씠???ㅼ뿉 媛?ㅼ?吏 ?딄쾶 ?⑸땲??
             _dragRect.SetParent(canvasTransform, true);
             BringDraggedItemToFront();
         }
 
         /// <summary>
-        /// 드래그를 시작한 아이템의 원래 위치를 저장합니다.
-        /// 나중에 인벤토리가 닫히거나 드래그가 취소되면 이 정보로 아이템을 제자리로 돌려보냅니다.
+        /// ?쒕옒洹몃? ?쒖옉???꾩씠?쒖쓽 ?먮옒 ?꾩튂瑜???ν빀?덈떎.
+        /// ?섏쨷???몃깽?좊━媛 ?ロ엳嫄곕굹 ?쒕옒洹멸? 痍⑥냼?섎㈃ ???뺣낫濡??꾩씠?쒖쓣 ?쒖옄由щ줈 ?뚮젮蹂대깄?덈떎.
         /// </summary>
         private void SaveDragStartPosition(InventoryItem item)
         {
@@ -594,8 +594,8 @@ namespace PrototypeRT
         }
 
         /// <summary>
-        /// 저장해둔 드래그 시작 위치를 비웁니다.
-        /// 아이템 배치가 끝났거나 드래그 취소 처리가 끝났을 때 이전 좌표가 남지 않게 합니다.
+        /// ??ν빐???쒕옒洹??쒖옉 ?꾩튂瑜?鍮꾩썎?덈떎.
+        /// ?꾩씠??諛곗튂媛 ?앸궗嫄곕굹 ?쒕옒洹?痍⑥냼 泥섎━媛 ?앸궗?????댁쟾 醫뚰몴媛 ?⑥? ?딄쾶 ?⑸땲??
         /// </summary>
         private void ClearDragStartPosition()
         {
@@ -605,8 +605,8 @@ namespace PrototypeRT
         }
 
         /// <summary>
-        /// 현재 들고 있는 아이템을 지정한 그리드 좌표에 내려놓으려고 시도합니다.
-        /// 배치 위치에 아이템 하나만 겹치면 서로 교체하는 방식으로 처리합니다.
+        /// ?꾩옱 ?ㅺ퀬 ?덈뒗 ?꾩씠?쒖쓣 吏?뺥븳 洹몃━??醫뚰몴???대젮?볦쑝?ㅺ퀬 ?쒕룄?⑸땲??
+        /// 諛곗튂 ?꾩튂???꾩씠???섎굹留?寃뱀튂硫??쒕줈 援먯껜?섎뒗 諛⑹떇?쇰줈 泥섎━?⑸땲??
         /// </summary>
         private void TryPlaceSelectedItem(Vector2Int gridPos)
         {
@@ -624,10 +624,10 @@ namespace PrototypeRT
             _selectedItem = null;
             if (_overlapItem != null)
             {
-                // 배치 위치에 단 하나의 아이템만 겹쳤다면 서로 교체합니다.
-                // 새 아이템은 그리드에 내려놓고, 겹쳐 있던 아이템을 손에 든 상태로 전환합니다.
-                // 이때 _dragStartX/Y는 그대로 둡니다. 그래야 인벤토리를 닫으면 겹쳐 있던 아이템이
-                // 방금 비워진 "처음 들었던 아이템의 자리"로 돌아갈 수 있습니다.
+                // 諛곗튂 ?꾩튂?????섎굹???꾩씠?쒕쭔 寃뱀낀?ㅻ㈃ ?쒕줈 援먯껜?⑸땲??
+                // ???꾩씠?쒖? 洹몃━?쒖뿉 ?대젮?볤퀬, 寃뱀퀜 ?덈뜕 ?꾩씠?쒖쓣 ?먯뿉 ???곹깭濡??꾪솚?⑸땲??
+                // ?대븣 _dragStartX/Y??洹몃?濡??〓땲?? 洹몃옒???몃깽?좊━瑜??レ쑝硫?寃뱀퀜 ?덈뜕 ?꾩씠?쒖씠
+                // 諛⑷툑 鍮꾩썙吏?"泥섏쓬 ?ㅼ뿀???꾩씠?쒖쓽 ?먮━"濡??뚯븘媛????덉뒿?덈떎.
                 _selectedItem = _overlapItem;
                 _overlapItem = null;
                 _selectedItem.SetRaycastTarget(false);
@@ -637,7 +637,7 @@ namespace PrototypeRT
             }
             else
             {
-                // 완전히 빈 칸에 내려놓았다면 드래그가 끝난 것이므로 원래 위치 백업은 더 이상 필요 없습니다.
+                // ?꾩쟾??鍮?移몄뿉 ?대젮?볦븯?ㅻ㈃ ?쒕옒洹멸? ?앸궃 寃껋씠誘濡??먮옒 ?꾩튂 諛깆뾽? ???댁긽 ?꾩슂 ?놁뒿?덈떎.
                 _dragRect = null;
                 ClearDragStartPosition();
             }
@@ -650,37 +650,37 @@ namespace PrototypeRT
             if (_selectedItem == null || _selectedItem.ItemInstance == null)
                 return;
 
-            // 바닥 드랍은 KDU/YJW ItemPickup 프리팹을 사용하지만,
-            // "어느 칸에 몇 개가 쌓였는가"는 GroundItemController가 관리합니다.
+            // 諛붾떏 ?쒕엻? KDU/YJW ItemPickup ?꾨━?뱀쓣 ?ъ슜?섏?留?
+            // "?대뒓 移몄뿉 紐?媛쒓? ?볦??붽?"??GroundItemController媛 愿由ы빀?덈떎.
             ResolveGroundItemController();
             if (groundItemController == null)
             {
-                Debug.LogWarning("InventoryController: GroundItemController를 찾지 못해 아이템을 버릴 수 없습니다.");
+                Debug.LogWarning("InventoryController: GroundItemController瑜?李얠? 紐삵빐 ?꾩씠?쒖쓣 踰꾨┫ ???놁뒿?덈떎.");
                 return;
             }
 
             InventoryItem itemToDrop = _selectedItem;
             if (!groundItemController.DropItem(itemToDrop.ItemInstance, itemToDrop.Count))
             {
-                Debug.LogWarning("InventoryController: 바닥 아이템 프리팹, 플레이어, GridSystem 연결을 확인해야 합니다.");
+                Debug.LogWarning("InventoryController: 諛붾떏 ?꾩씠???꾨━?? ?뚮젅?댁뼱, GridSystem ?곌껐???뺤씤?댁빞 ?⑸땲??");
                 return;
             }
 
-            // 드랍 성공 후에만 인벤토리 UI와 소유 목록에서 제거합니다. 실패하면 계속 손에 든 상태를 유지합니다.
-            // 장비/강화/저주 상태는 ItemInstance를 이미 바닥 픽업에 넘겼으므로 여기서는 UI만 정리합니다.
+            // ?쒕엻 ?깃났 ?꾩뿉留??몃깽?좊━ UI? ?뚯쑀 紐⑸줉?먯꽌 ?쒓굅?⑸땲?? ?ㅽ뙣?섎㈃ 怨꾩냽 ?먯뿉 ???곹깭瑜??좎??⑸땲??
+            // ?λ퉬/媛뺥솕/?二??곹깭??ItemInstance瑜??대? 諛붾떏 ?쎌뾽???섍꼈?쇰?濡??ш린?쒕뒗 UI留??뺣━?⑸땲??
             TryConsumeHeldItem(itemToDrop, true);
         }
 
         /// <summary>
-        /// 현재 마우스 화면 좌표를 선택된 인벤토리 그리드의 칸 좌표로 변환합니다.
-        /// 큰 아이템을 들고 있을 때는 아이템의 좌상단 칸이 기준이 되도록 좌표를 보정합니다.
+        /// ?꾩옱 留덉슦???붾㈃ 醫뚰몴瑜??좏깮???몃깽?좊━ 洹몃━?쒖쓽 移?醫뚰몴濡?蹂?섑빀?덈떎.
+        /// ???꾩씠?쒖쓣 ?ㅺ퀬 ?덉쓣 ?뚮뒗 ?꾩씠?쒖쓽 醫뚯긽??移몄씠 湲곗????섎룄濡?醫뚰몴瑜?蹂댁젙?⑸땲??
         /// </summary>
         private Vector2Int GetMouseGridPosition()
         {
             Vector2 mousePos = Input.mousePosition;
             if (_selectedItem != null)
             {
-                // 아이템 크기가 2칸 이상일 때도 마우스가 아이템의 좌상단 기준 칸을 가리키도록 보정합니다.
+                // ?꾩씠???ш린媛 2移??댁긽???뚮룄 留덉슦?ㅺ? ?꾩씠?쒖쓽 醫뚯긽??湲곗? 移몄쓣 媛由ы궎?꾨줉 蹂댁젙?⑸땲??
                 mousePos.x -= (_selectedItem.ItemData.Width - 1) * ItemGrid.TileWidth / 2f;
                 mousePos.y += (_selectedItem.ItemData.Height - 1) * ItemGrid.TileHeight / 2f;
             }
@@ -698,10 +698,10 @@ namespace PrototypeRT
         }
 
         /// <summary>
-        /// 드랍 판정 기준이 되는 인벤토리 전체 패널을 찾습니다.
-        /// 인스펙터에 연결되어 있으면 그 값을 쓰고, 없으면 기본 인벤토리 그리드의 부모 RectTransform을 임시 기준으로 씁니다.
+        /// ?쒕엻 ?먯젙 湲곗????섎뒗 ?몃깽?좊━ ?꾩껜 ?⑤꼸??李얠뒿?덈떎.
+        /// ?몄뒪?숉꽣???곌껐?섏뼱 ?덉쑝硫?洹?媛믪쓣 ?곌퀬, ?놁쑝硫?湲곕낯 ?몃깽?좊━ 洹몃━?쒖쓽 遺紐?RectTransform???꾩떆 湲곗??쇰줈 ?곷땲??
         /// </summary>
-        private RectTransform ResolveInventoryPanelRect()
+        public RectTransform ResolveInventoryPanelRect()
         {
             if (inventoryPanelRect != null)
                 return inventoryPanelRect;
@@ -714,8 +714,8 @@ namespace PrototypeRT
         }
 
         /// <summary>
-        /// Canvas 모드가 Overlay가 아니어도 같은 방식으로 마우스가 Rect 안에 있는지 검사합니다.
-        /// 인벤토리 패널 밖 드랍 판정이 UI 카메라 설정에 따라 흔들리지 않게 하기 위한 보정입니다.
+        /// Canvas 紐⑤뱶媛 Overlay媛 ?꾨땲?대룄 媛숈? 諛⑹떇?쇰줈 留덉슦?ㅺ? Rect ?덉뿉 ?덈뒗吏 寃?ы빀?덈떎.
+        /// ?몃깽?좊━ ?⑤꼸 諛??쒕엻 ?먯젙??UI 移대찓???ㅼ젙???곕씪 ?붾뱾由ъ? ?딄쾶 ?섍린 ?꾪븳 蹂댁젙?낅땲??
         /// </summary>
         private static bool IsPointerInsideRect(RectTransform rect)
         {
@@ -731,7 +731,7 @@ namespace PrototypeRT
         }
 
         /// <summary>
-        /// 드래그 중인 아이템 UI가 매 프레임 마우스 위치를 따라오도록 갱신합니다.
+        /// ?쒕옒洹?以묒씤 ?꾩씠??UI媛 留??꾨젅??留덉슦???꾩튂瑜??곕씪?ㅻ룄濡?媛깆떊?⑸땲??
         /// </summary>
         private void DragSelectedItemIcon()
         {
@@ -745,13 +745,13 @@ namespace PrototypeRT
         {
             if (_dragRect == null) return;
 
-            // 하이라이트/다른 UI가 sibling 순서를 바꿔도 손에 든 아이템은 항상 가장 위에 보이게 합니다.
+            // ?섏씠?쇱씠???ㅻⅨ UI媛 sibling ?쒖꽌瑜?諛붽퓭???먯뿉 ???꾩씠?쒖? ??긽 媛???꾩뿉 蹂댁씠寃??⑸땲??
             _dragRect.SetAsLastSibling();
         }
 
         /// <summary>
-        /// 현재 손에 들고 있는 아이템을 드래그 시작 위치로 되돌리고, 드래그 상태를 정리합니다.
-        /// 인벤토리 패널을 닫을 때 이 처리를 하지 않으면 아이템 UI가 Canvas 아래에 떠 있거나 슬롯에서 빠질 수 있습니다.
+        /// ?꾩옱 ?먯뿉 ?ㅺ퀬 ?덈뒗 ?꾩씠?쒖쓣 ?쒕옒洹??쒖옉 ?꾩튂濡??섎룎由ш퀬, ?쒕옒洹??곹깭瑜??뺣━?⑸땲??
+        /// ?몃깽?좊━ ?⑤꼸???レ쓣 ????泥섎━瑜??섏? ?딆쑝硫??꾩씠??UI媛 Canvas ?꾨옒?????덇굅???щ’?먯꽌 鍮좎쭏 ???덉뒿?덈떎.
         /// </summary>
         public void CancelDragAndReturnItem()
         {
@@ -772,7 +772,7 @@ namespace PrototypeRT
 
                 if (!returned)
                 {
-                    Debug.LogWarning("InventoryController: 들고 있는 아이템을 되돌릴 빈 인벤토리 칸을 찾지 못했습니다.");
+                    Debug.LogWarning("InventoryController: ?ㅺ퀬 ?덈뒗 ?꾩씠?쒖쓣 ?섎룎由?鍮??몃깽?좊━ 移몄쓣 李얠? 紐삵뻽?듬땲??");
                     return;
                 }
 
@@ -791,10 +791,27 @@ namespace PrototypeRT
             if (_selectedItem == null || _lastPickedItem != _selectedItem)
                 return false;
 
-            // Time.timeScale 영향을 받지 않도록 unscaledTime 기준으로 판정합니다.
+            // Time.timeScale ?곹뼢??諛쏆? ?딅룄濡?unscaledTime 湲곗??쇰줈 ?먯젙?⑸땲??
             return Time.unscaledTime - _lastPickTime <= doubleClickMaxDelay;
         }
 
+        public bool TryReturnSelectedItemToDefaultGrid(InventoryItem item)
+        {
+            if (item == null) return true;
+
+            ItemGrid targetGrid = ResolveItemGrid();
+            if (targetGrid == null) return false;
+
+            Vector2Int? pos = targetGrid.FindSpaceForItem(item);
+            if (pos == null) return false;
+
+            targetGrid.PlaceItemInternal(item, pos.Value.x, pos.Value.y);
+            item.SetRaycastTarget(true);
+            if (!_items.Contains(item))
+                _items.Add(item);
+
+            return true;
+        }
         private bool TryReturnSelectedItemToDefaultGrid()
         {
             if (_selectedItem == null) return true;
@@ -814,8 +831,8 @@ namespace PrototypeRT
         }
 
         /// <summary>
-        /// 이 컴포넌트가 꺼질 때 드래그 상태가 남아 있으면 안전하게 원위치로 되돌립니다.
-        /// 패널 토글에서 SetInventoryOpen(false)를 호출하는 것이 주 경로이고, 이 함수는 예외 상황 대비용입니다.
+        /// ??而댄룷?뚰듃媛 爰쇱쭏 ???쒕옒洹??곹깭媛 ?⑥븘 ?덉쑝硫??덉쟾?섍쾶 ?먯쐞移섎줈 ?섎룎由쎈땲??
+        /// ?⑤꼸 ?좉??먯꽌 SetInventoryOpen(false)瑜??몄텧?섎뒗 寃껋씠 二?寃쎈줈?닿퀬, ???⑥닔???덉쇅 ?곹솴 ?鍮꾩슜?낅땲??
         /// </summary>
         private void OnDisable()
         {
@@ -823,15 +840,15 @@ namespace PrototypeRT
         }
 
         /// <summary>
-        /// 마우스 위치와 현재 드래그 상태에 맞춰 인벤토리 하이라이트의 표시 여부, 크기, 위치를 갱신합니다.
-        /// 빈손일 때는 마우스 아래 아이템을, 아이템을 들고 있을 때는 배치될 영역을 보여줍니다.
+        /// 留덉슦???꾩튂? ?꾩옱 ?쒕옒洹??곹깭??留욎떠 ?몃깽?좊━ ?섏씠?쇱씠?몄쓽 ?쒖떆 ?щ?, ?ш린, ?꾩튂瑜?媛깆떊?⑸땲??
+        /// 鍮덉넀???뚮뒗 留덉슦???꾨옒 ?꾩씠?쒖쓣, ?꾩씠?쒖쓣 ?ㅺ퀬 ?덉쓣 ?뚮뒗 諛곗튂???곸뿭??蹂댁뿬以띾땲??
         /// </summary>
         private void UpdateHighlight()
         {
             Vector2Int gridPos = GetMouseGridPosition();
             if (_selectedItem == null)
             {
-                // 빈손일 때는 마우스 아래에 있는 아이템 전체 크기를 하이라이트합니다.
+                // 鍮덉넀???뚮뒗 留덉슦???꾨옒???덈뒗 ?꾩씠???꾩껜 ?ш린瑜??섏씠?쇱씠?명빀?덈떎.
                 InventoryItem target = _selectedGrid.GetItemAt(gridPos.x, gridPos.y);
                 if (target == null)
                 {
@@ -845,7 +862,7 @@ namespace PrototypeRT
             }
             else
             {
-                // 아이템을 들고 있을 때는 현재 위치에 배치 가능한 경우에만 하이라이트를 보여줍니다.
+                // ?꾩씠?쒖쓣 ?ㅺ퀬 ?덉쓣 ?뚮뒗 ?꾩옱 ?꾩튂??諛곗튂 媛?ν븳 寃쎌슦?먮쭔 ?섏씠?쇱씠?몃? 蹂댁뿬以띾땲??
                 bool valid = _selectedGrid.CanAcceptItem(_selectedItem)
                     && _selectedGrid.IsWithinBoundary(gridPos.x, gridPos.y, _selectedItem.ItemData.Width, _selectedItem.ItemData.Height);
                 _inventoryHighlight.Show(valid);
@@ -855,10 +872,10 @@ namespace PrototypeRT
         }
 
         /// <summary>
-        /// 인벤토리 내용이 바뀌었음을 외부 구독자에게 알립니다.
-        /// UI 갱신, 판매 목록 갱신, 장착 상태 갱신 같은 후처리가 이 이벤트를 구독할 수 있습니다.
+        /// ?몃깽?좊━ ?댁슜??諛붾뚯뿀?뚯쓣 ?몃? 援щ룆?먯뿉寃??뚮┰?덈떎.
+        /// UI 媛깆떊, ?먮ℓ 紐⑸줉 媛깆떊, ?μ갑 ?곹깭 媛깆떊 媛숈? ?꾩쿂由ш? ???대깽?몃? 援щ룆?????덉뒿?덈떎.
         /// </summary>
-        private void RaiseInventoryChanged()
+        public void RaiseInventoryChanged()
         {
             OnInventoryChanged?.Invoke();
         }
@@ -871,9 +888,10 @@ namespace PrototypeRT
             if (groundItemController == null)
                 groundItemController = gameObject.AddComponent<GroundItemController>();
 
-            // 자동 생성된 경우에도 인벤토리 참조가 반드시 들어가야,
-            // 바닥 아이템을 주울 때 같은 TryAddItem 규칙과 스택 규칙을 사용할 수 있습니다.
+            // ?먮룞 ?앹꽦??寃쎌슦?먮룄 ?몃깽?좊━ 李몄“媛 諛섎뱶???ㅼ뼱媛??
+            // 諛붾떏 ?꾩씠?쒖쓣 二쇱슱 ??媛숈? TryAddItem 洹쒖튃怨??ㅽ깮 洹쒖튃???ъ슜?????덉뒿?덈떎.
             groundItemController.Configure(this);
         }
     }
 }
+

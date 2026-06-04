@@ -1,33 +1,77 @@
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace PrototypeRT
 {
     /// <summary>
-    /// 인벤토리 아이템 더블클릭 사용 흐름을 담당합니다.
-    /// InventoryController는 클릭/드래그만 관리하고, 아이템 종류별 사용 분기는 이 클래스에 모읍니다.
-    /// 
-    /// 인벤토리 내에서 아이템을 더블클릭했을 때, 해당 아이템의 유형(포션, 장비, 주문서 등)을 판별하여 
-    /// 각 아이템 성격에 맞는 후속 처리(즉시 사용, 장착, 대상 지정 모드 전환)를 분기해주는 컨트롤러입니다.
+    /// 인벤토리 아이템을 더블클릭했을 때 어떤 방식으로 사용할지 결정합니다.
+    /// 아이템 종류별 처리를 한 메서드의 if-else에 몰아넣지 않기 위해 간단한 전략 목록으로 분리했습니다.
     /// </summary>
     public class InventoryItemUseController : MonoBehaviour
     {
-        [Header("참조")]
         [Tooltip("아이템을 들고 있는 상태와 인벤토리 배치를 관리하는 컨트롤러입니다.")]
         [SerializeField] private InventoryController inventoryController;
 
-        [Tooltip("투척 포션과 대상 지정 주문서의 후속 클릭 처리를 담당하는 컨트롤러입니다.")]
+        [Tooltip("투척 포션과 대상 지정 주문서의 후속 클릭 처리를 맡는 컨트롤러입니다.")]
         [SerializeField] private InventoryTargetingController targetingController;
 
-        [Tooltip("더블클릭 장비 자동 장착에 사용할 장비 컨트롤러입니다. 비워두면 씬에서 자동으로 찾습니다.")]
+        [Tooltip("더블클릭 장비 자동 착용에 사용하는 장비 컨트롤러입니다. 비워두면 씬에서 자동으로 찾습니다.")]
         [SerializeField] private NYHEquipmentController equipmentController;
 
+        private struct ItemUseStrategy
+        {
+            public Func<ItemBase, bool> Predicate;
+            public Func<InventoryItem, bool> Handler;
+        }
+
+        private readonly List<ItemUseStrategy> _useStrategies = new();
+
+        private void Awake()
+        {
+            RegisterDefaultStrategies();
+        }
+
+        private void RegisterDefaultStrategies()
+        {
+            // 부모 타입인 PotionData보다 ThrowablePotion을 먼저 검사해야 투척 포션이 즉시 사용으로 빠지지 않습니다.
+            _useStrategies.Add(new ItemUseStrategy {
+                Predicate = data => data is ThrowablePotion,
+                Handler = item => targetingController != null && targetingController.BeginThrowPotion(item)
+            });
+            _useStrategies.Add(new ItemUseStrategy {
+                Predicate = data => data is PotionData,
+                Handler = UseImmediateItem
+            });
+            _useStrategies.Add(new ItemUseStrategy {
+                Predicate = IsEquipment,
+                Handler = TryAutoEquip
+            });
+            _useStrategies.Add(new ItemUseStrategy {
+                Predicate = data => data is AnalyzeScroll,
+                Handler = item => targetingController != null && targetingController.BeginTargetScroll(item, InventoryScrollTargetKind.Analyze)
+            });
+            _useStrategies.Add(new ItemUseStrategy {
+                Predicate = data => data is ReinforceScroll,
+                Handler = item => targetingController != null && targetingController.BeginTargetScroll(item, InventoryScrollTargetKind.Reinforce)
+            });
+            _useStrategies.Add(new ItemUseStrategy {
+                Predicate = data => data is PurifyScroll,
+                Handler = item => targetingController != null && targetingController.BeginTargetScroll(item, InventoryScrollTargetKind.Purify)
+            });
+        }
+
         /// <summary>
-        /// InventoryController가 런타임에 자동으로 붙인 경우 참조를 주입할 때 사용합니다.
-        /// 씬에 직접 배치해도 되고, 자동 생성되어도 같은 초기화 경로를 타게 합니다.
-        /// 
-        /// 게임 초기화 시점에 인벤토리 조작에 필요한 핵심 컨트롤러(InventoryController 등) 간의 
-        /// 의존성을 안전하게 주입하고 연결 상태를 점검하는 역할을 합니다.
+        /// 새 아이템 타입이 추가될 때 기존 분기문을 건드리지 않고 사용 규칙만 추가하기 위한 연결점입니다.
         /// </summary>
+        public void AddUseStrategy(Func<ItemBase, bool> predicate, Func<InventoryItem, bool> handler)
+        {
+            if (predicate == null || handler == null)
+                return;
+
+            _useStrategies.Add(new ItemUseStrategy { Predicate = predicate, Handler = handler });
+        }
+
         public void Configure(InventoryController inventory, InventoryTargetingController targeting)
         {
             inventoryController = inventory;
@@ -35,13 +79,6 @@ namespace PrototypeRT
             ResolveReferences();
         }
 
-        /// <summary>
-        /// 더블클릭된 아이템을 종류별 사용 흐름으로 보냅니다.
-        /// 이 함수는 실제 클릭 판정은 하지 않고, 이미 "사용하려는 아이템"으로 확정된 InventoryItem만 처리합니다.
-        /// 
-        /// 전달된 아이템의 ItemBase 데이터를 분석하여, 소비형 아이템은 즉시 효과를 적용하고, 
-        /// 장비는 자동 장착 프로세스로 넘기며, 대상 지정이 필요한 투척/주문서류는 타겟팅 모드로 진입시킵니다.
-        /// </summary>
         public bool TryUseDoubleClickedItem(InventoryItem item)
         {
             ResolveReferences();
@@ -54,55 +91,27 @@ namespace PrototypeRT
 
             ItemBase itemData = item.ItemData;
 
-            if (itemData is ThrowablePotion)
-                return targetingController != null && targetingController.BeginThrowPotion(item);
-
-            if (itemData is PotionData)
-                return UseImmediateItem(item);
-
-            if (IsEquipment(itemData))
-                return TryAutoEquip(item);
-
-            if (itemData is AnalyzeScroll)
-                return targetingController != null && targetingController.BeginTargetScroll(item, InventoryScrollTargetKind.Analyze);
-
-            if (itemData is ReinforceScroll)
-                return targetingController != null && targetingController.BeginTargetScroll(item, InventoryScrollTargetKind.Reinforce);
-
-            if (itemData is PurifyScroll)
-                return targetingController != null && targetingController.BeginTargetScroll(item, InventoryScrollTargetKind.Purify);
-
-            // 대상 지정 방식이 연결되지 않은 일반 스크롤은 눌러도 아무 동작을 하지 않습니다.
-            // Analyze/Reinforce/Purify는 위 분기에서 커서와 대상 선택을 켭니다.
-            if (itemData.ItemType == ItemType.Scroll)
+            for (int i = 0; i < _useStrategies.Count; i++)
             {
-                // 아직 대상 지정 방식이 연결되지 않은 일반 스크롤은 인벤토리에서 눌러도 아무 동작을 하지 않는다.
-                // 즉시 Use()를 호출하면 맵 스크롤처럼 커서 변화가 없는 스크롤이 실수로 소비될 수 있어 여기서 막는다.
-                return false;
+                ItemUseStrategy strategy = _useStrategies[i];
+                if (strategy.Predicate(itemData))
+                    return strategy.Handler(item);
             }
+
+            // 대상 지정 방식이 연결되지 않은 일반 스크롤은 인벤토리에서 눌러도 아무 행동을 하지 않습니다.
+            // 즉시 Use()를 호출하면 지도 스크롤이 아닌 스크롤까지 의도치 않게 소비될 수 있어 여기서 막습니다.
+            if (itemData.ItemType == ItemType.Scroll)
+                return false;
 
             return false;
         }
 
-        /// <summary>
-        /// 대상 선택 없이 바로 효과가 나는 아이템을 사용하고 손에 든 아이템 UI를 제거합니다.
-        /// 
-        /// 즉시 회복 포션이나 지도 스크롤처럼 추가적인 대상 지정이 필요 없는 아이템의 효과(Use)를 즉각 발동시키고,
-        /// 성공 시 인벤토리 그리드 목록에서 해당 아이템을 완전히 소모 처리합니다.
-        /// </summary>
         private bool UseImmediateItem(InventoryItem item)
         {
             item.ItemData.Use();
             return inventoryController.TryConsumeOneItem(item);
         }
 
-        /// <summary>
-        /// 더블클릭한 장비를 자동 장착합니다.
-        /// 기존 장비가 있다면 먼저 그 장비가 인벤토리로 돌아갈 공간이 있는지 확인해, 교체 중 장비가 사라지는 일을 막습니다.
-        /// 
-        /// 타겟 슬롯에 이미 착용 중인 장비가 있을 경우, 인벤토리에 여유 공간이 충분한지 사전 검증합니다.
-        /// 교체가 안전하다고 판단될 때만 장비를 스왑하여 아이템이 증발하는 논리적 오류를 방지합니다.
-        /// </summary>
         private bool TryAutoEquip(InventoryItem item)
         {
             if (equipmentController == null)
@@ -111,11 +120,12 @@ namespace PrototypeRT
             if (!equipmentController.TryGetTargetSlotFor(item.ItemData, out EquipmentSlot slot, out int slotIndex))
                 return false;
 
+            // 교체 장비가 생기는 경우, 먼저 인벤토리에 되돌릴 공간을 확인해서 장비가 사라지는 상황을 막습니다.
             if (equipmentController.TryGetEquippedInventoryItem(slot, slotIndex, out InventoryItem replacedItem)
                 && replacedItem != null
                 && !inventoryController.CanPlaceInDefaultGrid(replacedItem))
             {
-                Debug.LogWarning("InventoryItemUseController: 교체된 장비를 넣을 인벤토리 빈칸이 없어 장착을 취소합니다.");
+                Debug.LogWarning("InventoryItemUseController: 교체할 장비를 넣을 인벤토리 공간이 없어 착용을 취소합니다.");
                 return false;
             }
 
@@ -131,34 +141,21 @@ namespace PrototypeRT
             item.gameObject.SetActive(false);
 
             if (replacedItem != null && !inventoryController.TryPlaceInDefaultGrid(replacedItem))
-            {
                 inventoryController.HoldItem(replacedItem, null, 0, 0);
-            }
 
             return true;
         }
 
-        /// <summary>
-        /// 현재 아이템을 장비로 볼 수 있는지 판별합니다.
-        /// 
-        /// 해당 아이템이 플레이어의 슬롯(머리, 무기, 방어구 등)에 장착 가능한 Equipment 타입인지 데이터 레벨에서 검사합니다.
-        /// </summary>
         private static bool IsEquipment(ItemBase itemData)
         {
             if (itemData == null)
                 return false;
 
-            // 타입이 아예 Equipment라고 적혀 있거나, 혹은 들어갈 슬롯(머리, 무기 등)이 지정되어 있다면 장비로 인정합니다.
             return itemData.ItemType == ItemType.Equipment || itemData.Slot != EquipmentSlot.None;
         }
 
-        /// <summary>
-        /// 인스펙터 연결이 빠졌거나 런타임 자동 생성된 경우 필요한 참조를 씬에서 보정합니다.
-        /// 혹시라도 게임 개발자가 컨트롤러들을 깜빡하고 연결 안 해놨을까 봐, 스스로 씬 전체를 뒤져서 필요한 시스템들을 찾아 연결하는 방어용 함수입니다.
-        /// </summary>
         private void ResolveReferences()
         {
-            // 만약 못 찾은 컨트롤러가 있으면 GetComponent(자신에게 붙어있는지 확인)나 FindFirstObjectByType(게임 전체에서 찾기)으로 연결해 줍니다.
             if (inventoryController == null)
                 inventoryController = GetComponent<InventoryController>();
 

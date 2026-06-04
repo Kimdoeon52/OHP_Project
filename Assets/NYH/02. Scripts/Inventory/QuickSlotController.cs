@@ -83,6 +83,10 @@ namespace PrototypeRT
 
             // 시작 시점에 HUD가 빈 상태로 남지 않게 현재 그리드 상태를 바로 발행합니다.
             RaiseQuickSlotsChanged();
+
+            // 입력 시스템과 연동합니다.
+            if (_player != null && _player.Input != null)
+                _player.Input.OnQuickSlotKeyPressed += OnQuickSlotKeyPressed;
         }
 
         /// <summary>
@@ -97,16 +101,17 @@ namespace PrototypeRT
             // 비활성화된 컨트롤러가 계속 이벤트를 받지 않도록 해제합니다.
             if (inventoryController != null)
                 inventoryController.OnInventoryChanged -= RaiseQuickSlotsChanged;
+
+            if (_player != null && _player.Input != null)
+                _player.Input.OnQuickSlotKeyPressed -= OnQuickSlotKeyPressed;
         }
 
         /// <summary>
-        /// 매 프레임 숫자키 입력을 확인하고, 눌린 키에 맞는 퀵슬롯 사용을 시도합니다.
-        /// 실제 사용 조건/소비 처리는 TryUseSlot에 맡기고, Update는 입력을 슬롯 인덱스로 바꾸는 역할만 합니다.
+        /// 숫자키 입력 이벤트가 발생했을 때 호출됩니다.
+        /// 실제 사용 조건/소비 처리는 TryUseSlot에 맡깁니다.
         /// </summary>
-        private void Update()
+        private void OnQuickSlotKeyPressed(int index)
         {
-            // 아무 숫자키도 눌리지 않았다면 -1을 받아 이번 프레임은 아무 동작도 하지 않습니다.
-            int index = GetPressedSlotIndex();
             if (index >= 0)
                 TryUseSlot(index);
         }
@@ -210,27 +215,6 @@ namespace PrototypeRT
                 return;
 
             _player.ActionDelay.StartDelay(useActionDelay);
-        }
-
-        /// <summary>
-        /// 이번 프레임에 눌린 숫자키를 퀵슬롯 배열 인덱스로 변환합니다.
-        /// 눌린 키가 없으면 -1을 반환해 Update가 아무 사용 시도도 하지 않게 합니다.
-        /// </summary>
-        private static int GetPressedSlotIndex()
-        {
-            // Alpha0은 배열 마지막 슬롯입니다. 화면 표시는 0번 키지만 내부 인덱스는 9입니다.
-            if (Input.GetKeyDown(KeyCode.Alpha1)) return 0;
-            if (Input.GetKeyDown(KeyCode.Alpha2)) return 1;
-            if (Input.GetKeyDown(KeyCode.Alpha3)) return 2;
-            if (Input.GetKeyDown(KeyCode.Alpha4)) return 3;
-            if (Input.GetKeyDown(KeyCode.Alpha5)) return 4;
-            if (Input.GetKeyDown(KeyCode.Alpha6)) return 5;
-            if (Input.GetKeyDown(KeyCode.Alpha7)) return 6;
-            if (Input.GetKeyDown(KeyCode.Alpha8)) return 7;
-            if (Input.GetKeyDown(KeyCode.Alpha9)) return 8;
-            if (Input.GetKeyDown(KeyCode.Alpha0)) return 9;
-
-            return -1;
         }
 
         /// <summary>
