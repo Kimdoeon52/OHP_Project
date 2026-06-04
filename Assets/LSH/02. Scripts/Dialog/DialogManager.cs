@@ -1,26 +1,41 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 
 public class DialogManager : MonoBehaviour
 {
-    [Header("ÁÖÀÎ°ø ÀÌ¹ÌÁö")]
-    [SerializeField] Image mainCharacterImage;
-    [Header("º¸½º ÀÌ¹ÌÁö")]
-    [SerializeField] Image[] bossImage;
-    [Header("´ëÈ­Ã¢ ÀÌ¹ÌÁö")]
-    [SerializeField] Image dialogImage;
-    [Header("´ëÈ­Ã¢ ÅØ½ºÆ®")]
-    [SerializeField] Text dialogText;
+    [Header("ê²€ì€ ë°°ê²½")]
+    [SerializeField] Image dialogBackground;
+    [Header("í…ìŠ¤íŠ¸ ì…ë ¥")]
+    [SerializeField] string[] dialogText;
+    [Header("íƒìŠ¤íŠ¸ ë³´ì—¬ì£¼ëŠ” ê³³")]
+    [SerializeField] Text dialog;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    int index = 0;  
+    public void ShowDialog()
     {
-        
+        dialogBackground.gameObject.SetActive(true);
+        dialog.gameObject.SetActive(true);
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if(Input.GetMouseButtonDown(0))
+        {
+            if (index < dialogText.Length)
+            {
+                dialog.text = dialogText[index];
+                index++;
+            }
+            else
+            {
+                dialogBackground.gameObject.SetActive(false);
+                dialog.gameObject.SetActive(false);
+            }
+        }
+    }
+    public void Start()
+    {
+        ShowDialog();
     }
 }
