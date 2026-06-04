@@ -35,11 +35,47 @@ public class CameraFollow : MonoBehaviour
     /// <summary>현재 플래닝 모드 여부 — GridPlayerInput 등 외부에서 클릭 무시 판단에 사용.</summary>
     public bool IsPlanningMode => _planningMode;
 
+    public static CameraFollow Instance { get; private set; }
+
+    private Vector3 _shakeOffset = Vector3.zero;
+    private Coroutine _shakeCoroutine;
+
     private void Awake()
     {
+        Instance = this;
         if (planningCamera == null) planningCamera = GetComponent<Camera>();
         if (planningCamera != null) _defaultSize = planningCamera.orthographicSize;
         if (player == null) player = FindFirstObjectByType<GridPlayer>();
+    }
+
+    /// <summary>카메라를 지정된 시간과 세기로 흔듭니다.</summary>
+    public void Shake(float duration, float strength)
+    {
+        if (_shakeCoroutine != null)
+        {
+            StopCoroutine(_shakeCoroutine);
+        }
+        _shakeCoroutine = StartCoroutine(ShakeCoroutine(duration, strength));
+    }
+
+    private System.Collections.IEnumerator ShakeCoroutine(float duration, float strength)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            float percentComplete = elapsed / duration;
+            float damper = 1.0f - percentComplete; // 시간이 지날수록 감쇠
+
+            float x = Random.Range(-1f, 1f) * strength * damper;
+            float y = Random.Range(-1f, 1f) * strength * damper;
+
+            _shakeOffset = new Vector3(x, y, 0f);
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        _shakeOffset = Vector3.zero;
+        _shakeCoroutine = null;
     }
 
     /// <summary>층 진입 시 호출 — safe 셀을 등록하면 플래닝 모드 ON, 플레이어가 처음 이 셀들을 벗어나면 자동 OFF.</summary>
@@ -167,7 +203,7 @@ public class CameraFollow : MonoBehaviour
     {
         if (target == null) return;
 
-        Vector3 desired = target.position + offset + new Vector3(_planningPan.x, _planningPan.y, 0f);
+        Vector3 desired = target.position + offset + new Vector3(_planningPan.x, _planningPan.y, 0f) + _shakeOffset;
 
         if (smoothing <= 0f)
             transform.position = desired;
@@ -179,7 +215,7 @@ public class CameraFollow : MonoBehaviour
     public void SnapToTarget()
     {
         if (target == null) return;
-        transform.position = target.position + offset + new Vector3(_planningPan.x, _planningPan.y, 0f);
+        transform.position = target.position + offset + new Vector3(_planningPan.x, _planningPan.y, 0f) + _shakeOffset;
         _velocity = Vector3.zero;
     }
 }

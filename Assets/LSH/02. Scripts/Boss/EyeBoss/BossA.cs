@@ -31,6 +31,10 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     [SerializeField] private GameObject shockwavePrefab;       // 점프 공격 시 소환할 충격파 효과
     [SerializeField] private float shockwaveLifetimeSec = 1f;
 
+    [Header("카메라 흔들림 설정 (점프 공격)")]
+    [SerializeField] private float shakeDuration = 0.4f;       // 흔들림 지속 시간 (초)
+    [SerializeField] private float shakeStrength = 0.5f;       // 흔들림 세기
+
     [Header("레이저 설정 (Pattern 2)")]
     [SerializeField] private GameObject laserPrefab;
     [SerializeField] private int laserTelegraphMs = 800;
@@ -358,6 +362,12 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
                 gridPos = landingGridPos;
 
                 if (bossAnimation != null) bossAnimation.SetTrigger("Appear");
+
+                // 카메라 흔들림 트리거
+                if (CameraFollow.Instance != null)
+                {
+                    CameraFollow.Instance.Shake(shakeDuration, shakeStrength);
+                }
 
                 // 3) 충격파 및 데미지 판정
                 if (shockwavePrefab != null)

@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +15,9 @@ public class DialogManager : MonoBehaviour
     [SerializeField] GameObject bossName;
     int index = 0;  
     bool isDialogActive = false;
+
+    public System.Action OnDialogComplete;
+
     public void ShowDialog()
     {
         dialogBackground.gameObject.SetActive(true);
@@ -39,6 +42,9 @@ public class DialogManager : MonoBehaviour
                 bossName.SetActive(false);
                 animeEffect.SetActive(false);
                 isDialogActive = false;
+
+                OnDialogComplete?.Invoke();
+                OnDialogComplete = null;
             }
         }
     }

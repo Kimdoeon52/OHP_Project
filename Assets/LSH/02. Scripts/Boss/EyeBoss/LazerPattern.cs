@@ -434,9 +434,38 @@ public class LazerPattern : MonoBehaviour
             }
 
             float baseAngle = 0f;
+            float phaseTimer = 0f;
+            bool isLaserActive = true;
+
             while (!token.IsCancellationRequested && IsBossAlive())
             {
                 baseAngle += phase3LaserRotateSpeed * Time.deltaTime;
+                phaseTimer += Time.deltaTime;
+
+                if (isLaserActive)
+                {
+                    if (phaseTimer >= 5f)
+                    {
+                        isLaserActive = false;
+                        phaseTimer = 0f;
+                        for (int j = 0; j < 4; j++)
+                        {
+                            if (beams[j] != null) beams[j].SetActive(false);
+                        }
+                    }
+                }
+                else
+                {
+                    if (phaseTimer >= 1f)
+                    {
+                        isLaserActive = true;
+                        phaseTimer = 0f;
+                        for (int j = 0; j < 4; j++)
+                        {
+                            if (beams[j] != null) beams[j].SetActive(true);
+                        }
+                    }
+                }
 
                 bool hit = false;
                 Vector3 playerPos = (player != null && !player.IsDead)
@@ -455,11 +484,11 @@ public class LazerPattern : MonoBehaviour
                         center + dir * (phase3LaserLength * 0.5f),
                         Quaternion.Euler(0, 0, deg));
 
-                    if (!hit && IsOnRay(playerPos, center, dir, phase3LaserLength, phase3LaserHalfWidth))
+                    if (isLaserActive && !hit && IsOnRay(playerPos, center, dir, phase3LaserLength, phase3LaserHalfWidth))
                         hit = true;
                 }
 
-                if (hit && player != null && !player.IsDead)
+                if (isLaserActive && hit && player != null && !player.IsDead)
                     player.TakeDamage(phase3LaserDamage);
 
                 await UniTask.Yield(token);
