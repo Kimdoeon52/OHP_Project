@@ -22,6 +22,9 @@ namespace PrototypeRT
         [Tooltip("인벤토리 입력/드래그 상태를 관리하는 컨트롤러입니다. 비워두면 씬에서 자동으로 찾습니다.")]
         [SerializeField] private InventoryController inventoryController;
 
+        [Tooltip("감정/강화/정화 주문서처럼 마우스 대상 지정 중인 상태를 관리합니다. 인벤토리를 닫을 때 자동 취소하기 위해 사용합니다.")]
+        [SerializeField] private InventoryTargetingController targetingController;
+
         public bool IsOpen => inventoryPanel != null && inventoryPanel.activeSelf;
 
         private PlayerStatsView playerStatsView;
@@ -33,6 +36,9 @@ namespace PrototypeRT
 
             if (inventoryController == null)
                 inventoryController = FindFirstObjectByType<InventoryController>();
+
+            if (targetingController == null)
+                targetingController = FindFirstObjectByType<InventoryTargetingController>();
 
             if (inventoryPanel == null)
                 Debug.LogError("InventoryPanelToggle: Inventory Panel이 연결되지 않았습니다.");
@@ -63,6 +69,10 @@ namespace PrototypeRT
 
             if (!value)
             {
+                // 주문서 대상 지정 중에 패널만 꺼지면 커서가 감정/강화/정화 아이콘으로 남습니다.
+                // 닫기 경로에서 먼저 취소시켜 반투명 표시와 마우스 커서를 함께 원복합니다.
+                targetingController?.CancelTargeting();
+
                 // 닫을 때는 패널을 비활성화하기 전에 컨트롤러에 먼저 알려야 합니다.
                 // 그래야 마우스에 들려 있던 아이템을 원래 칸으로 돌려놓고 입력을 차단할 수 있습니다.
                 inventoryController?.SetInventoryOpen(false);

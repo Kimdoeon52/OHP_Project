@@ -4,7 +4,7 @@ using UnityEngine;
 
 /// <summary>
 /// 플레이어의 체력 증감, 사망 처리, 그리고 전용 회복 아이템(포션) 사용 로직을 전담하는 클래스입니다.
-/// 스탯 시스템(NYHPlayerStats)과 연동하여 방어력/회피율을 계산한 최종 피해를 적용하며,
+/// 스탯 시스템(NYHPlayerStats)과 연동하여 방어력을 계산한 최종 피해를 적용하며,
 /// 포션 사용 시 즉시 회복과 함께 AnimationCurve를 활용한 지속적인(Regen) 회복 로직을 동시에 실행합니다.
 /// </summary>
 public class GridPlayerHealth : PersistentSingleton<GridPlayerHealth>, IDamageable
@@ -91,7 +91,8 @@ public class GridPlayerHealth : PersistentSingleton<GridPlayerHealth>, IDamageab
 
     /// <summary>
     /// 외부 요인(몬스터, 함정 등)에 의해 플레이어가 피해를 입었을 때 호출됩니다.
-    /// 스탯 시스템(NYHPlayerStats)이 존재할 경우 방어력과 회피율 등을 계산한 '최종 데미지'만을 적용합니다.
+    /// 스탯 시스템(NYHPlayerStats)이 존재할 경우 방어력을 계산한 '최종 데미지'만을 적용합니다.
+    /// 회피는 공격자의 정확도와 함께 판단해야 하므로 몬스터 공격 쪽에서 먼저 처리합니다.
     /// 체력이 0 이하로 떨어지면 사망 처리를 수행합니다.
     /// </summary>
     public void TakeDamage(int amount)
@@ -192,7 +193,7 @@ public class GridPlayerHealth : PersistentSingleton<GridPlayerHealth>, IDamageab
         _regenCoroutine = null;
     }
 
-    private void OnDestroy()
+    private new void OnDestroy()
     {
         if (_stats != null)
             _stats.OnStatAdded -= OnStatAdded;

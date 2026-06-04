@@ -341,15 +341,44 @@ public abstract class EnemyBase : EntityBase, IDamageable
     }
 
     /// <summary>
-    /// 명중 판정 롤.
-    /// 기본 50% + (accuracy - evasion) × 5% 보정. 5%~95% 클램프.
+    /// GDD 기준 명중 판정 롤.
+    /// 공격 무효 확률은 (대상 회피 - 공격자 정확도)이며, 최대 50%까지만 허용합니다.
     /// </summary>
     /// <param name="targetEvasion">대상의 회피 스탯</param>
     /// <returns>명중이면 true</returns>
     protected bool RollHit(int targetEvasion)
     {
-        float hitChance = Mathf.Clamp(0.5f + (data.accuracy - targetEvasion) * 0.05f, 0.05f, 0.95f);
-        return Random.value <= hitChance;
+        int attackerAccuracy = data != null ? data.accuracy : 0;
+        int missChancePercent = Mathf.Clamp(targetEvasion - attackerAccuracy, 0, 50);
+
+        return Random.Range(0, 100) >= missChancePercent;
+    }
+
+    /// <summary>
+    /// 몬스터가 플레이어에게 실제 공격을 적용하는 공통 진입점.
+    /// 회피는 공격자의 정확도가 필요하기 때문에 플레이어 TakeDamage 내부가 아니라 여기서 먼저 판정합니다.
+    /// 명중한 경우에만 데미지와 EnemyData.onHitEffect가 적용됩니다.
+    /// </summary>
+    /// <param name="rawDamage">방어력 적용 전 원시 피해량</param>
+    /// <returns>명중해서 피해/명중 효과 처리를 시도했으면 true, 빗나가거나 대상이 없으면 false</returns>
+    protected bool TryHitPlayer(int rawDamage)
+    {
+        if (Player == null || Player.IsDead || rawDamage <= 0) return false;
+
+        NYHPlayerStats playerStats = Player.GetComponent<NYHPlayerStats>();
+        if (playerStats == null)
+            playerStats = NYHPlayerStats.Instance;
+
+        int targetEvasion = playerStats != null ? playerStats.Evasion : 0;
+        if (!RollHit(targetEvasion))
+        {
+            Debug.Log($"{name} 공격 빗나감: 정확도 {data?.accuracy ?? 0}, 플레이어 회피 {targetEvasion}");
+            return false;
+        }
+
+        Player.TakeDamage(rawDamage);
+        TryApplyOnHitEffect(Player);
+        return true;
     }
 
     /// <summary>
@@ -478,8 +507,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
             if (Player.GridPosition == targetCell)
             {
                 int damage = RollAttackDamage();
-                Player.TakeDamage(damage);
-                TryApplyOnHitEffect(Player);
+                TryHitPlayer(damage);
             }
         }
 

@@ -37,6 +37,8 @@ public class NYHEquipmentController : MonoBehaviour
     public event Action<EquipmentSlot, int, InventoryItem> OnInventoryItemEquipped;
     /// <summary>인벤토리 아이템 뷰가 장착 해제되었을 때 발동하는 UI 연동 이벤트</summary>
     public event Action<EquipmentSlot, int, InventoryItem> OnInventoryItemUnequipped;
+    /// <summary>장착 중인 장비의 강화/감정/정화 같은 내부 상태가 바뀌었을 때 발동하는 이벤트</summary>
+    public event Action<EquipmentSlot, int, InventoryItem> OnInventoryItemStateChanged;
 
     /// <summary>
     /// 플레이어 스탯 시스템에 접근하는 지연 초기화 프로퍼티입니다.
@@ -151,7 +153,7 @@ public class NYHEquipmentController : MonoBehaviour
             return false;
 
         NYHEquipmentSlotKey key = GetDefaultKey(item.ItemData);
-        return TryEquipInternal(new NYHEquipmentItemInstance(item.ItemData), item, key, out replacedItem);
+        return TryEquipInternal(new NYHEquipmentItemInstance(item.ItemData, item.ItemInstance), item, key, out replacedItem);
     }
 
     /// <summary>
@@ -172,7 +174,7 @@ public class NYHEquipmentController : MonoBehaviour
         }
 
         NYHEquipmentSlotKey key = new NYHEquipmentSlotKey(slot, slotIndex);
-        return TryEquipInternal(new NYHEquipmentItemInstance(item.ItemData), item, key, out replacedItem);
+        return TryEquipInternal(new NYHEquipmentItemInstance(item.ItemData, item.ItemInstance), item, key, out replacedItem);
     }
 
     /// <summary>
@@ -233,6 +235,28 @@ public class NYHEquipmentController : MonoBehaviour
     public bool TryGetEquippedInventoryItem(EquipmentSlot slot, int slotIndex, out InventoryItem item)
     {
         return _equippedViews.TryGetValue(new NYHEquipmentSlotKey(slot, slotIndex), out item);
+    }
+
+    /// <summary>
+    /// 장착 중인 InventoryItem의 내부 상태가 바뀌었음을 알립니다.
+    /// 강화/감정/정화는 아이템 오브젝트를 교체하지 않고 ItemInstance 값만 바꾸므로,
+    /// 장착/해제 이벤트 대신 이 이벤트로 스탯 UI와 장비 슬롯 UI를 다시 계산하게 합니다.
+    /// </summary>
+    public bool NotifyEquippedInventoryItemStateChanged(InventoryItem changedItem)
+    {
+        if (changedItem == null)
+            return false;
+
+        foreach (KeyValuePair<NYHEquipmentSlotKey, InventoryItem> pair in _equippedViews)
+        {
+            if (pair.Value != changedItem)
+                continue;
+
+            OnInventoryItemStateChanged?.Invoke(pair.Key.Slot, pair.Key.Index, changedItem);
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>

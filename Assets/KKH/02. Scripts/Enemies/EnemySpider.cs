@@ -21,7 +21,7 @@ public class EnemySpider : EnemyBase
 
     /// <summary>
     /// 공격 발동 override.
-    /// 데미지 처리 후 독(TryApplyOnHitEffect) + 이속감소(TryApplySlowDebuff) 순서로 2중 상태이상 적용.
+    /// 명중 성공 시 독(TryHitPlayer 내부 공통 처리) + 이속감소(TryApplySlowDebuff) 순서로 2중 상태이상 적용.
     /// </summary>
     protected override IEnumerator ExecutePendingAttack(Vector2Int targetCell, float delaySeconds)
     {
@@ -39,13 +39,11 @@ public class EnemySpider : EnemyBase
             if (Player.GridPosition == targetCell)
             {
                 int damage = RollAttackDamage();
-                Player.TakeDamage(damage);
-
-                // 1. 독 상태이상 (EnemyData.onHitEffect 기반, EnemyBase 공통 로직)
-                TryApplyOnHitEffect(Player);
-
-                // 2. 이속 감소 디버프 추가 (slowDebuffData 직접 참조)
-                TryApplySlowDebuff(Player);
+                if (TryHitPlayer(damage))
+                {
+                    // 빗나간 공격에는 고유 디버프도 붙지 않도록 명중 성공 뒤에만 추가 적용합니다.
+                    TryApplySlowDebuff(Player);
+                }
             }
         }
         ClearTelegraphs();

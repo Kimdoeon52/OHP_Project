@@ -35,6 +35,13 @@ namespace PrototypeRT
         [Tooltip("주문서 대상 지정과 투척 포션 조준을 담당하는 컨트롤러입니다. 비워두면 런타임에 자동으로 붙입니다.")]
         [SerializeField] private InventoryTargetingController targetingController;
 
+        [Header("아이템 버리기")]
+        [Tooltip("이 영역 밖에 들고 있는 아이템을 놓으면 플레이어 발밑에 버립니다. 인벤토리 전체 패널 RectTransform을 연결하세요.")]
+        [SerializeField] private RectTransform inventoryPanelRect;
+
+        [Tooltip("바닥에 버린 아이템과 줍기 순서를 관리하는 컨트롤러입니다. 비워두면 씬에서 자동으로 찾습니다.")]
+        [SerializeField] private GroundItemController groundItemController;
+
         // 현재 마우스가 올라간 인벤토리 그리드입니다. 여러 그리드를 지원할 수 있도록 포인터 진입/이탈 때 갱신합니다.
         private ItemGrid _selectedGrid;
 
@@ -112,6 +119,7 @@ namespace PrototypeRT
                 SelectedGrid = ResolveItemGrid();
 
             ResolveUseControllers();
+            ResolveGroundItemController();
         }
 
         /// <summary>
@@ -520,6 +528,14 @@ namespace PrototypeRT
         /// </summary>
         private void HandleLeftClick()
         {
+            // 들고 있는 아이템을 인벤토리 패널 밖에 놓으면, 그리드 배치가 아니라 플레이어 발밑 드랍으로 해석합니다.
+            if (_selectedItem != null && IsPointerOutsideInventoryPanel())
+            {
+                TryDropSelectedItemToGround();
+                _lastPickedItem = null;
+                return;
+            }
+
             // 드래그 우선 방식: 첫 클릭은 기존처럼 집고, 같은 아이템을 짧은 시간 안에 다시 클릭하면 사용으로 전환합니다.
             if (_selectedItem != null && IsDoubleClickOnSelectedItem())
             {
@@ -629,6 +645,32 @@ namespace PrototypeRT
             RaiseInventoryChanged();
         }
 
+        private void TryDropSelectedItemToGround()
+        {
+            if (_selectedItem == null || _selectedItem.ItemInstance == null)
+                return;
+
+            // 바닥 드랍은 KDU/YJW ItemPickup 프리팹을 사용하지만,
+            // "어느 칸에 몇 개가 쌓였는가"는 GroundItemController가 관리합니다.
+            ResolveGroundItemController();
+            if (groundItemController == null)
+            {
+                Debug.LogWarning("InventoryController: GroundItemController를 찾지 못해 아이템을 버릴 수 없습니다.");
+                return;
+            }
+
+            InventoryItem itemToDrop = _selectedItem;
+            if (!groundItemController.DropItem(itemToDrop.ItemInstance, itemToDrop.Count))
+            {
+                Debug.LogWarning("InventoryController: 바닥 아이템 프리팹, 플레이어, GridSystem 연결을 확인해야 합니다.");
+                return;
+            }
+
+            // 드랍 성공 후에만 인벤토리 UI와 소유 목록에서 제거합니다. 실패하면 계속 손에 든 상태를 유지합니다.
+            // 장비/강화/저주 상태는 ItemInstance를 이미 바닥 픽업에 넘겼으므로 여기서는 UI만 정리합니다.
+            TryConsumeHeldItem(itemToDrop, true);
+        }
+
         /// <summary>
         /// 현재 마우스 화면 좌표를 선택된 인벤토리 그리드의 칸 좌표로 변환합니다.
         /// 큰 아이템을 들고 있을 때는 아이템의 좌상단 칸이 기준이 되도록 좌표를 보정합니다.
@@ -644,6 +686,48 @@ namespace PrototypeRT
             }
 
             return _selectedGrid.ScreenToGridPosition(mousePos);
+        }
+
+        private bool IsPointerOutsideInventoryPanel()
+        {
+            RectTransform panelRect = ResolveInventoryPanelRect();
+            if (panelRect == null)
+                return false;
+
+            return !IsPointerInsideRect(panelRect);
+        }
+
+        /// <summary>
+        /// 드랍 판정 기준이 되는 인벤토리 전체 패널을 찾습니다.
+        /// 인스펙터에 연결되어 있으면 그 값을 쓰고, 없으면 기본 인벤토리 그리드의 부모 RectTransform을 임시 기준으로 씁니다.
+        /// </summary>
+        private RectTransform ResolveInventoryPanelRect()
+        {
+            if (inventoryPanelRect != null)
+                return inventoryPanelRect;
+
+            ItemGrid grid = defaultInventoryGrid != null ? defaultInventoryGrid : ResolveItemGrid();
+            if (grid != null)
+                inventoryPanelRect = grid.GetComponentInParent<RectTransform>();
+
+            return inventoryPanelRect;
+        }
+
+        /// <summary>
+        /// Canvas 모드가 Overlay가 아니어도 같은 방식으로 마우스가 Rect 안에 있는지 검사합니다.
+        /// 인벤토리 패널 밖 드랍 판정이 UI 카메라 설정에 따라 흔들리지 않게 하기 위한 보정입니다.
+        /// </summary>
+        private static bool IsPointerInsideRect(RectTransform rect)
+        {
+            if (rect == null)
+                return false;
+
+            Canvas canvas = rect.GetComponentInParent<Canvas>();
+            Camera eventCamera = null;
+            if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+                eventCamera = canvas.worldCamera != null ? canvas.worldCamera : Camera.main;
+
+            return RectTransformUtility.RectangleContainsScreenPoint(rect, Input.mousePosition, eventCamera);
         }
 
         /// <summary>
@@ -777,6 +861,19 @@ namespace PrototypeRT
         private void RaiseInventoryChanged()
         {
             OnInventoryChanged?.Invoke();
+        }
+
+        private void ResolveGroundItemController()
+        {
+            if (groundItemController == null)
+                groundItemController = FindFirstObjectByType<GroundItemController>();
+
+            if (groundItemController == null)
+                groundItemController = gameObject.AddComponent<GroundItemController>();
+
+            // 자동 생성된 경우에도 인벤토리 참조가 반드시 들어가야,
+            // 바닥 아이템을 주울 때 같은 TryAddItem 규칙과 스택 규칙을 사용할 수 있습니다.
+            groundItemController.Configure(this);
         }
     }
 }

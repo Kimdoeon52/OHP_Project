@@ -49,11 +49,9 @@ public class EnemyGoblinThief : EnemyBase
             if (Player.GridPosition == targetCell)
             {
                 int damage = RollAttackDamage();
-                Player.TakeDamage(damage);
-                TryApplyOnHitEffect(Player);
-                // 고블린 도둑 고유 로직: 훔치기 시도
-                if (!_hasStolenItem)
+                if (TryHitPlayer(damage) && !_hasStolenItem)
                 {
+                    // 빗나간 공격에는 아이템 탈취가 일어나지 않도록 명중 성공 뒤에만 시도합니다.
                     TryStealItem();
                 }
             }

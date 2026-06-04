@@ -211,6 +211,10 @@ namespace PrototypeRT
             // 조건 검사는 이 컨트롤러에서 먼저 하고, 실제 상태 변경은 YJW Scroll의 Use(ItemInstance)에 위임합니다.
             _activeItem.ItemData.Use(target.ItemInstance);
 
+            // 장착 중인 장비는 강화/감정/정화로 ItemInstance 내부 값만 바뀝니다.
+            // 장착/해제 이벤트가 발생하지 않으므로 장비 컨트롤러에 직접 알려 스탯 UI를 즉시 갱신합니다.
+            equipmentController?.NotifyEquippedInventoryItemStateChanged(target);
+
             // 삭제 직전에 먼저 시각 상태를 원복합니다. 취소/실패 경로는 ClearTargetingState에서 원복합니다.
             _activeItem.SetUsePendingVisual(false);
             ConsumeActiveItem();
@@ -246,7 +250,7 @@ namespace PrototypeRT
                     continue;
 
                 RectTransform rect = item.GetComponent<RectTransform>();
-                if (rect != null && RectTransformUtility.RectangleContainsScreenPoint(rect, Input.mousePosition))
+                if (rect != null && IsPointerInsideRect(rect))
                     result = item;
             }
 
@@ -269,11 +273,21 @@ namespace PrototypeRT
                     continue;
 
                 RectTransform rect = slotView.GetComponent<RectTransform>();
-                if (rect == null || !RectTransformUtility.RectangleContainsScreenPoint(rect, Input.mousePosition))
+                if (rect == null || !IsPointerInsideRect(rect))
                     continue;
 
-                if (equipmentController.TryGetEquippedInventoryItem(slotView.Slot, slotView.SlotIndex, out InventoryItem item))
+                if (equipmentController.TryGetEquippedInventoryItem(slotView.Slot, slotView.SlotIndex, out InventoryItem item) && item != null)
                     return item;
+
+                // 디버그 장착처럼 InventoryItem 없이 데이터만 장착된 장비는 강화/감정/정화 상태를 저장할 ItemInstance가 없습니다.
+                // 이 경우 주문서를 소비하지 않고 실패시켜, 상태가 사라지는 애매한 장착 데이터를 만들지 않습니다.
+                if (equipmentController.TryGetEquipped(slotView.Slot, slotView.SlotIndex, out NYHEquipmentItemInstance equipped)
+                    && equipped != null)
+                {
+                    Debug.LogWarning("InventoryTargetingController: 이 장비는 인벤토리 아이템 뷰 없이 장착되어 주문서 대상으로 사용할 수 없습니다.");
+                }
+
+                return null;
             }
 
             return null;
@@ -285,8 +299,8 @@ namespace PrototypeRT
         /// </summary>
         private static bool CanUseScrollOnTarget(InventoryScrollTargetKind kind, ItemInstance target)
         {
-			if (target is not EquipmentInstance equip) return false;
-			if (equip.data == null) return false;
+            if (target is not EquipmentInstance equip) return false;
+            if (equip.data == null) return false;
 
             return kind switch
             {
@@ -312,9 +326,13 @@ namespace PrototypeRT
         /// <summary>
         /// 대상 지정 모드를 취소합니다.
         /// 사용하려던 아이템을 아직 손에 들고 있다면 원래 칸으로 돌려놓고, 커서/상태를 기본값으로 되돌립니다.
+        /// 인벤토리 패널이 닫힐 때도 같은 정리 경로를 타야 커서가 주문서 아이콘으로 남지 않습니다.
         /// </summary>
-        private void CancelTargeting()
+        public void CancelTargeting()
         {
+            if (!IsTargeting)
+                return;
+
             if (inventoryController != null && inventoryController.SelectedItem == _activeItem)
                 inventoryController.CancelDragAndReturnItem();
 
@@ -360,12 +378,29 @@ namespace PrototypeRT
         {
             if (cursor == null)
             {
-                Debug.LogWarning("InventoryTargetingController.SetCursor: cursor texture is null — 인스펙터 연결 확인 필요");
+                Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
                 return;
             }
 
             Debug.Log($"InventoryTargetingController.SetCursor: {cursor.name} 적용");
             Cursor.SetCursor(cursor, Vector2.zero, CursorMode.Auto);
+        }
+
+        /// <summary>
+        /// UI 캔버스가 Screen Space - Camera/World Space여도 같은 방식으로 마우스 포함 여부를 계산합니다.
+        /// 기본 overload는 Overlay 기준이라, 장비창 캔버스 설정이 바뀌면 대상 클릭이 빗나갈 수 있어 카메라를 보정합니다.
+        /// </summary>
+        private static bool IsPointerInsideRect(RectTransform rect)
+        {
+            if (rect == null)
+                return false;
+
+            Canvas canvas = rect.GetComponentInParent<Canvas>();
+            Camera eventCamera = null;
+            if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+                eventCamera = canvas.worldCamera != null ? canvas.worldCamera : Camera.main;
+
+            return RectTransformUtility.RectangleContainsScreenPoint(rect, Input.mousePosition, eventCamera);
         }
 
         /// <summary>

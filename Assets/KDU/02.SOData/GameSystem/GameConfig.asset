@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3177df203bae85b4ab3515db0f4d12f1, type: 3}
   m_Name: GameConfig
   m_EditorClassIdentifier: 
-  startTime: 120
+  startTime: 60
   lowTimeWarning: 10
   moveTimeDelay: 0.5
   potionTimeDealy: 1
@@ -20,4 +20,3 @@ MonoBehaviour:
   visionRadius: 5
   specialRoomChance: 1
   secretRoomChance: 1
-

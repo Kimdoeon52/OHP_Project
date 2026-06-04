@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using PrototypeRT;
 
 /// <summary>
 /// 플레이어 스탯 UI를 갱신하는 화면 표시 전용 컴포넌트.
@@ -128,6 +129,8 @@ public class PlayerStatsView : MonoBehaviour
             equipmentController.OnEquipped += OnEquipmentChanged;
             equipmentController.OnUnequipped -= OnEquipmentChanged;
             equipmentController.OnUnequipped += OnEquipmentChanged;
+            equipmentController.OnInventoryItemStateChanged -= OnEquipmentItemStateChanged;
+            equipmentController.OnInventoryItemStateChanged += OnEquipmentItemStateChanged;
         }
     }
 
@@ -155,6 +158,7 @@ public class PlayerStatsView : MonoBehaviour
         {
             equipmentController.OnEquipped -= OnEquipmentChanged;
             equipmentController.OnUnequipped -= OnEquipmentChanged;
+            equipmentController.OnInventoryItemStateChanged -= OnEquipmentItemStateChanged;
         }
     }
 
@@ -238,7 +242,11 @@ public class PlayerStatsView : MonoBehaviour
 
     private void OnEquipmentChanged(EquipmentSlot slot, NYHEquipmentItemInstance item)
     {
-        if (slot == EquipmentSlot.Weapon)
-            Refresh();
+        Refresh();
+    }
+
+    private void OnEquipmentItemStateChanged(EquipmentSlot slot, int slotIndex, InventoryItem item)
+    {
+        Refresh();
     }
 }

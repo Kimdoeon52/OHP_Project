@@ -106,8 +106,7 @@ public class EnemyMageSkeleton : EnemyBase
                 if (_pendingAttackLine.Contains(Player.GridPosition))
                 {
                     int damage = RollAttackDamage();
-                    Player.TakeDamage(damage);
-                    TryApplyOnHitEffect(Player);
+                    TryHitPlayer(damage);
                 }
             }
             _pendingAttackLine = null;
