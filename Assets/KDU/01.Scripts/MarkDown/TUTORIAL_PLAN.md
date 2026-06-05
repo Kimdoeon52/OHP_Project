@@ -105,6 +105,21 @@
   - `Assets/KDU/01.Scripts/Tutorial/TutorialHintUI.cs` — TMP 안내 패널(ShowHint/HideHint).
 - **B그룹 임시 처리**: MapScrollUsed / InventoryOpened 는 전용 이벤트가 붙기 전까지 `advanceKey`(기본 Space) 수동 진행. `debugSkipKey` 로 콘텐츠 없이 전체 흐름 강제 점검 가능.
 
+### 8.1 탐색/숨겨진 문 발견 (단계 7)
+- **탐색 액션**: `Assets/KDU/01.Scripts/Shared/SearchAction.cs` — `searchKey`(기본 F) → `GameEvents.OnSearchPerformed(center, radius=1)`. 시간 소모 없음(즉시).
+- **F 즉시 발견(액티브)**: `GridDoor` 가 `OnSearchPerformed` 구독 → 3×3 내 Secret+Hidden 문 즉시 `Discover()`.
+- **패시브 확률 발견**: `GridDoor` 의 기존 3초 인접 발견 제거 → 범위(체비셰프 `passiveDiscoveryRange`, 기본1) 안에 머무는 동안 매초 `passiveDiscoveryChancePerSecond`(기본0.15) 확률 롤(문별 셀 시드 `DungeonRandom.Chance`).
+- **발견 이벤트**: `GridDoor.Discover()` → `GameEvents.OnSecretDiscovered(cell)`. 튜토리얼 조건 `SecretDiscovered` 가 이걸로 완료.
+- **GridDoor 자가 초기화**: `selfInitInScene`/`sceneKind=Secret`/`sceneHorizontalPassage` — 씬 직접 배치 문이 Start 에서 현재 위치로 Hidden 초기화(MapGenerator 없이). `_initialized` 가드로 절차생성 영향 없음.
+- **확장**: 숨겨진 함정(NYH `GridTrap`)은 같은 `OnSearchPerformed`/`OnSecretDiscovered` 패턴으로 편입.
+
+### 8.2 튜토리얼 숨겨진 방 씬 구성 (단계 7)
+1. 숨겨진 방 입구 칸에 Wall 타일을 칠한다(봉인).
+2. 그 칸에 GridDoor 프리팹 배치 → `selfInitInScene=true`, `sceneKind=Secret`, `sceneHorizontalPassage`(통로 방향) 설정.
+3. steps 에 **7a 발견 단계**: `condition=SecretDiscovered`, hint="문 앞으로 가서 **F** 를 눌러 숨겨진 문을 찾으세요". → F 누르면 문이 드러나며 다음으로.
+4. **7b 진입 단계**: `condition=EnterRegion`, `region=Region_SecretRoom`, hint="숨겨진 방으로 들어가세요".
+5. 씬에 `SearchAction` 컴포넌트 1개(플레이어 자동 검색) 배치.
+
 남은 작업(유니티 필요 / 협의):
 - 전용 튜토리얼 씬 + 고정 맵 배치, `TutorialController`/`TutorialHintUI` 배치, steps 인스펙터 입력(안내문·EnterRegion 콜라이더·killCount), 영역 콜라이더 배치, `floor1SceneName` 지정.
 - 씬 의존: `GridSystem`/`TimeSystem`/`CameraFollow`/`GridExit`(포탈) 존재 필요. (GridExit 는 `TimeSystem.Instance.StopTimer` 호출 — 씬에 TimeSystem 필요.)

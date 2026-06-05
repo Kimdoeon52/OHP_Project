@@ -50,14 +50,27 @@ public class GridDoor : MonoBehaviour
     [Tooltip("Locked 문 개방 시간(초). GDD 9.15: 1초.")]
     [SerializeField] private float lockedOpenSeconds = 1f;
 
-    [Tooltip("Secret 문 발견 시간(초). 인접한 채로 이만큼 머무르면 발견(GDD 8.6 — '조심스러운 발걸음' 특성 hook 추후).")]
-    [SerializeField] private float secretDiscoverySeconds = 3f;
+    [Header("Secret 패시브 발견 (근처에 있으면 매초 확률로 공개)")]
+    [Tooltip("패시브 발견 범위 — 체비셰프 거리(1 = 플레이어 기준 3x3). F 탐색(즉시)과 별개.")]
+    [SerializeField, Min(0)] private int passiveDiscoveryRange = 1;
+    [Tooltip("범위 안에 머무는 동안 1초마다 발견 확률(0~1). 성공 시 즉시 발견.")]
+    [SerializeField, Range(0f, 1f)] private float passiveDiscoveryChancePerSecond = 0.15f;
+
+    [Header("씬 직접 배치(튜토리얼 등) — MapGenerator 없이 자체 초기화")]
+    [Tooltip("켜면 Initialize 가 안 불렸을 때 Start 에서 현재 위치·아래 설정으로 자체 초기화.")]
+    [SerializeField] private bool selfInitInScene = false;
+    [Tooltip("자체 초기화 시 문 종류.")]
+    [SerializeField] private DoorKind sceneKind = DoorKind.Secret;
+    [Tooltip("자체 초기화 시 통로 방향 — true=좌우 통로(세로 벽 사이), false=상하 통로.")]
+    [SerializeField] private bool sceneHorizontalPassage = true;
 
     private SpriteRenderer _renderer;
     private GridPlayer _player;
     private bool _horizontalPassage;
     private float _openingProgress;
-    private float _secretAdjacentTime;
+    private float _secretRollTimer;
+    private DungeonRandom _discoveryRng;
+    private bool _initialized;
 
     // SafeExit 전용 — 플레이어가 outsideCell 에 도달하면 _hasExited=true, 멀어지며 닫힐 때 영구 잠김.
     private Vector2Int _safeOutsideCell;
@@ -73,11 +86,22 @@ public class GridDoor : MonoBehaviour
     private void OnEnable()
     {
         GameEvents.OnVisionUpdated += OnVisionUpdated;
+        GameEvents.OnSearchPerformed += OnSearchPerformed;
     }
 
     private void OnDisable()
     {
         GameEvents.OnVisionUpdated -= OnVisionUpdated;
+        GameEvents.OnSearchPerformed -= OnSearchPerformed;
+    }
+
+    /// <summary>탐색 액션 — center 기준 radius(체비셰프) 안의 숨은 Secret 문이면 즉시 발견.</summary>
+    private void OnSearchPerformed(Vector2Int center, int radius)
+    {
+        if (Kind != DoorKind.Secret || State != DoorState.Hidden) return;
+        int cheb = Mathf.Max(Mathf.Abs(GridPosition.x - center.x),
+                             Mathf.Abs(GridPosition.y - center.y));
+        if (cheb <= radius) Discover();
     }
 
     /// <summary>맵 생성기가 호출 — 셀 위치·통로 방향·문 종류를 지정하고 격자에 등록.</summary>
@@ -86,7 +110,9 @@ public class GridDoor : MonoBehaviour
         GridPosition = cell;
         _horizontalPassage = horizontalPassage;
         Kind = kind;
+        _initialized = true;
         if (kind == DoorKind.Secret) State = DoorState.Hidden;
+        EnsureDiscoveryRng();
         transform.position = GridSystem.Instance != null
             ? GridSystem.Instance.GridToWorld(cell)
             : new Vector3(cell.x, cell.y, 0);
@@ -105,6 +131,16 @@ public class GridDoor : MonoBehaviour
     private void Start()
     {
         _player = FindFirstObjectByType<GridPlayer>();
+
+        // 씬에 직접 배치된 문(튜토리얼 등) — Initialize 가 안 불렸으면 현재 위치로 자체 초기화.
+        if (!_initialized && selfInitInScene)
+        {
+            Vector2Int cell = GridSystem.Instance != null
+                ? GridSystem.Instance.WorldToGrid(transform.position)
+                : Vector2Int.zero;
+            Initialize(cell, sceneHorizontalPassage, sceneKind);
+        }
+
         UpdateVisibility();
     }
 
@@ -177,7 +213,7 @@ public class GridDoor : MonoBehaviour
                 break;
 
             case DoorKind.Secret:
-                UpdateSecret(adjacent);
+                UpdateSecret();
                 break;
 
             case DoorKind.SafeExit:
@@ -211,14 +247,31 @@ public class GridDoor : MonoBehaviour
         }
     }
 
-    private void UpdateSecret(bool adjacent)
+    // 패시브 발견 — 범위(체비셰프 passiveDiscoveryRange) 안에 머무는 동안 1초마다 확률 롤.
+    // F 탐색(OnSearchPerformed)은 별개로 즉시 발견시킨다.
+    private void UpdateSecret()
     {
         if (State != DoorState.Hidden) return; // 발견 후엔 그대로 열림 유지
 
-        if (!adjacent) { _secretAdjacentTime = 0f; return; }
+        int cheb = Mathf.Max(Mathf.Abs(_player.GridPosition.x - GridPosition.x),
+                             Mathf.Abs(_player.GridPosition.y - GridPosition.y));
+        if (cheb > passiveDiscoveryRange) { _secretRollTimer = 0f; return; }
 
-        _secretAdjacentTime += Time.deltaTime;
-        if (_secretAdjacentTime >= secretDiscoverySeconds) Discover();
+        EnsureDiscoveryRng();
+        _secretRollTimer += Time.deltaTime;
+        while (_secretRollTimer >= 1f)
+        {
+            _secretRollTimer -= 1f;
+            if (_discoveryRng.Chance(passiveDiscoveryChancePerSecond)) { Discover(); return; }
+        }
+    }
+
+    /// <summary>문별 발견 확률 롤용 RNG — 셀 좌표 시드(GridChest 와 같은 패턴). UnityEngine.Random 직접 호출 금지.</summary>
+    private void EnsureDiscoveryRng()
+    {
+        if (_discoveryRng != null) return;
+        _discoveryRng = new DungeonRandom();
+        _discoveryRng.Init((GridPosition.x * 73856093) ^ (GridPosition.y * 19349663));
     }
 
     /// <summary>Secret 문 강제 발견 — 디버그/특성 트리거용. 봉인 wall 제거 후 열림 상태로 전환.</summary>
@@ -232,6 +285,7 @@ public class GridDoor : MonoBehaviour
             GridSystem.Instance.Tilemaps.wall.SetTile(new Vector3Int(GridPosition.x, GridPosition.y, 0), null);
         }
         SetState(DoorState.Open);
+        GameEvents.OnSecretDiscovered?.Invoke(GridPosition);
     }
 
     private void UpdateLocked(bool adjacent)

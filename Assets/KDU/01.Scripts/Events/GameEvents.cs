@@ -27,6 +27,10 @@ public static class GameEvents
     public static Action<Vector2Int> OnChestOpened;         // 상자 개방 셀
     public static Action<KeyType> OnKeyAcquired;            // 획득한 열쇠 종류
 
+    // 탐색 액션 — center 기준 체비셰프 radius 안의 숨겨진 것(문/함정 등)이 구독해 드러남.
+    public static Action<Vector2Int, int> OnSearchPerformed; // center, radius (1 = 3x3)
+    public static Action<Vector2Int> OnSecretDiscovered;     // 숨겨진 문/함정이 실제로 드러난 셀
+
     // 상태이상
     public static Action<StatusRequest> OnStatusEffectApplied;
 
@@ -54,6 +58,8 @@ public static class GameEvents
         OnGoldDropped = null;
         OnChestOpened = null;
         OnKeyAcquired = null;
+        OnSearchPerformed = null;
+        OnSecretDiscovered = null;
         OnStatusEffectApplied = null;
         OnVisionUpdated = null;
         OnPlayerDied = null;

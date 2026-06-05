@@ -22,6 +22,7 @@ public class TutorialController : MonoBehaviour
         InventoryOpened,   // 4 (B) TODO: 인벤토리 열림 이벤트(NYH) — 현재 임시 수동(advanceKey)
         EnterRegion,       // 5/7/9 영역 진입
         DefeatAndGetKey,   // 6 적 처치 수 + 열쇠 획득
+        SecretDiscovered,  // 7 앞: F 탐색으로 숨겨진 문 발견
         ChestOpened,       // 8 상자 개방
         ReachExit,         // 10 포탈 도달 → 종료(인벤 비우고 1층)
     }
@@ -50,6 +51,14 @@ public class TutorialController : MonoBehaviour
     [Tooltip("디버그용 — 조건과 무관하게 현재 단계를 강제로 넘김. None 이면 비활성.")]
     [SerializeField] private KeyCode debugSkipKey = KeyCode.None;
 
+    [Header("시작 SafeRoom Arm — 플래닝 카메라(줌/팬) + 선택적 타이머 정지")]
+    [Tooltip("시작 SafeRoom 영역 콜라이더. 이 안의 walkable 셀을 SafeRoom 으로 Arm. 플레이어는 이 안에서 시작해야 함.")]
+    [SerializeField] private Collider2D startSafeRegion;
+    [Tooltip("플래닝 카메라(없으면 CameraFollow.Instance).")]
+    [SerializeField] private CameraFollow cameraFollow;
+    [Tooltip("타이머 게이트(선택) — 있으면 시작방 안 타이머 정지, 첫 이탈 시 시작.")]
+    [SerializeField] private SafeRoomTimerGate safeRoomGate;
+
     [Header("종료 — 1층 진입")]
     [Tooltip("종료 시 비울 인벤토리(없으면 자동 검색).")]
     [SerializeField] private PrototypeRT.InventoryController inventory;
@@ -64,6 +73,7 @@ public class TutorialController : MonoBehaviour
     private bool _keyAcquired;
     private bool _chestOpened;
     private bool _exitReached;
+    private bool _secretDiscovered;
 
     private Step Current => (_index >= 0 && _index < steps.Count) ? steps[_index] : null;
 
@@ -72,6 +82,7 @@ public class TutorialController : MonoBehaviour
         GameEvents.OnEnemyKilled += OnEnemyKilled;
         GameEvents.OnKeyAcquired += OnKeyAcquired;
         GameEvents.OnChestOpened += OnChestOpened;
+        GameEvents.OnSecretDiscovered += OnSecretDiscovered;
         GameEvents.OnLevelComplete += OnExitReached;
     }
 
@@ -80,6 +91,7 @@ public class TutorialController : MonoBehaviour
         GameEvents.OnEnemyKilled -= OnEnemyKilled;
         GameEvents.OnKeyAcquired -= OnKeyAcquired;
         GameEvents.OnChestOpened -= OnChestOpened;
+        GameEvents.OnSecretDiscovered -= OnSecretDiscovered;
         GameEvents.OnLevelComplete -= OnExitReached;
     }
 
@@ -87,7 +99,46 @@ public class TutorialController : MonoBehaviour
     {
         if (player == null) player = FindFirstObjectByType<GridPlayer>();
         if (inventory == null) inventory = FindFirstObjectByType<PrototypeRT.InventoryController>();
+        if (cameraFollow == null) cameraFollow = CameraFollow.Instance;
+
+        ArmStartSafeRoom();
         AdvanceToNext();
+    }
+
+    /// <summary>시작 SafeRoom 영역을 Arm — 플래닝 카메라 활성(단계 3 판정) + 선택적 타이머 정지.</summary>
+    private void ArmStartSafeRoom()
+    {
+        if (startSafeRegion == null) return;
+        var cells = CellsInRegion(startSafeRegion);
+        if (cells.Count == 0)
+        {
+            Debug.LogWarning("[Tutorial] startSafeRegion 안에 walkable 셀이 없음 — SafeRoom Arm 생략.");
+            return;
+        }
+
+        if (cameraFollow != null) cameraFollow.ArmSafeRoom(cells);
+        if (safeRoomGate != null)
+            safeRoomGate.Arm(new RoomData { type = RoomType.Safe, floorCells = cells });
+    }
+
+    /// <summary>콜라이더 영역 안의 walkable 셀 목록 — startSafeRegion / EnterRegion 영역 산출용.</summary>
+    private static List<Vector2Int> CellsInRegion(Collider2D region)
+    {
+        var cells = new List<Vector2Int>();
+        if (region == null || GridSystem.Instance == null) return cells;
+
+        Bounds b = region.bounds;
+        Vector2Int min = GridSystem.Instance.WorldToGrid(b.min);
+        Vector2Int max = GridSystem.Instance.WorldToGrid(b.max);
+        for (int x = min.x; x <= max.x; x++)
+            for (int y = min.y; y <= max.y; y++)
+            {
+                var c = new Vector2Int(x, y);
+                if (!GridSystem.Instance.IsWalkable(c)) continue;
+                if (region.OverlapPoint(GridSystem.Instance.GridToWorld(c)))
+                    cells.Add(c);
+            }
+        return cells;
     }
 
     private void Update()
@@ -119,6 +170,9 @@ public class TutorialController : MonoBehaviour
 
             case Condition.DefeatAndGetKey:
                 return _kills >= s.killCount && _keyAcquired;
+
+            case Condition.SecretDiscovered:
+                return _secretDiscovered;
 
             case Condition.ChestOpened:
                 return _chestOpened;
@@ -160,6 +214,7 @@ public class TutorialController : MonoBehaviour
         _keyAcquired = false;
         _chestOpened = false;
         _exitReached = false;
+        _secretDiscovered = false;
     }
 
     private void Finish()
@@ -191,5 +246,6 @@ public class TutorialController : MonoBehaviour
     private void OnEnemyKilled(Vector2Int pos, float timeBonus) => _kills++;
     private void OnKeyAcquired(KeyType type) => _keyAcquired = true;
     private void OnChestOpened(Vector2Int cell) => _chestOpened = true;
+    private void OnSecretDiscovered(Vector2Int cell) => _secretDiscovered = true;
     private void OnExitReached() => _exitReached = true;
 }

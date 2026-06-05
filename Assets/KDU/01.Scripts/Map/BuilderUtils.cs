@@ -202,7 +202,7 @@ public static class BuilderUtils
     /// <summary>
     /// host 와 branch 를 dir 축으로 직진하는 1칸 폭 복도로 연결한다.
     /// PlaceBeside 가 branch 를 host 면 중앙에 정렬해 두므로 수직 직선이 양쪽 면에 1칸씩만 닿는다.
-    /// branch 쪽 끝 셀(doorBranch)이 게이트 — Secret 은 이 1칸만 벽으로 봉인하면 완전히 막힌다.
+    /// Secret 게이트는 호스트 끝에서 한 칸 안쪽 2칸을 봉인(아래 gatewayCells 기록 참고) — 혹 방지 + RuleTile 백킹 유지.
     /// </summary>
     public static void ConnectStraightTunnel(RoomData host, RoomData branch, Vector2Int dir, List<RoomData> allRooms)
     {
@@ -257,9 +257,13 @@ public static class BuilderUtils
         branch.gatewayCells.Clear();
         if (branch.type == RoomType.Secret)
         {
-            // 노말 방 쪽 끝 2칸 — 봉인(RuleTile 깔끔 + 발견 전 미노출), 발견 시 여기를 열어 문으로.
-            branch.gatewayCells.Add(doorHost);
+            // 봉인 2칸을 호스트 벽 라인에서 '한 칸 안쪽(터널 쪽)'으로 밀어 넣는다.
+            //  - doorHost(=호스트 벽 라인 칸)는 floor 로 남김 → 벽 밖으로 혹이 튀어나오지 않음(대신 호스트 벽에 1칸 홈).
+            //  - 봉인은 2칸 두께라 RuleTile 백킹이 유지돼 1칸 봉인 때처럼 벽이 얇게 깨지지 않음.
+            //  - SecretGap=4 → 터널은 doorHost..doorBranch 4칸(offset 0~3). 봉인 offset 1·2, doorBranch(3)는 포켓으로 남겨 방이 막히지 않음.
+            //  발견 시 이 2칸을 열어 문으로 치환.
             branch.gatewayCells.Add(doorHost + dir);
+            branch.gatewayCells.Add(doorHost + 2 * dir);
         }
         else
         {
