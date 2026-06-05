@@ -24,10 +24,10 @@ public class DialogManager : MonoBehaviour
         dialog.gameObject.SetActive(true);
     }
 
-    // Update is called once per frame
-    private async UniTask Update()
+    // Unity의 생명주기 메서드인 Update는 void 반환타입을 가져야 매 프레임 정상 호출됩니다.
+    private void Update()
     {
-        if(Input.GetMouseButtonDown(0)&&isDialogActive)
+        if (Input.GetMouseButtonDown(0) && isDialogActive)
         {
             if (index < dialogText.Length)
             {
@@ -36,18 +36,24 @@ public class DialogManager : MonoBehaviour
             }
             else
             {
-                dialog.gameObject.SetActive(false);
-                await Effect();
-                dialogBackground.gameObject.SetActive(false);
-                bossName.SetActive(false);
-                animeEffect.SetActive(false);
                 isDialogActive = false;
-
-                OnDialogComplete?.Invoke();
-                OnDialogComplete = null;
+                EndDialogSequence().Forget();
             }
         }
     }
+
+    private async UniTaskVoid EndDialogSequence()
+    {
+        dialog.gameObject.SetActive(false);
+        await Effect();
+        dialogBackground.gameObject.SetActive(false);
+        bossName.SetActive(false);
+        animeEffect.SetActive(false);
+
+        OnDialogComplete?.Invoke();
+        OnDialogComplete = null;
+    }
+
     public void Awake()
     {
         dialogBackground.gameObject.SetActive(false);
@@ -56,11 +62,25 @@ public class DialogManager : MonoBehaviour
         bossName.SetActive(false);
         gameObject.SetActive(false);
     }
+
     public void OnEnable()
     {
+        index = 0; // 대화 시작 시 index 초기화
         isDialogActive = true;
         ShowDialog();
+
+        // 켜지자마자 첫 번째 대사가 바로 표시되도록 설정
+        if (dialogText != null && dialogText.Length > 0)
+        {
+            dialog.text = dialogText[0];
+            index = 1;
+        }
+        else
+        {
+            dialog.text = "";
+        }
     }
+
     private async UniTask Effect()//연출 애니메이션
     {
         animeEffect.SetActive(true);

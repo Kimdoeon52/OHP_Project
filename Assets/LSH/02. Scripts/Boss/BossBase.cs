@@ -204,7 +204,7 @@ public class BossBase : EnemyNormalBASE
         return finalDamage >= Mathf.CeilToInt(maxDamage * 0.8f);
     }
 
-    protected virtual void OnDeath()
+    protected virtual async UniTask OnDeath()
     {
         Destroy(gameObject);
     }

@@ -147,7 +147,6 @@ public class BossB : BossBase, IGridEntity, IDamageable
         AddActionCase(BossAction.Pattern1, 40); // 평타
         AddActionCase(BossAction.Pattern2, 30); // 충격파
         AddActionCase(BossAction.Pattern3, 30); // 따라다니는 크리스탈
-        anime = GetComponent<Animator>();
         bossSprite = GetComponentInChildren<SpriteRenderer>(); //Phase 2 색 변경용 (자식 포함 검색)
         gridPos = GridSystem.Instance.WorldToGrid(transform.position); //보스 시작 격자 좌표 초기화
         RegisterBossGridTarget(); // 플레이어가 이동공격 대상으로 보스를 찾을 수 있도록 TurnManager에 등록
@@ -174,7 +173,7 @@ public class BossB : BossBase, IGridEntity, IDamageable
     //=============================== 죽음 패턴 ==========================================
     // HP 0 도달 시 BossBase.BossTakeDamage가 isDying을 잠그고 OnDeath() 호출.
     // 즉시 파괴하지 않고: 패시브/오브젝트 정리 → 보스 등 뒤로 큰 붉은 크리스탈 → 안전지대(3x3) 제외 전체 위험표시 → deathEscapeSec 후 즉사 판정 → 자폭.
-    protected override void OnDeath()
+    protected override async UniTask OnDeath()
     {
         DeathPatternAsync().Forget();
     }
@@ -276,14 +275,14 @@ public class BossB : BossBase, IGridEntity, IDamageable
     // 반환값: 보스가 바라보는 방향 (휘두르기 등 dir이 필요한 패턴에서 사용).
     private async UniTask<Vector2Int> TeleportToPlayerAsync(int disappearMs = 1000, int appearMs = 500)
     {
-        anime.SetTrigger("Teleport");
+        bossAnimation.SetTrigger("Teleport");
         await UniTask.Delay(disappearMs, cancellationToken: cancelToken.Token);
 
         var dir = TeleportBesidePlayer();
         if (dir == Vector2Int.zero) dir = DirToPlayer();
         FaceDir(dir);
 
-        anime.SetTrigger("Appear");
+        bossAnimation!.SetTrigger("Appear");
         await UniTask.Delay(appearMs, cancellationToken: cancelToken.Token);
         return dir;
     }
@@ -315,7 +314,7 @@ public class BossB : BossBase, IGridEntity, IDamageable
         try
         {
             // 5) 휘두르기 윈드업. 이 800ms가 플레이어가 빠져나가 피하는 유일한 창.
-            anime.SetTrigger("Attack1");
+            bossAnimation.SetTrigger("Attack1");
             await UniTask.Delay(800, cancellationToken: cancelToken.Token);
             GameObject Effect = SpawnAttackEffectFacingBoss(attack1Effect, transform.position);
             if (Effect != null) Destroy(Effect, 1f);
@@ -397,7 +396,7 @@ public class BossB : BossBase, IGridEntity, IDamageable
         await TeleportToPlayerAsync();
 
         // 2) Attack2 트리거 → 1초 대기 (첫 워닝 전 anim 시간 확보)
-        anime.SetTrigger("Attack2");
+        bossAnimation.SetTrigger("Attack2");
         await UniTask.Delay(2000, cancellationToken: cancelToken.Token);
 
         var center = gridPos;
@@ -439,7 +438,7 @@ public class BossB : BossBase, IGridEntity, IDamageable
         }
 
         // 4) 마무리
-        anime.SetTrigger("Attack2Fin");
+        bossAnimation.SetTrigger("Attack2Fin");
         await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
         isBossAttacking = false;
     }
@@ -548,7 +547,7 @@ public class BossB : BossBase, IGridEntity, IDamageable
     {
         await TeleportToPlayerAsync();
 
-        anime.SetTrigger("Attack2");
+        bossAnimation.SetTrigger("Attack2");
         await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
         GameObject Effect = SpawnAttackEffectFacingBoss(swordGround, transform.position);
         for (int i = 0; i < chasingCrystalCount; i++)
@@ -564,7 +563,7 @@ public class BossB : BossBase, IGridEntity, IDamageable
             await UniTask.Delay(chasingCrystalIntervalMs, cancellationToken: cancelToken.Token);
         }
 
-        anime.SetTrigger("Attack2Fin");
+        bossAnimation.SetTrigger("Attack2Fin");
         Destroy(Effect);
         await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
         isBossAttacking = false;

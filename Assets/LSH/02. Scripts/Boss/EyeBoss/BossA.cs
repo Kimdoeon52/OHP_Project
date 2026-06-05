@@ -348,20 +348,18 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             try
             {
                 // 경고 표시 후 2초 대기
+                if (bossAnimation != null) bossAnimation.SetTrigger("Jump");
                 await UniTask.Delay(2000, cancellationToken: cancelToken.Token);
 
                 if (cancelToken.IsCancellationRequested || isDying) break;
 
                 // 2) 점프 이동
                 var targetWorld = GridSystem.Instance.GridToWorld(landingGridPos) + new Vector3(0.5f, 0.5f, 0f);
-                if (bossAnimation != null) bossAnimation.SetTrigger("Teleport");
-
+                
                 await transform.DOJump(targetWorld, jumpPower: 2f, numJumps: 1, duration: 0.6f)
                     .SetEase(Ease.OutQuad)
                     .AsyncWaitForCompletion();
                 gridPos = landingGridPos;
-
-                if (bossAnimation != null) bossAnimation.SetTrigger("Appear");
 
                 // 카메라 흔들림 트리거
                 if (CameraFollow.Instance != null)
@@ -412,11 +410,13 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             // 4) 대기 시간 처리
             if (i == 0)
             {
+                bossAnimation.SetTrigger("JumpFin");
                 // 첫 번째 점프 후에는 3초 쿨타임 대기
                 await UniTask.Delay(3000, cancellationToken: cancelToken.Token);
             }
             else
             {
+                bossAnimation.SetTrigger("JumpFin");
                 // 두 번째 점프 후에는 충격파 나오고 1초 뒤 다시 걷기
                 await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
             }
@@ -444,14 +444,14 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
         var attackCells = GetCrossCells();
         ShowWarning(attackCells);
+        List<GameObject> lasers = new List<GameObject>();
 
         try
         {
-            if (bossAnimation != null) bossAnimation.SetTrigger("Attack2");
+            if (bossAnimation != null) bossAnimation.SetTrigger("Attack");
 
             await UniTask.Delay(laserTelegraphMs, cancellationToken: cancelToken.Token);
 
-            List<GameObject> lasers = new List<GameObject>();
             if (laserPrefab != null && _hasMapBounds)
             {
                 // 세로 레이저 (두께 2칸, 시각적 두께 laserVisualThickness)
@@ -478,10 +478,12 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             await UniTask.Delay(laserActiveMs, cancellationToken: cancelToken.Token);
 
             foreach (var l in lasers) if (l != null) Destroy(l);
+            lasers.Clear();
         }
         finally
         {
             ClearWarning(attackCells);
+            foreach (var l in lasers) if (l != null) Destroy(l);
             if (bossAnimation != null) bossAnimation.SetTrigger("Attack2Fin");
         }
     }
@@ -563,9 +565,17 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         return candidates[0];
     }
 
-    private bool IsBossOccupying(Vector2Int cell, Vector2Int bossPos)
+    private bool IsBossOccupying(Vector2Int cell, Vector2Int bossPos) //범위 2x2로 보스가 차지하는 영역 판정 (bossPos는 보스의 왼쪽 아래 기준)
     {
         return cell.x >= bossPos.x && cell.x < bossPos.x + bossSize.x &&
                cell.y >= bossPos.y && cell.y < bossPos.y + bossSize.y;
+    }
+
+    // ---------------------------- 사망 판정 ---------------------------------
+    protected override async UniTask OnDeath()
+    {
+        bossAnimation.SetTrigger("Teleport");
+        await UniTask.Delay(2000);
+        Destroy(gameObject);
     }
 }
