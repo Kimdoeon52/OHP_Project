@@ -1,4 +1,4 @@
-﻿// #if UNITY_EDITOR || DEVELOPMENT_BUILD
+// #if UNITY_EDITOR || DEVELOPMENT_BUILD
 
 using PrototypeRT;
 using UnityEngine;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -242,7 +242,7 @@ public class GridPlayerMovement : MonoBehaviour
 
     private float GetMoveDuration()
     {
-        float moveSpeed = GetMoveSpeed();
+        int moveSpeed = GetMoveSpeed();
 
         // 실제 그리드 이동 시간 공식:
         // MoveSpeed가 5를 넘어도 계속 전체 수치를 반영합니다.
@@ -256,7 +256,7 @@ public class GridPlayerMovement : MonoBehaviour
             return Mathf.Max(minMoveActionDelay, levelDelay);
 
         float baseDelay = _player.Config != null ? _player.Config.moveTimeDelay : 1f;
-        float moveSpeed = GetMoveSpeed();
+        int moveSpeed = GetMoveSpeed();
 
         float progress = moveSpeedForMinActionDelay <= 1
             ? 1f
@@ -284,7 +284,7 @@ public class GridPlayerMovement : MonoBehaviour
 
     private float GetAnimationSpeedMultiplier()
     {
-        float cappedMoveSpeed = Mathf.Min(GetMoveSpeed(), animationSpeedCapMoveSpeed);
+        int cappedMoveSpeed = Mathf.Min(GetMoveSpeed(), animationSpeedCapMoveSpeed);
 
         // 애니메이션 배속 공식:
         // MoveSpeed 5 이후에는 cappedMoveSpeed가 고정되어 걷기 애니메이션이 너무 빨라지지 않게 합니다.
@@ -294,13 +294,13 @@ public class GridPlayerMovement : MonoBehaviour
         return Mathf.Max(1f, baseMoveDuration / animationDuration);
     }
 
-    private float GetDurationForMoveSpeed(float moveSpeed)
+    private float GetDurationForMoveSpeed(int moveSpeed)
     {
         float speedFactor = 1f + Mathf.Max(0, moveSpeed) * moveSpeedDurationMultiplier;
         return Mathf.Max(minMoveDuration, baseMoveDuration / speedFactor);
     }
 
-    private float GetMoveSpeed()
+    private int GetMoveSpeed()
     {
         if (_stats == null)
             _stats = NYHPlayerStats.Instance;

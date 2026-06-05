@@ -25,10 +25,7 @@ public enum NYHStatType
     Level,
 
     // 배고픔 수치. 시간에 따라 감소하며 0이 되면 굶주림 상태가 된다.
-    Hunger,
-
-    // 명중률
-    Accuracy,
+    Hunger
 }
 
 /// <summary>
