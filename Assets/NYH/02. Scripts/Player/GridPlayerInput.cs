@@ -1,5 +1,4 @@
 using UnityEngine;
-using PrototypeRT;
 
 /// <summary>
 /// 플레이어 입력을 GridPlayer의 이동/근접 공격/포션 사용 흐름으로 전달합니다.
@@ -55,10 +54,6 @@ public class GridPlayerInput : MonoBehaviour
 
     private void Update()
     {
-        // UI 패널이 열린 동안에는 이동/공격/포션/퀵슬롯 입력이 게임 로직까지 내려가지 않게 막는다.
-        if (UIManager.Instance != null && UIManager.Instance.BlocksGameplayInput)
-            return;
-
         if (TurnManager.Instance == null || !TurnManager.Instance.IsPlayerTurn) return;
         if (_player.Health.IsDead) return;
         if (_player.Movement.IsMoving) return;

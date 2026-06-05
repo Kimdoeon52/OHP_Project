@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using PrototypeRT;
 
 public enum NYHStatType
 {
@@ -18,14 +19,17 @@ public enum NYHStatType
     // 받는 피해를 고정값으로 감소시키는 방어 스탯.
     Defense,
 
-    // 피격을 확률로 완전히 무시하는 회피율. 0~100%.
+    // 공격자의 정확도와 비교해 피격 무효 확률을 만드는 회피 스탯.
     Evasion,
 
     // 이전 데이터 호환용. 실제 레벨/경험치는 PlayerLevelSystem에서 관리한다.
     Level,
 
     // 배고픔 수치. 시간에 따라 감소하며 0이 되면 굶주림 상태가 된다.
-    Hunger
+    Hunger,
+
+    // 명중률 보정값. 기존 enum 직렬화 값을 밀지 않기 위해 마지막에 추가한다.
+    Accuracy
 }
 
 /// <summary>
@@ -47,10 +51,10 @@ public class NYHPlayerStats : MonoBehaviour
     [SerializeField, Min(0)] private int strength = 10;
 
     [Tooltip("플레이어 이동 속도입니다. 값이 높을수록 한 칸 이동 시간이 짧아집니다.")]
-    [SerializeField, Min(0f)] private float moveSpeed = 1f;
+    [SerializeField, Min(0)] private int moveSpeed = 1;
 
     [Tooltip("플레이어 공격 속도입니다. 값이 높을수록 공격 애니메이션 속도가 빨라집니다.")]
-    [SerializeField, Min(0f)] private float attackSpeed = 1f;
+    [SerializeField, Min(0)] private int attackSpeed = 1;
 
     [Tooltip("플레이어 명중률 보정값입니다. 현재는 확장용 스탯이며, 명중 판정 시스템에서 사용할 수 있습니다.")]
     [SerializeField, Range(0, 100)] private int accuracy = 15;
@@ -59,7 +63,7 @@ public class NYHPlayerStats : MonoBehaviour
     [Tooltip("받는 피해를 고정값으로 감소시키는 방어력입니다. 최종 피해는 최소 0까지 내려갑니다.")]
     [SerializeField, Min(0)] private int defense;
 
-    [Tooltip("피격을 완전히 회피할 확률입니다. 0이면 회피 없음, 100이면 항상 회피합니다.")]
+    [Tooltip("몬스터 정확도와 비교해 공격을 무효화할 확률을 만듭니다. 실제 무효화 확률은 최대 50%로 제한됩니다.")]
     [SerializeField, Range(0, 100)] private int evasion = 20;
 
     [Header("상태 스탯")]
@@ -80,8 +84,8 @@ public class NYHPlayerStats : MonoBehaviour
 
     public int MaxHealth => maxHealth;
     public int Strength => strength;
-    public float MoveSpeed => moveSpeed;
-    public float AttackSpeed => attackSpeed;
+    public int MoveSpeed => moveSpeed;
+    public int AttackSpeed => attackSpeed;
     public int Accuracy => accuracy;
     public int Defense => defense;
     public int Evasion => evasion;
@@ -114,87 +118,54 @@ public class NYHPlayerStats : MonoBehaviour
     /// 외부 요인(장비 스왑, 레벨업 보상 등)에 의해 지정된 스탯을 amount만큼 영구/일시적으로 증감시킵니다.
     /// 체력(Health)의 경우 최대 체력을 변경하며, OnStatAdded 이벤트를 통해 GridPlayerHealth 등에서 실제 현재 체력을 동기화합니다.
     /// </summary>
-public void AddStat(NYHStatType type, int amount)
-{
-    switch (type)
+    public void AddStat(NYHStatType type, int amount)
     {
-        case NYHStatType.Health:
-            maxHealth = Mathf.Max(1, maxHealth + amount);
-            OnStatAdded?.Invoke(type, amount);
-            OnStatsChanged?.Invoke();
-            return;
+        switch (type)
+        {
+            case NYHStatType.Health:
+                maxHealth = Mathf.Max(1, maxHealth + amount);
+                OnStatAdded?.Invoke(type, amount);
+                OnStatsChanged?.Invoke();
+                return;
+            case NYHStatType.Strength:
+                strength = Mathf.Max(0, strength + amount);
+                break;
+            case NYHStatType.MoveSpeed:
+                // MoveSpeed는 정수 스탯이므로 전달된 증가량을 한 번만 반영한다.
+                // 기존에는 amount / 100과 amount가 모두 더해져 큰 보상 값에서 이동속도가 비정상적으로 튀었다.
+                moveSpeed = Mathf.Max(0, moveSpeed + amount);
+                break;
+            case NYHStatType.AttackSpeed:
+                attackSpeed = Mathf.Max(0, attackSpeed + amount);
+                break;
+            case NYHStatType.Accuracy:
+                accuracy = Mathf.Clamp(accuracy + amount, 0, 100);
+                break;
+            case NYHStatType.Defense:
+                defense = Mathf.Max(0, defense + amount);
+                break;
+            case NYHStatType.Evasion:
+                evasion = Mathf.Clamp(evasion + amount, 0, 100);
+                break;
+            case NYHStatType.Hunger:
+                hunger = Mathf.Clamp(hunger + amount, 0, 10);
+                break;
+            case NYHStatType.Level:
+                Debug.LogWarning("NYHPlayerStats: Level은 PlayerLevelSystem에서 관리합니다.");
+                return;
+        }
 
-        case NYHStatType.Strength:
-            strength = Mathf.Max(0, strength + amount);
-            break;
-
-        case NYHStatType.Defense:
-            defense = Mathf.Max(0, defense + amount);
-            break;
-
-        case NYHStatType.Evasion:
-            evasion = Mathf.Clamp(evasion + amount, 0, 100);
-            break;
-
-        case NYHStatType.Hunger:
-            hunger = Mathf.Clamp(hunger + amount, 0, 10);
-            break;
-
-        case NYHStatType.MoveSpeed:
-        case NYHStatType.AttackSpeed:
-            Debug.LogWarning($"NYHPlayerStats: {type}은 float AddStat으로 처리해야 합니다.");
-            return;
-
-        case NYHStatType.Level:
-            Debug.LogWarning("NYHPlayerStats: Level은 PlayerLevelSystem에서 관리합니다.");
-            return;
+        OnStatAdded?.Invoke(type, amount);
+        OnStatsChanged?.Invoke();
     }
-
-    OnStatAdded?.Invoke(type, amount);
-    OnStatsChanged?.Invoke();
-}
-
-/// <summary>
-    /// MoveSpeed, AttackSpeed 같이 소수점 단위로 스탯이 변할 수 있는 경우에 사용하는 AddStat입니다.
-    /// 내부적으로는 Mathf.RoundToInt로 반올림하여 int 이벤트를 발생시키므로, OnStatAdded 이벤트 구독자에서는 int로 처리하면 됩니다.
-    /// </summary>
-public void AddStat(NYHStatType type, float amount)
-{
-    switch (type)
-    {
-        case NYHStatType.MoveSpeed:
-            moveSpeed = Mathf.Max(0f, moveSpeed + amount);
-            break;
-
-        case NYHStatType.AttackSpeed:
-            attackSpeed = Mathf.Max(0f, attackSpeed + amount);
-            break;
-
-        case NYHStatType.Health:
-        case NYHStatType.Strength:
-        case NYHStatType.Defense:
-        case NYHStatType.Evasion:
-        case NYHStatType.Hunger:
-            Debug.LogWarning($"NYHPlayerStats: {type}은 int AddStat으로 처리해야 합니다.");
-            return;
-
-        case NYHStatType.Level:
-            Debug.LogWarning("NYHPlayerStats: Level은 PlayerLevelSystem에서 관리합니다.");
-            return;
-    }
-
-    OnStatAdded?.Invoke(type, Mathf.RoundToInt(amount));
-    OnStatsChanged?.Invoke();
-}
 
     /// <summary>
-    /// 플레이어의 방어력(고정 감소)과 회피율(확률 완전 회피) 스탯을 적용하여 
-    /// 실제로 깎일 최종 피해량을 산출해 반환합니다. 회피에 성공하면 피해량은 0이 됩니다.
+    /// 플레이어의 방어력(고정 감소)을 적용하여 실제로 깎일 최종 피해량을 산출해 반환합니다.
+    /// 회피는 공격자의 정확도가 필요하므로 EnemyBase.TryHitPlayer()에서 먼저 판정합니다.
     /// </summary>
     public int CalculateIncomingDamage(int rawDamage)
     {
         if (rawDamage <= 0) return 0;
-        if (evasion > 0 && UnityEngine.Random.value < evasion / 100f) return 0;
 
         return Mathf.Max(0, rawDamage - defense);
     }
@@ -251,15 +222,26 @@ public static class NYHPlayerAttackCalculator
         if (stats == null)
             return new NYHAttackDamageRange(UnarmedDamage, UnarmedDamage, 0, true, "맨손");
 
-        CloseWeapon weapon = GetEquippedCloseWeapon(equipmentController);
-        if (weapon == null)
+        WeaponInstance weaponInstance = GetEquippedWeaponInstance(equipmentController);
+        if (weaponInstance != null && weaponInstance.Weapon != null)
+        {
+            CloseWeapon weapon = weaponInstance.Weapon;
+            int strengthBonusMax = Mathf.Max(0, stats.Strength - weapon.CanUseStrength);
+            int minDamage = Mathf.Max(0, weaponInstance.GetMinDamage());
+            int maxDamage = Mathf.Max(minDamage, weaponInstance.GetMaxDamage() + strengthBonusMax);
+
+            return new NYHAttackDamageRange(minDamage, maxDamage, strengthBonusMax, false, weapon.Name);
+        }
+
+        CloseWeapon fallbackWeapon = GetEquippedCloseWeapon(equipmentController);
+        if (fallbackWeapon == null)
             return new NYHAttackDamageRange(UnarmedDamage, UnarmedDamage, 0, true, "맨손");
 
-        int strengthBonusMax = Mathf.Max(0, stats.Strength - weapon.CanUseStrength);
-        int minDamage = Mathf.Max(0, weapon.MinDamage);
-        int maxDamage = Mathf.Max(minDamage, weapon.MaxDamage + strengthBonusMax);
+        int fallbackStrengthBonusMax = Mathf.Max(0, stats.Strength - fallbackWeapon.CanUseStrength);
+        int fallbackMinDamage = Mathf.Max(0, fallbackWeapon.MinDamage);
+        int fallbackMaxDamage = Mathf.Max(fallbackMinDamage, fallbackWeapon.MaxDamage + fallbackStrengthBonusMax);
 
-        return new NYHAttackDamageRange(minDamage, maxDamage, strengthBonusMax, false, weapon.Name);
+        return new NYHAttackDamageRange(fallbackMinDamage, fallbackMaxDamage, fallbackStrengthBonusMax, false, fallbackWeapon.Name);
     }
 
     public static int RollMeleeDamage(NYHPlayerStats stats, NYHEquipmentController equipmentController)
@@ -280,5 +262,27 @@ public static class NYHPlayerAttackCalculator
         return equipmentController.TryGetEquipped(EquipmentSlot.Weapon, out NYHEquipmentItemInstance item)
             ? item.Data as CloseWeapon
             : null;
+    }
+
+    private static WeaponInstance GetEquippedWeaponInstance(NYHEquipmentController equipmentController)
+    {
+        if (equipmentController == null)
+            return null;
+
+        if (equipmentController.TryGetEquippedInventoryItem(EquipmentSlot.Weapon, 0, out InventoryItem itemView)
+            && itemView != null
+            && itemView.ItemInstance is WeaponInstance viewWeapon)
+        {
+            return viewWeapon;
+        }
+
+        if (equipmentController.TryGetEquipped(EquipmentSlot.Weapon, out NYHEquipmentItemInstance equipped)
+            && equipped != null
+            && equipped.SourceInstance is WeaponInstance sourceWeapon)
+        {
+            return sourceWeapon;
+        }
+
+        return null;
     }
 }
