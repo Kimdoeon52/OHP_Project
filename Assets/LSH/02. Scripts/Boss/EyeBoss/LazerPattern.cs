@@ -41,6 +41,7 @@ public class LazerPattern : MonoBehaviour
 
     [Header("레이저 프리팹")]
     [SerializeField] private GameObject lazerAttackPrefab;
+    [SerializeField] private GameObject lazerWarningPrefab;   // 레이저 경고용 프리팹 (붉은 레이저)
     [SerializeField] private GameObject eyeHorizontalPrefab; //가로 레이저용 눈: 왼쪽 끝에 소환
     [SerializeField] private GameObject eyeVerticalPrefab;   //세로 레이저용 눈: 위쪽 끝에 소환
     [SerializeField] private GameObject specialEyePrefab;     //Phase 3용 특별한 눈 프리팹 (중앙 소환)
@@ -48,9 +49,7 @@ public class LazerPattern : MonoBehaviour
     [Header("AttackFloor 타일맵 (공격·레이저 범위 제한)")]
     [SerializeField] private Tilemap attackFloorTilemap;
 
-    [Header("경고 타일맵 (LazerPattern 전용)")]
-    [SerializeField] private Tilemap warningTilemap;
-    [SerializeField] private TileBase warningTile;
+
 
     [Header("레이저 타이밍")]
     [SerializeField] private int laserTelegraphMs = 800; // 타일 경고 노출 시간 (회피 창)
@@ -82,7 +81,6 @@ public class LazerPattern : MonoBehaviour
     private bool _hasMapBounds;
     private CancellationTokenSource _cts;
     private bool _phase3LaserStarted;
-    private readonly Dictionary<Vector2Int, int> _warningRefCount = new Dictionary<Vector2Int, int>();
 
     //=============================== 초기화 / 정리 ==========================================
     private void OnEnable()
@@ -116,7 +114,6 @@ public class LazerPattern : MonoBehaviour
             _cts.Dispose();
             _cts = null;
         }
-        ClearAllWarnings();
     }
 
     private void CacheMapBounds()
@@ -396,31 +393,44 @@ public class LazerPattern : MonoBehaviour
             eyeObj = Instantiate(specialEyePrefab, center, Quaternion.identity);
         }
 
-        var warningCells = new List<Vector2Int>();
-        if (_hasMapBounds)
-        {
-            int cx = (_mapBounds.xMin + _mapBounds.xMax) / 2;
-            int cy = (_mapBounds.yMin + _mapBounds.yMax) / 2;
-
-            for (int x = _mapBounds.xMin; x < _mapBounds.xMax; x++)
-            {
-                warningCells.Add(new Vector2Int(x, cy));
-            }
-            for (int y = _mapBounds.yMin; y < _mapBounds.yMax; y++)
-            {
-                if (y != cy)
-                    warningCells.Add(new Vector2Int(cx, y));
-            }
-        }
-
-        ShowWarning(warningCells);
-
+        var warningBeams = new GameObject[4];
         var beams = new GameObject[4];
         try
         {
-            // 실행 전 2초간 경고표시 보여주기
+            // 실행 전 2초간 얇고 붉은 경고 레이저 표시
+            GameObject prefabToUse = lazerWarningPrefab != null ? lazerWarningPrefab : lazerAttackPrefab;
+            if (prefabToUse != null)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    float deg = i * 90f;
+                    float a = deg * Mathf.Deg2Rad;
+                    Vector3 dir = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f);
+
+                    warningBeams[i] = Instantiate(prefabToUse, center + dir * (phase3LaserLength * 0.5f), Quaternion.Euler(0, 0, deg));
+                    
+                    float scaleYMultiplier = (lazerWarningPrefab != null) ? 1.0f : 0.2f;
+                    var s = warningBeams[i].transform.localScale;
+                    warningBeams[i].transform.localScale = new Vector3(phase3LaserLength, s.y * scaleYMultiplier, s.z);
+
+                    if (lazerWarningPrefab == null)
+                    {
+                        var srs = warningBeams[i].GetComponentsInChildren<SpriteRenderer>();
+                        foreach (var sr in srs)
+                        {
+                            sr.color = new Color(1f, 0f, 0f, 0.5f); // 경고용 붉은 반투명 강제 설정
+                        }
+                    }
+                }
+            }
+
             await UniTask.Delay(2000, cancellationToken: token);
-            ClearWarning(warningCells);
+
+            // 경고 레이저 제거
+            for (int i = 0; i < 4; i++)
+            {
+                if (warningBeams[i] != null) Destroy(warningBeams[i]);
+            }
 
             if (token.IsCancellationRequested || !IsBossAlive()) return;
 
@@ -497,9 +507,9 @@ public class LazerPattern : MonoBehaviour
         catch (System.OperationCanceledException) { }
         finally
         {
-            ClearWarning(warningCells);
             for (int i = 0; i < 4; i++)
             {
+                if (warningBeams[i] != null) Destroy(warningBeams[i]);
                 if (beams[i] != null) Destroy(beams[i]);
             }
             if (eyeObj != null) Destroy(eyeObj);
@@ -534,42 +544,69 @@ public class LazerPattern : MonoBehaviour
         return FireLaserBetween(startCell, endCell, axis, 0, laserVisualScale, laserDamage, _cts.Token);
     }
 
-    // 두 격자 셀 사이 레이저 공용 구현: 타일 경고 + 눈 prefab → 레이저 시각 + 격자 데미지 → 정리.
+    // 두 격자 셀 사이 레이저 공용 구현: 경고 레이저 + 눈 prefab → 레이저 시각 + 격자 데미지 → 정리.
     private async UniTask FireLaserBetween(Vector2Int startCell, Vector2Int endCell, Vector2Int axis,
                                            int width, float visualScaleY, int damage, CancellationToken token)
     {
         var cells = CellsAlongLine(startCell, endCell, axis, width);
 
-        ShowWarning(cells);
         GameObject eye = SpawnEyeForAxis(axis, startCell, endCell);
+        GameObject warningLaser = null;
+        GameObject lazer = null;
 
         try
         {
-            await UniTask.Delay(laserTelegraphMs, cancellationToken: token);
-            ClearWarning(cells);
+            // 경고 레이저 스폰
+            GameObject prefabToUse = lazerWarningPrefab != null ? lazerWarningPrefab : lazerAttackPrefab;
+            if (prefabToUse != null)
+            {
+                Vector3 startPt = GridSystem.Instance.GridToWorld(startCell);
+                Vector3 endPt   = GridSystem.Instance.GridToWorld(endCell);
+                Quaternion q = Quaternion.Euler(0, 0, Mathf.Atan2(axis.y, axis.x) * Mathf.Rad2Deg);
+                float length = Vector3.Distance(startPt, endPt);
+                Vector3 center = (startPt + endPt) * 0.5f;
+                warningLaser = Instantiate(prefabToUse, center, q);
+                
+                float scaleYMultiplier = (lazerWarningPrefab != null) ? 1.0f : 0.2f;
+                var s = warningLaser.transform.localScale;
+                warningLaser.transform.localScale = new Vector3(length, s.y * visualScaleY * scaleYMultiplier, s.z);
 
+                if (lazerWarningPrefab == null)
+                {
+                    var srs = warningLaser.GetComponentsInChildren<SpriteRenderer>();
+                    foreach (var sr in srs)
+                    {
+                        sr.color = new Color(1f, 0f, 0f, 0.5f); // 붉은 반투명 강제 설정
+                    }
+                }
+            }
+
+            await UniTask.Delay(laserTelegraphMs, cancellationToken: token);
+
+            if (warningLaser != null) { Destroy(warningLaser); warningLaser = null; }
             if (eye != null) { Destroy(eye); eye = null; }
 
             // 레이저 시각 spawn
-            Vector3 startPt = GridSystem.Instance.GridToWorld(startCell);
-            Vector3 endPt   = GridSystem.Instance.GridToWorld(endCell);
-            Quaternion q = Quaternion.Euler(0, 0, Mathf.Atan2(axis.y, axis.x) * Mathf.Rad2Deg);
-            float length = Vector3.Distance(startPt, endPt);
-            Vector3 center = (startPt + endPt) * 0.5f;
-            GameObject lazer = Instantiate(lazerAttackPrefab, center, q);
-            var s = lazer.transform.localScale;
-            lazer.transform.localScale = new Vector3(length, s.y * visualScaleY, s.z);
+            Vector3 startPtReal = GridSystem.Instance.GridToWorld(startCell);
+            Vector3 endPtReal   = GridSystem.Instance.GridToWorld(endCell);
+            Quaternion qReal = Quaternion.Euler(0, 0, Mathf.Atan2(axis.y, axis.x) * Mathf.Rad2Deg);
+            float lengthReal = Vector3.Distance(startPtReal, endPtReal);
+            Vector3 centerReal = (startPtReal + endPtReal) * 0.5f;
+            lazer = Instantiate(lazerAttackPrefab, centerReal, qReal);
+            var sReal = lazer.transform.localScale;
+            lazer.transform.localScale = new Vector3(lengthReal, sReal.y * visualScaleY, sReal.z);
 
             DamagePlayerIfInCells(cells, damage);
 
             await UniTask.Delay(laserActiveMs, cancellationToken: token);
-            if (lazer != null) Destroy(lazer);
+            if (lazer != null) { Destroy(lazer); lazer = null; }
         }
         catch (System.OperationCanceledException) { }
         finally
         {
-            ClearWarning(cells);
+            if (warningLaser != null) Destroy(warningLaser);
             if (eye != null) Destroy(eye);
+            if (lazer != null) Destroy(lazer);
         }
     }
 
@@ -596,7 +633,7 @@ public class LazerPattern : MonoBehaviour
         return cells;
     }
 
-    //=============================== 데미지 / 워닝 (LazerPattern 자체 구현) ==========================================
+    //=============================== 데미지 판정 (LazerPattern 자체 구현) ==========================================
     private void DamagePlayerIfInCells(IEnumerable<Vector2Int> cells, int damage)
     {
         if (player == null || player.IsDead) return;
@@ -608,46 +645,6 @@ public class LazerPattern : MonoBehaviour
                 return;
             }
         }
-    }
-
-    // 참조 카운트 워닝 (BossBase와 동일 패턴, LazerPattern 전용 dict).
-    private void ShowWarning(IEnumerable<Vector2Int> cells)
-    {
-        if (warningTilemap == null || warningTile == null || cells == null) return;
-        foreach (var c in cells)
-        {
-            if (_warningRefCount.TryGetValue(c, out int count))
-                _warningRefCount[c] = count + 1;
-            else
-            {
-                _warningRefCount[c] = 1;
-                warningTilemap.SetTile(new Vector3Int(c.x, c.y, 0), warningTile);
-            }
-        }
-    }
-
-    private void ClearWarning(IEnumerable<Vector2Int> cells)
-    {
-        if (warningTilemap == null || cells == null) return;
-        foreach (var c in cells)
-        {
-            if (!_warningRefCount.TryGetValue(c, out int count)) continue;
-            if (count <= 1)
-            {
-                _warningRefCount.Remove(c);
-                warningTilemap.SetTile(new Vector3Int(c.x, c.y, 0), null);
-            }
-            else
-                _warningRefCount[c] = count - 1;
-        }
-    }
-
-    private void ClearAllWarnings()
-    {
-        if (warningTilemap == null) return;
-        foreach (var kv in _warningRefCount)
-            warningTilemap.SetTile(new Vector3Int(kv.Key.x, kv.Key.y, 0), null);
-        _warningRefCount.Clear();
     }
 
     //=============================== 헬퍼 ==========================================
