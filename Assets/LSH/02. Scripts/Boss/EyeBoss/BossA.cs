@@ -51,7 +51,8 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     private bool isRegisteredToTurnManager;
 
     #region 플레이어 이동공격 대상 등록 프록시
-    public Vector2Int GridPosition => gridPos;
+    public override Vector2Int BossSize => bossSize;
+    public override Vector2Int GridPosition => gridPos;
     public int CurrentHp => currentHp;
     public int MaxHp => maxHp;
     public bool IsDead => currentHp <= 0;

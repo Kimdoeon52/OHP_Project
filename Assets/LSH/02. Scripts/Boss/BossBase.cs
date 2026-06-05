@@ -48,6 +48,12 @@ public class BossBase : EnemyNormalBASE
     protected CancellationTokenSource cancelToken;
     protected GridPlayer player; //플레이어 참조
 
+    public Tilemap WarningTilemap => warningTilemap;
+    public TileBase WarningTile => warningTile;
+    public GridPlayer Player => player;
+    public virtual Vector2Int BossSize => new Vector2Int(1, 1);
+    public virtual Vector2Int GridPosition => Vector2Int.zero;
+
     [SerializeField] protected BossHpBar hpBar;
 
     [Header("AttackFloor 타일맵 (이동/공격 제한)")]
@@ -336,25 +342,25 @@ public class BossBase : EnemyNormalBASE
     // 이렇게 안 하면 한 쪽이 ClearWarning 호출 시 다른 쪽의 활성 워닝까지 지워버림.
     private readonly Dictionary<Vector2Int, int> _warningRefCount = new Dictionary<Vector2Int, int>();
 
-    protected void ShowWarning(IEnumerable<Vector2Int> cells)
+    public void ShowWarning(IEnumerable<Vector2Int> cells)
     {
         if (warningTilemap == null || warningTile == null || cells == null) return;
         foreach (var c in cells) ShowWarningInternal(c);
     }
 
-    protected void ShowWarning(Vector2Int cell)
+    public void ShowWarning(Vector2Int cell)
     {
         if (warningTilemap == null || warningTile == null) return;
         ShowWarningInternal(cell);
     }
 
-    protected void ClearWarning(IEnumerable<Vector2Int> cells)
+    public void ClearWarning(IEnumerable<Vector2Int> cells)
     {
         if (warningTilemap == null || cells == null) return;
         foreach (var c in cells) ClearWarningInternal(c);
     }
 
-    protected void ClearWarning(Vector2Int cell)
+    public void ClearWarning(Vector2Int cell)
     {
         if (warningTilemap == null) return;
         ClearWarningInternal(cell);
