@@ -48,7 +48,7 @@ public class PotionData : ItemBase
 
 	public override ItemInstance CreateInstance()
 	{
-		return new WeaponInstance { data = this };
+		return new PotionInstance { data = this, count = 1 };
 	}
 
     private void AddNYHStat(NYHStatType type)

@@ -22,6 +22,6 @@ public class ThrowableWeapon : ItemBase
 
 	public override ItemInstance CreateInstance()
 	{
-		return new WeaponInstance { data = this };
+		return new ThrowableWeaponInstance { data = this };
 	}
 }

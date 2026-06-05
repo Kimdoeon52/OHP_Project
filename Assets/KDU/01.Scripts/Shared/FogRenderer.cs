@@ -9,7 +9,7 @@ public class FogRenderer : MonoBehaviour
 {
     [SerializeField] private Tilemap fogTilemap;
     [SerializeField] private TileBase fogTile;
-    [SerializeField] private TileBase exploredTile;
+    [SerializeField] private TileBase exploredTile; // 반투명
 
     private bool _initialized;
 

@@ -64,26 +64,21 @@ public class ItemPickup : MonoBehaviour
                 : Vector2Int.zero;
         }
 
-        BuildInstance();
+        if (itemSO != null)
+        {
+            item = itemSO.CreateInstance();
+            if (item is EquipmentInstance equip)
+            {
+                equip.enhanceLevel = enhanceLevel;
+                equip.curse = curse;
+            }
+        }
         ApplyIcon();
 
         _player = FindFirstObjectByType<GridPlayer>();
         _inventory = FindFirstObjectByType<PrototypeRT.InventoryController>();
 
         UpdateVisibility();
-    }
-
-    private void BuildInstance()
-    {
-        // itemSO 가 있으면 그것으로 구성. 없으면(item 직접 주입된 경우) 그대로 둔다.
-        if (itemSO == null) return;
-        item = itemSO switch
-        {
-            CloseWeapon => new WeaponInstance { data = itemSO, enhanceLevel = enhanceLevel, curse = curse },
-            ArmorData => new ArmorInstance { data = itemSO, enhanceLevel = enhanceLevel, curse = curse },
-            PotionData => new PotionInstance { data = itemSO, count = 1 },
-            _ => new ItemInstance { data = itemSO }
-        };
     }
 
     private void Update()
