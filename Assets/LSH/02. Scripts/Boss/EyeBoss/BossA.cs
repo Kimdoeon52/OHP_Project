@@ -52,6 +52,8 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     private bool _hasMapBounds;
     private SpriteRenderer _bossSprite;
     private Vector2Int gridPos;
+    // BossA가 OnEnable 시점에 여러 번 등록되는 것을 막기 위한 상태값이다.
+    private bool isRegisteredToTurnManager;
 
     #region 플레이어 이동공격 대상 등록 프록시
     public Vector2Int GridPosition => gridPos;
@@ -89,17 +91,26 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
     private void RegisterBossGridTarget()
     {
+        // 이미 등록된 보스를 다시 등록하면 TurnManager의 엔티티 목록에 중복으로 들어갈 수 있으므로 막는다.
+        if (isRegisteredToTurnManager)
+            return;
+
         if (TurnManager.Instance == null)
         {
-            Debug.LogWarning("BossA: TurnManager가 없어 플레이어 이동공격 대상으로 등록하지 못했습니다.");
+            Debug.LogWarning("BossA: TurnManager가 아직 준비되지 않아 다음 프레임에 다시 등록을 시도합니다.");
             return;
         }
         TurnManager.Instance.Register(this);
+        isRegisteredToTurnManager = true;
     }
 
     private void UnregisterBossGridTarget()
     {
+        // 씬 종료나 비활성화 중에는 TurnManager가 먼저 사라질 수 있으므로 null을 확인한다.
+        if (isRegisteredToTurnManager && TurnManager.Instance != null)
         TurnManager.Instance?.Unregister(this);
+
+        isRegisteredToTurnManager = false;
     }
 
     private void OnDisable()
@@ -122,12 +133,30 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             gridPos = GridSystem.Instance.WorldToGrid(transform.position - new Vector3(0.5f, 0.5f, 0f));
 
         RegisterBossGridTarget();
+        RegisterBossGridTargetNextFrameAsync().Forget();
 
         // BossAction 가중치 설정 (Pattern1: 50% / Pattern2: 50%)
         actionCases.Clear();
         AddActionCase(BossAction.Pattern1, 50);
         AddActionCase(BossAction.Pattern2, 50);
     }
+
+        private void Start()
+    {
+        RegisterBossGridTargetNextFrameAsync().Forget();
+    }
+
+    // Unity 실행 순서상 BossA.OnEnable이 TurnManager.Awake보다 먼저 실행될 수 있어 한 프레임 뒤에 등록을 보장한다.
+    private async UniTaskVoid RegisterBossGridTargetNextFrameAsync()
+    {
+        await UniTask.Yield();
+
+        // 한 프레임을 기다리는 동안 보스가 비활성화되거나 제거될 수 있으므로 등록 전에 상태를 다시 확인한다.
+        if (!isActiveAndEnabled || IsDead)
+            return;
+
+        RegisterBossGridTarget();
+    }   
 
     private void CacheMapBounds()
     {
