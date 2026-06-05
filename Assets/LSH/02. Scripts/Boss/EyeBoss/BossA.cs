@@ -42,14 +42,9 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     [SerializeField] private int laserDamage = 1;
     [SerializeField] private float laserVisualThickness = 3.5f; // 레이저 이미지의 시각적 두께 (히트 판정은 2칸 고정)
 
-    [Header("AttackFloor 타일맵 (이동 범위 제한)")]
-    [SerializeField] private Tilemap attackFloorTilemap;
-
     [SerializeField] private Vector2Int bossSize = new Vector2Int(2, 2); // 보스가 차지하는 크기 (2,2)
 
     // ─── 내부 상태 ───────────────────────────────────────────────────
-    private RectInt _mapBounds;
-    private bool _hasMapBounds;
     private SpriteRenderer _bossSprite;
     private Vector2Int gridPos;
     // BossA가 OnEnable 시점에 여러 번 등록되는 것을 막기 위한 상태값이다.
@@ -158,52 +153,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         RegisterBossGridTarget();
     }   
 
-    private void CacheMapBounds()
-    {
-        if (attackFloorTilemap != null)
-        {
-            attackFloorTilemap.CompressBounds();
-            var b = attackFloorTilemap.cellBounds;
-            _mapBounds = new RectInt(b.xMin, b.yMin, b.size.x, b.size.y);
-            _hasMapBounds = true;
-            return;
-        }
 
-        if (GridSystem.Instance == null) return;
-        int minX = int.MaxValue, minY = int.MaxValue, maxX = int.MinValue, maxY = int.MinValue;
-        bool any = false;
-        foreach (var c in GridSystem.Instance.GetAllWalkableCells())
-        {
-            any = true;
-            if (c.x < minX) minX = c.x;
-            if (c.y < minY) minY = c.y;
-            if (c.x > maxX) maxX = c.x;
-            if (c.y > maxY) maxY = c.y;
-        }
-        if (!any) return;
-        _mapBounds = new RectInt(minX, minY, maxX - minX + 1, maxY - minY + 1);
-        _hasMapBounds = true;
-    }
-
-    private bool IsInAttackFloor(Vector2Int cell)
-    {
-        if (attackFloorTilemap != null)
-            return attackFloorTilemap.GetTile(new Vector3Int(cell.x, cell.y, 0)) != null;
-        return GridSystem.Instance != null && GridSystem.Instance.IsWalkable(cell);
-    }
-
-    private bool IsAreaInAttackFloor(Vector2Int bottomLeft, Vector2Int size)
-    {
-        for (int x = 0; x < size.x; x++)
-        {
-            for (int y = 0; y < size.y; y++)
-            {
-                if (!IsInAttackFloor(bottomLeft + new Vector2Int(x, y)))
-                    return false;
-            }
-        }
-        return true;
-    }
 
     //==============================================================================================
     // 2. 메인 행동 루프 제어 (BossBase 오버라이드)
@@ -211,7 +161,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     protected override async UniTask Phase1BossPattern()
     {
         isBossAttacking = true;
-        if (!_hasMapBounds) CacheMapBounds();
+        if (!hasMapBounds) CacheMapBounds();
 
         // 설정된 횟수만큼 배회 후 패턴 발사
         await WanderStepsAsync(wanderStepsBeforePattern);
@@ -242,7 +192,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     protected override async UniTask Phase2BossPattern()
     {
         isBossAttacking = true;
-        if (!_hasMapBounds) CacheMapBounds();
+        if (!hasMapBounds) CacheMapBounds();
 
         // 설정된 횟수만큼 배회 후 패턴 발사
         await WanderStepsAsync(wanderStepsBeforePattern);
@@ -481,11 +431,11 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         {
             await UniTask.Delay(laserTelegraphMs, cancellationToken: cancelToken.Token);
 
-            if (laserPrefab != null && _hasMapBounds)
+            if (laserPrefab != null && hasMapBounds)
             {
                 // 세로 레이저 (두께 2칸, 시각적 두께 laserVisualThickness)
-                Vector3 vStart = GridSystem.Instance.GridToWorld(new Vector2Int(gridPos.x, _mapBounds.yMin));
-                Vector3 vEnd = GridSystem.Instance.GridToWorld(new Vector2Int(gridPos.x + 1, _mapBounds.yMax - 1));
+                Vector3 vStart = GridSystem.Instance.GridToWorld(new Vector2Int(gridPos.x, mapBounds.yMin));
+                Vector3 vEnd = GridSystem.Instance.GridToWorld(new Vector2Int(gridPos.x + 1, mapBounds.yMax - 1));
                 Vector3 vCenter = (vStart + vEnd) * 0.5f;
                 GameObject vLaser = Instantiate(laserPrefab, vCenter, Quaternion.Euler(0, 0, 90));
                 float vLength = Vector3.Distance(vStart, vEnd);
@@ -493,8 +443,8 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
                 lasers.Add(vLaser);
 
                 // 가로 레이저 (두께 2칸, 시각적 두께 laserVisualThickness)
-                Vector3 hStart = GridSystem.Instance.GridToWorld(new Vector2Int(_mapBounds.xMin, gridPos.y));
-                Vector3 hEnd = GridSystem.Instance.GridToWorld(new Vector2Int(_mapBounds.xMax - 1, gridPos.y + 1));
+                Vector3 hStart = GridSystem.Instance.GridToWorld(new Vector2Int(mapBounds.xMin, gridPos.y));
+                Vector3 hEnd = GridSystem.Instance.GridToWorld(new Vector2Int(mapBounds.xMax - 1, gridPos.y + 1));
                 Vector3 hCenter = (hStart + hEnd) * 0.5f;
                 GameObject hLaser = Instantiate(laserPrefab, hCenter, Quaternion.identity);
                 float hLength = Vector3.Distance(hStart, hEnd);
@@ -520,17 +470,17 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     private List<Vector2Int> GetCrossCells()
     {
         var cells = new List<Vector2Int>();
-        if (!_hasMapBounds) return cells;
+        if (!hasMapBounds) return cells;
 
         // 세로 두께 2줄
-        for (int y = _mapBounds.yMin; y < _mapBounds.yMax; y++)
+        for (int y = mapBounds.yMin; y < mapBounds.yMax; y++)
         {
             cells.Add(new Vector2Int(gridPos.x, y));
             cells.Add(new Vector2Int(gridPos.x + 1, y));
         }
 
         // 가로 두께 2줄
-        for (int x = _mapBounds.xMin; x < _mapBounds.xMax; x++)
+        for (int x = mapBounds.xMin; x < mapBounds.xMax; x++)
         {
             cells.Add(new Vector2Int(x, gridPos.y));
             cells.Add(new Vector2Int(x, gridPos.y + 1));

@@ -50,9 +50,12 @@ public class BossBase : EnemyNormalBASE
 
     [SerializeField] protected BossHpBar hpBar;
 
-    [Header("보스방 전용 타일 설정")]
-    [SerializeField] protected GameObject bossMapPrefab; // 미리 그려놓은 보스방 프리팹 (Floor, Wall, Hazard 등 자식 타일맵 보유)
- 
+    [Header("AttackFloor 타일맵 (이동/공격 제한)")]
+    [SerializeField] protected Tilemap attackFloorTilemap;
+
+    protected RectInt mapBounds;
+    protected bool hasMapBounds;
+
     private bool _patternDelayConverted; // patternDelay 초→ms 변환이 한 번만 일어나도록 가드
 
     protected virtual void OnEnable()
@@ -98,12 +101,6 @@ public class BossBase : EnemyNormalBASE
             TimeSystem.Instance.StartTimer();
             Debug.Log($"<color=cyan>[보스전]</color> 제한 시간 {bossFightTimeLimit}초로 고정, 타이머 시작.");
         }
-
-        // 보스전 시작 시 보스방 전용 타일 배치로 자동 변경 (단독 테스트 씬에서만 수행하도록 예외 처리)
-        if (MapGenerator.Instance == null)
-        {
-            ChangeBossRoomTiles();
-        }
  
         WaitBossCoolTime().Forget();
     }
@@ -124,12 +121,6 @@ public class BossBase : EnemyNormalBASE
         {
             Debug.Log($"<color=yellow>[디버그]  아야!!!!!!!!</color>");
             BossTakeDamage(10);
-        }
-
-        // P 버튼을 누르면 타일배치가 바뀌도록 디버그/수동 변경 기능 제공
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            ChangeBossRoomTiles();
         }
 
         if (isBossAttacking)
@@ -420,39 +411,6 @@ public class BossBase : EnemyNormalBASE
         }
     }
 
-    // 보스방 전용 타일 배치로 지형 변경 함수
-    protected void ChangeBossRoomTiles()
-    {
-        if (bossMapPrefab == null)
-        {
-            Debug.LogWarning("[보스방 지형 변경] bossMapPrefab이 설정되지 않아 지형을 변경하지 않았습니다.");
-            return;
-        }
-
-        if (GridSystem.Instance == null || GridSystem.Instance.Tilemaps == null) return;
-        var tilemaps = GridSystem.Instance.Tilemaps;
-
-        tilemaps.ClearAll();
-
-        var tempRoot = Instantiate(bossMapPrefab);
-        try
-        {
-            var srcFloor = tempRoot.transform.Find("Floor")?.GetComponent<Tilemap>();
-            var srcWall = tempRoot.transform.Find("Wall")?.GetComponent<Tilemap>();
-            var srcHazard = tempRoot.transform.Find("Hazard")?.GetComponent<Tilemap>();
-
-            if (srcFloor != null && tilemaps.floor != null) CopyTilemapData(srcFloor, tilemaps.floor);
-            if (srcWall != null && tilemaps.wall != null) CopyTilemapData(srcWall, tilemaps.wall);
-            if (srcHazard != null && tilemaps.hazard != null) CopyTilemapData(srcHazard, tilemaps.hazard);
-            
-            Debug.Log("<color=green>[보스방 지형 변경]</color> 미리 그려놓은 보스방 프리팹 타일로 맵을 교체하였습니다.");
-        }
-        finally
-        {
-            if (Application.isPlaying) Destroy(tempRoot);
-            else DestroyImmediate(tempRoot);
-        }
-    }
 
     private void CopyTilemapData(Tilemap src, Tilemap dest)
     {
@@ -470,5 +428,52 @@ public class BossBase : EnemyNormalBASE
                 dest.SetTileFlags(pos, src.GetTileFlags(pos));
             }
         }
+    }
+
+    protected void CacheMapBounds()
+    {
+        if (attackFloorTilemap != null)
+        {
+            attackFloorTilemap.CompressBounds();
+            var b = attackFloorTilemap.cellBounds;
+            mapBounds = new RectInt(b.xMin, b.yMin, b.size.x, b.size.y);
+            hasMapBounds = true;
+            return;
+        }
+
+        if (GridSystem.Instance == null) return;
+        int minX = int.MaxValue, minY = int.MaxValue, maxX = int.MinValue, maxY = int.MinValue;
+        bool any = false;
+        foreach (var c in GridSystem.Instance.GetAllWalkableCells())
+        {
+            any = true;
+            if (c.x < minX) minX = c.x;
+            if (c.y < minY) minY = c.y;
+            if (c.x > maxX) maxX = c.x;
+            if (c.y > maxY) maxY = c.y;
+        }
+        if (!any) return;
+        mapBounds = new RectInt(minX, minY, maxX - minX + 1, maxY - minY + 1);
+        hasMapBounds = true;
+    }
+
+    protected bool IsInAttackFloor(Vector2Int cell)
+    {
+        if (attackFloorTilemap != null)
+            return attackFloorTilemap.GetTile(new Vector3Int(cell.x, cell.y, 0)) != null;
+        return GridSystem.Instance != null && GridSystem.Instance.IsWalkable(cell);
+    }
+
+    protected bool IsAreaInAttackFloor(Vector2Int bottomLeft, Vector2Int size)
+    {
+        for (int x = 0; x < size.x; x++)
+        {
+            for (int y = 0; y < size.y; y++)
+            {
+                if (!IsInAttackFloor(bottomLeft + new Vector2Int(x, y)))
+                    return false;
+            }
+        }
+        return true;
     }
 }

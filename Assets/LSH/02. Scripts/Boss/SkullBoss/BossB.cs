@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
@@ -6,7 +6,7 @@ using UnityEngine.Tilemaps;
 
 //IGridEntitiy : TurnManager에 현재 그리드 위치를 알려주기 위한 인터페이스
 //IDamageable : 플레이어 공격 시스템이 이 보스를 데미지 받을 수 있는 대상으로 인식하기 위한 인터페이스
-public class BossB : BossBase, IGridEntity, IDamageable 
+public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable 
 {
     [Header("보스 공격 이펙트")]
     [SerializeField] private GameObject attack1Effect; //쿵! 패턴1 휘두르기 전용
@@ -55,8 +55,8 @@ public class BossB : BossBase, IGridEntity, IDamageable
     [SerializeField] private int rockDamage = 1;      // 패턴2(바위) 칸당 데미지
     [SerializeField] private int rockWarnMs = 1000;    // 바위 낙하 전 경고 노출 시간
 
-    //[Header("보스 씬 타일맵 (GridSystem 없는 씬에서 연결)")]
-    //[SerializeField] private Tilemap floorTilemap;
+    [Header("보스 크기")]
+    [SerializeField] private Vector2Int bossSize = new Vector2Int(1, 1); // 보스가 차지하는 크기 (1,1)
 
     private Vector2Int gridPos;
     private Animator anime;
@@ -84,6 +84,27 @@ public class BossB : BossBase, IGridEntity, IDamageable
     public int CurrentHp => currentHp;
     public int MaxHp => maxHp;
     public bool IsDead => currentHp <= 0;
+
+    public IEnumerable<Vector2Int> OccupiedCells
+    {
+        get
+        {
+            if (IsDead)
+                yield break;
+
+            for (int x = 0; x < bossSize.x; x++)
+            for (int y = 0; y < bossSize.y; y++)
+                yield return gridPos + new Vector2Int(x, y + 1);
+        }
+    }
+
+    private Vector3 BossPivotOffset => new Vector3((bossSize.x - 1) * 0.5f, (bossSize.y - 1) * 0.5f, 0f);
+
+    private bool IsBossOccupying(Vector2Int cell)
+    {
+        return cell.x >= gridPos.x && cell.x < gridPos.x + bossSize.x &&
+               cell.y >= gridPos.y && cell.y < gridPos.y + bossSize.y;
+    }
 
     // IDamageable 인터페이스 요구사항입니다.
     // 플레이어 공격 시스템은 TakeDamage 이름으로 피해를 주므로,
@@ -148,7 +169,7 @@ public class BossB : BossBase, IGridEntity, IDamageable
         AddActionCase(BossAction.Pattern2, 30); // 충격파
         AddActionCase(BossAction.Pattern3, 30); // 따라다니는 크리스탈
         bossSprite = GetComponentInChildren<SpriteRenderer>(); //Phase 2 색 변경용 (자식 포함 검색)
-        gridPos = GridSystem.Instance.WorldToGrid(transform.position); //보스 시작 격자 좌표 초기화
+        gridPos = GridSystem.Instance.WorldToGrid(transform.position - BossPivotOffset); //보스 시작 격자 좌표 초기화
         RegisterBossGridTarget(); // 플레이어가 이동공격 대상으로 보스를 찾을 수 있도록 TurnManager에 등록
         Debug.Log($"보스 시작 위치: {gridPos}"); //디버그용
     }
@@ -216,10 +237,22 @@ public class BossB : BossBase, IGridEntity, IDamageable
             for (int dy = -deathSafeZoneRadius; dy <= deathSafeZoneRadius; dy++)
                 safeCells.Add(safeCenter + new Vector2Int(dx, dy));
 
-        // 6) 안전지대 제외한 모든 walkable 셀에 위험표시
+        // 6) 안전지대 제외한 모든 AttackFloor 셀에 위험표시
         var dangerCells = new List<Vector2Int>();
-        foreach (var cell in GridSystem.Instance.GetAllWalkableCells())
-            if (!safeCells.Contains(cell)) dangerCells.Add(cell);
+        if (hasMapBounds)
+        {
+            for (int x = mapBounds.xMin; x < mapBounds.xMax; x++)
+            {
+                for (int y = mapBounds.yMin; y < mapBounds.yMax; y++)
+                {
+                    var cell = new Vector2Int(x, y);
+                    if (IsInAttackFloor(cell) && !safeCells.Contains(cell))
+                    {
+                        dangerCells.Add(cell);
+                    }
+                }
+            }
+        }
         ShowWarning(dangerCells);
 
         try
@@ -296,7 +329,7 @@ public class BossB : BossBase, IGridEntity, IDamageable
             {
                 if (Mathf.Max(Mathf.Abs(dx), Mathf.Abs(dy)) != r) continue;
                 var c = center + new Vector2Int(dx, dy);
-                if (GridSystem.Instance.IsWalkable(c)) cells.Add(c);
+                if (IsInAttackFloor(c)) cells.Add(c);
             }
         }
         return cells;
@@ -358,11 +391,15 @@ public class BossB : BossBase, IGridEntity, IDamageable
 
         foreach (int sign in new[] { firstSign, -firstSign })
         {
-            var cell = pPos + new Vector2Int(sign, 0);
-            if (GridSystem.Instance.IsWalkable(cell))
+            // 보스가 왼쪽일 때(sign < 0): 보스의 오른쪽 끝이 player.x - 1이어야 하므로, bottomLeft gridPos.x = player.x - bossSize.x
+            // 보스가 오른쪽일 때(sign > 0): bottomLeft gridPos.x = player.x + 1
+            int xOffset = (sign < 0) ? -bossSize.x : 1;
+            var cell = new Vector2Int(pPos.x + xOffset, pPos.y);
+
+            if (IsAreaInAttackFloor(cell, bossSize))
             {
                 gridPos = cell;
-                transform.position = GridSystem.Instance.GridToWorld(cell);
+                transform.position = GridSystem.Instance.GridToWorld(cell) + BossPivotOffset;
                 return new Vector2Int(-sign, 0); // 착지 칸에서 플레이어를 향하는 방향
             }
         }
@@ -380,7 +417,7 @@ public class BossB : BossBase, IGridEntity, IDamageable
             for (int w = -width; w <= width; w++)
             {
                 var pos = origin + dir * d + perp * w;
-                if (GridSystem.Instance.IsWalkable(pos))
+                if (IsInAttackFloor(pos))
                     cells.Add(pos);
             }
         }
@@ -520,9 +557,9 @@ public class BossB : BossBase, IGridEntity, IDamageable
         {
             for (int dy = -searchRadius; dy <= searchRadius; dy++)
             {
-                if (dx == 0 && dy == 0) continue;
                 var c = gridPos + new Vector2Int(dx, dy);
-                if (GridSystem.Instance.IsWalkable(c)) candidates.Add(c);
+                if (IsBossOccupying(c)) continue;
+                if (IsInAttackFloor(c)) candidates.Add(c);
             }
         }
 
@@ -610,7 +647,23 @@ public class BossB : BossBase, IGridEntity, IDamageable
 
         if (rainActive) return;
         rainActive = true;
-        walkableCellsCache = new List<Vector2Int>(GridSystem.Instance.GetAllWalkableCells());
+        
+        walkableCellsCache = new List<Vector2Int>();
+        if (hasMapBounds)
+        {
+            for (int x = mapBounds.xMin; x < mapBounds.xMax; x++)
+            {
+                for (int y = mapBounds.yMin; y < mapBounds.yMax; y++)
+                {
+                    var cell = new Vector2Int(x, y);
+                    if (IsInAttackFloor(cell))
+                    {
+                        walkableCellsCache.Add(cell);
+                    }
+                }
+            }
+        }
+        
         RockRain().Forget();
         MiniSkullPassive().Forget();
     }

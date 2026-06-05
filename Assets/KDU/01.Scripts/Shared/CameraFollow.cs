@@ -67,9 +67,9 @@ public class CameraFollow : MonoBehaviour
             float damper = 1.0f - percentComplete; // 시간이 지날수록 감쇠
 
             float x = Random.Range(-1f, 1f) * strength * damper;
-            float y = Random.Range(-1f, 1f) * strength * damper;
-
-            _shakeOffset = new Vector3(x, y, 0f);
+            if(x == 0f)
+                x = 0.05f * strength * damper; // 완전 0 방지
+            _shakeOffset = new Vector3(x, 0f, 0f);
 
             elapsed += Time.deltaTime;
             yield return null;
