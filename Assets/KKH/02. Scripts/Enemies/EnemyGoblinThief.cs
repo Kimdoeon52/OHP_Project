@@ -29,12 +29,16 @@ public class EnemyGoblinThief : EnemyBase
     /// <summary> 이번 턴 시각 보간용 이동 경로 버퍼. 0번은 출발지. </summary>
     private readonly List<Vector2Int> _movePath = new List<Vector2Int>();
 
+    /// <summary> 이동 코루틴 참조 </summary>
+    private Coroutine _moveCoroutine;
+
     /// <summary>
     /// 공격 발동 override.
     /// 기본 공격 + 훔치기 미완료 상태이면 TryStealItem 시도.
     /// </summary>
     protected override IEnumerator ExecutePendingAttack(Vector2Int targetCell, float delaySeconds)
     {
+        _isAttacking = true;
         ShowTelegraph(targetCell);
 
         yield return new WaitForSeconds(delaySeconds);
@@ -57,6 +61,7 @@ public class EnemyGoblinThief : EnemyBase
             }
         }
         ClearTelegraphs();
+        _isAttacking = false;
     }
 
     /// <summary>
@@ -67,7 +72,16 @@ public class EnemyGoblinThief : EnemyBase
     private void TryStealItem()
     {
         var invController = FindFirstObjectByType<InventoryController>();
-        if (invController == null || invController.Items.Count == 0) return;
+        if (invController == null)
+        {
+            Debug.LogWarning($"[GoblinThief] InventoryController를 찾을 수 없음!");
+            return;
+        }
+        if (invController.Items.Count == 0)
+        {
+            Debug.Log($"[GoblinThief] 인벤토리 비어있어 탈취 불가.");
+              return;
+        }
 
         // 임의의 슬롯 선택
         int index = Random.Range(0, invController.Items.Count);
@@ -135,9 +149,11 @@ public class EnemyGoblinThief : EnemyBase
                 }
             }
         }
-
-        StopAllCoroutines();
-        StartCoroutine(SmoothMoveVisual(0.08f));
+        if (_moveCoroutine != null)
+        {
+            StopCoroutine(_moveCoroutine);
+        }
+        _moveCoroutine = StartCoroutine(SmoothMoveVisual(0.08f));
     }
 
     /// <summary>

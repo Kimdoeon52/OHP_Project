@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 /// <summary>
 /// 모든 적 캐릭터의 최상위 공통 베이스 클래스.
@@ -23,8 +24,9 @@ public abstract class EnemyBase : EntityBase, IDamageable
     [Tooltip("적 스탯·보상·시야 범위 등을 담고 있는 ScriptableObject. 인스펙터에서 반드시 할당해야 함.")]
     [SerializeField] protected EnemyData data;
 
-    [Tooltip("공격 예고(텔레그래프)를 격자 위에 띄울 프리팹. 없으면 시각 예고 안 뜸.")]
-    [SerializeField] protected TelegraphIndicator telegraphPrefab;
+    [Header("공격 예고 (오브젝트 방식)")]
+    [Tooltip("공격 예고 위치에 생성할 붉은 바닥 프리팹")]
+    [SerializeField] protected GameObject warningPrefab;
 
     [Header("애니메이션 관련 설정")]
     [Tooltip("Animator에서 사망 트리거 파라미터 이름. 기본값 \"Die\".")]
@@ -74,8 +76,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
     protected float _attackActionPoints = 0f;
 
     /// <summary> 현재 활성화된 텔레그래프 인스턴스 목록. Die() 시 일괄 정리. </summary>
-    private readonly List<TelegraphIndicator> _activeTelegraphs = new();
-
+    private readonly Dictionary<Vector2Int, GameObject> _activeTelegraphs = new();
     /// <summary> 자식에서 data에 안전 접근할 수 있는 읽기 전용 프로퍼티 </summary>
     public EnemyData Data => data;
 
@@ -168,11 +169,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
 
         SpriteRenderer.enabled = visible;
 
-        // 시야에서 사라지면 공격 예고 타일도 같이 숨김
-        foreach (var t in _activeTelegraphs)
-        {
-            if (t != null) t.RefreshVisibility();
-        }
+        // Tilemap 방식 : 워닝 타일은 항상 표시
     }
 
     // ══════════════ HP / 데미지 처리 ══════════════
@@ -256,10 +253,17 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// </summary>
     protected void ShowTelegraph(Vector2Int cell)
     {
-        if (telegraphPrefab == null) return;
-        var ind = Instantiate(telegraphPrefab);
-        ind.Show(cell);
-        _activeTelegraphs.Add(ind);
+       if (warningPrefab == null)
+       {
+            if (_activeTelegraphs.ContainsKey(cell)) return;
+       }
+       // 격자 좌표 -> 월드 좌표 변환
+    Vector3 worldPos = GridSystem.Instance != null
+        ? GridSystem.Instance.GridToWorld(cell)
+        : new Vector3(cell.x, cell.y, 0);
+    // 프리팹 스폰 후 관리 목록에 등록
+    GameObject indicator = Instantiate(warningPrefab, worldPos, Quaternion.identity);
+    _activeTelegraphs.Add(cell, indicator);
     }
 
     /// <summary>
@@ -268,11 +272,14 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// </summary>
     protected void ClearTelegraphs()
     {
-        foreach (var t in _activeTelegraphs)
+        foreach (var kvp in _activeTelegraphs)
+    {
+        if (kvp.Value != null)
         {
-            if (t != null) Destroy(t.gameObject);
+            Destroy(kvp.Value); // 오브젝트 제거 (풀링을 쓰신다면 풀에 반환)
         }
-        _activeTelegraphs.Clear();
+    }
+    _activeTelegraphs.Clear();
     }
 
     // ══════════════ 격자 기반 공통 이동 로직 ══════════════
