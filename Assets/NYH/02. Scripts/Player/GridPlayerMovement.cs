@@ -72,6 +72,11 @@ public class GridPlayerMovement : MonoBehaviour
     [Tooltip("걷기 애니메이션 배속 계산에 반영할 최대 MoveSpeed. 실제 이동속도는 이 값을 넘어도 계속 빨라집니다.")]
     [SerializeField, Min(0)] private int animationSpeedCapMoveSpeed = 5;
 
+    [Header("Debug")]
+    [Tooltip("이동할 때 레벨/상태/장비 보정이 적용된 최종 행동 대기시간을 Console에 출력합니다.")]
+    [SerializeField] private bool logMoveActionDelay;
+
+    /// <summary>현재 플레이어가 바라보고 있는 방향(상/하/좌/우)을 반환합니다.</summary>
     public Vector2Int Facing { get; private set; } = Vector2Int.right;
 
     /// <summary>
@@ -79,7 +84,11 @@ public class GridPlayerMovement : MonoBehaviour
     /// 이 값이 이동 중 입력 잠금의 기준이 됩니다.
     /// </summary>
     public bool IsMoving { get; private set; }
+    
+    /// <summary>플레이어가 턴 기반 행동 대기열을 사용하는 레거시 모드인지 확인합니다.</summary>
     public bool UsesActionDelayForMovement => moveMode == PlayerGridMoveMode.LegacyActionDelay;
+    
+    /// <summary>플레이어가 대기열 없이 실시간으로 이동을 시도하는 모드인지 확인합니다.</summary>
     public bool IgnoresActionDelayForMovement => moveMode == PlayerGridMoveMode.ContinuousGridMove;
 
     /// <summary>
@@ -97,6 +106,10 @@ public class GridPlayerMovement : MonoBehaviour
     private NYHFinalStatModifierController _finalStatModifiers;
     private Coroutine _moveCoroutine;
 
+    /// <summary>
+    /// 게임 시작 시 플레이어 본체(GridPlayer)가 이 컴포넌트를 초기화합니다.
+    /// 이동에 필요한 스탯 시스템과 보정 컨트롤러 참조를 연결합니다.
+    /// </summary>
     public void Init(GridPlayer player)
     {
         _player = player;
@@ -141,6 +154,10 @@ public class GridPlayerMovement : MonoBehaviour
         return CanContinueMoveAnimationInto(nextCell);
     }
 
+    /// <summary>
+    /// 진행하려는 다음 칸이 계속해서 걸을 수 있는 비어있는 타일인지 검사합니다.
+    /// 벽이거나, 적이 있거나, 함정 등이 점유하고 있으면 false를 반환합니다.
+    /// </summary>
     private bool CanContinueMoveAnimationInto(Vector2Int cell)
     {
         if (!GridSystem.Instance.IsWalkable(cell)) return false;
@@ -148,6 +165,9 @@ public class GridPlayerMovement : MonoBehaviour
         return !GridSystem.Instance.IsCellOccupied(cell);
     }
 
+    /// <summary>
+    /// 이동 코루틴이 완전히 종료되었거나 이동이 불가능해 취소되었을 때 시각적 처리(이벤트 호출)를 마무리합니다.
+    /// </summary>
     private void FinishMoveVisual()
     {
         OnMoveFinished?.Invoke();
@@ -193,16 +213,26 @@ public class GridPlayerMovement : MonoBehaviour
             FinishMoveVisual();
             return;
         }
-        float totalCost = GetMoveActionDelay();
+        
+        float baseActionDelay = GetMoveActionDelay();
+        float totalCost = baseActionDelay;
+        
         StatusController statusController = _player.GetComponent<StatusController>();
         if (statusController != null)
             totalCost = statusController.ModifyMoveTimeCost(totalCost);
+
+        float statusModifiedCost = totalCost;
 
         // 신속의 반지, 둔화 저주처럼 최종 초 단위 보정은 상태이상 배율 계산 후 마지막에 적용한다.
         // 여기서 바꾸는 값은 "다음 행동까지 기다리는 시간"이다.
         // GetMoveDuration()이 계산하는 실제 이동 보간 애니메이션 시간은 그대로 두어, 화면 이동 속도와 턴 비용을 분리한다.
         if (_finalStatModifiers != null)
             totalCost = _finalStatModifiers.ModifyMoveActionDelay(totalCost);
+
+        if (logMoveActionDelay)
+        {
+            Debug.Log($"[이동] mode={moveMode}, level={(_levelSystem != null ? _levelSystem.Level : 0)}, base={baseActionDelay:0.###}초, status={statusModifiedCost:0.###}초, final={totalCost:0.###}초, moveDuration={GetMoveDuration():0.###}초");
+        }
 
         Vector3 startWorld = transform.position;
         _player.SetGridPosition(target);
@@ -214,6 +244,10 @@ public class GridPlayerMovement : MonoBehaviour
         _moveCoroutine = StartCoroutine(MoveToCell(direction, target, startWorld, targetWorld, totalCost));
     }
 
+    /// <summary>
+    /// 플레이어의 실제 화면 위치를 목표 칸으로 부드럽게 이동(Lerp)시키는 코루틴입니다.
+    /// 이동이 끝나면 함정 상호작용, 시야 업데이트, 턴 매니저에 턴 종료 신호를 보냅니다.
+    /// </summary>
     private IEnumerator MoveToCell(Vector2Int direction, Vector2Int target, Vector3 startWorld, Vector3 targetWorld, float totalCost)
     {
         IsMoving = true;
@@ -257,6 +291,10 @@ public class GridPlayerMovement : MonoBehaviour
             TurnManager.Instance.OnPlayerActionCompletedWithoutEnemyTurns(totalCost);
     }
 
+    /// <summary>
+    /// 현재 스탯(MoveSpeed)에 기반하여 한 칸을 이동하는 데 걸리는 실제 연출 시간(초 단위)을 계산합니다.
+    /// 애니메이션 속도나 턴 소모 속도와는 별개로 시각적으로 화면에서 미끄러지는 속도입니다.
+    /// </summary>
     private float GetMoveDuration()
     {
         int moveSpeed = GetMoveSpeed();
@@ -267,6 +305,10 @@ public class GridPlayerMovement : MonoBehaviour
         return Mathf.Max(minMoveDuration, baseMoveDuration / speedFactor);
     }
 
+    /// <summary>
+    /// 이번 이동으로 인해 소모할 기본 턴 비용(Action Delay)을 계산합니다.
+    /// 레벨에 따른 고정 딜레이가 있다면 그것을 우선시하고, 없다면 MoveSpeed에 비례해 선형 보간합니다.
+    /// </summary>
     private float GetMoveActionDelay()
     {
         if (TryGetLevelMoveActionDelay(out float levelDelay))
@@ -282,6 +324,9 @@ public class GridPlayerMovement : MonoBehaviour
         return Mathf.Lerp(baseDelay, minMoveActionDelay, progress);
     }
 
+    /// <summary>
+    /// 플레이어의 현재 레벨에 매핑된 하드코딩된 이동 딜레이(levelMoveActionDelays) 배열에서 값을 가져옵니다.
+    /// </summary>
     private bool TryGetLevelMoveActionDelay(out float delay)
     {
         delay = 0f;
@@ -299,6 +344,10 @@ public class GridPlayerMovement : MonoBehaviour
         return delay > 0f;
     }
 
+    /// <summary>
+    /// 애니메이터의 배속(Speed) 프로퍼티에 적용할 배율을 계산합니다.
+    /// 시각적 걷기 모션이 너무 방정맞아지는 것을 방지하기 위해 상한선(animationSpeedCapMoveSpeed)이 걸려있습니다.
+    /// </summary>
     private float GetAnimationSpeedMultiplier()
     {
         int cappedMoveSpeed = Mathf.Min(GetMoveSpeed(), animationSpeedCapMoveSpeed);
@@ -311,12 +360,18 @@ public class GridPlayerMovement : MonoBehaviour
         return Mathf.Max(1f, baseMoveDuration / animationDuration);
     }
 
+    /// <summary>
+    /// 특정 MoveSpeed일 때 한 칸 이동에 걸릴 예상 시간을 구합니다.
+    /// </summary>
     private float GetDurationForMoveSpeed(int moveSpeed)
     {
         float speedFactor = 1f + Mathf.Max(0, moveSpeed) * moveSpeedDurationMultiplier;
         return Mathf.Max(minMoveDuration, baseMoveDuration / speedFactor);
     }
 
+    /// <summary>
+    /// 스탯 시스템에서 현재 장비/강화 등으로 보정된 최종 이동속도(MoveSpeed) 정수값을 가져옵니다.
+    /// </summary>
     private int GetMoveSpeed()
     {
         if (_stats == null)
@@ -327,6 +382,7 @@ public class GridPlayerMovement : MonoBehaviour
 
     /// <summary>
     /// 플레이어를 특정 격자 좌표로 밀쳐냅니다. (이동 딜레이나 턴 소모 없이 강제 이동)
+    /// 보스의 스킬이나 강제 위치 이동 함정 등에서 사용됩니다.
     /// </summary>
     public void Knockback(Vector2Int targetGridPos, float duration = 0.2f)
     {
@@ -345,6 +401,9 @@ public class GridPlayerMovement : MonoBehaviour
         _moveCoroutine = StartCoroutine(KnockbackRoutine(startWorld, targetWorld, duration));
     }
 
+    /// <summary>
+    /// 플레이어의 실제 화면 위치를 목표 칸으로 포물선 감속(Ease out quad)하며 부드럽게 밀쳐내는 코루틴입니다.
+    /// </summary>
     private IEnumerator KnockbackRoutine(Vector3 startWorld, Vector3 targetWorld, float duration)
     {
         float elapsed = 0f;

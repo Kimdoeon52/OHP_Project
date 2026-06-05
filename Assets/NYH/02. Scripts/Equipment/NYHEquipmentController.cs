@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using PrototypeRT;
+using System.Text;
 using UnityEngine;
 
 /// <summary>
@@ -10,6 +11,8 @@ using UnityEngine;
 /// </summary>
 public class NYHEquipmentController : MonoBehaviour
 {
+    private const float SlowCurseMoveActionDelayPenalty = 0.2f;
+
     [Header("참조")]
     [Tooltip("스탯을 적용할 플레이어 스탯입니다. 비워두면 씬의 NYHPlayerStats.Instance를 사용합니다.")]
     [SerializeField] private NYHPlayerStats playerStats;
@@ -23,6 +26,10 @@ public class NYHEquipmentController : MonoBehaviour
     [Tooltip("반지/마법부여/저주가 최종 이동/공격 지연 시간에 개입하는 공용 통로입니다. 비워도 플레이어에서 자동으로 찾아 붙입니다.")]
     [SerializeField] private NYHFinalStatModifierController finalStatModifierController;
 
+    [Header("Debug Log")]
+    [Tooltip("장착/해제/강화/정화로 장비 스탯이나 최종 쿨다운 보정이 바뀔 때 Console에 변화량을 출력합니다.")]
+    [SerializeField] private bool logEquipmentStatChanges = true;
+
     // 실제 장착된 장비 데이터(인스턴스)들을 슬롯 키를 기준으로 관리하는 딕셔너리
     private readonly Dictionary<NYHEquipmentSlotKey, NYHEquipmentItemInstance> _equippedItems = new();
     
@@ -31,6 +38,14 @@ public class NYHEquipmentController : MonoBehaviour
     
     // 장비와 연결된 인벤토리 내 UI 시각적 객체(InventoryItem)의 참조 보관용
     private readonly Dictionary<NYHEquipmentSlotKey, InventoryItem> _equippedViews = new();
+
+    // 장착 장비가 현재 플레이어에게 적용 중인 정수 스탯 총합입니다.
+    // 강화 중인 반지처럼 수치가 바뀌는 장비는 전체 총합을 다시 계산하고 차이만 반영해야 예전 수치가 남지 않습니다.
+    private readonly Dictionary<NYHStatType, int> _appliedEquipmentStatTotals = new();
+
+    // 장착 장비가 현재 적용 중인 최종 행동 지연 보정 총합입니다.
+    // 로그용으로 이전 총합과 새 총합의 차이를 비교합니다.
+    private readonly Dictionary<NYHFinalStatTarget, float> _appliedEquipmentFinalStatTotals = new();
 
     /// <summary>장비 장착 완료 시 발동하는 이벤트</summary>
     public event Action<EquipmentSlot, NYHEquipmentItemInstance> OnEquipped;
@@ -75,25 +90,26 @@ public class NYHEquipmentController : MonoBehaviour
 
     /// <summary>
     /// 최종 행동 지연 보정 컨트롤러를 가져오는 지연 초기화 프로퍼티입니다.
-    /// 인스펙터에 직접 연결되어 있으면 그 값을 쓰고,
-    /// 연결이 비어 있으면 NYHPlayerStats가 붙은 플레이어 오브젝트에서 찾습니다.
-    /// 그래도 없으면 런타임에 자동으로 AddComponent 해서 "반지 효과가 아예 적용되지 않는 상황"을 막습니다.
+    /// 장비/이동/공격 컴포넌트가 같은 보정 컨트롤러를 보도록 이 오브젝트(Player)에 붙은 컴포넌트를 우선 사용합니다.
+    /// 다른 오브젝트의 컨트롤러를 쓰면 장착 로그에는 보정이 찍히지만 실제 이동 계산에는 적용되지 않을 수 있습니다.
     /// </summary>
     private NYHFinalStatModifierController FinalStatModifiers
     {
         get
         {
-            if (finalStatModifierController == null && Stats != null)
+            NYHFinalStatModifierController localController = GetComponent<NYHFinalStatModifierController>();
+            if (localController == null)
             {
-                finalStatModifierController = Stats.GetComponent<NYHFinalStatModifierController>();
-
-                if (finalStatModifierController == null)
-                {
-                    // 인스펙터 연결이 빠져도 장착 보정이 유실되지 않도록 플레이어에 런타임으로 붙인다.
-                    finalStatModifierController = Stats.gameObject.AddComponent<NYHFinalStatModifierController>();
-                }
+                // 인스펙터 연결이 빠져도 장착 보정이 유실되지 않도록 Player 오브젝트에 런타임으로 붙인다.
+                localController = gameObject.AddComponent<NYHFinalStatModifierController>();
             }
 
+            if (finalStatModifierController != null && finalStatModifierController != localController)
+            {
+                Debug.LogWarning("NYHEquipmentController: 다른 오브젝트의 NYHFinalStatModifierController가 연결되어 있어 Player 로컬 컨트롤러로 교체합니다.");
+            }
+
+            finalStatModifierController = localController;
             return finalStatModifierController;
         }
     }
@@ -228,7 +244,6 @@ public class NYHEquipmentController : MonoBehaviour
         // 장착 해제 시 해당 장비가 올려주던 스탯을 다시 빼줌 (-1)
         if (_appliedProfiles.TryGetValue(key, out NYHEquipmentProfile profile))
         {
-            ApplyStats(profile, -1);
             _appliedProfiles.Remove(key);
         }
 
@@ -237,9 +252,9 @@ public class NYHEquipmentController : MonoBehaviour
             _equippedViews.Remove(key);
 
         // 장비가 빠지면 그 장비가 주던 최종 초 단위 보정도 즉시 빠져야 한다.
-        // 기존 statModifiers는 ApplyStats(profile, -1)로 되돌리고,
-        // finalStatModifiers는 장착 중인 전체 장비를 다시 훑어서 새 목록으로 교체한다.
-        RebuildFinalStatModifiers();
+        // 기존 정수 스탯과 finalStatModifiers 모두 장착 중인 전체 장비를 다시 훑어서 새 목록으로 교체한다.
+        RebuildEquipmentStats("[해제]", item);
+        RebuildFinalStatModifiers("[해제]", item);
 
         OnUnequipped?.Invoke(slot, item);
         OnInventoryItemUnequipped?.Invoke(slot, slotIndex, itemView);
@@ -287,7 +302,8 @@ public class NYHEquipmentController : MonoBehaviour
 
             // 강화 주문서, 감정, 정화, 마법부여처럼 장착은 그대로인데 ItemInstance 내부 값만 바뀐 경우가 있다.
             // 이때 해제/재장착 이벤트가 없으므로 여기서 최종 보정을 다시 계산해 강화 수치를 반영한다.
-            RebuildFinalStatModifiers();
+            RebuildEquipmentStats("[강화/상태변경]", _equippedItems.TryGetValue(pair.Key, out NYHEquipmentItemInstance changedEquipped) ? changedEquipped : null);
+            RebuildFinalStatModifiers("[강화/상태변경]", _equippedItems.TryGetValue(pair.Key, out changedEquipped) ? changedEquipped : null);
             OnInventoryItemStateChanged?.Invoke(pair.Key.Slot, pair.Key.Index, changedItem);
             return true;
         }
@@ -327,7 +343,6 @@ public class NYHEquipmentController : MonoBehaviour
         {
             if (_appliedProfiles.TryGetValue(key, out NYHEquipmentProfile oldProfile))
             {
-                ApplyStats(oldProfile, -1);
                 _appliedProfiles.Remove(key);
             }
 
@@ -348,12 +363,12 @@ public class NYHEquipmentController : MonoBehaviour
         if (profile != null)
         {
             _appliedProfiles[key] = profile;
-            ApplyStats(profile, 1);
         }
 
         // 새 장비가 들어온 뒤 최종 초 단위 보정도 갱신한다.
         // 같은 source(this)로 SetModifiers를 호출하기 때문에 이전 장비 보정과 중복 누적되지 않는다.
-        RebuildFinalStatModifiers();
+        RebuildEquipmentStats("[장착]", item);
+        RebuildFinalStatModifiers("[장착]", item);
 
         OnEquipped?.Invoke(key.Slot, item);
         OnInventoryItemEquipped?.Invoke(key.Slot, key.Index, inventoryView);
@@ -460,6 +475,101 @@ public class NYHEquipmentController : MonoBehaviour
         return 0;
     }
 
+    private void RebuildEquipmentStats(string logPrefix = null, NYHEquipmentItemInstance changedItem = null)
+    {
+        NYHPlayerStats stats = Stats;
+        if (stats == null)
+            return;
+
+        Dictionary<NYHStatType, int> desiredTotals = new();
+
+        foreach (KeyValuePair<NYHEquipmentSlotKey, NYHEquipmentItemInstance> pair in _equippedItems)
+        {
+            NYHEquipmentItemInstance item = pair.Value;
+            if (item == null || item.Data == null)
+                continue;
+
+            NYHEquipmentProfile profile = FindProfile(item.Data);
+            if (profile == null)
+                continue;
+
+            AddStatModifiers(desiredTotals, profile.StatModifiers);
+            AddScalingStatModifiers(desiredTotals, profile.ScalingStatModifiers, GetEnhanceLevel(item));
+        }
+
+        ApplyEquipmentStatDiff(stats, desiredTotals, logPrefix, changedItem);
+    }
+
+    private static void AddStatModifiers(Dictionary<NYHStatType, int> totals, NYHEquipmentStatModifier[] modifiers)
+    {
+        if (modifiers == null)
+            return;
+
+        for (int i = 0; i < modifiers.Length; i++)
+        {
+            NYHEquipmentStatModifier modifier = modifiers[i];
+            AddStatTotal(totals, modifier.statType, modifier.amount);
+        }
+    }
+
+    private static void AddScalingStatModifiers(Dictionary<NYHStatType, int> totals, NYHEquipmentScalingStatModifier[] modifiers, int enhanceLevel)
+    {
+        if (modifiers == null)
+            return;
+
+        for (int i = 0; i < modifiers.Length; i++)
+        {
+            NYHEquipmentScalingStatModifier modifier = modifiers[i];
+            AddStatTotal(totals, modifier.statType, modifier.Evaluate(enhanceLevel));
+        }
+    }
+
+    private static void AddStatTotal(Dictionary<NYHStatType, int> totals, NYHStatType statType, int amount)
+    {
+        if (amount == 0)
+            return;
+
+        totals.TryGetValue(statType, out int current);
+        totals[statType] = current + amount;
+    }
+
+    private void ApplyEquipmentStatDiff(NYHPlayerStats stats, Dictionary<NYHStatType, int> desiredTotals, string logPrefix = null, NYHEquipmentItemInstance changedItem = null)
+    {
+        Dictionary<NYHStatType, int> deltas = new();
+
+        foreach (KeyValuePair<NYHStatType, int> pair in _appliedEquipmentStatTotals)
+        {
+            desiredTotals.TryGetValue(pair.Key, out int desiredAmount);
+            int delta = desiredAmount - pair.Value;
+            if (delta != 0)
+            {
+                stats.AddStat(pair.Key, delta);
+                deltas[pair.Key] = delta;
+            }
+        }
+
+        foreach (KeyValuePair<NYHStatType, int> pair in desiredTotals)
+        {
+            if (_appliedEquipmentStatTotals.ContainsKey(pair.Key))
+                continue;
+
+            if (pair.Value != 0)
+            {
+                stats.AddStat(pair.Key, pair.Value);
+                deltas[pair.Key] = pair.Value;
+            }
+        }
+
+        _appliedEquipmentStatTotals.Clear();
+        foreach (KeyValuePair<NYHStatType, int> pair in desiredTotals)
+        {
+            if (pair.Value != 0)
+                _appliedEquipmentStatTotals[pair.Key] = pair.Value;
+        }
+
+        LogStatChanges(logPrefix, changedItem, deltas);
+    }
+
     /// <summary>
     /// 현재 장착 중인 모든 장비를 다시 읽어서 최종 행동 지연 보정 목록을 새로 만듭니다.
     ///
@@ -475,7 +585,7 @@ public class NYHEquipmentController : MonoBehaviour
     /// 4. YJW 쪽 ItemInstance가 EquipmentInstance라면 enhanceLevel을 읽어서 강화당 보정까지 계산합니다.
     /// 5. 계산이 끝난 값을 NYHFinalStatModifierController에 source=this로 한 번에 등록합니다.
     /// </summary>
-    private void RebuildFinalStatModifiers()
+    private void RebuildFinalStatModifiers(string logPrefix = null, NYHEquipmentItemInstance changedItem = null)
     {
         NYHFinalStatModifierController modifierController = FinalStatModifiers;
         if (modifierController == null)
@@ -492,25 +602,27 @@ public class NYHEquipmentController : MonoBehaviour
             // YJW의 원본 ItemBase와 NYH의 장비 프로필을 매칭한다.
             // 실제 수치 튜닝은 RingData가 아니라 NYHEquipmentProfile 쪽 finalStatModifiers에 들어 있다.
             NYHEquipmentProfile profile = FindProfile(item.Data);
-            NYHFinalStatModifier[] finalModifiers = profile != null ? profile.FinalStatModifiers : null;
-            if (finalModifiers == null || finalModifiers.Length == 0)
-                continue;
-
-            // 같은 반지라도 0강/1강/2강 효과가 달라질 수 있으므로 ItemInstance에서 강화 수치를 읽는다.
             int enhanceLevel = GetEnhanceLevel(item);
-            for (int i = 0; i < finalModifiers.Length; i++)
+            NYHFinalStatModifier[] finalModifiers = profile != null ? profile.FinalStatModifiers : null;
+            if (finalModifiers != null)
             {
-                NYHFinalStatModifier modifier = finalModifiers[i];
-                float flatSeconds = modifier.Evaluate(enhanceLevel);
-                if (Mathf.Approximately(flatSeconds, 0f))
-                    continue;
+                for (int i = 0; i < finalModifiers.Length; i++)
+                {
+                    NYHFinalStatModifier modifier = finalModifiers[i];
+                    float flatSeconds = modifier.Evaluate(enhanceLevel);
+                    if (Mathf.Approximately(flatSeconds, 0f))
+                        continue;
 
-                runtimeModifiers.Add(new NYHFinalStatModifierRuntime(modifier.target, flatSeconds));
+                    runtimeModifiers.Add(new NYHFinalStatModifierRuntime(modifier.target, flatSeconds));
+                }
             }
+
+            AddCurseFinalStatModifiers(item, runtimeModifiers);
         }
 
         // 장착 장비 전체를 다시 계산해서 강화/저주/마법부여 변경 후에도 누적 오차가 남지 않게 한다.
         modifierController.SetModifiers(this, runtimeModifiers);
+        LogFinalStatChanges(logPrefix, changedItem, runtimeModifiers);
     }
 
     /// <summary>
@@ -531,28 +643,161 @@ public class NYHEquipmentController : MonoBehaviour
         return 0;
     }
 
-    /// <summary>
-    /// 프로필에 정의된 추가 스탯(공격력, 방어력, 회피율 등)을 플레이어 스탯 시스템에 반영합니다.
-    /// sign이 1이면 증가(장착), -1이면 감소(해제)합니다.
-    /// </summary>
-    private void ApplyStats(NYHEquipmentProfile profile, int sign)
+    private void LogStatChanges(string logPrefix, NYHEquipmentItemInstance changedItem, Dictionary<NYHStatType, int> deltas)
     {
-        if (profile == null || Stats == null)
+        if (!logEquipmentStatChanges || string.IsNullOrEmpty(logPrefix) || deltas == null || deltas.Count == 0)
             return;
 
-        NYHEquipmentStatModifier[] modifiers = profile.StatModifiers;
-        if (modifiers == null)
-            return;
+        StringBuilder builder = new();
+        builder.Append(logPrefix)
+            .Append(' ')
+            .Append(GetEquipmentLogName(changedItem))
+            .Append(": ");
 
-        for (int i = 0; i < modifiers.Length; i++)
+        bool appended = false;
+        foreach (KeyValuePair<NYHStatType, int> pair in deltas)
         {
-            NYHEquipmentStatModifier modifier = modifiers[i];
-            if (modifier.amount == 0)
+            if (appended)
+                builder.Append(", ");
+
+            builder.Append(GetStatDisplayName(pair.Key))
+                .Append(' ')
+                .Append(FormatSignedInt(pair.Value));
+            appended = true;
+        }
+
+        Debug.Log(builder.ToString());
+    }
+
+    private void LogFinalStatChanges(string logPrefix, NYHEquipmentItemInstance changedItem, List<NYHFinalStatModifierRuntime> runtimeModifiers)
+    {
+        Dictionary<NYHFinalStatTarget, float> desiredTotals = BuildFinalStatTotals(runtimeModifiers);
+        Dictionary<NYHFinalStatTarget, float> deltas = new();
+
+        foreach (KeyValuePair<NYHFinalStatTarget, float> pair in _appliedEquipmentFinalStatTotals)
+        {
+            desiredTotals.TryGetValue(pair.Key, out float desiredAmount);
+            float delta = desiredAmount - pair.Value;
+            if (!Mathf.Approximately(delta, 0f))
+                deltas[pair.Key] = delta;
+        }
+
+        foreach (KeyValuePair<NYHFinalStatTarget, float> pair in desiredTotals)
+        {
+            if (_appliedEquipmentFinalStatTotals.ContainsKey(pair.Key))
                 continue;
 
+            if (!Mathf.Approximately(pair.Value, 0f))
+                deltas[pair.Key] = pair.Value;
+        }
 
+        _appliedEquipmentFinalStatTotals.Clear();
+        foreach (KeyValuePair<NYHFinalStatTarget, float> pair in desiredTotals)
+        {
+            if (!Mathf.Approximately(pair.Value, 0f))
+                _appliedEquipmentFinalStatTotals[pair.Key] = pair.Value;
+        }
 
-            Stats.AddStat(modifier.statType, modifier.amount * sign);
+        if (!logEquipmentStatChanges || string.IsNullOrEmpty(logPrefix) || deltas.Count == 0)
+            return;
+
+        StringBuilder builder = new();
+        builder.Append(logPrefix)
+            .Append(' ')
+            .Append(GetEquipmentLogName(changedItem))
+            .Append(": ");
+
+        bool appended = false;
+        foreach (KeyValuePair<NYHFinalStatTarget, float> pair in deltas)
+        {
+            if (appended)
+                builder.Append(", ");
+
+            builder.Append(GetFinalStatDisplayName(pair.Key))
+                .Append(' ')
+                .Append(FormatSignedSeconds(pair.Value));
+            appended = true;
+        }
+
+        Debug.Log(builder.ToString());
+    }
+
+    private static Dictionary<NYHFinalStatTarget, float> BuildFinalStatTotals(List<NYHFinalStatModifierRuntime> runtimeModifiers)
+    {
+        Dictionary<NYHFinalStatTarget, float> totals = new();
+        if (runtimeModifiers == null)
+            return totals;
+
+        for (int i = 0; i < runtimeModifiers.Count; i++)
+        {
+            NYHFinalStatModifierRuntime modifier = runtimeModifiers[i];
+            totals.TryGetValue(modifier.Target, out float current);
+            totals[modifier.Target] = current + modifier.FlatSeconds;
+        }
+
+        return totals;
+    }
+
+    private static string GetEquipmentLogName(NYHEquipmentItemInstance item)
+    {
+        if (item == null || item.Data == null)
+            return "장비";
+
+        return $"+{GetEnhanceLevel(item)}강 {item.Data.Name}";
+    }
+
+    private static string GetStatDisplayName(NYHStatType statType)
+    {
+        return statType switch
+        {
+            NYHStatType.Health => "최대 체력",
+            NYHStatType.Strength => "힘",
+            NYHStatType.MoveSpeed => "이동속도",
+            NYHStatType.AttackSpeed => "공격속도",
+            NYHStatType.Defense => "방어력",
+            NYHStatType.Evasion => "회피",
+            NYHStatType.Accuracy => "정확도",
+            NYHStatType.Hunger => "배고픔",
+            NYHStatType.Level => "레벨",
+            _ => statType.ToString()
+        };
+    }
+
+    private static string GetFinalStatDisplayName(NYHFinalStatTarget target)
+    {
+        return target switch
+        {
+            NYHFinalStatTarget.MoveActionDelay => "이동 딜레이",
+            NYHFinalStatTarget.AttackActionDelay => "공격 딜레이",
+            _ => target.ToString()
+        };
+    }
+
+    private static string FormatSignedInt(int value)
+    {
+        return value >= 0 ? $"+{value}" : value.ToString();
+    }
+
+    private static string FormatSignedSeconds(float value)
+    {
+        return value >= 0f ? $"+{value:0.###}초" : $"{value:0.###}초";
+    }
+
+    private static void AddCurseFinalStatModifiers(NYHEquipmentItemInstance item, List<NYHFinalStatModifierRuntime> runtimeModifiers)
+    {
+        if (item == null || runtimeModifiers == null)
+            return;
+
+        if (item.SourceInstance is not EquipmentInstance equipmentInstance || equipmentInstance.curse == null)
+            return;
+
+        // 이번 2차 범위에서는 YJW CurseData 실행 함수는 호출하지 않고 Type만 읽는다.
+        // 둔화 저주는 장비가 켜져 있는 동안 최종 이동 행동 지연에 +0.2초를 더한다.
+        if (equipmentInstance.curse.Type == CurseType.Slow)
+        {
+            runtimeModifiers.Add(new NYHFinalStatModifierRuntime(
+                NYHFinalStatTarget.MoveActionDelay,
+                SlowCurseMoveActionDelayPenalty));
         }
     }
 
@@ -562,8 +807,13 @@ public class NYHEquipmentController : MonoBehaviour
     /// </summary>
     private void OnDisable()
     {
+        if (Stats != null)
+            ApplyEquipmentStatDiff(Stats, new Dictionary<NYHStatType, int>());
+
         if (finalStatModifierController != null)
             finalStatModifierController.ClearModifiers(this);
+
+        _appliedEquipmentFinalStatTotals.Clear();
     }
 
     /// <summary>
@@ -572,6 +822,7 @@ public class NYHEquipmentController : MonoBehaviour
     /// </summary>
     private void OnEnable()
     {
+        RebuildEquipmentStats();
         RebuildFinalStatModifiers();
     }
 }

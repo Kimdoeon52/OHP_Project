@@ -21,6 +21,10 @@ public class NYHEquipmentProfile : ScriptableObject
     [Tooltip("장착 중 플레이어에게 더할 스탯 목록입니다. 해제하면 같은 수치가 빠집니다.")]
     [SerializeField] private NYHEquipmentStatModifier[] statModifiers;
 
+    [Header("Scaling Stat Modifiers")]
+    [Tooltip("강화 수치에 따라 같이 커지는 정수 스탯 보정입니다. 예: 회피의 반지 = 기본 회피 +10, 강화당 +5.")]
+    [SerializeField] private NYHEquipmentScalingStatModifier[] scalingStatModifiers;
+
     [Header("Final Action Delay Modifiers")]
     [Tooltip("반지/마법부여/저주처럼 최종 행동 지연 시간을 초 단위로 직접 보정하는 값입니다. 예: -0.05는 0.05초 빨라지고, +0.2는 0.2초 느려집니다.")]
     [SerializeField] private NYHFinalStatModifier[] finalStatModifiers;
@@ -38,6 +42,7 @@ public class NYHEquipmentProfile : ScriptableObject
     public string CurseId => curseId;
     public string EnchantId => enchantId;
     public NYHEquipmentStatModifier[] StatModifiers => statModifiers;
+    public NYHEquipmentScalingStatModifier[] ScalingStatModifiers => scalingStatModifiers;
 
     /// <summary>
     /// 이 장비가 최종 이동/공격 지연 시간에 주는 초 단위 보정 목록입니다.
