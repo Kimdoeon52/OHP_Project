@@ -21,6 +21,10 @@ public class NYHEquipmentProfile : ScriptableObject
     [Tooltip("장착 중 플레이어에게 더할 스탯 목록입니다. 해제하면 같은 수치가 빠집니다.")]
     [SerializeField] private NYHEquipmentStatModifier[] statModifiers;
 
+    [Header("Final Action Delay Modifiers")]
+    [Tooltip("반지/마법부여/저주처럼 최종 행동 지연 시간을 초 단위로 직접 보정하는 값입니다. 예: -0.05는 0.05초 빨라지고, +0.2는 0.2초 느려집니다.")]
+    [SerializeField] private NYHFinalStatModifier[] finalStatModifiers;
+
     [Header("저주 / 인챈트 예약")]
     [Tooltip("후속 저주 시스템에서 사용할 저주 식별자입니다. 비워두면 저주 효과가 없습니다.")]
     [SerializeField] private string curseId;
@@ -34,6 +38,14 @@ public class NYHEquipmentProfile : ScriptableObject
     public string CurseId => curseId;
     public string EnchantId => enchantId;
     public NYHEquipmentStatModifier[] StatModifiers => statModifiers;
+
+    /// <summary>
+    /// 이 장비가 최종 이동/공격 지연 시간에 주는 초 단위 보정 목록입니다.
+    /// 일반 statModifiers는 MoveSpeed +1, AttackSpeed +1 같은 정수 스탯을 올릴 때 씁니다.
+    /// finalStatModifiers는 "쿨다운 -0.05초", "이동 지연 +0.2초"처럼 최종 계산값에 직접 끼어드는 효과에 씁니다.
+    /// YJW의 RingData는 여기 값을 직접 적용하지 않고, NYHEquipmentController가 이 배열을 읽어 플레이어에게 전달합니다.
+    /// </summary>
+    public NYHFinalStatModifier[] FinalStatModifiers => finalStatModifiers;
 
     public EquipmentSlot GetSlot()
     {

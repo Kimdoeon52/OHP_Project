@@ -20,6 +20,9 @@ public class NYHEquipmentController : MonoBehaviour
     [Tooltip("YJW ItemBase에 NYH 장비 스탯을 연결하는 프로필 목록입니다.")]
     [SerializeField] private List<NYHEquipmentProfile> equipmentProfiles = new();
 
+    [Tooltip("반지/마법부여/저주가 최종 이동/공격 지연 시간에 개입하는 공용 통로입니다. 비워도 플레이어에서 자동으로 찾아 붙입니다.")]
+    [SerializeField] private NYHFinalStatModifierController finalStatModifierController;
+
     // 실제 장착된 장비 데이터(인스턴스)들을 슬롯 키를 기준으로 관리하는 딕셔너리
     private readonly Dictionary<NYHEquipmentSlotKey, NYHEquipmentItemInstance> _equippedItems = new();
     
@@ -67,6 +70,31 @@ public class NYHEquipmentController : MonoBehaviour
                 playerLevelSystem = PlayerLevelSystem.Instance;
 
             return playerLevelSystem;
+        }
+    }
+
+    /// <summary>
+    /// 최종 행동 지연 보정 컨트롤러를 가져오는 지연 초기화 프로퍼티입니다.
+    /// 인스펙터에 직접 연결되어 있으면 그 값을 쓰고,
+    /// 연결이 비어 있으면 NYHPlayerStats가 붙은 플레이어 오브젝트에서 찾습니다.
+    /// 그래도 없으면 런타임에 자동으로 AddComponent 해서 "반지 효과가 아예 적용되지 않는 상황"을 막습니다.
+    /// </summary>
+    private NYHFinalStatModifierController FinalStatModifiers
+    {
+        get
+        {
+            if (finalStatModifierController == null && Stats != null)
+            {
+                finalStatModifierController = Stats.GetComponent<NYHFinalStatModifierController>();
+
+                if (finalStatModifierController == null)
+                {
+                    // 인스펙터 연결이 빠져도 장착 보정이 유실되지 않도록 플레이어에 런타임으로 붙인다.
+                    finalStatModifierController = Stats.gameObject.AddComponent<NYHFinalStatModifierController>();
+                }
+            }
+
+            return finalStatModifierController;
         }
     }
 
@@ -208,6 +236,11 @@ public class NYHEquipmentController : MonoBehaviour
         if (_equippedViews.TryGetValue(key, out itemView))
             _equippedViews.Remove(key);
 
+        // 장비가 빠지면 그 장비가 주던 최종 초 단위 보정도 즉시 빠져야 한다.
+        // 기존 statModifiers는 ApplyStats(profile, -1)로 되돌리고,
+        // finalStatModifiers는 장착 중인 전체 장비를 다시 훑어서 새 목록으로 교체한다.
+        RebuildFinalStatModifiers();
+
         OnUnequipped?.Invoke(slot, item);
         OnInventoryItemUnequipped?.Invoke(slot, slotIndex, itemView);
         return true;
@@ -252,6 +285,9 @@ public class NYHEquipmentController : MonoBehaviour
             if (pair.Value != changedItem)
                 continue;
 
+            // 강화 주문서, 감정, 정화, 마법부여처럼 장착은 그대로인데 ItemInstance 내부 값만 바뀐 경우가 있다.
+            // 이때 해제/재장착 이벤트가 없으므로 여기서 최종 보정을 다시 계산해 강화 수치를 반영한다.
+            RebuildFinalStatModifiers();
             OnInventoryItemStateChanged?.Invoke(pair.Key.Slot, pair.Key.Index, changedItem);
             return true;
         }
@@ -314,6 +350,10 @@ public class NYHEquipmentController : MonoBehaviour
             _appliedProfiles[key] = profile;
             ApplyStats(profile, 1);
         }
+
+        // 새 장비가 들어온 뒤 최종 초 단위 보정도 갱신한다.
+        // 같은 source(this)로 SetModifiers를 호출하기 때문에 이전 장비 보정과 중복 누적되지 않는다.
+        RebuildFinalStatModifiers();
 
         OnEquipped?.Invoke(key.Slot, item);
         OnInventoryItemEquipped?.Invoke(key.Slot, key.Index, inventoryView);
@@ -421,6 +461,77 @@ public class NYHEquipmentController : MonoBehaviour
     }
 
     /// <summary>
+    /// 현재 장착 중인 모든 장비를 다시 읽어서 최종 행동 지연 보정 목록을 새로 만듭니다.
+    ///
+    /// 왜 "변경된 장비 하나만 더하고 빼는 방식"을 쓰지 않느냐면,
+    /// 강화 주문서나 정화/마법부여처럼 장착 슬롯은 그대로인데 내부 ItemInstance 값만 바뀌는 경우가 있기 때문입니다.
+    /// 매번 전체 장착 장비를 다시 읽으면 계산은 조금 더 하지만,
+    /// 예전 강화 수치가 남거나 같은 반지 효과가 두 번 쌓이는 버그를 피할 수 있습니다.
+    ///
+    /// 흐름:
+    /// 1. _equippedItems에서 현재 장착 중인 장비들을 가져옵니다.
+    /// 2. 각 장비의 ItemBase와 매칭되는 NYHEquipmentProfile을 찾습니다.
+    /// 3. 프로필의 FinalStatModifiers 배열을 읽습니다.
+    /// 4. YJW 쪽 ItemInstance가 EquipmentInstance라면 enhanceLevel을 읽어서 강화당 보정까지 계산합니다.
+    /// 5. 계산이 끝난 값을 NYHFinalStatModifierController에 source=this로 한 번에 등록합니다.
+    /// </summary>
+    private void RebuildFinalStatModifiers()
+    {
+        NYHFinalStatModifierController modifierController = FinalStatModifiers;
+        if (modifierController == null)
+            return;
+
+        List<NYHFinalStatModifierRuntime> runtimeModifiers = new();
+
+        foreach (KeyValuePair<NYHEquipmentSlotKey, NYHEquipmentItemInstance> pair in _equippedItems)
+        {
+            NYHEquipmentItemInstance item = pair.Value;
+            if (item == null || item.Data == null)
+                continue;
+
+            // YJW의 원본 ItemBase와 NYH의 장비 프로필을 매칭한다.
+            // 실제 수치 튜닝은 RingData가 아니라 NYHEquipmentProfile 쪽 finalStatModifiers에 들어 있다.
+            NYHEquipmentProfile profile = FindProfile(item.Data);
+            NYHFinalStatModifier[] finalModifiers = profile != null ? profile.FinalStatModifiers : null;
+            if (finalModifiers == null || finalModifiers.Length == 0)
+                continue;
+
+            // 같은 반지라도 0강/1강/2강 효과가 달라질 수 있으므로 ItemInstance에서 강화 수치를 읽는다.
+            int enhanceLevel = GetEnhanceLevel(item);
+            for (int i = 0; i < finalModifiers.Length; i++)
+            {
+                NYHFinalStatModifier modifier = finalModifiers[i];
+                float flatSeconds = modifier.Evaluate(enhanceLevel);
+                if (Mathf.Approximately(flatSeconds, 0f))
+                    continue;
+
+                runtimeModifiers.Add(new NYHFinalStatModifierRuntime(modifier.target, flatSeconds));
+            }
+        }
+
+        // 장착 장비 전체를 다시 계산해서 강화/저주/마법부여 변경 후에도 누적 오차가 남지 않게 한다.
+        modifierController.SetModifiers(this, runtimeModifiers);
+    }
+
+    /// <summary>
+    /// 장착된 NYHEquipmentItemInstance 안에서 YJW ItemInstance를 꺼내 강화 수치를 읽습니다.
+    ///
+    /// YJW 쪽에서 반지를 만들 때 RingData.CreateInstance()가 EquipmentInstance를 반환하면,
+    /// 인벤토리 아이템은 그 EquipmentInstance를 들고 있게 됩니다.
+    /// NYH 장비 시스템은 InventoryItem.ItemInstance를 SourceInstance로 보관하고,
+    /// 여기서 SourceInstance가 EquipmentInstance인지 확인한 뒤 enhanceLevel을 읽습니다.
+    ///
+    /// SourceInstance가 없거나 EquipmentInstance가 아니면 강화 수치를 알 수 없으므로 0강으로 취급합니다.
+    /// </summary>
+    private static int GetEnhanceLevel(NYHEquipmentItemInstance item)
+    {
+        if (item != null && item.SourceInstance is EquipmentInstance equipmentInstance)
+            return equipmentInstance.enhanceLevel;
+
+        return 0;
+    }
+
+    /// <summary>
     /// 프로필에 정의된 추가 스탯(공격력, 방어력, 회피율 등)을 플레이어 스탯 시스템에 반영합니다.
     /// sign이 1이면 증가(장착), -1이면 감소(해제)합니다.
     /// </summary>
@@ -443,6 +554,25 @@ public class NYHEquipmentController : MonoBehaviour
 
             Stats.AddStat(modifier.statType, modifier.amount * sign);
         }
+    }
+
+    /// <summary>
+    /// 장비 컨트롤러가 꺼질 때 자신이 등록했던 최종 보정을 제거합니다.
+    /// 씬 전환이나 플레이어 비활성화 중에 이전 보정값이 컨트롤러 안에 남는 것을 막기 위한 정리 작업입니다.
+    /// </summary>
+    private void OnDisable()
+    {
+        if (finalStatModifierController != null)
+            finalStatModifierController.ClearModifiers(this);
+    }
+
+    /// <summary>
+    /// 장비 컨트롤러가 다시 켜졌을 때 현재 장착 상태를 기준으로 최종 보정을 다시 등록합니다.
+    /// OnDisable에서 지운 값을 복구하기 위한 짝 함수입니다.
+    /// </summary>
+    private void OnEnable()
+    {
+        RebuildFinalStatModifiers();
     }
 }
 

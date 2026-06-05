@@ -39,6 +39,10 @@ public class GridPlayerCombat : MonoBehaviour
 
     private GridPlayer _player;
     private NYHPlayerStats _stats;
+
+    // 공격 지연 시간의 마지막 보정 통로입니다.
+    // AttackSpeed와 상태이상 계산이 끝난 뒤, 타격의 반지처럼 "공격 쿨다운 -0.05초" 효과를 여기에 태웁니다.
+    private NYHFinalStatModifierController _finalStatModifiers;
     private float _nextMeleeAttackTime;
 
     /// <summary>
@@ -162,6 +166,13 @@ public class GridPlayerCombat : MonoBehaviour
         if (equipmentController == null)
             equipmentController = FindFirstObjectByType<NYHEquipmentController>();
 
+        _finalStatModifiers = GetComponent<NYHFinalStatModifierController>();
+        if (_finalStatModifiers == null)
+        {
+            // 타격의 반지 같은 최종 공격 지연 보정이 공격 쿨다운과 행동 비용에 같이 적용되도록 준비한다.
+            _finalStatModifiers = gameObject.AddComponent<NYHFinalStatModifierController>();
+        }
+
         return NYHPlayerAttackCalculator.CalculateMeleeRange(_stats, equipmentController);
     }
 
@@ -220,14 +231,24 @@ public class GridPlayerCombat : MonoBehaviour
     {
         float cooldown = Mathf.Max(minMeleeCooldown, baseMeleeCooldown / GetAttackSpeedFactor());
         StatusController statusController = _player.GetComponent<StatusController>();
-        return statusController != null ? statusController.ModifyAttackCooldown(cooldown) : cooldown;
+        if (statusController != null)
+            cooldown = statusController.ModifyAttackCooldown(cooldown);
+
+        // 최종 초 단위 보정은 AttackSpeed/상태이상 계산 뒤에 적용한다.
+        // 타격의 반지 강화 효과는 "다음 공격 가능 시간"을 줄이는 효과라서 공격 쿨다운에 들어간다.
+        return _finalStatModifiers != null ? _finalStatModifiers.ModifyAttackActionDelay(cooldown) : cooldown;
     }
 
     private float GetModifiedMeleeTimeCost()
     {
         float timeCost = Mathf.Max(minMeleeTimeCost, _player.Config.meleeTimeDealy / GetAttackSpeedFactor());
         StatusController statusController = _player.GetComponent<StatusController>();
-        return statusController != null ? statusController.ModifyAttackCooldown(timeCost) : timeCost;
+        if (statusController != null)
+            timeCost = statusController.ModifyAttackCooldown(timeCost);
+
+        // 공격 행동 자체가 턴 시스템에 지불하는 시간 비용도 같은 최종 보정을 받는다.
+        // 그래서 타격의 반지는 "공격 쿨다운"과 "공격 행동 시간 비용" 양쪽을 동시에 줄인다.
+        return _finalStatModifiers != null ? _finalStatModifiers.ModifyAttackActionDelay(timeCost) : timeCost;
     }
 
     public float GetMeleeActionInterval()

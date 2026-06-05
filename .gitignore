@@ -1,4 +1,4 @@
-# This .gitignore file should be placed at the root of your Unity project directory
+﻿# This .gitignore file should be placed at the root of your Unity project directory
 #
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
@@ -73,22 +73,7 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
-Assets/KDU/01.Scripts/Events/GameEvents.cs
-Assets/KKH/02. Scripts/EnemyBase.cs
-Assets/LSH/02. Scripts/Boss/BossBase.cs
 Assets/NYH/01. Scene/NYH_Grid.unity
-Assets/NYH/02. Scripts/Player/GridPlayerAnimationController.cs
-Assets/NYH/02. Scripts/Player/GridPlayerCombat.cs
-Assets/NYH/02. Scripts/Player/GridPlayerHealth.cs
-Assets/NYH/02. Scripts/Player/NYHPlayerStats.cs
-Assets/NYH/02. Scripts/UI.meta
-Assets/NYH/02. Scripts/UI/CombatText.meta
-Assets/NYH/02. Scripts/UI/CombatText/CombatFloatingTextSpawner.cs
-Assets/NYH/02. Scripts/UI/CombatText/CombatFloatingTextSpawner.cs.meta
-Assets/NYH/02. Scripts/UI/CombatText/CombatFloatingTextView.cs
-Assets/NYH/02. Scripts/UI/CombatText/CombatFloatingTextView.cs.meta
-Assets/NYH/02. Scripts/UI/CombatText/CombatTextTypes.cs
-Assets/NYH/02. Scripts/UI/CombatText/CombatTextTypes.cs.meta
 Assets/NYH/04. Data/ChainArmor.asset
 Assets/NYH/04. Data/ChainArmor.asset.meta
 Assets/NYH/04. Data/FirePotion.asset

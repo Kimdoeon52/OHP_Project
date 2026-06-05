@@ -91,6 +91,10 @@ public class GridPlayerMovement : MonoBehaviour
     private GridPlayer _player;
     private NYHPlayerStats _stats;
     private PlayerLevelSystem _levelSystem;
+
+    // 이동 지연 시간의 마지막 보정 통로입니다.
+    // MoveSpeed/레벨/상태이상 계산이 끝난 뒤, 신속의 반지나 둔화 저주처럼 "몇 초를 직접 빼거나 더하는 효과"를 여기에 태웁니다.
+    private NYHFinalStatModifierController _finalStatModifiers;
     private Coroutine _moveCoroutine;
 
     public void Init(GridPlayer player)
@@ -103,6 +107,13 @@ public class GridPlayerMovement : MonoBehaviour
         _levelSystem = GetComponent<PlayerLevelSystem>();
         if (_levelSystem == null)
             _levelSystem = PlayerLevelSystem.Instance;
+
+        _finalStatModifiers = GetComponent<NYHFinalStatModifierController>();
+        if (_finalStatModifiers == null)
+        {
+            // 장비/특성/상태가 최종 행동 지연값을 한 통로로 보정할 수 있게 플레이어에 붙여둔다.
+            _finalStatModifiers = gameObject.AddComponent<NYHFinalStatModifierController>();
+        }
     }
 
     /// <summary>
@@ -186,6 +197,12 @@ public class GridPlayerMovement : MonoBehaviour
         StatusController statusController = _player.GetComponent<StatusController>();
         if (statusController != null)
             totalCost = statusController.ModifyMoveTimeCost(totalCost);
+
+        // 신속의 반지, 둔화 저주처럼 최종 초 단위 보정은 상태이상 배율 계산 후 마지막에 적용한다.
+        // 여기서 바꾸는 값은 "다음 행동까지 기다리는 시간"이다.
+        // GetMoveDuration()이 계산하는 실제 이동 보간 애니메이션 시간은 그대로 두어, 화면 이동 속도와 턴 비용을 분리한다.
+        if (_finalStatModifiers != null)
+            totalCost = _finalStatModifiers.ModifyMoveActionDelay(totalCost);
 
         Vector3 startWorld = transform.position;
         _player.SetGridPosition(target);
