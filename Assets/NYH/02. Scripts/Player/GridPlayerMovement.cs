@@ -48,7 +48,7 @@ public class GridPlayerMovement : MonoBehaviour
 
     [Header("Move Action Delay")]
     [Tooltip("GDD 기준 최소 이동 행동 딜레이입니다. 레벨/MoveSpeed가 높아도 이 값보다 작아지지 않습니다.")]
-    [SerializeField, Min(0.0005f)] private float minMoveActionDelay = 0.3f;
+    [SerializeField, Min(0.0005f)] private float minMoveActionDelay = 0.001f;
 
     [Tooltip("GDD 8.3 기준 레벨별 이동 행동 딜레이입니다. index 0은 1레벨, index 9는 10레벨입니다.")]
     [SerializeField] private float[] levelMoveActionDelays =
