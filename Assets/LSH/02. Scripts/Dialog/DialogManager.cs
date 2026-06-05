@@ -60,13 +60,12 @@ public class DialogManager : MonoBehaviour
         dialog.gameObject.SetActive(false);
         animeEffect.SetActive(false);
         bossName.SetActive(false);
-        gameObject.SetActive(false);
     }
 
     public void OnEnable()
     {
         index = 0; // 대화 시작 시 index 초기화
-        isDialogActive = true;
+        isDialogActive = false; // 마우스 입력 프레임 스킵 가드를 위해 처음에는 false로 설정
         ShowDialog();
 
         // 켜지자마자 첫 번째 대사가 바로 표시되도록 설정
@@ -79,6 +78,15 @@ public class DialogManager : MonoBehaviour
         {
             dialog.text = "";
         }
+
+        EnableDialogInputAsync().Forget();
+    }
+
+    // 활성화된 프레임에서의 즉시 클릭을 막기 위해 한 프레임 지연 후 입력 활성화
+    private async UniTaskVoid EnableDialogInputAsync()
+    {
+        await UniTask.Yield();
+        isDialogActive = true;
     }
 
     private async UniTask Effect()//연출 애니메이션

@@ -37,7 +37,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
     [Header("레이저 설정 (Pattern 2)")]
     [SerializeField] private GameObject laserPrefab;
-    [SerializeField] private int laserTelegraphMs = 800;
+    [SerializeField] private int laserTelegraphMs = 800; // 레이저 발사 전 예고 시간 (ms)
     [SerializeField] private int laserActiveMs = 400;
     [SerializeField] private int laserDamage = 1;
     [SerializeField] private float laserVisualThickness = 3.5f; // 레이저 이미지의 시각적 두께 (히트 판정은 2칸 고정)
@@ -457,12 +457,14 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     //==============================================================================================
     protected override async UniTask Phase1Pattern2()
     {
+        if (bossAnimation != null) bossAnimation.SetTrigger("Attack");
         await ExecuteCrossLaserPattern();
         isBossAttacking = false;
     }
 
     protected override async UniTask Phase2Pattern2()
     {
+        if (bossAnimation != null) bossAnimation.SetTrigger("Attack");
         await ExecuteCrossLaserPattern();
         isBossAttacking = false;
     }
@@ -477,8 +479,6 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
         try
         {
-            if (bossAnimation != null) bossAnimation.SetTrigger("Attack");
-
             await UniTask.Delay(laserTelegraphMs, cancellationToken: cancelToken.Token);
 
             if (laserPrefab != null && _hasMapBounds)
@@ -603,7 +603,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     // ---------------------------- 사망 판정 ---------------------------------
     protected override async UniTask OnDeath()
     {
-        bossAnimation.SetTrigger("Teleport");
+        bossAnimation.SetTrigger("Dead");
         await UniTask.Delay(2000);
         Destroy(gameObject);
     }

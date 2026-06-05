@@ -57,7 +57,6 @@ public class BossBase : EnemyNormalBASE
 
     protected virtual void OnEnable()
     {
-        maxHp = 100;
         currentHp = maxHp;
 
         // 1) 핵심 시스템 초기화 — 이 블록은 절대 예외로 끊기면 안 됨 (이후 모든 패턴이 의존).

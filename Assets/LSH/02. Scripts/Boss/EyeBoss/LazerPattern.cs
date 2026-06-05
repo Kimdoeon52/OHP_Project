@@ -395,113 +395,99 @@ public class LazerPattern : MonoBehaviour
 
         var warningBeams = new GameObject[4];
         var beams = new GameObject[4];
+        float baseAngle = 0f;
+
         try
         {
-            // 실행 전 2초간 얇고 붉은 경고 레이저 표시
-            GameObject prefabToUse = lazerWarningPrefab != null ? lazerWarningPrefab : lazerAttackPrefab;
-            if (prefabToUse != null)
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    float deg = i * 90f;
-                    float a = deg * Mathf.Deg2Rad;
-                    Vector3 dir = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f);
-
-                    warningBeams[i] = Instantiate(prefabToUse, center + dir * (phase3LaserLength * 0.5f), Quaternion.Euler(0, 0, deg));
-                    
-                    float scaleYMultiplier = (lazerWarningPrefab != null) ? 1.0f : 0.2f;
-                    var s = warningBeams[i].transform.localScale;
-                    warningBeams[i].transform.localScale = new Vector3(phase3LaserLength, s.y * scaleYMultiplier, s.z);
-
-                    if (lazerWarningPrefab == null)
-                    {
-                        var srs = warningBeams[i].GetComponentsInChildren<SpriteRenderer>();
-                        foreach (var sr in srs)
-                        {
-                            sr.color = new Color(1f, 0f, 0f, 0.5f); // 경고용 붉은 반투명 강제 설정
-                        }
-                    }
-                }
-            }
-
-            await UniTask.Delay(2000, cancellationToken: token);
-
-            // 경고 레이저 제거
-            for (int i = 0; i < 4; i++)
-            {
-                if (warningBeams[i] != null) Destroy(warningBeams[i]);
-            }
-
-            if (token.IsCancellationRequested || !IsBossAlive()) return;
-
-            for (int i = 0; i < 4; i++)
-            {
-                beams[i] = Instantiate(lazerAttackPrefab, center, Quaternion.identity);
-                var s = beams[i].transform.localScale;
-                beams[i].transform.localScale = new Vector3(phase3LaserLength, s.y, s.z);
-                var sr = beams[i].GetComponentInChildren<SpriteRenderer>();
-                if (sr != null) sr.color = phase3LaserColor;
-            }
-
-            float baseAngle = 0f;
-            float phaseTimer = 0f;
-            bool isLaserActive = true;
-
             while (!token.IsCancellationRequested && IsBossAlive())
             {
-                baseAngle += phase3LaserRotateSpeed * Time.deltaTime;
-                phaseTimer += Time.deltaTime;
-
-                if (isLaserActive)
+                // 1) 2초간 얇고 붉은 경고 레이저 스폰 및 대기 (현재 baseAngle에 맞춰 배치)
+                GameObject prefabToUse = lazerWarningPrefab != null ? lazerWarningPrefab : lazerAttackPrefab;
+                if (prefabToUse != null)
                 {
-                    if (phaseTimer >= 5f)
+                    for (int i = 0; i < 4; i++)
                     {
-                        isLaserActive = false;
-                        phaseTimer = 0f;
-                        for (int j = 0; j < 4; j++)
+                        float deg = baseAngle + i * 90f;
+                        float a = deg * Mathf.Deg2Rad;
+                        Vector3 dir = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f);
+
+                        warningBeams[i] = Instantiate(prefabToUse, center + dir * (phase3LaserLength * 0.5f), Quaternion.Euler(0, 0, deg));
+                        
+                        float scaleYMultiplier = (lazerWarningPrefab != null) ? 1.0f : 0.2f;
+                        var s = warningBeams[i].transform.localScale;
+                        warningBeams[i].transform.localScale = new Vector3(phase3LaserLength, s.y * scaleYMultiplier, s.z);
+
+                        if (lazerWarningPrefab == null)
                         {
-                            if (beams[j] != null) beams[j].SetActive(false);
+                            var srs = warningBeams[i].GetComponentsInChildren<SpriteRenderer>();
+                            foreach (var sr in srs)
+                            {
+                                sr.color = new Color(1f, 0f, 0f, 0.5f); // 경고용 붉은 반투명 강제 설정
+                            }
                         }
                     }
                 }
-                else
-                {
-                    if (phaseTimer >= 1f)
-                    {
-                        isLaserActive = true;
-                        phaseTimer = 0f;
-                        for (int j = 0; j < 4; j++)
-                        {
-                            if (beams[j] != null) beams[j].SetActive(true);
-                        }
-                    }
-                }
 
-                bool hit = false;
-                Vector3 playerPos = (player != null && !player.IsDead)
-                    ? GridSystem.Instance.GridToWorld(player.GridPosition)
-                    : Vector3.positiveInfinity;
+                await UniTask.Delay(2000, cancellationToken: token);
 
+                // 경고 레이저 제거
                 for (int i = 0; i < 4; i++)
                 {
-                    if (beams[i] == null) continue;
-
-                    float deg = baseAngle + i * 90f;
-                    float a = deg * Mathf.Deg2Rad;
-                    Vector3 dir = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f);
-
-                    beams[i].transform.SetPositionAndRotation(
-                        center + dir * (phase3LaserLength * 0.5f),
-                        Quaternion.Euler(0, 0, deg));
-
-                    if (isLaserActive && !hit && IsOnRay(playerPos, center, dir, phase3LaserLength, phase3LaserHalfWidth))
-                        hit = true;
+                    if (warningBeams[i] != null) Destroy(warningBeams[i]);
                 }
 
-                if (isLaserActive && hit && player != null && !player.IsDead)
-                    player.TakeDamage(phase3LaserDamage);
+                if (token.IsCancellationRequested || !IsBossAlive()) break;
 
-                await UniTask.Yield(token);
+                // 2) 진짜 빔 스폰
+                for (int i = 0; i < 4; i++)
+                {
+                    beams[i] = Instantiate(lazerAttackPrefab, center, Quaternion.identity);
+                    var s = beams[i].transform.localScale;
+                    beams[i].transform.localScale = new Vector3(phase3LaserLength, s.y, s.z);
+                    var sr = beams[i].GetComponentInChildren<SpriteRenderer>();
+                    if (sr != null) sr.color = phase3LaserColor;
+                }
+
+                // 3) 5초간 진짜 레이저 활성화 및 회전 처리
+                float activeTimer = 0f;
+                while (activeTimer < 5f && !token.IsCancellationRequested && IsBossAlive())
+                {
+                    float dt = Time.deltaTime;
+                    baseAngle += phase3LaserRotateSpeed * dt;
+                    activeTimer += dt;
+
+                    bool hit = false;
+                    Vector3 playerPos = (player != null && !player.IsDead)
+                        ? GridSystem.Instance.GridToWorld(player.GridPosition)
+                        : Vector3.positiveInfinity;
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        if (beams[i] == null) continue;
+
+                        float deg = baseAngle + i * 90f;
+                        float a = deg * Mathf.Deg2Rad;
+                        Vector3 dir = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f);
+
+                        beams[i].transform.SetPositionAndRotation(
+                            center + dir * (phase3LaserLength * 0.5f),
+                            Quaternion.Euler(0, 0, deg));
+
+                        if (!hit && IsOnRay(playerPos, center, dir, phase3LaserLength, phase3LaserHalfWidth))
+                            hit = true;
+                    }
+
+                    if (hit && player != null && !player.IsDead)
+                        player.TakeDamage(phase3LaserDamage);
+
+                    await UniTask.Yield(token);
+                }
+
+                // 4) 진짜 빔 파괴 (대기 상태 진입 전)
+                for (int i = 0; i < 4; i++)
+                {
+                    if (beams[i] != null) Destroy(beams[i]);
+                }
             }
         }
         catch (System.OperationCanceledException) { }
