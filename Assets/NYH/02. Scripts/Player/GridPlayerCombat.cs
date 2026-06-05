@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 /// <summary>
@@ -237,16 +237,16 @@ public class GridPlayerCombat : MonoBehaviour
 
     private float GetAttackSpeedFactor()
     {
-        int attackSpeed = GetAttackSpeed();
+        float attackSpeed = GetAttackSpeed();
         return 1f + Mathf.Max(0, attackSpeed - 1) * attackSpeedCooldownMultiplier;
     }
 
-    private int GetAttackSpeed()
+    private float GetAttackSpeed()
     {
         if (_stats == null)
             _stats = NYHPlayerStats.Instance;
 
-        return _stats != null ? _stats.AttackSpeed : 0;
+        return _stats != null ? _stats.AttackSpeed : 0f;
     }
 
     /// <summary>
