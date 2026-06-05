@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -26,6 +27,12 @@ public class GridChest : MonoBehaviour
     [SerializeField] private GoldPickup goldPickupPrefab;
     [Tooltip("장비에 부여할 수 있는 저주 풀 (비우면 저주 없음).")]
     [SerializeField] private CurseData[] cursePool;
+
+    [Header("개방 연출 — 애니메이션 재생 후 상자 제거")]
+    [Tooltip("개방 시 발동할 Animator 트리거 이름 (Animator 는 프리팹에 컴포넌트로 추가).")]
+    [SerializeField] private string openTrigger = "Open";
+    [Tooltip("애니메이션 재생 시간 — 이 시간 뒤 보상 드롭 + 상자 제거.")]
+    [SerializeField, Min(0f)] private float openAnimationSeconds = 0.5f;
 
     private struct Reward
     {
@@ -138,8 +145,26 @@ public class GridChest : MonoBehaviour
         }
 
         _opened = true;
-        ApplySprite();
+        GameEvents.OnChestOpened?.Invoke(GridPosition);
+
+        // Animator 가 있으면 열림 트리거 발동, 없으면 OpenedSprite 로 대체.
+        var animator = GetComponentInChildren<Animator>();
+        if (animator != null && !string.IsNullOrEmpty(openTrigger))
+            animator.SetTrigger(openTrigger);
+        else
+            ApplySprite();
+
+        StartCoroutine(OpenRoutine());
+    }
+
+    // 열림 애니메이션 재생 후 보상을 드롭하고 상자를 제거 — 드롭된 아이템만 남는다.
+    private IEnumerator OpenRoutine()
+    {
+        if (openAnimationSeconds > 0f)
+            yield return new WaitForSeconds(openAnimationSeconds);
+
         DropRewards();
+        Destroy(gameObject);
     }
 
     // ───── 보상 추첨 (Initialize 시점, 시드 결정론) ─────

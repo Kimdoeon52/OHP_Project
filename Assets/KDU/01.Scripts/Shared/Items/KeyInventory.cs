@@ -28,6 +28,7 @@ public class KeyInventory : Singleton<KeyInventory>
     {
         if (amount <= 0) return;
         _counts[type] = GetCount(type) + amount;
+        GameEvents.OnKeyAcquired?.Invoke(type);
     }
 
     public bool TryConsume(KeyType type, int amount = 1)

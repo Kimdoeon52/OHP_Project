@@ -23,6 +23,10 @@ public static class GameEvents
     public static Action<Vector2Int, int> OnExpDropped;     // pos, exp
     public static Action<Vector2Int, int> OnGoldDropped;    // pos, gold
 
+    // 상호작용 (튜토리얼 등 구독)
+    public static Action<Vector2Int> OnChestOpened;         // 상자 개방 셀
+    public static Action<KeyType> OnKeyAcquired;            // 획득한 열쇠 종류
+
     // 상태이상
     public static Action<StatusRequest> OnStatusEffectApplied;
 
@@ -48,6 +52,8 @@ public static class GameEvents
         OnTrapStubRequested = null;
         OnExpDropped = null;
         OnGoldDropped = null;
+        OnChestOpened = null;
+        OnKeyAcquired = null;
         OnStatusEffectApplied = null;
         OnVisionUpdated = null;
         OnPlayerDied = null;

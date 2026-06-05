@@ -35,6 +35,10 @@ public class CameraFollow : MonoBehaviour
     /// <summary>현재 플래닝 모드 여부 — GridPlayerInput 등 외부에서 클릭 무시 판단에 사용.</summary>
     public bool IsPlanningMode => _planningMode;
 
+    private bool _hasPanned;
+    /// <summary>ArmSafeRoom 이후 플레이어가 줌/팬을 한 적이 있는가 — 튜토리얼 "맵 둘러보기" 판정용.</summary>
+    public bool HasPannedSinceArm => _hasPanned;
+
     public static CameraFollow Instance { get; private set; }
 
     private Vector3 _shakeOffset = Vector3.zero;
@@ -95,6 +99,7 @@ public class CameraFollow : MonoBehaviour
         }
         _safeCells = new HashSet<Vector2Int>(safeCells);
         _planningPan = Vector2.zero;
+        _hasPanned = false;
         if (planningCamera != null) planningCamera.orthographicSize = _defaultSize;
         _planningMode = true;
     }
@@ -127,6 +132,7 @@ public class CameraFollow : MonoBehaviour
             {
                 float ns = planningCamera.orthographicSize - scroll * planningZoomSpeed;
                 planningCamera.orthographicSize = Mathf.Clamp(ns, planningMinSize, planningMaxSize);
+                _hasPanned = true;
             }
         }
 
@@ -173,7 +179,10 @@ public class CameraFollow : MonoBehaviour
         if (m.y < planningEdgePixels) panDir.y = -1f;
         else if (m.y > Screen.height - planningEdgePixels) panDir.y = 1f;
         if (panDir != Vector2.zero)
+        {
             _planningPan += panDir * (planningPanSpeed * Time.deltaTime);
+            _hasPanned = true;
+        }
     }
 
     private void UpdateDragPan()
@@ -197,6 +206,7 @@ public class CameraFollow : MonoBehaviour
         if (planningCamera == null || Screen.height <= 0) return;
         float worldPerPixel = 2f * planningCamera.orthographicSize / Screen.height;
         _planningPan -= new Vector2(delta.x, delta.y) * worldPerPixel;
+        if (delta.sqrMagnitude > 0f) _hasPanned = true;
     }
 
     private void LateUpdate()
