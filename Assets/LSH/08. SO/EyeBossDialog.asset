@@ -12,8 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0e7a2b97c0f498da1c7b8e1f0a2d3b4, type: 3}
   m_Name: EyeBossDialog
   m_EditorClassIdentifier: 
-  animeEffect: {fileID: 0}
-  bossName: {fileID: 0}
+  animeEffect: {fileID: 6546563851551140877, guid: ba8032226e1b78d4582386271f3722a9, type: 3}
+  bossName: {fileID: 2135262097527720554, guid: 35776ee0e1b7e924d973b93009f3f122, type: 3}
   dialogueLines:
-  - "\uCE68\uC785\uC790\uB85C\uAD70... \uC774\uACF3\uC740 \uB108\uD76C\uAC00 \uBC1C\uC744 \uB4E4\uC77C \uACF3\uC774 \uC544\uB2C8\uB2E4."
-  - "\uB0B4 \uAC70\uB300\uD55C \uB221\uC55E\uC5D0 \uBB34\uB98E\uC744 \uC6\uC5B4\uB77C!"
+  - "\uB4F1 \uB4A4\uB97C \uC11C\uB298\uD558\uAC8C \uB9CC\uB4E4\uB358 \uC2DC\uC120\uC774,
+    \uB9C8\uCE68\uB0B4 \uCF54\uC55E\uAE4C\uC9C0 \uB2E4\uAC00\uC654\uB2E4."
+  - "\uADF8 \uAE4A\uC740 \uC5B4\uB460\uC774, \uB2E8 \uD558\uB098\uC758 \uB208\uB3D9\uC790\uAC00
+    \uB418\uC5B4 \uBAA8\uC2B5\uC744 \uB4DC\uB7EC\uB0B8\uB2E4."
+  - "\uADF8\uAC83\uC758 \uC774\uB984\uC740\u2026\u2026"

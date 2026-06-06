@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -56,8 +56,6 @@ public class DialogManager : MonoBehaviour
         {
             activeDialogText = dialogText;
         }
-
-        gameObject.SetActive(true);
     }
 
     private void Update()
@@ -131,16 +129,16 @@ public class DialogManager : MonoBehaviour
             activeDialogText = dialogText;
         }
 
-        // 켜지자마자 첫 번째 대사가 바로 표시되도록 설정
-        if (activeDialogText != null && activeDialogText.Length > 0)
-        {
-            dialog.text = activeDialogText[0];
-            index = 1;
-        }
-        else
-        {
-            dialog.text = "";
-        }
+        ////켜지자마자 첫 번째 대사가 바로 표시되도록 설정
+        //if (activeDialogText != null && activeDialogText.Length > 0)
+        //{
+        //    dialog.text = activeDialogText[0];
+        //    index = 1;
+        //}
+        //else
+        //{
+        //    dialog.text = "";
+        //}
 
         EnableDialogInputAsync().Forget();
     }
@@ -151,7 +149,7 @@ public class DialogManager : MonoBehaviour
     }
 
     // 활성화된 프레임에서의 즉시 클릭을 막기 위해 한 프레임 지연 후 입력 활성화
-    private async UniTaskVoid EnableDialogInputAsync()
+    private async UniTask EnableDialogInputAsync()
     {
         await UniTask.Yield();
         isDialogActive = true;
