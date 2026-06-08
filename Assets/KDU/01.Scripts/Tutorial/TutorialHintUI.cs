@@ -9,11 +9,11 @@ using UnityEngine;
 /// </summary>
 public class TutorialHintUI : MonoBehaviour
 {
-    [Tooltip("켜고 끌 안내 패널 루트. 비우면 이 GameObject 를 토글.")]
+    [Tooltip("튜토리얼 패널")]
     [SerializeField] private GameObject panel;
     [SerializeField] private TMP_Text hintText;
 
-    [Header("하단 작은 안내문 — 자유 둘러보기 단계용 (시야를 가리지 않게 화면 하단)")]
+    [Header("튜토리얼 하단 안내문")]
     [SerializeField] private GameObject bottomPrompt;
     [SerializeField] private TMP_Text bottomPromptText;
 

@@ -41,6 +41,17 @@ public class CameraFollow : MonoBehaviour
 
     public static CameraFollow Instance { get; private set; }
 
+    // 팬 클램프용 명시적 맵 경계 — MapGenerator 가 없는 씬(튜토리얼 등)에서 주입.
+    private bool _hasExplicitBounds;
+    private Bounds _explicitBounds;
+
+    /// <summary>MapGenerator 없는 씬에서 팬 제한 경계를 직접 지정(튜토리얼). MapGenerator 보다 우선.</summary>
+    public void SetMapBounds(Bounds bounds)
+    {
+        _explicitBounds = bounds;
+        _hasExplicitBounds = true;
+    }
+
     private Vector3 _shakeOffset = Vector3.zero;
     private Coroutine _shakeCoroutine;
 
@@ -149,9 +160,8 @@ public class CameraFollow : MonoBehaviour
     private void ClampPanToMapBounds()
     {
         if (planningCamera == null || target == null) return;
-        if (MapGenerator.Instance == null || !MapGenerator.Instance.MapWorldBoundsValid) return;
+        if (!TryGetMapBounds(out Bounds b)) return;
 
-        var b = MapGenerator.Instance.MapWorldBounds;
         float halfH = planningCamera.orthographicSize;
         float halfW = halfH * planningCamera.aspect;
 
@@ -168,6 +178,35 @@ public class CameraFollow : MonoBehaviour
         _planningPan.y = (allowedYMax < allowedYMin)
             ? b.center.y - basePos.y
             : Mathf.Clamp(_planningPan.y, allowedYMin, allowedYMax);
+    }
+
+    /// <summary>팬 제한 경계 — 명시적(튜토리얼) 우선, 없으면 MapGenerator. 둘 다 없으면 false.</summary>
+    private bool TryGetMapBounds(out Bounds b)
+    {
+        if (_hasExplicitBounds) { b = _explicitBounds; return true; }
+        if (MapGenerator.Instance != null && MapGenerator.Instance.MapWorldBoundsValid)
+        {
+            b = MapGenerator.Instance.MapWorldBounds;
+            return true;
+        }
+        b = default;
+        return false;
+    }
+
+    /// <summary>카메라 중심 위치를 뷰포트가 맵 밖으로 나가지 않게 클램프(맵이 뷰포트보다 작으면 중앙).</summary>
+    private Vector3 ClampCameraPos(Vector3 pos)
+    {
+        if (planningCamera == null || !TryGetMapBounds(out Bounds b)) return pos;
+
+        float halfH = planningCamera.orthographicSize;
+        float halfW = halfH * planningCamera.aspect;
+
+        float xMin = b.min.x + halfW, xMax = b.max.x - halfW;
+        pos.x = (xMax < xMin) ? b.center.x : Mathf.Clamp(pos.x, xMin, xMax);
+
+        float yMin = b.min.y + halfH, yMax = b.max.y - halfH;
+        pos.y = (yMax < yMin) ? b.center.y : Mathf.Clamp(pos.y, yMin, yMax);
+        return pos;
     }
 
     private void UpdateEdgePan()
@@ -219,6 +258,17 @@ public class CameraFollow : MonoBehaviour
             transform.position = desired;
         else
             transform.position = Vector3.SmoothDamp(transform.position, desired, ref _velocity, smoothing);
+
+        // 플래닝 중엔 렌더되는 최종 위치를 경계로 하드 클램프 — 줌을 확 뺄 때 SmoothDamp 지연으로
+        // 맵 밖이 잠깐 보이는 것 방지.
+        if (_planningMode)
+        {
+            Vector3 p = transform.position;
+            float z = p.z;
+            p = ClampCameraPos(p);
+            p.z = z;
+            transform.position = p;
+        }
     }
 
     /// <summary>층 전환 등 타깃이 순간이동할 때 호출 — smoothdamp 누적 속도를 리셋하고 위치를 즉시 스냅.</summary>

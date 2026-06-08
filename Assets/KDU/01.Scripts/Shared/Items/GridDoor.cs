@@ -81,6 +81,9 @@ public class GridDoor : MonoBehaviour
     private bool _safeHasExited;
     private bool _safePermLocked;
 
+    // 통로 안쪽(SafeRoom 쪽) 이웃 셀 — 바깥 셀의 반대편. 되돌아옴 판정용.
+    private Vector2Int InsideCell => GridPosition * 2 - _safeOutsideCell;
+
     private void Awake()
     {
         _renderer = GetComponent<SpriteRenderer>();
@@ -241,11 +244,17 @@ public class GridDoor : MonoBehaviour
         if (autoOpenWhenAdjacent)
             SetState(adjacent ? DoorState.Open : DoorState.Closed);
 
-        // 플레이어가 바깥 셀에 한 번이라도 도달 → 빠져나간 것으로 간주.
-        if (_safeOutsideCellSet && _player.GridPosition == _safeOutsideCell)
-            _safeHasExited = true;
+        // 바깥 셀 도달 → 빠져나가는 중. 단, 다시 안쪽 셀로 돌아오면 취소.
+        // (안/밖 구분 없이 '멀어지면 잠금'만 하면 되돌아와 안에 갇히는 버그가 생김.)
+        if (_safeOutsideCellSet)
+        {
+            if (_player.GridPosition == _safeOutsideCell)
+                _safeHasExited = true;
+            else if (_player.GridPosition == InsideCell)   // 통로 반대편(안쪽) 이웃
+                _safeHasExited = false;
+        }
 
-        // 빠져나간 적이 있고 지금 문 옆에 없으면(자연스럽게 닫힘) 영구 잠금 전환.
+        // 진짜로 나가서(바깥) 문에서 멀어졌을 때만 영구 잠금.
         if (_safeHasExited && !adjacent)
         {
             _safePermLocked = true;
@@ -292,6 +301,23 @@ public class GridDoor : MonoBehaviour
         }
         SetState(DoorState.Open);
         GameEvents.OnSecretDiscovered?.Invoke(GridPosition);
+
+        // 2칸 이상 폭/두께의 비밀 통로 — 맞붙은 숨겨진 Secret 문도 함께 연다(연쇄 발견).
+        // 이 문은 이미 Open 이라 되돌아와도 위 가드에서 멈춰 무한재귀 없음.
+        if (GridSystem.Instance != null)
+        {
+            TryDiscoverNeighborSecret(GridPosition + Vector2Int.up);
+            TryDiscoverNeighborSecret(GridPosition + Vector2Int.down);
+            TryDiscoverNeighborSecret(GridPosition + Vector2Int.left);
+            TryDiscoverNeighborSecret(GridPosition + Vector2Int.right);
+        }
+    }
+
+    /// <summary>인접 셀에 숨겨진 Secret 문이 있으면 함께 발견 — 비-Secret/비-Hidden 은 Discover 가드가 무시.</summary>
+    private void TryDiscoverNeighborSecret(Vector2Int cell)
+    {
+        var d = GridSystem.Instance.GetDoorAt(cell);
+        if (d != null) d.Discover();
     }
 
     private void UpdateLocked(bool adjacent)

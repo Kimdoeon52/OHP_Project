@@ -18,6 +18,7 @@ public class KeyPickup : MonoBehaviour
     private SpriteRenderer _renderer;
     private GridPlayer _player;
     private bool _collected;
+    private bool _initialized;
 
     private void Awake()
     {
@@ -38,6 +39,7 @@ public class KeyPickup : MonoBehaviour
     {
         GridPosition = cell;
         keyType = type;
+        _initialized = true;
         transform.position = GridSystem.Instance != null
             ? GridSystem.Instance.GridToWorld(cell)
             : new Vector3(cell.x, cell.y, 0);
@@ -46,6 +48,11 @@ public class KeyPickup : MonoBehaviour
     private void Start()
     {
         _player = FindFirstObjectByType<GridPlayer>();
+
+        // 씬에 직접 배치(튜토리얼 등) — Initialize 가 안 불렸으면 현재 위치로 자기 칸을 잡는다.
+        if (!_initialized && GridSystem.Instance != null)
+            GridPosition = GridSystem.Instance.WorldToGrid(transform.position);
+
         UpdateVisibility();
     }
 

@@ -28,7 +28,15 @@ public class SafeRoomTimerGate : MonoBehaviour
     {
         if (!_armed) return;
         if (player == null || _safeCells == null) return;
-        if (_safeCells.Contains(player.GridPosition)) return;
+
+        // SafeRoom 안에 있는 동안엔 계속 정지 유지 — GridPlayer.Start 등 다른 곳에서
+        // 타이머를 켜도 순서에 상관없이 다시 멈춘다. (첫 이탈 전까지 무조건 0초 흐름)
+        if (_safeCells.Contains(player.GridPosition))
+        {
+            if (TimeSystem.Instance != null && TimeSystem.Instance.IsRunning)
+                TimeSystem.Instance.StopTimer();
+            return;
+        }
 
         _armed = false;
         TimeSystem.Instance?.StartTimer();

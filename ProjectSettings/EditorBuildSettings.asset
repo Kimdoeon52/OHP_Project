@@ -5,9 +5,12 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
-    guid: 8c9cfa26abfee488c85f1582747f6a02
+  - enabled: 1
+    path: Assets/KDU/00.Scene/KDU_Tuto.unity
+    guid: 5daa3e02511ba0946a0a8f2b1c10425e
+  - enabled: 1
+    path: Assets/KDU/00.Scene/KDU_2.unity
+    guid: b268e95ae00cbdb40b26a6000acded9c
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
