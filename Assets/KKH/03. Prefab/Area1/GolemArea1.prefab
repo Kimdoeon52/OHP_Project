@@ -11,8 +11,9 @@ GameObject:
   - component: {fileID: 5680865143522814846}
   - component: {fileID: 5680865143522814847}
   - component: {fileID: 5680865143522814840}
+  - component: {fileID: -5249636162938446473}
   m_Layer: 0
-  m_Name: ElectricGolem
+  m_Name: GolemArea1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -110,3 +111,31 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &-5249636162938446473
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5680865143522814841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be5217078b153db409e0961d8361e96f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: {fileID: 11400000, guid: 80e4f62cac613e04f9a06a1b4d0f0d96, type: 2}
+  warningPrefab: {fileID: 0}
+  deathTriggerName: Die
+  deathDestroyDelay: 0.6
+  moveSpeed: 1
+  isDetected: 0
+  dropCandidateWeapons:
+  - {fileID: 11400000, guid: 8304ef5e83323f049a10a0131de71998, type: 2}
+  - {fileID: 11400000, guid: c6b87baf1f067cb4d8e88617fe1d8cb1, type: 2}
+  - {fileID: 11400000, guid: cf06e4070abfe004fa5dc04fafd7aab0, type: 2}
+  - {fileID: 11400000, guid: e8c5ac7452f78504897869c7aa5b80ee, type: 2}
+  - {fileID: 11400000, guid: fefd89048c55a314b92380e58dda60fb, type: 2}
+  - {fileID: 11400000, guid: aca2f7316475b98428c13119cf56dc57, type: 2}
+  - {fileID: 11400000, guid: 82799cf20b3929748b627cac07efae6f, type: 2}
+  - {fileID: 11400000, guid: fb7465c185470f64a890aa5c828d883f, type: 2}
+  itemPickupPrefab: {fileID: 0}

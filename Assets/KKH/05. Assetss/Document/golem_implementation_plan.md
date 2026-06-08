@@ -192,7 +192,8 @@ public class EnemyGolem : EnemyBase
 
 ### 4단계: 애니메이터 및 트랜지션 설정
 
-- `Walk`, `Attack`, `Hit`, `Die` 애니메이션 클립 연결
+* `Walk`, `Attack`, `Hit`, `Die` 애니메이션 클립 연결
+
 * 공격 애니메이션과 데미지 판정 박자가 어긋나지 않도록 트랜지션 지속 시간(`Transition Duration` ➔ 0) 및 `Has Exit Time` 해제 처리
 * 피격 타이밍에 맞춰 피격 연출과 데미지 딜레이(`yield return new WaitForSeconds(0.2f)`) 연동
 

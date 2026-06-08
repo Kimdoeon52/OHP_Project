@@ -386,8 +386,7 @@ namespace EnemySystem
         /// </summary>
         public BossRoomSpawnRule() { }
 
-        public override IEnumerable<EnemySpawnEntry> Generate(
-            RoomData room, EnemySpawnTable spawnTable, DungeonRandom rng, int countModifier = 0)
+        public override IEnumerable<EnemySpawnEntry> Generate(RoomData room, EnemySpawnTable spawnTable, DungeonRandom rng, int countModifier = 0)
         {
             // 방 bounds 중앙 좌표 계산
             Vector2Int center = new Vector2Int(

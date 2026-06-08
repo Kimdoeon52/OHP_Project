@@ -124,7 +124,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   data: {fileID: 11400000, guid: 2eddec62bffdd854ba302e51a5d08d06, type: 2}
-  telegraphPrefab: {fileID: 0}
+  warningPrefab: {fileID: 0}
   deathTriggerName: Die
   deathDestroyDelay: 0.6
   moveSpeed: 2

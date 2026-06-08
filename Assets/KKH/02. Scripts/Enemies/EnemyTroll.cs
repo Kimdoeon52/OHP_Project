@@ -8,11 +8,9 @@ using UnityEngine;
 ///   2. 공격: 강타, 공격 비용 1.5초 (attackSpeed ≈ 0.67)
 ///   3. 특수: 강타 명중 시 Paralysis(행동 불능) 상태이상 1턴 부여
 ///
-/// 코드가 비어있는 이유:
 ///   모든 수치(moveSpeed, attackSpeed)와 Paralysis 상태이상은
 ///   EnemyData SO 인스펙터에서 기획자가 직접 설정 가능.
 ///   EnemyBase 공통 로직(AP 누적, TryApplyOnHitEffect)이 자동 구동하므로 추가 C# 불필요.
-///   광역 충격파 등 복합 AI가 필요할 때만 이 클래스를 override로 확장.
 /// </summary>
 public class EnemyTroll : EnemyBase
 {
