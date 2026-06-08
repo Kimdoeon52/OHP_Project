@@ -42,8 +42,6 @@ namespace PrototypeRT
         [Header("키 변경 안내창")]
         [Tooltip("새 키 입력을 기다리는 동안 켜지는 검정 투명 안내 패널입니다.")]
         [SerializeField] private GameObject rebindPromptPanel;
-        [Tooltip("켜질 때 안내 패널을 같은 부모 안에서 맨 위로 올립니다. 돌려쓰는 BG가 아래에 깔려 안 보일 때 켜두세요.")]
-        [SerializeField] private bool bringPromptToFront = true;
         [Tooltip("'변경할 키를 눌러주세요' 같은 안내 문구를 표시할 텍스트입니다.")]
         [SerializeField] private TMP_Text rebindPromptText;
         [Tooltip("중복 키 또는 취소 메시지를 표시할 선택 텍스트입니다. 없어도 동작합니다.")]
@@ -270,13 +268,7 @@ namespace PrototypeRT
         /// <summary>키 변경 안내 패널을 켜거나 끕니다.</summary>
         private void SetPromptVisible(bool visible)
         {
-            if (rebindPromptPanel == null)
-                return;
-
-            if (visible && bringPromptToFront)
-                rebindPromptPanel.transform.SetAsLastSibling();
-
-            if (rebindPromptPanel.activeSelf != visible)
+            if (rebindPromptPanel != null && rebindPromptPanel.activeSelf != visible)
                 rebindPromptPanel.SetActive(visible);
         }
 
