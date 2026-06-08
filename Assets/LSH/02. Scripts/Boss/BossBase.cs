@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
@@ -71,6 +71,31 @@ public class BossBase : EnemyNormalBASE
 
     protected virtual void OnEnable()
     {
+        if (attackFloorTilemap == null)
+        {
+            if (MapGenerator.Instance != null && MapGenerator.Instance.Tilemaps != null && MapGenerator.Instance.Tilemaps.attackFloor != null)
+            {
+                attackFloorTilemap = MapGenerator.Instance.Tilemaps.attackFloor;
+            }
+
+            if (attackFloorTilemap == null)
+            {
+                var tilemaps = GetComponentsInChildren<Tilemap>();
+                foreach (var tm in tilemaps)
+                {
+                    if (tm.name.ToLower().Contains("attack") || tm.name.ToLower().Contains("floor"))
+                    {
+                        attackFloorTilemap = tm;
+                        break;
+                    }
+                }
+                if (attackFloorTilemap == null && tilemaps.Length > 0)
+                {
+                    attackFloorTilemap = tilemaps[0];
+                }
+            }
+        }
+
         currentHp = maxHp;
 
         // 1) 핵심 시스템 초기화 — 이 블록은 절대 예외로 끊기면 안 됨 (이후 모든 패턴이 의존).
@@ -207,6 +232,7 @@ public class BossBase : EnemyNormalBASE
 
     protected virtual async UniTask OnDeath()
     {
+        // 김도언씨는 여길 보세요.
     }
 
     protected virtual void EnterPhase2()

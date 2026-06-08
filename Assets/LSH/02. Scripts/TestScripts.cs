@@ -1,5 +1,6 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 [System.Serializable]
 public struct StageBossDialogMapping
@@ -35,6 +36,11 @@ public class TestScripts : MonoBehaviour
     private DialogData activeDialogData;
     private bool triggered = false;                     
 
+    private int lastFloor = -1;
+
+    [Header("디버그 단축키 설정 (인스펙터 토글 및 전체 주석 처리 가능)")]
+    [SerializeField] private bool enableDebugFloorKeys = true;
+
     void Start()
     {
         if (player == null)
@@ -47,26 +53,25 @@ public class TestScripts : MonoBehaviour
             // 비활성화(SetActive(false)) 상태의 오브젝트도 감지함
             dialogManager = FindFirstObjectByType<DialogManager>(FindObjectsInactive.Include);
         }
+    }
 
-        // 현재 층(Depth) 조회 및 연관 데이터 세팅
-        int currentFloor = 5; // 기본값
-        if (MapGenerator.Instance != null)
-        {
-            currentFloor = MapGenerator.Instance.CurrentDepth;
-        }
+    private void InitializeForFloor(int floor)
+    {
+        lastFloor = floor;
+        triggered = false; // 새로운 층으로 바뀔 때 트리거 리셋
 
-        StageBossDialogMapping mapping = stageDialogs.Find(m => m.floor == currentFloor);
+        StageBossDialogMapping mapping = stageDialogs.Find(m => m.floor == floor);
         if (mapping.dialogData != null || mapping.bossObject != null)
         {
             activeBossObject = mapping.bossObject;
             activeDialogData = mapping.dialogData;
-            Debug.Log($"<color=cyan>[테스트]</color> {currentFloor}층 매핑 데이터 적용 (보스: {activeBossObject?.name}, 대화: {activeDialogData?.name})");
+            Debug.Log($"<color=cyan>[테스트]</color> {floor}층 매핑 데이터 적용 (보스: {activeBossObject?.name}, 대화: {activeDialogData?.name})");
         }
         else
         {
             activeBossObject = bossObject;
             activeDialogData = dialogData;
-            Debug.Log($"<color=cyan>[테스트]</color> {currentFloor}층 매핑이 없어 폴백 데이터 사용 (보스: {activeBossObject?.name}, 대화: {activeDialogData?.name})");
+            Debug.Log($"<color=cyan>[테스트]</color> {floor}층 매핑이 없어 폴백 데이터 사용 (보스: {activeBossObject?.name}, 대화: {activeDialogData?.name})");
         }
 
         // 모든 보스 오브젝트 비활성화 보장
@@ -90,21 +95,99 @@ public class TestScripts : MonoBehaviour
 
     void Update()
     {
+        // ─── 디버그 단축키 블록 (주석 처리하여 비활성화 가능) ───
+        if (enableDebugFloorKeys)
+        {
+            if (Input.GetKeyDown(KeyCode.F5))
+            {
+                Debug.Log("<color=yellow>[디버그]</color> F5 입력: 5층으로 즉시 이동합니다.");
+                TriggerDebugFloorTransition(5);
+            }
+            if (Input.GetKeyDown(KeyCode.F6))
+            {
+                Debug.Log("<color=yellow>[디버그]</color> F6 입력: 10층으로 즉시 이동합니다.");
+                TriggerDebugFloorTransition(10);
+            }
+        }
+        // ────────────────────────────────────────────────────────
+
+        // 실시간으로 층 번호를 감시
+        int currentFloor = 5; // 기본값
+        if (RunState.Instance != null)
+        {
+            currentFloor = RunState.Instance.CurrentDepth;
+        }
+        else if (MapGenerator.Instance != null)
+        {
+            currentFloor = MapGenerator.Instance.CurrentDepth;
+        }
+
+        if (currentFloor != lastFloor)
+        {
+            InitializeForFloor(currentFloor);
+        }
+
         if (triggered) return;
 
         // 플레이어가 활성화된 보스의 AttackFloor를 밟으면 트리거 작동
         if (player != null && activeBossObject != null)
         {
-            BossBase bossComp = activeBossObject.GetComponent<BossBase>();
-            if (bossComp != null && bossComp.AttackFloorTilemap != null)
+            Tilemap attackFloor = GetBossAttackFloor(activeBossObject);
+            if (attackFloor != null)
             {
                 Vector2Int pPos = player.GridPosition;
-                if (bossComp.AttackFloorTilemap.HasTile(new Vector3Int(pPos.x, pPos.y, 0)))
+                if (attackFloor.HasTile(new Vector3Int(pPos.x, pPos.y, 0)))
                 {
                     TriggerDialogSequence();
                 }
             }
         }
+    }
+
+    private void TriggerDebugFloorTransition(int targetFloor)
+    {
+        if (RunState.Instance != null)
+        {
+            // FloorTransitionController가 TransitionCoroutine에서 AdvanceDepth()를 실행하므로
+            // targetFloor - 1로 세팅해놓고 이벤트를 트리거합니다.
+            RunState.Instance.ResetRun(RunState.Instance.RunSeed, targetFloor - 1);
+            GameEvents.OnLevelComplete?.Invoke();
+        }
+        else
+        {
+            Debug.LogWarning("TestScripts: RunState.Instance가 없어 디버그 이동이 불가능합니다.");
+        }
+    }
+
+    private Tilemap GetBossAttackFloor(GameObject bossObj)
+    {
+        if (bossObj == null) return null;
+
+        BossBase bossComp = bossObj.GetComponent<BossBase>();
+        if (bossComp != null && bossComp.AttackFloorTilemap != null)
+        {
+            return bossComp.AttackFloorTilemap;
+        }
+
+        // 보스가 비활성화 상태이면 OnEnable()이 실행되지 않아 AttackFloorTilemap 필드가 null일 수 있습니다.
+        // 비활성화된 자식 오브젝트를 포함하여 타일맵을 직접 검색합니다.
+        var tilemaps = bossObj.GetComponentsInChildren<Tilemap>(true);
+        foreach (var tm in tilemaps)
+        {
+            if (tm.name.ToLower().Contains("attack") || tm.name.ToLower().Contains("floor"))
+            {
+                return tm;
+            }
+        }
+
+        // 글로벌 맵 생성기의 타일맵 조회
+        if (MapGenerator.Instance != null && MapGenerator.Instance.Tilemaps != null && MapGenerator.Instance.Tilemaps.attackFloor != null)
+        {
+            return MapGenerator.Instance.Tilemaps.attackFloor;
+        }
+
+        if (tilemaps.Length > 0) return tilemaps[0];
+        return null;
     }
 
     private void TriggerDialogSequence()

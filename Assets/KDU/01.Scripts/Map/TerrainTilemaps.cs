@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.Tilemaps;
 
 /// <summary>
@@ -10,6 +10,7 @@ public class TerrainTilemaps
     public Tilemap floor;
     public Tilemap wall;
     public Tilemap hazard;
+    public Tilemap attackFloor;
 
     public TerrainType Get(Vector2Int cell)
     {
@@ -25,5 +26,6 @@ public class TerrainTilemaps
         if (floor != null) floor.ClearAllTiles();
         if (wall != null) wall.ClearAllTiles();
         if (hazard != null) hazard.ClearAllTiles();
+        if (attackFloor != null) attackFloor.ClearAllTiles();
     }
 }

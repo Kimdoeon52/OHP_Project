@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
@@ -181,6 +181,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         catch (System.OperationCanceledException) { }
 
         Destroy(gameObject); // 파괴
+        base.OnDeath().Forget();
     }
 
     private void DamagePlayerIfInCell(Vector2Int attackCell, int damage)

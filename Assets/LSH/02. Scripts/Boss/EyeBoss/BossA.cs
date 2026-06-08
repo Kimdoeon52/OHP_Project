@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -366,7 +366,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
                 if (playerHit)
                 {
-                    player.TakeDamage(1);
+                    player.TakeDamage(20);
                     Vector2Int? knockbackTarget = FindKnockbackTarget(player.GridPosition, playerCell, landingGridPos);
                     if (knockbackTarget.HasValue)
                     {
@@ -553,5 +553,6 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         bossAnimation.SetTrigger("Dead");
         await UniTask.Delay(2000);
         Destroy(gameObject);
+        base.OnDeath().Forget();
     }
 }

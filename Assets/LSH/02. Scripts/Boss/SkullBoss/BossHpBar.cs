@@ -1,4 +1,6 @@
-﻿using DG.Tweening;
+﻿using Cysharp.Threading.Tasks;
+using DG.Tweening;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -31,21 +33,26 @@ public class BossHpBar : MonoBehaviour
     public void Init(BossBase target)
     {
         boss = target;
-        RefreshVisual(); // 초기화는 진동 없이 표시만
+        RefreshVisual().Forget(); // 초기화는 진동 없이 표시만
     }
 
     public void UpdateBar()
     {
         if (boss == null) return;
-        RefreshVisual();
+        RefreshVisual().Forget();
         PlayShake();
     }
 
-    private void RefreshVisual()
+    private async UniTask RefreshVisual()
     {
         float ratio = (float)boss.currentHp / boss.maxHp;
         fillimage.fillAmount = ratio;
         //text.text = boss.currentHp.ToString() + " / " + boss.maxHp.ToString();
+        if(ratio <= 0f)
+        {
+            await UniTask.Delay(1000); // 1초 대기 후 HP 바 사라짐
+            allHpBar.SetActive(false);
+        }
     }
 
     // HP가 줄어들 때마다 호출. 같은 진동이 진행 중이면 끊고 새로 시작 — 위치 어긋남 방지.

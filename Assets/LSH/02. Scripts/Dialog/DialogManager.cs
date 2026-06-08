@@ -32,9 +32,50 @@ public class DialogManager : MonoBehaviour
         dialog.gameObject.SetActive(true);
     }
 
+    private void EnsureCorrectParenting()
+    {
+        if (effectParent != null)
+        {
+            if (dialogBackground != null && dialogBackground.transform.parent != effectParent)
+            {
+                dialogBackground.transform.SetParent(effectParent, true);
+                dialogBackground.transform.localScale = Vector3.one;
+                
+                // 배경은 화면 전체를 덮도록 RectTransform 보정
+                RectTransform bgRect = dialogBackground.GetComponent<RectTransform>();
+                if (bgRect != null)
+                {
+                    bgRect.anchorMin = Vector2.zero;
+                    bgRect.anchorMax = Vector2.one;
+                    bgRect.anchoredPosition = Vector2.zero;
+                    bgRect.sizeDelta = Vector2.zero;
+                }
+                Debug.Log("[DialogManager] dialogBackground 부모를 effectParent(Canvas)로 재설정하고 RectTransform을 보정했습니다.");
+            }
+            if (dialog != null && dialog.transform.parent != effectParent)
+            {
+                dialog.transform.SetParent(effectParent, true);
+                dialog.transform.localScale = Vector3.one;
+                
+                // 텍스트 위치 보정 (이탈 시 중앙 배치)
+                RectTransform textRect = dialog.GetComponent<RectTransform>();
+                if (textRect != null)
+                {
+                    if (Mathf.Abs(textRect.anchoredPosition.x) > 500f || Mathf.Abs(textRect.anchoredPosition.y) > 300f)
+                    {
+                        textRect.anchoredPosition = Vector2.zero;
+                    }
+                }
+                Debug.Log("[DialogManager] dialog 텍스트 부모를 effectParent(Canvas)로 재설정했습니다.");
+            }
+        }
+    }
+
     // 외부에서 특정 대화 데이터를 주입하며 시작할 때 호출
     public void StartDialog(DialogData data)
     {
+        EnsureCorrectParenting();
+
         // 기존에 스폰된 이펙트 잔재 정리
         ClearSpawnedEffects();
 
@@ -170,6 +211,8 @@ public class DialogManager : MonoBehaviour
 
     public void OnEnable()
     {
+        EnsureCorrectParenting();
+
         // StartDialog를 거치지 않고 직접 활성화되었을 때의 폴백 처리
         if (activeDialogText == null)
         {

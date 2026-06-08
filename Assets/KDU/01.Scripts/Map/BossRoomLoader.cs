@@ -51,6 +51,7 @@ public class BossRoomLoader : ScriptableObject
             CopyChildTilemap(tempRoot.transform, "Floor", target.floor);
             CopyChildTilemap(tempRoot.transform, "Wall", target.wall);
             CopyChildTilemap(tempRoot.transform, "Hazard", target.hazard);
+            CopyChildTilemap(tempRoot.transform, "AttackFloor", target.attackFloor);
             // SafeRoom 영역 = 'Safe' Tilemap 자식의 타일된 셀 전체 (다중 셀). 없으면 'SafeAnchor' 1칸으로 폴백.
             safeCells = ReadTilemapCells(tempRoot.transform, "Safe");
             safeCell = ReadAnchorCell(tempRoot.transform, "SafeAnchor");
