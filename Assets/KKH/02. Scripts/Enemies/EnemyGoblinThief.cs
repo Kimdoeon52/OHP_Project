@@ -24,7 +24,7 @@ public class EnemyGoblinThief : EnemyBase
     private bool _hasStolenItem = false;
 
     /// <summary> 현재 보관 중인 훔친 아이템 데이터 참조. 사망 시 복구에 사용. </summary>
-    private ItemInstance  _stolenItem = null;
+    private ItemInstance _stolenItem = null;
 
     /// <summary> 이번 턴 시각 보간용 이동 경로 버퍼. 0번은 출발지. </summary>
     private readonly List<Vector2Int> _movePath = new List<Vector2Int>();
@@ -80,7 +80,7 @@ public class EnemyGoblinThief : EnemyBase
         if (invController.Items.Count == 0)
         {
             Debug.Log($"[GoblinThief] 인벤토리 비어있어 탈취 불가.");
-              return;
+            return;
         }
 
         // 임의의 슬롯 선택
@@ -89,7 +89,7 @@ public class EnemyGoblinThief : EnemyBase
 
         if (targetItem != null && targetItem.ItemInstance != null)
         {
-            _stolenItem  = targetItem.ItemInstance;
+            _stolenItem = targetItem.ItemInstance;
 
             bool removed = invController.TryRemoveItem(targetItem);
             if (removed)
@@ -168,7 +168,7 @@ public class EnemyGoblinThief : EnemyBase
 
         if (!GridSystem.Instance.IsWalkable(next)) return false;
         if (next == Player.GridPosition) return false;
-      //if (TurnManager.Instance.GetEntityAt(next) != null) return false;
+        //if (TurnManager.Instance.GetEntityAt(next) != null) return false;
         if (GridSystem.Instance.IsCellOccupied(next)) return false; // 타 엔티티
         if (GridSystem.Instance != null)
         {
@@ -290,7 +290,7 @@ public class EnemyGoblinThief : EnemyBase
     {
         if (!GridSystem.Instance.IsWalkable(pos)) return false;
         if (pos == Player.GridPosition) return false;
-       // if (TurnManager.Instance.GetEntityAt(pos) != null) return false;
+        // if (TurnManager.Instance.GetEntityAt(pos) != null) return false;
         if (GridSystem.Instance.IsCellOccupied(pos)) return false; // 타 엔티티
         return true;
     }

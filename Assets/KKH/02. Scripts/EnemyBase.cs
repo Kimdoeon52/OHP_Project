@@ -253,17 +253,15 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// </summary>
     protected void ShowTelegraph(Vector2Int cell)
     {
-       if (warningPrefab == null)
-       {
-            if (_activeTelegraphs.ContainsKey(cell)) return;
-       }
-       // 격자 좌표 -> 월드 좌표 변환
-    Vector3 worldPos = GridSystem.Instance != null
-        ? GridSystem.Instance.GridToWorld(cell)
-        : new Vector3(cell.x, cell.y, 0);
-    // 프리팹 스폰 후 관리 목록에 등록
-    GameObject indicator = Instantiate(warningPrefab, worldPos, Quaternion.identity);
-    _activeTelegraphs.Add(cell, indicator);
+        if (warningPrefab == null) return; // 프리팹이 할당되어 있지 않으면 즉시 리턴
+        if (_activeTelegraphs.ContainsKey(cell)) return; // 이미 예고가 뜬 셀이면 리턴
+        // 격자 좌표 -> 월드 좌표 변환
+        Vector3 worldPos = GridSystem.Instance != null
+            ? GridSystem.Instance.GridToWorld(cell)
+            : new Vector3(cell.x, cell.y, 0);
+        // 프리팹 스폰 후 관리 목록에 등록
+        GameObject indicator = Instantiate(warningPrefab, worldPos, Quaternion.identity);
+        _activeTelegraphs.Add(cell, indicator);
     }
 
     /// <summary>
@@ -273,13 +271,13 @@ public abstract class EnemyBase : EntityBase, IDamageable
     protected void ClearTelegraphs()
     {
         foreach (var kvp in _activeTelegraphs)
-    {
-        if (kvp.Value != null)
         {
-            Destroy(kvp.Value); // 오브젝트 제거 (풀링을 쓰신다면 풀에 반환)
+            if (kvp.Value != null)
+            {
+                Destroy(kvp.Value); // 오브젝트 제거 (풀링을 쓰신다면 풀에 반환)
+            }
         }
-    }
-    _activeTelegraphs.Clear();
+        _activeTelegraphs.Clear();
     }
 
     // ══════════════ 격자 기반 공통 이동 로직 ══════════════
@@ -317,7 +315,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
 
         if (!GridSystem.Instance.IsWalkable(next)) return false;  // 벽
         if (next == Player.GridPosition) return false;            // 플레이어 위치
-      //  if (TurnManager.Instance.GetEntityAt(next) != null) return false; // 타 엔티티
+                                                                  //  if (TurnManager.Instance.GetEntityAt(next) != null) return false; // 타 엔티티
         if (GridSystem.Instance.IsCellOccupied(next)) return false; // 타 엔티티
 
         if (_animator != null) _animator.SetBool("Walk", true);
@@ -333,7 +331,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// <summary>
     /// attackMin~attackMax 범위에서 랜덤 공격력 롤.
     /// </summary>
-    protected int RollAttackDamage()
+    protected virtual int RollAttackDamage()
     {
         return Random.Range(data.attackMin, data.attackMax + 1);
     }
@@ -512,6 +510,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
                 _animator.SetTrigger("Attack");
             }
 
+            yield return new WaitForSeconds(0.25f);
             // 공격 타일에 플레이어가 있으면 데미지 + 상태이상 적용
             if (Player.GridPosition == targetCell)
             {

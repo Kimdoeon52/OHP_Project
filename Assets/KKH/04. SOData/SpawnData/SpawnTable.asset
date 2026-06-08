@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d7e2e62e288229a46b36673560dc3e54, type: 3}
-  m_Name: TestSpawnTable
+  m_Name: SpawnTable
   m_EditorClassIdentifier: 
   tiers:
   - pool:

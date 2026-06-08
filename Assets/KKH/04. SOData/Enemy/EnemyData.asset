@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95ae69ab44fdc2f449301d0fbafbdcbf, type: 3}
+  m_Name: EnemyData
+  m_EditorClassIdentifier: 
+  id: 1005
+  displayName: Golem
+  sprite: {fileID: -774327837, guid: 9ab21432c5f70fe4f88c7a8d9f2e93f7, type: 3}
+  grade: 0
+  moveType: 2
+  hasShield: 0
+  maxHp: 1
+  attackMin: 1
+  attackMax: 1
+  attackPattern: 0
+  moveSpeed: 1
+  attackSpeed: 1
+  defenseMin: 0
+  defenseMax: 0
+  evasion: 0
+  accuracy: 10
+  timeBonus: 3
+  expReward: 5
+  goldMin: 0
+  goldMax: 0
+  visionRange: 6
+  onHitEffect: {fileID: 0}

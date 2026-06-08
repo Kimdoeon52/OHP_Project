@@ -10,21 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 98741bb7b094adc42a67e84857459b53, type: 3}
-  m_Name: Spawn Config
+  m_Name: Area2SpawnConfig
   m_EditorClassIdentifier: 
-  minDepth: 1
-  maxDepth: 5
+  minDepth: 6
+  maxDepth: 10
   specificDepths: 
   spawnTable: {fileID: 11400000, guid: 1726a273ca314324dab7a8328b3ee6ab, type: 2}
   prefabMappings:
-  - enemyData: {fileID: 11400000, guid: 4deeeeb4a4b6d2f4ea9867031dadf490, type: 2}
-    prefab: {fileID: 9029408503905317634, guid: c35c60213d812f247bcdda970a7b95dc, type: 3}
-  - enemyData: {fileID: 11400000, guid: 6ce6f9aa8c93afd40849d76c0a151988, type: 2}
-    prefab: {fileID: 8475319111217402187, guid: 50aab3dbf59bef9428392aa52218f66d, type: 3}
-  - enemyData: {fileID: 11400000, guid: 2eddec62bffdd854ba302e51a5d08d06, type: 2}
-    prefab: {fileID: 2331721778063490303, guid: 8dec85a7533d9dd4793715ec28b9b781, type: 3}
-  - enemyData: {fileID: 11400000, guid: 5f0af966e4d1be84aacd9a988ba634da, type: 2}
-    prefab: {fileID: 5531301586080410238, guid: cd72c62ae957d26419e026c667c1888e, type: 3}
   - enemyData: {fileID: 11400000, guid: 50df1ac1d3ce8e44fb8a6245bb4bdc8b, type: 2}
     prefab: {fileID: 3780080065943378404, guid: 544140c5bccec694f8fa85694cfb1b32, type: 3}
   - enemyData: {fileID: 11400000, guid: a85df64c22ca3354b801f9ea7f29a30e, type: 2}
