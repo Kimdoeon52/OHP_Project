@@ -14,6 +14,10 @@ using UnityEngine;
 ///
 /// 랜덤 상자(20%)는 이 흐름이 아니라 ChestSpawner 의 별도 흐름이 담당한다(GDD 9.14).
 /// 보스 층은 MapGenerator 가 이 스포너를 호출하지 않으므로 자동 제외.
+///
+/// 특수 방 하위 종류 중 '바닥 아이템/골드 뭉치' 종류도 담당 — 스크롤 방(Special),
+/// 포션 방·골드 방(Secret). 종류는 MapGenerator 가 결정(room.specialKind/secretKind)하고,
+/// 상자류는 ChestSpawner, 몬스터 방은 EnemySpawner 가 같은 값을 읽어 분담한다.
 /// </summary>
 public class MapItemSpawner : MonoBehaviour
 {
@@ -53,6 +57,24 @@ public class MapItemSpawner : MonoBehaviour
     [SerializeField, Min(0)] private int goldMax = 30;
     [SerializeField, Min(1)] private int goldAttemptsPerRoom = 1;
 
+    [Header("특수 방 — 스크롤 방 (randomItemPool 에서 카테고리=Scroll 필터, GDD 6.2.1)")]
+    [Tooltip("스크롤 방에서 제외할 ID. GDD: 강화 스크롤(1002) 제외.")]
+    [SerializeField] private int[] scrollRoomExcludeIds = { 1002 };
+    [SerializeField, Min(1)] private int scrollRoomMin = 2;
+    [SerializeField, Min(1)] private int scrollRoomMax = 3;
+
+    [Header("특수 방 — 포션 방 (randomItemPool 에서 카테고리=Potion 필터, GDD 6.2.2)")]
+    [Tooltip("포션 방에서 제외할 ID. GDD: 힘 포션(2003) 제외.")]
+    [SerializeField] private int[] potionRoomExcludeIds = { 2003 };
+    [SerializeField, Min(1)] private int potionRoomMin = 2;
+    [SerializeField, Min(1)] private int potionRoomMax = 2;
+
+    [Header("특수 방 — 골드 방")]
+    [SerializeField, Min(1)] private int goldRoomPileMin = 3;
+    [SerializeField, Min(1)] private int goldRoomPileMax = 5;
+    [SerializeField, Min(0)] private int goldRoomAmountMin = 50;
+    [SerializeField, Min(0)] private int goldRoomAmountMax = 75;
+
     private readonly List<GameObject> _spawned = new();
 
     public void Spawn(List<RoomData> rooms, int depth, int runSeed, DungeonRandom rng)
@@ -64,6 +86,70 @@ public class MapItemSpawner : MonoBehaviour
         SpawnGuaranteed(rooms, rng);
         SpawnRandom(rooms, rng);
         SpawnGold(rooms, rng);
+        SpawnSubtypeRooms(rooms, rng);
+    }
+
+    // ───── 특수 방 하위 종류 (스크롤/포션/골드 방 — GDD 6.2.1/6.2.2) ─────
+    // 종류는 MapGenerator 가 결정(room.specialKind/secretKind). 상자류는 ChestSpawner,
+    // 몬스터 방은 EnemySpawner, 인챈트 방은 별도 시스템이 같은 값을 읽어 담당.
+
+    private void SpawnSubtypeRooms(List<RoomData> rooms, DungeonRandom rng)
+    {
+        foreach (var room in rooms)
+        {
+            if (room.type == RoomType.Special && room.specialKind == SpecialRoomKind.Scroll)
+                SpawnItemsInRoom(room, ItemCategory.Scroll, scrollRoomExcludeIds, scrollRoomMin, scrollRoomMax, rng);
+            else if (room.type == RoomType.Secret && room.secretKind == SecretRoomKind.Potion)
+                SpawnItemsInRoom(room, ItemCategory.Potion, potionRoomExcludeIds, potionRoomMin, potionRoomMax, rng);
+            else if (room.type == RoomType.Secret && room.secretKind == SecretRoomKind.Gold)
+                SpawnGoldPilesInRoom(room, rng);
+        }
+    }
+
+    /// <summary>방 floor 셀에 (전체 풀에서 category 필터·제외ID 적용해 뽑은) 아이템을 min~max개 배치.</summary>
+    private void SpawnItemsInRoom(RoomData room, ItemCategory category, int[] excludeIds, int min, int max, DungeonRandom rng)
+    {
+        var items = ItemsOfCategory(category, excludeIds);
+        if (items.Count == 0) return;
+
+        var cells = SpawnCells.Candidates(room);
+        int count = Mathf.Min(rng.Range(min, max + 1), cells.Count);
+        for (int i = 0; i < count; i++)
+            SpawnPickup(items[rng.Range(0, items.Count)], SpawnCells.PopRandom(cells, rng), rng);
+    }
+
+    /// <summary>randomItemPool(전체)에서 ID 구간 카테고리(ItemCategories)로 필터, excludeIds 제외.</summary>
+    private List<ItemBase> ItemsOfCategory(ItemCategory category, int[] excludeIds)
+    {
+        var result = new List<ItemBase>();
+        if (randomItemPool == null || randomItemPool.items == null) return result;
+        foreach (var so in randomItemPool.items)
+        {
+            if (so == null) continue;
+            if (ItemCategories.Of(so) != category) continue;
+            if (excludeIds != null && Array.IndexOf(excludeIds, so.Id) >= 0) continue;
+            result.Add(so);
+        }
+        return result;
+    }
+
+    /// <summary>골드 방 — 바닥 골드 뭉치 여러 개(개당 goldRoomAmount 범위).</summary>
+    private void SpawnGoldPilesInRoom(RoomData room, DungeonRandom rng)
+    {
+        if (goldPickupPrefab == null) return;
+        var cells = SpawnCells.Candidates(room);
+        int piles = Mathf.Min(rng.Range(goldRoomPileMin, goldRoomPileMax + 1), cells.Count);
+        for (int i = 0; i < piles; i++)
+        {
+            int amount = rng.Range(goldRoomAmountMin, goldRoomAmountMax + 1);
+            Vector2Int cell = SpawnCells.PopRandom(cells, rng);
+            Vector3 pos = GridSystem.Instance != null
+                ? GridSystem.Instance.GridToWorld(cell)
+                : new Vector3(cell.x, cell.y, 0);
+            GoldPickup gold = Instantiate(goldPickupPrefab, pos, Quaternion.identity);
+            gold.Initialize(cell, amount);
+            _spawned.Add(gold.gameObject);
+        }
     }
 
     // ───── 골드 ─────
