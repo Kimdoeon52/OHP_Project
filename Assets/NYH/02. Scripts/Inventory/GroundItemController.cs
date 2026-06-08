@@ -28,7 +28,7 @@ namespace PrototypeRT
         [SerializeField] private KeyCode manualPickupKey = KeyCode.Space;
 
         [Tooltip("플레이어가 아이템 칸에 도착하면 들어갈 수 있는 아이템을 전부 자동으로 줍습니다.")]
-        [SerializeField] private bool autoPickupOnMove = true;
+        [SerializeField] private bool autoPickupOnMove = false;
 
         [Tooltip("수동 줍기 키 입력을 사용할지 정합니다.")]
         [SerializeField] private bool manualPickupEnabled = true;
@@ -78,7 +78,8 @@ namespace PrototypeRT
             ScanAndRegisterPickups();
 
             // 시작 위치에 아이템이 있으면 자동 줍기 규칙과 같은 방식으로 한 번 처리합니다.
-            TryCollectAllAtPlayerCell();
+            if (IsAutoPickupEnabled())
+                TryCollectAllAtPlayerCell();
         }
 
         private void OnDisable()
@@ -94,7 +95,10 @@ namespace PrototypeRT
 
         private void Update()
         {
-            if (!manualPickupEnabled || !Input.GetKeyDown(manualPickupKey))
+            if (KeyBindingManager.ShouldBlockGameplayInput)
+                return;
+
+            if (!manualPickupEnabled || !Input.GetKeyDown(KeyBindingManager.GetKey(KeyBindingAction.Pickup)))
                 return;
 
             // 수동 줍기는 한 번에 하나만 줍고, 마지막에 떨어진 아이템부터 처리합니다.
@@ -419,8 +423,13 @@ namespace PrototypeRT
         /// </summary>
         private void OnPlayerMoveFinished()
         {
-            if (autoPickupOnMove)
+            if (IsAutoPickupEnabled())
                 TryCollectAllAtPlayerCell();
+        }
+
+        private bool IsAutoPickupEnabled()
+        {
+            return KeyBindingManager.AutoPickupEnabled;
         }
 
         /// <summary>

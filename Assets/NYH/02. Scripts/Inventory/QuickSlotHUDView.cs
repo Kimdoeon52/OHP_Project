@@ -30,6 +30,20 @@ namespace PrototypeRT
         // 비워두면 GetOrCreateCountText()에서 임시 CountText를 자동 생성합니다.
         [SerializeField] private TMP_Text[] slotCountTexts = new TMP_Text[10];
 
+        [Header("Selected Slot")]
+        [Tooltip("Optional highlight images for slots. If empty, the icon parent Image is used.")]
+        [SerializeField] private Image[] slotHighlightImages = new Image[10];
+
+        [Tooltip("Color applied to the selected quick slot.")]
+        [SerializeField] private Color selectedSlotColor = new Color(1f, 0.9f, 0.35f, 1f);
+
+        [Tooltip("Scale multiplier for the selected quick slot icon.")]
+        [SerializeField, Min(1f)] private float selectedSlotScale = 1.12f;
+
+        private Vector3[] _baseIconScales;
+        private Color[] _baseHighlightColors;
+        private Color[] _baseNumberColors;
+
         /// <summary>
         /// HUD 표시를 위한 참조와 클릭 방해 방지 설정을 준비합니다.
         /// 퀵슬롯 아이콘은 보여주기 전용이므로 raycast를 꺼서 드래그/호버 입력을 막지 않게 합니다.
@@ -40,6 +54,7 @@ namespace PrototypeRT
             if (quickSlotController == null)
                 quickSlotController = FindFirstObjectByType<QuickSlotController>();
 
+            CacheSlotDefaults();
             DisableIconRaycasts();
         }
 
@@ -50,7 +65,10 @@ namespace PrototypeRT
         private void OnEnable()
         {
             if (quickSlotController != null)
+            {
                 quickSlotController.OnQuickSlotsChanged += Refresh;
+                quickSlotController.OnSelectedSlotChanged += OnSelectedSlotChanged;
+            }
 
             // HUD가 꺼져 있는 동안 아이템이 바뀌었을 수 있으므로 켜질 때 즉시 한 번 맞춥니다.
             Refresh();
@@ -63,7 +81,10 @@ namespace PrototypeRT
         private void OnDisable()
         {
             if (quickSlotController != null)
+            {
                 quickSlotController.OnQuickSlotsChanged -= Refresh;
+                quickSlotController.OnSelectedSlotChanged -= OnSelectedSlotChanged;
+            }
         }
 
         /// <summary>
@@ -88,14 +109,102 @@ namespace PrototypeRT
                 // 퀵슬롯 수량 숫자 갱신 지점입니다.
                 // InventoryItem.Count를 읽어서 2개 이상일 때만 작은 숫자를 표시합니다.
                 RefreshCountText(i, item);
+                RefreshSelectedVisual(i);
             }
 
             for (int i = 0; i < slotNumberTexts.Length && i < SlotLabels.Length; i++)
             {
                 if (slotNumberTexts[i] != null)
+                {
                     // 번호 텍스트는 슬롯 내용과 무관하게 항상 고정 라벨을 보여줍니다.
                     slotNumberTexts[i].text = SlotLabels[i];
+                    RefreshSelectedVisual(i);
+                }
             }
+        }
+
+        private void OnSelectedSlotChanged(int selectedIndex)
+        {
+            Refresh();
+        }
+
+        private void RefreshSelectedVisual(int slotIndex)
+        {
+            if (slotIndex < 0)
+                return;
+
+            bool selected = quickSlotController != null && quickSlotController.SelectedIndex == slotIndex;
+            Image targetImage = GetSlotHighlightImage(slotIndex);
+            if (targetImage != null)
+                targetImage.color = selected ? selectedSlotColor : GetBaseHighlightColor(slotIndex);
+
+            if (slotIcons != null && slotIndex < slotIcons.Length && slotIcons[slotIndex] != null)
+            {
+                Vector3 baseScale = GetBaseIconScale(slotIndex);
+                slotIcons[slotIndex].transform.localScale = selected ? baseScale * selectedSlotScale : baseScale;
+            }
+
+            if (slotNumberTexts != null && slotIndex < slotNumberTexts.Length && slotNumberTexts[slotIndex] != null)
+                slotNumberTexts[slotIndex].color = selected ? selectedSlotColor : GetBaseNumberColor(slotIndex);
+        }
+
+        private Image GetSlotHighlightImage(int slotIndex)
+        {
+            if (slotHighlightImages != null && slotIndex < slotHighlightImages.Length && slotHighlightImages[slotIndex] != null)
+                return slotHighlightImages[slotIndex];
+
+            if (slotIcons == null || slotIndex >= slotIcons.Length || slotIcons[slotIndex] == null)
+                return null;
+
+            Transform parent = slotIcons[slotIndex].transform.parent;
+            Image parentImage = parent != null ? parent.GetComponent<Image>() : null;
+            return parentImage != null ? parentImage : slotIcons[slotIndex];
+        }
+
+        private void CacheSlotDefaults()
+        {
+            if (slotIcons == null)
+                return;
+
+            _baseIconScales = new Vector3[slotIcons.Length];
+            _baseHighlightColors = new Color[slotIcons.Length];
+            for (int i = 0; i < slotIcons.Length; i++)
+            {
+                _baseIconScales[i] = slotIcons[i] != null ? slotIcons[i].transform.localScale : Vector3.one;
+                Image targetImage = GetSlotHighlightImage(i);
+                _baseHighlightColors[i] = targetImage != null ? targetImage.color : Color.white;
+            }
+
+            if (slotNumberTexts == null)
+                return;
+
+            _baseNumberColors = new Color[slotNumberTexts.Length];
+            for (int i = 0; i < slotNumberTexts.Length; i++)
+                _baseNumberColors[i] = slotNumberTexts[i] != null ? slotNumberTexts[i].color : Color.white;
+        }
+
+        private Vector3 GetBaseIconScale(int slotIndex)
+        {
+            if (_baseIconScales == null || slotIndex < 0 || slotIndex >= _baseIconScales.Length)
+                return Vector3.one;
+
+            return _baseIconScales[slotIndex];
+        }
+
+        private Color GetBaseHighlightColor(int slotIndex)
+        {
+            if (_baseHighlightColors == null || slotIndex < 0 || slotIndex >= _baseHighlightColors.Length)
+                return Color.white;
+
+            return _baseHighlightColors[slotIndex];
+        }
+
+        private Color GetBaseNumberColor(int slotIndex)
+        {
+            if (_baseNumberColors == null || slotIndex < 0 || slotIndex >= _baseNumberColors.Length)
+                return Color.white;
+
+            return _baseNumberColors[slotIndex];
         }
 
         /// <summary>

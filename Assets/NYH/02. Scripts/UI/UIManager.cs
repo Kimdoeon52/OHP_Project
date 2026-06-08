@@ -125,6 +125,9 @@ namespace PrototypeRT
 
         private void LateUpdate()
         {
+            if (KeyBindingManager.InputCaptureActive || KeyBindingManager.WasInputCapturedThisFrame())
+                return;
+
             if (Input.GetKeyDown(KeyCode.Escape))
                 CloseTopUI();
 

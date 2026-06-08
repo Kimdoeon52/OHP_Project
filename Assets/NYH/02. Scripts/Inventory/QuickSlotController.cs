@@ -32,17 +32,20 @@ namespace PrototypeRT
         [SerializeField] private InventoryController inventoryController;
 
         private GridPlayer _player;
+        private bool _inputSubscribed;
 
         /// <summary>
         /// 퀵슬롯 배치/사용/삭제 등 표시가 바뀌는 순간 HUD가 갱신할 수 있도록 알립니다.
         /// </summary>
         public event Action OnQuickSlotsChanged;
+        public event Action<int> OnSelectedSlotChanged;
 
         /// <summary>
         /// 외부에서 퀵슬롯 전용 그리드가 필요할 때 읽는 접근자입니다.
         /// 예: 인벤토리 드래그 시스템이 이 그리드에 1x1 아이템만 놓게 할 때 사용합니다.
         /// </summary>
         public ItemGrid QuickSlotGrid => quickSlotGrid;
+        public int SelectedIndex { get; private set; }
 
         /// <summary>
         /// 씬에 배치된 참조를 준비하고, 퀵슬롯 그리드의 기본 크기를 보정합니다.
@@ -66,6 +69,12 @@ namespace PrototypeRT
             _player = FindFirstObjectByType<GridPlayer>();
         }
 
+        private void Start()
+        {
+            SubscribePlayerInput();
+            OnSelectedSlotChanged?.Invoke(SelectedIndex);
+        }
+
         /// <summary>
         /// 퀵슬롯 그리드의 변경 이벤트를 구독합니다.
         /// 아이템을 드래그로 넣거나 빼면 ItemGrid.OnGridChanged가 발생하고, 그 신호를 HUD 갱신 이벤트로 변환합니다.
@@ -85,8 +94,9 @@ namespace PrototypeRT
             RaiseQuickSlotsChanged();
 
             // 입력 시스템과 연동합니다.
-            if (_player != null && _player.Input != null)
-                _player.Input.OnQuickSlotKeyPressed += OnQuickSlotKeyPressed;
+            SubscribePlayerInput();
+
+            OnSelectedSlotChanged?.Invoke(SelectedIndex);
         }
 
         /// <summary>
@@ -102,18 +112,59 @@ namespace PrototypeRT
             if (inventoryController != null)
                 inventoryController.OnInventoryChanged -= RaiseQuickSlotsChanged;
 
-            if (_player != null && _player.Input != null)
-                _player.Input.OnQuickSlotKeyPressed -= OnQuickSlotKeyPressed;
+            UnsubscribePlayerInput();
         }
 
         /// <summary>
         /// 숫자키 입력 이벤트가 발생했을 때 호출됩니다.
         /// 실제 사용 조건/소비 처리는 TryUseSlot에 맡깁니다.
         /// </summary>
-        private void OnQuickSlotKeyPressed(int index)
+        public void SelectSlot(int index)
         {
-            if (index >= 0)
-                TryUseSlot(index);
+            int clampedIndex = Mathf.Clamp(index, 0, SlotCount - 1);
+            if (SelectedIndex == clampedIndex)
+                return;
+
+            SelectedIndex = clampedIndex;
+            OnSelectedSlotChanged?.Invoke(SelectedIndex);
+        }
+
+        public void MoveSelectedSlot(int delta)
+        {
+            if (delta == 0)
+                return;
+
+            SelectSlot(SelectedIndex + delta);
+        }
+
+        private void SubscribePlayerInput()
+        {
+            if (_inputSubscribed)
+                return;
+
+            if (_player == null)
+                _player = FindFirstObjectByType<GridPlayer>();
+
+            if (_player == null || _player.Input == null)
+                return;
+
+            _player.Input.OnQuickSlotNumberPressed += SelectSlot;
+            _player.Input.OnQuickSlotScroll += MoveSelectedSlot;
+            _inputSubscribed = true;
+        }
+
+        private void UnsubscribePlayerInput()
+        {
+            if (!_inputSubscribed)
+                return;
+
+            if (_player != null && _player.Input != null)
+            {
+                _player.Input.OnQuickSlotNumberPressed -= SelectSlot;
+                _player.Input.OnQuickSlotScroll -= MoveSelectedSlot;
+            }
+
+            _inputSubscribed = false;
         }
 
         /// <summary>
@@ -128,6 +179,81 @@ namespace PrototypeRT
 
             // 퀵슬롯은 10x1 그리드라서 x가 슬롯 번호, y는 항상 0입니다.
             return quickSlotGrid.GetItemAt(slotIndex, 0);
+        }
+
+        public bool TryUseSelectedSlotAt(Vector2Int targetCell)
+        {
+            return TryUseSelectedSlotAt(SelectedIndex, targetCell);
+        }
+
+        private bool TryUseSelectedSlotAt(int slotIndex, Vector2Int targetCell)
+        {
+            InventoryItem item = GetItem(slotIndex);
+            if (item == null || item.ItemData == null)
+                return false;
+
+            if (!CanUseQuickSlot())
+                return false;
+
+            if (item.ItemData.ItemType == ItemType.Scroll)
+                return false;
+
+            if (item.ItemInstance is ThrowableWeaponInstance throwableWeapon)
+                return TryThrowWeaponItem(item, throwableWeapon, targetCell);
+
+            if (item.ItemData is IThrowable throwableData)
+            {
+                throwableData.Throw(targetCell);
+                return ConsumeUsedQuickSlotItem(item);
+            }
+
+            if (IsEquipment(item.ItemData))
+                return false;
+
+            if (item.ItemData is PotionData)
+            {
+                item.ItemData.Use();
+                return ConsumeUsedQuickSlotItem(item);
+            }
+
+            return false;
+        }
+
+        private bool TryThrowWeaponItem(InventoryItem item, ThrowableWeaponInstance throwableWeapon, Vector2Int targetCell)
+        {
+            if (throwableWeapon.currentDurabilities == null || throwableWeapon.currentDurabilities.Count == 0)
+                return false;
+
+            int beforeCount = throwableWeapon.currentDurabilities.Count;
+            throwableWeapon.Throw(targetCell);
+
+            if (throwableWeapon.currentDurabilities.Count >= beforeCount)
+                return false;
+
+            if (throwableWeapon.currentDurabilities.Count == 0)
+                return ConsumeUsedQuickSlotItem(item);
+
+            ApplyUseDelay();
+            RaiseQuickSlotsChanged();
+            return true;
+        }
+
+        private bool ConsumeUsedQuickSlotItem(InventoryItem item)
+        {
+            if (inventoryController == null)
+                ResolveInventoryController();
+
+            if (inventoryController == null || !inventoryController.TryConsumeOneItem(item))
+                return false;
+
+            ApplyUseDelay();
+            RaiseQuickSlotsChanged();
+            return true;
+        }
+
+        private static bool IsEquipment(ItemBase itemData)
+        {
+            return itemData != null && (itemData.ItemType == ItemType.Equipment || itemData.Slot != EquipmentSlot.None);
         }
 
         /// <summary>

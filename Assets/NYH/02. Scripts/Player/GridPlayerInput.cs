@@ -1,4 +1,5 @@
 using UnityEngine;
+using PrototypeRT;
 
 /// <summary>
 /// 플레이어 입력을 GridPlayer의 이동/근접 공격/포션 사용 흐름으로 전달합니다.
@@ -8,18 +9,21 @@ public class GridPlayerInput : MonoBehaviour
 {
     private GridPlayer _player;
     private CameraFollow _cameraFollow;
+    private PrototypeRT.QuickSlotController _quickSlotController;
 
     /// <summary>
     /// 플레이어가 숫자키(1~0)를 눌러 퀵슬롯 사용을 요청할 때 발생합니다.
     /// int 매개변수는 0~9의 슬롯 인덱스입니다. (키보드 1 -> 0, 키보드 0 -> 9)
     /// </summary>
-    public event System.Action<int> OnQuickSlotKeyPressed;
+    public event System.Action<int> OnQuickSlotNumberPressed;
+    public event System.Action<int> OnQuickSlotScroll;
 
     public void Init(GridPlayer player)
     {
         _player = player;
         // Safe Room 플래닝 모드 중엔 좌클릭이 카메라 드래그용이므로 근접 공격으로 흘려보내지 않게 참조 캐시.
         _cameraFollow = FindFirstObjectByType<CameraFollow>();
+        _quickSlotController = FindFirstObjectByType<PrototypeRT.QuickSlotController>();
     }
 
     /// <summary>
@@ -27,22 +31,28 @@ public class GridPlayerInput : MonoBehaviour
     /// </summary>
     public bool TryGetHeldMoveDirection(out Vector2Int direction)
     {
-        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+        if (KeyBindingManager.ShouldBlockGameplayInput)
+        {
+            direction = Vector2Int.zero;
+            return false;
+        }
+
+        if (Input.GetKey(KeyBindingManager.GetKey(KeyBindingAction.MoveUp)))
         {
             direction = Vector2Int.up;
             return true;
         }
-        if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+        if (Input.GetKey(KeyBindingManager.GetKey(KeyBindingAction.MoveDown)))
         {
             direction = Vector2Int.down;
             return true;
         }
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+        if (Input.GetKey(KeyBindingManager.GetKey(KeyBindingAction.MoveLeft)))
         {
             direction = Vector2Int.left;
             return true;
         }
-        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+        if (Input.GetKey(KeyBindingManager.GetKey(KeyBindingAction.MoveRight)))
         {
             direction = Vector2Int.right;
             return true;
@@ -54,6 +64,7 @@ public class GridPlayerInput : MonoBehaviour
 
     private void Update()
     {
+        if (KeyBindingManager.ShouldBlockGameplayInput) return;
         if (TurnManager.Instance == null || !TurnManager.Instance.IsPlayerTurn) return;
         if (_player.Health.IsDead) return;
         if (_player.Movement.IsMoving) return;
@@ -61,6 +72,8 @@ public class GridPlayerInput : MonoBehaviour
 
         bool canAct = _player.ActionDelay == null || _player.ActionDelay.CanAct;
         bool canMove = canAct || _player.Movement.IgnoresActionDelayForMovement;
+
+        CheckQuickSlotInputs();
 
         if (canMove && TryGetHeldMoveDirection(out Vector2Int moveDirection))
         {
@@ -80,17 +93,25 @@ public class GridPlayerInput : MonoBehaviour
             {
                 Vector3 worldPos = cam.ScreenToWorldPoint(Input.mousePosition);
                 Vector2Int clickedCell = GridSystem.Instance.WorldToGrid(worldPos);
+
+                if (Input.GetMouseButtonDown(0))
+                {
+                    if (_quickSlotController == null)
+                        _quickSlotController = FindFirstObjectByType<PrototypeRT.QuickSlotController>();
+
+                    if (_quickSlotController != null && _quickSlotController.TryUseSelectedSlotAt(clickedCell))
+                        return;
+                }
+
                 _player.Combat.TryMeleeAt(clickedCell);
             }
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetKeyDown(KeyBindingManager.GetKey(KeyBindingAction.UseHealthPotion)))
         {
             _player.Health.TryUsePotion();
         }
-
-        CheckQuickSlotInputs();
     }
 
     /// <summary>
@@ -98,15 +119,18 @@ public class GridPlayerInput : MonoBehaviour
     /// </summary>
     private void CheckQuickSlotInputs()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1)) OnQuickSlotKeyPressed?.Invoke(0);
-        else if (Input.GetKeyDown(KeyCode.Alpha2)) OnQuickSlotKeyPressed?.Invoke(1);
-        else if (Input.GetKeyDown(KeyCode.Alpha3)) OnQuickSlotKeyPressed?.Invoke(2);
-        else if (Input.GetKeyDown(KeyCode.Alpha4)) OnQuickSlotKeyPressed?.Invoke(3);
-        else if (Input.GetKeyDown(KeyCode.Alpha5)) OnQuickSlotKeyPressed?.Invoke(4);
-        else if (Input.GetKeyDown(KeyCode.Alpha6)) OnQuickSlotKeyPressed?.Invoke(5);
-        else if (Input.GetKeyDown(KeyCode.Alpha7)) OnQuickSlotKeyPressed?.Invoke(6);
-        else if (Input.GetKeyDown(KeyCode.Alpha8)) OnQuickSlotKeyPressed?.Invoke(7);
-        else if (Input.GetKeyDown(KeyCode.Alpha9)) OnQuickSlotKeyPressed?.Invoke(8);
-        else if (Input.GetKeyDown(KeyCode.Alpha0)) OnQuickSlotKeyPressed?.Invoke(9);
+        for (int i = 0; i < 10; i++)
+        {
+            KeyBindingAction action = KeyBindingManager.GetQuickSlotAction(i);
+            if (Input.GetKeyDown(KeyBindingManager.GetKey(action)))
+            {
+                OnQuickSlotNumberPressed?.Invoke(i);
+                break;
+            }
+        }
+
+        float scroll = Input.mouseScrollDelta.y;
+        if (scroll > 0f) OnQuickSlotScroll?.Invoke(-1);
+        else if (scroll < 0f) OnQuickSlotScroll?.Invoke(1);
     }
 }

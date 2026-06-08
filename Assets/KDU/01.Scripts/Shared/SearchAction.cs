@@ -1,4 +1,5 @@
 using UnityEngine;
+using PrototypeRT;
 
 /// <summary>
 /// 탐색 액션 — searchKey 를 누르면 플레이어 기준 체비셰프 searchRadius 안(1=3x3)의
@@ -22,7 +23,8 @@ public class SearchAction : MonoBehaviour
     private void Update()
     {
         if (player == null || player.IsDead) return;
-        if (!Input.GetKeyDown(searchKey)) return;
+        if (KeyBindingManager.ShouldBlockGameplayInput) return;
+        if (!Input.GetKeyDown(KeyBindingManager.GetKey(KeyBindingAction.Search))) return;
 
         GameEvents.OnSearchPerformed?.Invoke(player.GridPosition, searchRadius);
     }

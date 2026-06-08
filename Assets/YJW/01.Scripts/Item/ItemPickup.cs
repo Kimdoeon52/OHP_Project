@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using PrototypeRT;
 
 /// <summary>
 /// 바닥에 떨어진 아이템 픽업. 열쇠(KeyPickup)와 같은 표시 패턴 —
@@ -85,7 +86,9 @@ public class ItemPickup : MonoBehaviour
     {
         if (_collected || _player == null || _player.IsDead) return;
         if (_player.GridPosition != GridPosition) return;
-        if (!Input.GetKeyDown(pickupKey)) return;
+        if (KeyBindingManager.ShouldBlockGameplayInput) return;
+        if (!KeyBindingManager.AutoPickupEnabled &&
+            !Input.GetKeyDown(KeyBindingManager.GetKey(KeyBindingAction.Pickup))) return;
         TryCollect();
     }
 

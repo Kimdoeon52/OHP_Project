@@ -22,14 +22,14 @@ public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
                $"내구도: ({duraStr})";
     }
 
-    public void Throw(Vector2Int _)
+    public void Throw(Vector2Int targetCell)
     {
         if (currentDurabilities.Count == 0)
         {
             Debug.Log("던질 무기가 없습니다!");
             return;
         }
-        if (PlayerStats.Instance.Strength < weapon.CanUseStrength)
+        if (GetPlayerStrength() < weapon.CanUseStrength)
         {
             Debug.Log("힘이 부족합니다!");
             return;
@@ -39,17 +39,28 @@ public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
         int thrownDurability = currentDurabilities[lastIndex];
         currentDurabilities.RemoveAt(lastIndex);
 
-        Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mouseWorldPos.z = 0f;
-        Vector3 playerPos = GameManager.Instance.player.transform.position;
-        Vector2 direction = ((Vector2)(mouseWorldPos - playerPos)).normalized;
+        Vector3 playerPos = GetPlayerWorldPosition();
+        Vector3 targetWorldPos = GetTargetWorldPosition(targetCell);
+        GameObject projectile = ObjectPool.Instance != null ? ObjectPool.Instance.Get(weapon.PoolType) : null;
+        bool pooledProjectile = projectile != null;
+        if (projectile == null)
+            projectile = CreateFallbackProjectile();
 
-        GameObject projectile = ObjectPool.Instance.Get(weapon.PoolType);
+        if (projectile == null)
+        {
+            currentDurabilities.Add(thrownDurability);
+            Debug.LogWarning($"ThrowableWeaponInstance: {weapon.PoolType} 투사체 프리팹/풀을 찾지 못해 투척을 취소합니다.");
+            return;
+        }
+
         projectile.transform.position = playerPos;
 
         WeaponProjectile wp = projectile.GetComponent<WeaponProjectile>();
-        wp.SetInstance(this, thrownDurability);
-        wp.Fly(direction);
+        if (wp == null)
+            wp = projectile.AddComponent<WeaponProjectile>();
+
+        wp.SetInstance(this, thrownDurability, weapon.PoolType, pooledProjectile);
+        wp.FlyTo(targetWorldPos);
     }
 
     // WeaponProjectile이 플레이어에게 픽업될 때 호출
@@ -58,5 +69,55 @@ public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
         int remaining = durability - 1;
         if (remaining > 0)
             currentDurabilities.Add(remaining);
+    }
+
+    private static int GetPlayerStrength()
+    {
+        if (NYHPlayerStats.Instance != null)
+            return NYHPlayerStats.Instance.Strength;
+
+        return PlayerStats.Instance != null ? PlayerStats.Instance.Strength : 0;
+    }
+
+    private static Vector3 GetPlayerWorldPosition()
+    {
+        if (GameManager.Instance != null && GameManager.Instance.player != null)
+            return GameManager.Instance.player.transform.position;
+
+        GridPlayer player = Object.FindFirstObjectByType<GridPlayer>();
+        return player != null ? player.transform.position : Vector3.zero;
+    }
+
+    private static Vector3 GetTargetWorldPosition(Vector2Int targetCell)
+    {
+        if (GridSystem.Instance != null)
+            return GridSystem.Instance.GridToWorld(targetCell);
+
+        if (Camera.main == null)
+            return Vector3.zero;
+
+        Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mouseWorldPos.z = 0f;
+        return mouseWorldPos;
+    }
+
+    private GameObject CreateFallbackProjectile()
+    {
+        GameObject projectile = new GameObject($"{weapon.Name}_Projectile");
+
+        SpriteRenderer renderer = projectile.AddComponent<SpriteRenderer>();
+        renderer.sprite = weapon.Icon;
+        renderer.sortingOrder = 20;
+
+        Rigidbody2D body = projectile.AddComponent<Rigidbody2D>();
+        body.bodyType = RigidbodyType2D.Kinematic;
+        body.gravityScale = 0f;
+
+        CircleCollider2D collider = projectile.AddComponent<CircleCollider2D>();
+        collider.radius = 0.18f;
+
+        projectile.AddComponent<WeaponProjectile>();
+        projectile.SetActive(true);
+        return projectile;
     }
 }

@@ -49,8 +49,9 @@ namespace PrototypeRT
         private void Update()
         {
             if (inventoryPanel == null) return;
+            if (KeyBindingManager.ShouldBlockGameplayInput) return;
 
-            if (Input.GetKeyDown(toggleKey))
+            if (Input.GetKeyDown(KeyBindingManager.GetKey(KeyBindingAction.Inventory)))
             {
                 // 지금 상태의 반대값을 먼저 계산합니다.
                 // 이렇게 해두면 "열기 처리"와 "닫기 처리"를 SetOpen 하나로 모을 수 있습니다.

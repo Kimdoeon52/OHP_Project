@@ -8,29 +8,67 @@ public class WeaponProjectile : MonoBehaviour
 
     private ThrowableWeaponInstance weaponInstance;
     private int thrownDurability;
+    private bool returnToPool = true;
     private bool isFlying = false;
+    private bool hasTarget = false;
     private Vector2 flyDirection;
+    private Vector3 targetWorldPosition;
 
     public void SetInstance(ThrowableWeaponInstance instance, int durability)
     {
         weaponInstance = instance;
         thrownDurability = durability;
+        returnToPool = true;
+    }
+
+    public void SetInstance(ThrowableWeaponInstance instance, int durability, PoolType sourcePoolType, bool pooled)
+    {
+        weaponInstance = instance;
+        thrownDurability = durability;
+        poolType = sourcePoolType;
+        returnToPool = pooled;
     }
 
     public void Fly(Vector2 direction)
     {
         flyDirection = direction.normalized;
+        hasTarget = false;
+        isFlying = true;
+    }
+
+    public void FlyTo(Vector3 targetWorld)
+    {
+        targetWorld.z = transform.position.z;
+        targetWorldPosition = targetWorld;
+        flyDirection = ((Vector2)(targetWorldPosition - transform.position)).normalized;
+        hasTarget = true;
         isFlying = true;
     }
 
     private void Update()
     {
         if (!isFlying) return;
-        transform.position += (Vector3)(flyDirection * speed * Time.deltaTime);
+
+        float moveDistance = speed * Time.deltaTime;
+        if (hasTarget)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, targetWorldPosition, moveDistance);
+            if (Vector3.Distance(transform.position, targetWorldPosition) <= 0.001f)
+                Land();
+            return;
+        }
+
+        transform.position += (Vector3)(flyDirection * moveDistance);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        if (weaponInstance == null)
+        {
+            Land();
+            return;
+        }
+
         if (collision.gameObject.CompareTag("Enemy"))
         {
             EnemyBase enemy = collision.gameObject.GetComponent<EnemyBase>();
@@ -49,9 +87,10 @@ public class WeaponProjectile : MonoBehaviour
     private void Land()
     {
         isFlying = false;
+        hasTarget = false;
 
         GroundItemController groundController = FindFirstObjectByType<GroundItemController>();
-        if (groundController != null && GridSystem.Instance != null)
+        if (groundController != null && GridSystem.Instance != null && weaponInstance != null && weaponInstance.weapon != null)
         {
             Vector2Int cell = GridSystem.Instance.WorldToGrid(transform.position);
             var dummy = new ThrowableWeaponInstance { data = weaponInstance.weapon };
@@ -71,6 +110,12 @@ public class WeaponProjectile : MonoBehaviour
 
     private void ReturnToPool()
     {
-        ObjectPool.Instance.Return(poolType, gameObject);
+        if (returnToPool && ObjectPool.Instance != null)
+        {
+            ObjectPool.Instance.Return(poolType, gameObject);
+            return;
+        }
+
+        Destroy(gameObject);
     }
 }
