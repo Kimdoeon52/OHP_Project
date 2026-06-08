@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 public class GridSystem : Singleton<GridSystem>
@@ -31,11 +31,31 @@ public class GridSystem : Singleton<GridSystem>
         return new Vector2Int(cell.x, cell.y);
     }
 
+    private readonly HashSet<Vector2Int> _blockedCells = new HashSet<Vector2Int>();
+
+    public void BlockCell(Vector2Int pos)
+    {
+        _blockedCells.Add(pos);
+    }
+
+    public void UnblockCell(Vector2Int pos)
+    {
+        _blockedCells.Remove(pos);
+    }
+
+    public bool IsCellBlocked(Vector2Int pos)
+    {
+        return _blockedCells.Contains(pos);
+    }
+
     /// <summary>
     /// 해당 격자 셀이 이동 가능한지
     /// </summary>
     public bool IsWalkable(Vector2Int pos)
     {
+        // 0. 임시 차단된 셀은 통행 불가
+        if (IsCellBlocked(pos)) return false;
+
         var cell = new Vector3Int(pos.x, pos.y, 0);
 
         if (tilemaps.wall != null && tilemaps.wall.HasTile(cell)) return false;

@@ -43,8 +43,6 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     [SerializeField] private int phase2CrystalIntervalMs = 1000;
 
     [Header("죽음 패턴")]
-    [SerializeField] private int deathCrystalDistance = 7;   // 보스 등 뒤로 큰 크리스탈이 떨어지는 거리(칸)
-    [SerializeField] private int deathSafeZoneRadius = 1;    // 안전지대 반경 (1 → 3x3)
     [SerializeField] private float deathEscapeSec = 5f;      // 즉사 전 도망 시간
     [SerializeField] private Color deathCrystalTint = Color.red; // 죽음 크리스탈 색 (붉은색)
     [SerializeField] private float deathCrystalScale = 2f;  // 죽음 크리스탈 크기 배율 (2배)
@@ -170,29 +168,34 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
         ClearAllWarnings();
 
-        // 3) 방향: 보스가 바라보는 반대(등 뒤). FaceDir 규약(localScale.x 부호)과 동일.
-        var bossCell = gridPos;
-        int facingSign = (transform.localScale.x >= 0f) ? 1 : -1;
-        var backwardDir = new Vector2Int(-facingSign, 0);
-
-        // 4) 큰 붉은 크리스탈을 등 뒤 deathCrystalDistance칸에 떨어뜨림 (시각 랜드마크)
-        if (crystalPrefab != null)
+        // 2) 맵 중앙 구하기 (fallback은 보스 현재 위치)
+        var safeCenter = gridPos;
+        if (hasMapBounds)
         {
-            var crystalCell = bossCell + backwardDir * deathCrystalDistance;
-            var crystalWorld = GridSystem.Instance.GridToWorld(crystalCell);
-            var go = Instantiate(crystalPrefab, crystalWorld, Quaternion.identity);
-            var c = go.GetComponent<Crystal>();
-            if (c != null) c.Setup(deathCrystalTint, deathCrystalScale, deathEscapeSec + 2f);
+            safeCenter = new Vector2Int(mapBounds.xMin + mapBounds.width / 2, mapBounds.yMin + mapBounds.height / 2);
         }
 
-        // 5) 안전지대: 보스 등 뒤 1칸을 중심으로 (2*radius+1)^2 영역 (radius=1 → 3x3)
-        var safeCenter = bossCell + backwardDir;
-        var safeCells = new HashSet<Vector2Int>();
-        for (int dx = -deathSafeZoneRadius; dx <= deathSafeZoneRadius; dx++)
-            for (int dy = -deathSafeZoneRadius; dy <= deathSafeZoneRadius; dy++)
-                safeCells.Add(safeCenter + new Vector2Int(dx, dy));
+        // 3) 맵 중앙에 푸른 크리스탈 떨어뜨림 (시각 랜드마크)
+        if (crystalPrefab != null)
+        {
+            var crystalWorld = GridSystem.Instance.GridToWorld(safeCenter) + new Vector3(0.5f, 0.5f, 0f);
+            var go = Instantiate(crystalPrefab, crystalWorld, Quaternion.identity);
+            var c = go.GetComponent<Crystal>();
+            if (c != null) 
+                c.Setup(Color.cyan, deathCrystalScale, deathEscapeSec + 5f); // 푸른색 크리스탈 설정
+        }
 
-        // 6) 안전지대 제외한 모든 AttackFloor 셀에 위험표시
+        // 4) 안전지대: 중앙 3x3 영역
+        var safeCells = new HashSet<Vector2Int>();
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                safeCells.Add(safeCenter + new Vector2Int(dx, dy));
+            }
+        }
+
+        // 5) 안전지대 제외한 모든 AttackFloor 셀에 위험 표시
         var dangerCells = new List<Vector2Int>();
         if (hasMapBounds)
         {
@@ -212,18 +215,50 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
         try
         {
-            // 7) 도망 시간
+            // 6) 도망 시간 (5초 대기)
             await UniTask.Delay((int)(deathEscapeSec * 1000), cancellationToken: token);
+
+            // 7) 즉사 폭발 발생 (패턴1 Effect 사용)
+            if (attack2Effect != null)
+            {
+                foreach (var cell in dangerCells)
+                {
+                    Vector3 cellWorldPos = GridSystem.Instance.GridToWorld(cell) + new Vector3(0.5f, 0.5f, 0f);
+                    var effectGo = SpawnAttackEffectFacingBoss(attack2Effect, cellWorldPos);
+                    if (effectGo != null)
+                    {
+                        effectGo.transform.localScale = Vector3.one * 0.7f;
+                        Destroy(effectGo, 1.5f);
+                    }
+                }
+            }
 
             // 8) 즉사 판정: 안전지대 밖이면 즉사
             if (player != null && !player.IsDead && !safeCells.Contains(player.GridPosition))
+            {
                 player.TakeDamage(deathInstantKillDamage);
+            }
         }
         catch (System.OperationCanceledException) { }
         finally
         {
+            // 경고 타일 정리
             ClearWarning(dangerCells);
-            Destroy(gameObject); // 자폭
+
+            // 보스 사망 애니메이션 실행
+            if (bossAnimation != null)
+            {
+                bossAnimation.SetTrigger("Dead");
+            }
+
+            // 3초 대기 후 소멸
+            try
+            {
+                await UniTask.Delay(3000, cancellationToken: token);
+            }
+            catch (System.OperationCanceledException) { }
+
+            Destroy(gameObject); // 파괴
         }
     }
 
@@ -352,12 +387,12 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         }
 
         BossAction bossAction;
-        if (distance < 5)
+        if (distance < 3)
             bossAction = BossAction.Pattern1;
-        else if (distance < 10)
-            bossAction = BossAction.Pattern2;
-        else
+        else if (distance < 8)
             bossAction = BossAction.Pattern3;
+        else
+            bossAction = BossAction.Pattern2;
 
         await UniTask.Delay(patternDelay, cancellationToken: cancelToken.Token);
 
@@ -386,9 +421,9 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         }
 
         BossAction bossAction;
-        if (distance < 5)
+        if (distance < 3)
             bossAction = BossAction.Pattern1;
-        else if (distance < 10)
+        else if (distance < 6)
             bossAction = BossAction.Pattern2;
         else
             bossAction = BossAction.Pattern3;
@@ -435,32 +470,38 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             if (ringCells.Count == 0) continue;
 
             ShowWarning(ringCells);
+            bool warningCleared = false;
             try
             {
                 await UniTask.Delay(shockwaveStepMs, cancellationToken: cancelToken.Token);
 
                 if (attack2Effect != null)
                 {
-                    var go = SpawnAttackEffectFacingBoss(attack2Effect, transform.position);
-                    var go2 = SpawnAttackEffectFacingBoss(attack1Effect, transform.position);
-                    if (go != null)
+                    // 각 경고표시 칸마다 개별적으로 이펙트 생성 및 스케일 축소
+                    foreach (var cell in ringCells)
                     {
-                        go.transform.localScale *= r;
-                        Destroy(go, shockwaveEffectLifetimeSec);
-                        go.transform.position += new Vector3(0, -0.5f, 0);
-                    }
-                    if (go2 != null)
-                    {
-                        go2.transform.localScale *= (float)r / 2;
-                        Destroy(go2, shockwaveEffectLifetimeSec);
+                        Vector3 cellWorldPos = GridSystem.Instance.GridToWorld(cell) + new Vector3(0.5f, 0.5f, 0f);
+                        var go = SpawnAttackEffectFacingBoss(attack2Effect, cellWorldPos);
+                        if (go != null)
+                        {
+                            go.transform.localScale = Vector3.one * 0.7f; // 격자 1칸에 맞춰 작게 조절
+                            Destroy(go, shockwaveEffectLifetimeSec);
+                        }
                     }
                 }
+
+                // 시각적 경고를 먼저 해제
+                ClearWarning(ringCells);
+                warningCleared = true;
 
                 DamagePlayerIfInCells(ringCells, shockwaveDamage);
             }
             finally
             {
-                ClearWarning(ringCells);
+                if (!warningCleared)
+                {
+                    ClearWarning(ringCells);
+                }
             }
         }
 
@@ -472,12 +513,12 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     //=============================== 패턴2 : 순간이동 후 3x3 or 5x5 공격 ====================================
     protected override async UniTask Phase1Pattern2()
     {
-        await ExecuteSwingPattern(attack1Range, attack1Width, 1f, 1000, 500);
+        await ExecuteSwingPattern(attack1Range, attack1Width, 1.3f, 1000, 500); // 1.0f -> 1.3f로 확대
     }
 
     protected override async UniTask Phase2Pattern2()
     {
-        await ExecuteSwingPattern(phase2Attack1Range, phase2Attack1Width, phase2Attack1EffectScale, 500, 250);
+        await ExecuteSwingPattern(phase2Attack1Range, phase2Attack1Width, phase2Attack1EffectScale * 1.2f, 500, 250); // 배율 1.2배 더 확대
     }
 
     private async UniTask ExecuteSwingPattern(int range, int width, float effectScaleMultiplier, int disappearMs, int appearMs)
@@ -486,6 +527,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
         var hitCells = BuildSwingCells(gridPos, dir, range, width);
         ShowWarning(hitCells);
+        bool warningCleared = false;
         try
         {
             bossAnimation.SetTrigger("Attack1");
@@ -498,11 +540,18 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
                 Destroy(effect, 1f);
             }
 
+            // 시각적 경고를 먼저 해제
+            ClearWarning(hitCells);
+            warningCleared = true;
+
             DamagePlayerIfInCells(hitCells, attack1Damage);
         }
         finally
         {
-            ClearWarning(hitCells);
+            if (!warningCleared)
+            {
+                ClearWarning(hitCells);
+            }
         }
 
         await UniTask.Delay(disappearMs == 500 ? 100 : 200, cancellationToken: cancelToken.Token);
@@ -561,6 +610,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         }
 
         ShowWarning(cells);
+        bool warningCleared = false;
         try
         {
             await UniTask.Delay(warnMs, cancellationToken: cancelToken.Token);
@@ -569,19 +619,41 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             {
                 var worldPos = GridSystem.Instance.GridToWorld(centerCell);
                 var go = Instantiate(crystalPrefab, worldPos, Quaternion.identity);
-                var c = go.GetComponent<Crystal>();
-                if (c != null) 
-                    c.Setup(tint, scale, chasingCrystalLifetimeSec);
-                else 
-                    Destroy(go, chasingCrystalLifetimeSec);
+                
+                Phase2Crystal p2c = go.GetComponent<Phase2Crystal>();
+                if (p2c != null)
+                {
+                    p2c.SetupWithGridBlock(tint, scale, chasingCrystalLifetimeSec, centerCell);
+                }
+                else
+                {
+                    Crystal c = go.GetComponent<Crystal>();
+                    if (c != null) 
+                        c.Setup(tint, scale, chasingCrystalLifetimeSec);
+                    else 
+                        Destroy(go, chasingCrystalLifetimeSec);
+                }
+
+                // 크리스탈 낙하 시 카메라 셰이크(흔들림) 효과 추가
+                if (CameraFollow.Instance != null)
+                {
+                    CameraFollow.Instance.Shake(0.15f, 0.25f);
+                }
             }
+
+            // 시각적 경고를 먼저 해제
+            ClearWarning(cells);
+            warningCleared = true;
 
             DamagePlayerIfInCells(cells, damage);
         }
         catch (System.OperationCanceledException) { }
         finally
         {
-            ClearWarning(cells);
+            if (!warningCleared)
+            {
+                ClearWarning(cells);
+            }
         }
     }
 
