@@ -7,5 +7,7 @@ public class MapScroll : ItemBase
 	{
 		Debug.LogError("맵스크롤 사용");
 		FogRenderer.Instance.SetTileExplored();
+		Vector2Int playerPos = GridSystem.Instance.WorldToGrid(GameManager.Instance.player.transform.position);
+		VisionSystem.Instance.UpdateVision(playerPos);
 	}
 }
