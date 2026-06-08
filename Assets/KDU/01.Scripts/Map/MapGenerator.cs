@@ -215,10 +215,20 @@ public class MapGenerator : Singleton<MapGenerator>
             // 특수 방: 층당 Special 0~1, Secret 0~1 (GDD 6.2). 빌더가 막다른 가지로 따로 부착.
             float specialChance = config != null ? config.specialRoomChance : 0f;
             float secretChance = config != null ? config.secretRoomChance : 0f;
+            // 하위 종류는 여기서 1회 결정(중앙 단일 진실, GDD 6.2.1/6.2.2 균등 1/n).
+            // 이후 ChestSpawner(상자류)·EnemySpawner(몬스터 방 골렘) 등이 이 값을 읽어 분담.
             if (rng.Chance(specialChance))
-                rooms.Add(new RoomData { type = RoomType.Special, sizeCategory = SizeCategory.Normal });
+            {
+                var kind = (SpecialRoomKind)rng.Range(0, System.Enum.GetValues(typeof(SpecialRoomKind)).Length);
+                rooms.Add(new RoomData { type = RoomType.Special, sizeCategory = SizeCategory.Normal, specialKind = kind });
+                Debug.Log($"[MapGenerator] depth={depth} Special 방 종류 = {kind}");
+            }
             if (rng.Chance(secretChance))
-                rooms.Add(new RoomData { type = RoomType.Secret, sizeCategory = SizeCategory.Normal });
+            {
+                var kind = (SecretRoomKind)rng.Range(0, System.Enum.GetValues(typeof(SecretRoomKind)).Length);
+                rooms.Add(new RoomData { type = RoomType.Secret, sizeCategory = SizeCategory.Normal, secretKind = kind });
+                Debug.Log($"[MapGenerator] depth={depth} Secret 방 종류 = {kind}");
+            }
         }
 
         rooms.Add(new RoomData { type = RoomType.Exit, sizeCategory = SizeCategory.Normal });

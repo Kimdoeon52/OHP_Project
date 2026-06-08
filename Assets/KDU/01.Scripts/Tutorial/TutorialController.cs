@@ -47,6 +47,10 @@ public class TutorialController : MonoBehaviour
 
         [Tooltip("이 단계 진입 시 인벤토리 패널을 닫는다(예: 둘러보기 전 시야 확보).")]
         public bool closeInventory;
+
+        [Tooltip("이 단계 동안 플레이어 입력(이동/공격)과 인벤토리 토글(Tab)을 막는다. " +
+                 "'아무 키나 누르세요' 같은 안내 단계용 — 키를 눌러도 움직이거나 인벤이 안 열림.")]
+        public bool lockPlayerInput;
     }
 
     [Header("참조")]
@@ -54,6 +58,8 @@ public class TutorialController : MonoBehaviour
     [SerializeField] private GridPlayer player;
     [Tooltip("인벤토리 패널 토글(없으면 자동 검색) — closeInventory 단계에서 닫는 데 사용.")]
     [SerializeField] private PrototypeRT.InventoryPanelToggle inventoryToggle;
+    [Tooltip("플레이어 입력(없으면 자동 검색) — lockPlayerInput 단계에서 이동/공격 차단.")]
+    [SerializeField] private GridPlayerInput playerInput;
 
     [Header("단계")]
     [SerializeField] private List<Step> steps = new();
@@ -112,6 +118,7 @@ public class TutorialController : MonoBehaviour
         if (player == null) player = FindFirstObjectByType<GridPlayer>();
         if (inventory == null) inventory = FindFirstObjectByType<PrototypeRT.InventoryController>();
         if (inventoryToggle == null) inventoryToggle = FindFirstObjectByType<PrototypeRT.InventoryPanelToggle>();
+        if (playerInput == null) playerInput = FindFirstObjectByType<GridPlayerInput>();
         if (cameraFollow == null) cameraFollow = CameraFollow.Instance;
 
         foreach (var s in steps)
@@ -203,10 +210,10 @@ public class TutorialController : MonoBehaviour
         switch (s.condition)
         {
             case Condition.PressAdvanceKey:
-            case Condition.MapScrollUsed:    // 맵 스크롤 만들면 만들 예정
-                return Input.anyKey;
-            case Condition.InventoryOpened:
-                return Input.GetKeyDown(KeyCode.Tab);
+            case Condition.MapScrollUsed:    // 맵 스크롤 만들면 만들 예정 — 아무 키 수동 진행.
+                return Input.anyKeyDown;
+            case Condition.InventoryOpened:  // 플레이어가 실제로 인벤토리를 열면 완료 (Tab 충돌 제거).
+                return inventoryToggle != null && inventoryToggle.IsOpen;
 
             case Condition.CameraPanned:
                 return CameraFollow.Instance != null && CameraFollow.Instance.HasPannedSinceArm;
@@ -261,6 +268,9 @@ public class TutorialController : MonoBehaviour
         // 이 단계에서 인벤토리 패널 닫기(둘러보기 전 시야 확보 등).
         if (Current.closeInventory && inventoryToggle != null) inventoryToggle.SetOpen(false);
 
+        // 이 단계 동안 플레이어 입력/인벤 토글 잠금 여부 적용.
+        SetPlayerInputLocked(Current.lockPlayerInput);
+
         if (Current.highlight != null) Current.highlight.SetActive(true);
 
         if (hintUI != null)
@@ -270,6 +280,13 @@ public class TutorialController : MonoBehaviour
             if (compact) hintUI.ShowPrompt(Current.hint);
             else hintUI.ShowHint(Current.hint);
         }
+    }
+
+    /// <summary>플레이어 입력(이동/공격)·인벤토리 토글(Tab) 잠금 — 안내 단계에서 키 입력 부작용 차단.</summary>
+    private void SetPlayerInputLocked(bool locked)
+    {
+        if (playerInput != null) playerInput.enabled = !locked;
+        if (inventoryToggle != null) inventoryToggle.enabled = !locked;
     }
 
     private void ResetStepFlags()
@@ -288,6 +305,7 @@ public class TutorialController : MonoBehaviour
 
         if (Current != null && Current.highlight != null) Current.highlight.SetActive(false);
         if (hintUI != null) hintUI.HideHint();
+        SetPlayerInputLocked(false);   // 1층으로 넘어가기 전 입력 복구.
         // 인벤 비우기
         ClearInventory();
         KeyInventory.Instance?.ClearAll();
