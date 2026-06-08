@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 /// 마지막(ReachExit) 단계에서 인벤토리/열쇠를 비우고 1층으로 넘긴다.
 ///
 /// A그룹(즉시 구현) 조건만 실제 판정한다. B그룹(MapScrollUsed / InventoryOpened)은
-/// 팀원 이벤트 훅이 붙기 전까지 advanceKey 수동 진행으로 골격이 끝까지 돌아가게 둔다.
+/// 팀원 이벤트 훅이 붙기 전까지 아무 키 입력(anyKeyDown) 수동 진행으로 골격이 끝까지 돌아가게 둔다.
 /// 콘텐츠(적 배치 등)가 아직 없을 때 전체 흐름을 점검하려면 debugSkipKey 로 강제 진행.
 /// </summary>
 public class TutorialController : MonoBehaviour
@@ -38,6 +38,18 @@ public class TutorialController : MonoBehaviour
 
         [Tooltip("DefeatAndGetKey 조건용 — 처치해야 할 적 수.")]
         public int killCount = 1;
+
+        [Tooltip("켜면 메인 패널을 숨기고 하단 작은 안내문만 띄워 자유롭게 둘러보게 함. " +
+                 "condition 과 무관하게 스페이스를 눌러야 다음으로 진행(둘러보기 단계용).")]
+        public bool freeLook;
+
+        [Tooltip("켜면 메인 패널 대신 하단 작은 안내문으로 표시(시야 확보용). " +
+                 "freeLook 과 달리 완료 조건은 그대로(EnterRegion 등) — 이동 단계용.")]
+        public bool compactHint;
+
+        [Tooltip("이 단계 진입 시 열 문들 — 닫힌 GridDoor(게이트)로 다른 방을 막아두고, " +
+                 "해당 단계에서 길을 연다(방향 강제). 게이트 문: Normal + autoOpenWhenAdjacent=false.")]
+        public List<GridDoor> openDoors = new();
     }
 
     [Header("참조")]
@@ -46,10 +58,10 @@ public class TutorialController : MonoBehaviour
 
     [Header("단계")]
     [SerializeField] private List<Step> steps = new();
-    [Tooltip("시작/임시 수동 진행에 쓰는 키.")]
-    [SerializeField] private KeyCode advanceKey = KeyCode.Space;
     [Tooltip("디버그용 — 조건과 무관하게 현재 단계를 강제로 넘김. None 이면 비활성.")]
     [SerializeField] private KeyCode debugSkipKey = KeyCode.None;
+    [Tooltip("단계 진입 직후 이 시간(초) 동안은 완료 판정을 막음 — 직전 입력이 다음 단계를 즉시 넘기는 것 방지.")]
+    [SerializeField, Min(0f)] private float advanceCooldown = 1f;
 
     [Header("시작 SafeRoom Arm — 플래닝 카메라(줌/팬) + 선택적 타이머 정지")]
     [Tooltip("시작 SafeRoom 영역 콜라이더. 이 안의 walkable 셀을 SafeRoom 으로 Arm. 플레이어는 이 안에서 시작해야 함.")]
@@ -67,6 +79,7 @@ public class TutorialController : MonoBehaviour
 
     private int _index = -1;
     private bool _finished;
+    private float _stepStartTime;   // 현재 단계 진입 시각(unscaled) — advanceCooldown 판정용.
 
     // 이벤트 기반 진행 플래그 — 단계 진입 시 리셋.
     private int _kills;
@@ -146,6 +159,10 @@ public class TutorialController : MonoBehaviour
         if (_finished || Current == null) return;
 
         bool forced = debugSkipKey != KeyCode.None && Input.GetKeyDown(debugSkipKey);
+
+        // 단계 진입 직후 짧은 입력 잠금 — 직전 단계 입력이 곧바로 다음 단계를 넘기는 것 방지.
+        if (!forced && Time.unscaledTime - _stepStartTime < advanceCooldown) return;
+
         if (!forced && !IsCurrentComplete()) return;
 
         if (Current.condition == Condition.ReachExit) Finish();
@@ -155,12 +172,16 @@ public class TutorialController : MonoBehaviour
     private bool IsCurrentComplete()
     {
         var s = Current;
+
+        // 자유 둘러보기 단계: 둘러보는 키(휠/드래그)로 넘어가지 않게 스페이스로만 진행.
+        if (s.freeLook) return Input.GetKeyDown(KeyCode.Space);
+
         switch (s.condition)
         {
             case Condition.PressAdvanceKey:
             case Condition.MapScrollUsed:    // B: TODO 전용 이벤트로 교체. 임시 수동.
             case Condition.InventoryOpened:  // B: TODO 전용 이벤트로 교체. 임시 수동.
-                return Input.GetKeyDown(advanceKey);
+                return Input.anyKeyDown;
 
             case Condition.CameraPanned:
                 return CameraFollow.Instance != null && CameraFollow.Instance.HasPannedSinceArm;
@@ -197,6 +218,7 @@ public class TutorialController : MonoBehaviour
     private void AdvanceToNext()
     {
         _index++;
+        _stepStartTime = Time.unscaledTime;
         ResetStepFlags();
 
         if (_index >= steps.Count)
@@ -205,7 +227,16 @@ public class TutorialController : MonoBehaviour
             return;
         }
 
-        if (hintUI != null) hintUI.ShowHint(Current.hint);
+        // 이 단계에서 길 열기 — 다른 방을 막아둔 게이트 문을 연다(방향 강제).
+        if (Current.openDoors != null)
+            foreach (var door in Current.openDoors)
+                if (door != null) door.Open();
+
+        if (hintUI != null)
+        {
+            if (Current.freeLook || Current.compactHint) hintUI.ShowPrompt(Current.hint);
+            else hintUI.ShowHint(Current.hint);
+        }
     }
 
     private void ResetStepFlags()

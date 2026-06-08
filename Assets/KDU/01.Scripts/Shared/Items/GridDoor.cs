@@ -63,6 +63,9 @@ public class GridDoor : MonoBehaviour
     [SerializeField] private DoorKind sceneKind = DoorKind.Secret;
     [Tooltip("자체 초기화 시 통로 방향 — true=좌우 통로(세로 벽 사이), false=상하 통로.")]
     [SerializeField] private bool sceneHorizontalPassage = true;
+    [Tooltip("자체 초기화 SafeExit 전용 — 안전방 '바깥'(나가는 쪽) 방향. 이 방향 이웃 셀을 바깥 셀로 등록해 " +
+             "플레이어가 나가 멀어지면 영구 잠금. 예: 안전방이 왼쪽이면 (1,0).")]
+    [SerializeField] private Vector2Int sceneSafeExitOutsideDir = Vector2Int.right;
 
     private SpriteRenderer _renderer;
     private GridPlayer _player;
@@ -139,6 +142,9 @@ public class GridDoor : MonoBehaviour
                 ? GridSystem.Instance.WorldToGrid(transform.position)
                 : Vector2Int.zero;
             Initialize(cell, sceneHorizontalPassage, sceneKind);
+            // 씬 배치 SafeExit 도 바깥 셀을 등록해야 '나가면 잠금'이 작동 (MapGenerator 대체).
+            if (sceneKind == DoorKind.SafeExit)
+                ConfigureSafeExit(cell + sceneSafeExitOutsideDir);
         }
 
         UpdateVisibility();
