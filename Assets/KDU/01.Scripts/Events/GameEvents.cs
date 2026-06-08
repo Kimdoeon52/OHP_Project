@@ -40,6 +40,7 @@ public static class GameEvents
     // 게임 상태
     public static Action OnPlayerDied;
     public static Action OnLevelComplete;
+    public static Action OnBossDefeated;    // 보스 처치 — 맵 출구 개방 등이 구독
 
     public static void ClearAllEvents()
     {
@@ -64,6 +65,7 @@ public static class GameEvents
         OnVisionUpdated = null;
         OnPlayerDied = null;
         OnLevelComplete = null;
+        OnBossDefeated = null;
         CombatTextCriticalContext.Clear();
     }
 }

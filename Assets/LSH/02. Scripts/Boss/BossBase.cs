@@ -230,9 +230,12 @@ public class BossBase : EnemyNormalBASE
         return finalDamage >= Mathf.CeilToInt(maxDamage * 0.8f);
     }
 
-    protected virtual async UniTask OnDeath()
+    protected virtual UniTask OnDeath()
     {
-        // 김도언씨는 여길 보세요.
+        // 보스 처치 시점 — 구독자에게 알림. MapGenerator 가 보스 출구 마커를 이때 스폰한다.
+        // (서브클래스는 죽음 연출 끝에서 base.OnDeath() 를 호출해 이 알림이 발행되게 한다.)
+        GameEvents.OnBossDefeated?.Invoke();
+        return UniTask.CompletedTask;
     }
 
     protected virtual void EnterPhase2()

@@ -34,6 +34,9 @@ public class MapGenerator : Singleton<MapGenerator>
     [SerializeField] private GridExit exitPrefab;
     private GridExit _currentExit;
 
+    // 보스 층 출구 셀 — 보스층은 생성 시점이 아니라 보스 처치(OnBossDefeated) 때 출구를 연다.
+    private Vector2Int? _pendingBossExitCell;
+
     [Tooltip("문 프리팹 — 1칸 통로(벽이 양옆으로 끊긴 입구)마다 배치")]
     [SerializeField] private GridDoor doorPrefab;
     private readonly List<GridDoor> _currentDoors = new();
@@ -83,6 +86,24 @@ public class MapGenerator : Singleton<MapGenerator>
         base.Awake();
     }
 
+    private void OnEnable()
+    {
+        GameEvents.OnBossDefeated += OnBossDefeated;
+    }
+
+    private void OnDisable()
+    {
+        GameEvents.OnBossDefeated -= OnBossDefeated;
+    }
+
+    /// <summary>보스 처치 시 호출 — 보스층에서 미뤄둔 출구 마커를 이때 스폰한다 (GDD 5.1/6.2: Exit 는 보스 처치 시 열림).</summary>
+    private void OnBossDefeated()
+    {
+        if (!_pendingBossExitCell.HasValue) return;
+        SpawnExitMarker(_pendingBossExitCell);
+        _pendingBossExitCell = null;
+    }
+
     /// <summary>
     /// 시드 기반 한 층의 맵을 생성한다.
     /// </summary>
@@ -100,6 +121,7 @@ public class MapGenerator : Singleton<MapGenerator>
         SecretGatewayCells.Clear();
         LockedGatewayCells.Clear();
         SafeGatewayCells.Clear();
+        _pendingBossExitCell = null;
         DestroyCurrentExit();
         DestroyCurrentDoors();
         DestroyCurrentKeys();
@@ -118,7 +140,8 @@ public class MapGenerator : Singleton<MapGenerator>
             if (bossRooms == null) return null;
             CurrentRooms = bossRooms;
             CurrentFeeling = null;
-            SpawnExitMarker(bossExitCell);
+            // 출구는 지금 띄우지 않는다 — 보스 처치(GameEvents.OnBossDefeated) 시 OnBossDefeated 핸들러가 스폰.
+            _pendingBossExitCell = bossExitCell;
             if (Spawner != null) Spawner.Spawn(bossRooms, depth, Rng);
             return bossRooms;
         }
