@@ -7,7 +7,6 @@ public class SpecialPattern : MonoBehaviour
 {
     [Header("패시브 오브젝트 프리팹")]
     [SerializeField] private GameObject crystalPrefab;
-    [SerializeField] private GameObject miniSkullPrefab;
 
     [Header("크리스탈 비 설정")]
     [SerializeField] private int rainTickMs = 300;
@@ -18,15 +17,9 @@ public class SpecialPattern : MonoBehaviour
     [SerializeField] private float crystalScale = 1f;
     [SerializeField] private float crystalLifetimeSec = 1.5f;
 
-    [Header("미니해골 소환 설정")]
-    [SerializeField] private int miniSkullCount = 2;
-    [SerializeField] private int miniSkullLifetimeMs = 10000;
-    [SerializeField] private int skullSearchRadius = 4;
-
     private BossBase boss;
     private CancellationTokenSource cts;
     private List<Vector2Int> walkableCellsCache;
-    private readonly List<GameObject> activeMiniSkulls = new List<GameObject>();
     private bool isRunning = false;
 
     private void Awake()
@@ -44,7 +37,6 @@ public class SpecialPattern : MonoBehaviour
         CacheWalkableCells();
 
         CrystalRainLoop().Forget();
-        MiniSkullPassiveLoop().Forget();
     }
 
     public void StopSpecialPattern()
@@ -58,8 +50,6 @@ public class SpecialPattern : MonoBehaviour
             cts.Dispose();
             cts = null;
         }
-
-        DestroyAllMiniSkulls();
     }
 
     private void OnDestroy()
@@ -103,6 +93,7 @@ public class SpecialPattern : MonoBehaviour
         if (boss == null) return;
 
         boss.ShowWarning(targetPos);
+        bool warningCleared = false;
         try
         {
             await UniTask.Delay(crystalWarnMs, cancellationToken: cts.Token);
@@ -111,95 +102,109 @@ public class SpecialPattern : MonoBehaviour
             {
                 Vector3 pos = GridSystem.Instance.GridToWorld(targetPos);
                 GameObject go = Instantiate(crystalPrefab, pos, Quaternion.identity);
-                Crystal c = go.GetComponent<Crystal>();
-                if (c != null)
+                
+                Phase2Crystal p2c = go.GetComponent<Phase2Crystal>();
+                if (p2c != null)
                 {
-                    c.Setup(crystalTint, crystalScale, crystalLifetimeSec);
+                    p2c.SetupWithGridBlock(crystalTint, crystalScale, crystalLifetimeSec, targetPos);
                 }
                 else
                 {
-                    Destroy(go, crystalLifetimeSec);
+                    Crystal c = go.GetComponent<Crystal>();
+                    if (c != null)
+                    {
+                        c.Setup(crystalTint, crystalScale, crystalLifetimeSec);
+                    }
+                    else
+                    {
+                        Destroy(go, crystalLifetimeSec);
+                    }
                 }
+            }
+
+            // 즉각적인 타격을 위해 시각적 경고를 먼저 해제
+            if (boss != null)
+            {
+                boss.ClearWarning(targetPos);
+                warningCleared = true;
             }
 
             if (boss.Player != null && !boss.Player.IsDead && boss.Player.GridPosition == targetPos)
             {
                 boss.Player.TakeDamage(crystalDamage);
+
+                // 끼임 방지: 크리스탈에 맞은 플레이어는 근처 이동 가능한 타일로 튕겨냄
+                Vector2Int? knockbackTarget = FindKnockbackTargetNear(targetPos);
+                if (knockbackTarget.HasValue && boss.Player.Movement != null)
+                {
+                    boss.Player.Movement.Knockback(knockbackTarget.Value);
+                    Debug.Log($"[SpecialPattern] 플레이어가 크리스탈에 맞음 -> {knockbackTarget.Value}로 튕겨냄 (끼임 방지)");
+                }
             }
         }
         catch (System.OperationCanceledException) { }
         finally
         {
-            if (boss != null)
+            if (boss != null && !warningCleared)
             {
                 boss.ClearWarning(targetPos);
             }
         }
     }
 
-    private async UniTask MiniSkullPassiveLoop()
+    private Vector2Int? FindKnockbackTargetNear(Vector2Int playerPos)
     {
-        try
+        if (GridSystem.Instance == null) return null;
+
+        // 4방향 인접 격자 우선 탐색
+        var directions = new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+        ShuffleDirections(directions);
+
+        foreach (var dir in directions)
         {
-            while (cts != null && !cts.IsCancellationRequested)
+            var candidate = playerPos + dir;
+            if (GridSystem.Instance.IsInBounds(candidate) && 
+                GridSystem.Instance.IsWalkable(candidate))
             {
-                if (miniSkullPrefab != null)
+                // 다른 몬스터나 보스가 점유 중이 아닌지 체크
+                if (TurnManager.Instance != null && TurnManager.Instance.GetEntityAt(candidate) == null)
                 {
-                    var spawnCells = PickRandomNearbyWalkable(miniSkullCount, skullSearchRadius);
-                    foreach (var cell in spawnCells)
-                    {
-                        var world = GridSystem.Instance.GridToWorld(cell);
-                        var skull = Instantiate(miniSkullPrefab, world, Quaternion.identity);
-                        activeMiniSkulls.Add(skull);
-                    }
+                    return candidate;
                 }
-                await UniTask.Delay(miniSkullLifetimeMs, cancellationToken: cts.Token);
-
-                activeMiniSkulls.RemoveAll(s => s == null);
             }
         }
-        catch (System.OperationCanceledException) { }
-    }
 
-    private List<Vector2Int> PickRandomNearbyWalkable(int count, int searchRadius)
-    {
-        var candidates = new List<Vector2Int>();
-        if (boss == null) return candidates;
+        // 대각선 4방향 2차 탐색
+        var diagonalDirs = new[] {
+            new Vector2Int(1, 1), new Vector2Int(1, -1),
+            new Vector2Int(-1, 1), new Vector2Int(-1, -1)
+        };
+        ShuffleDirections(diagonalDirs);
 
-        Vector2Int center = boss.GridPosition;
-
-        for (int dx = -searchRadius; dx <= searchRadius; dx++)
+        foreach (var dir in diagonalDirs)
         {
-            for (int dy = -searchRadius; dy <= searchRadius; dy++)
+            var candidate = playerPos + dir;
+            if (GridSystem.Instance.IsInBounds(candidate) && 
+                GridSystem.Instance.IsWalkable(candidate) )
             {
-                var c = center + new Vector2Int(dx, dy);
-                
-                // 보스 위치 제외
-                if (c.x >= center.x && c.x < center.x + boss.BossSize.x &&
-                    c.y >= center.y && c.y < center.y + boss.BossSize.y)
-                    continue;
-
-                if (GridSystem.Instance.IsWalkable(c)) 
-                    candidates.Add(c);
+                if (TurnManager.Instance != null && TurnManager.Instance.GetEntityAt(candidate) == null)
+                {
+                    return candidate;
+                }
             }
         }
 
-        var picked = new List<Vector2Int>();
-        for (int i = 0; i < count && candidates.Count > 0; i++)
-        {
-            int idx = Random.Range(0, candidates.Count);
-            picked.Add(candidates[idx]);
-            candidates.RemoveAt(idx);
-        }
-        return picked;
+        return null;
     }
 
-    private void DestroyAllMiniSkulls()
+    private void ShuffleDirections(Vector2Int[] array)
     {
-        foreach (var skull in activeMiniSkulls)
+        for (int i = array.Length - 1; i > 0; i--)
         {
-            if (skull != null) Destroy(skull);
+            int j = Random.Range(0, i + 1);
+            var temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
         }
-        activeMiniSkulls.Clear();
     }
 }

@@ -19,9 +19,6 @@ using System.Collections.Generic;
  */
 public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 {
-    [Header("HP 페이즈 경계")]
-    [SerializeField] private int phase3HpThreshold = 20;
-
     [Header("배회 설정")]
     [SerializeField] private float wanderMoveDuration = 0.25f; // DOTween 이동 한 칸 소요 시간(초)
     [SerializeField] private int wanderStepIntervalMs = 500;   // 배회 한 칸 이동 간격

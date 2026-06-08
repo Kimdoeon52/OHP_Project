@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
@@ -173,7 +173,7 @@ public class BossBase : EnemyNormalBASE
         if (currentHp <= 0)
         {
             isDying = true;
-            OnDeath();
+            OnDeath().Forget();
         }
     }
 
@@ -202,7 +202,6 @@ public class BossBase : EnemyNormalBASE
 
     protected virtual async UniTask OnDeath()
     {
-        Destroy(gameObject);
     }
 
     protected virtual void EnterPhase2()

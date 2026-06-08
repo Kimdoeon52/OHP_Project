@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,6 +13,8 @@ public class DialogManager : MonoBehaviour
     [Header("연출에니메이션 (폴백용)")]
     [SerializeField] GameObject animeEffect;
     [SerializeField] GameObject bossName;
+    [Header("연출 프리팹 생성 부모 (비우면 자기 자신)")]
+    [SerializeField] Transform effectParent;
 
     private string[] activeDialogText;
     private int index = 0;  
@@ -36,40 +38,86 @@ public class DialogManager : MonoBehaviour
         // 기존에 스폰된 이펙트 잔재 정리
         ClearSpawnedEffects();
 
+        Transform parent = effectParent != null ? effectParent : transform;
+
         if (data != null)
         {
             activeDialogText = data.dialogueLines;
+            Debug.Log($"[DialogManager] StartDialog: 대화 데이터 주입됨. 대사 개수 = {activeDialogText?.Length}");
             
             // 데이터에 기입된 새로운 프리팹 연출 스폰
             if (data.AnimeEffect != null)
             {
-                spawnedAnimeEffect = Instantiate(data.AnimeEffect, transform);
+                spawnedAnimeEffect = Instantiate(data.AnimeEffect, parent);
+                RectTransform rect = spawnedAnimeEffect.GetComponent<RectTransform>();
+                if (rect != null)
+                {
+                    rect.localScale = Vector3.one;
+                    rect.anchoredPosition = Vector2.zero;
+                }
                 spawnedAnimeEffect.SetActive(false);
+                Debug.Log($"[DialogManager] AnimeEffect 스폰 완료 (RectTransform 초기화): {data.AnimeEffect.name} under parent: {parent.name}");
             }
             if (data.BossName != null)
             {
-                spawnedBossName = Instantiate(data.BossName, transform);
+                spawnedBossName = Instantiate(data.BossName, parent);
+                RectTransform rect = spawnedBossName.GetComponent<RectTransform>();
+                if (rect != null)
+                {
+                    rect.localScale = Vector3.one;
+                    rect.anchoredPosition = Vector2.zero;
+                }
                 spawnedBossName.SetActive(false);
+                Debug.Log($"[DialogManager] BossName 스폰 완료 (RectTransform 초기화): {data.BossName.name} under parent: {parent.name}");
             }
         }
         else
         {
             activeDialogText = dialogText;
+            Debug.LogWarning("[DialogManager] 주입된 대화 데이터가 없어 기본 대화(dialogText)를 사용합니다.");
+        }
+
+        // 1. 대화창 게임 오브젝트 활성화 (OnEnable 실행 유도)
+        gameObject.SetActive(true);
+
+        // 2. 대화 시작 상태 초기화 (트리거 진입이므로 지연 없이 즉시 입력 활성화)
+        index = 0;
+        isDialogActive = true; 
+        ShowDialog();
+
+        // 3. 켜지자마자 첫 번째 대사가 바로 표시되도록 설정
+        if (activeDialogText != null && activeDialogText.Length > 0)
+        {
+            dialog.text = activeDialogText[0];
+            index = 1; // 0번 대사가 표시되었으므로 다음 대사는 index = 1
+            Debug.Log($"[DialogManager] 첫 번째 대사 출력 완료: \"{dialog.text}\" (다음 index = {index})");
+        }
+        else
+        {
+            dialog.text = "";
+            Debug.LogWarning("[DialogManager] activeDialogText가 비어있거나 없습니다.");
         }
     }
 
     private void Update()
     {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Debug.Log($"[DialogManager] 마우스 클릭 감지! isDialogActive={isDialogActive}, index={index}, activeDialogText.Length={(activeDialogText != null ? activeDialogText.Length.ToString() : "null")}");
+        }
+
         if (Input.GetMouseButtonDown(0) && isDialogActive)
         {
             if (activeDialogText != null && index < activeDialogText.Length)
             {
                 dialog.text = activeDialogText[index];
+                Debug.Log($"[DialogManager] 다음 대사 출력: \"{dialog.text}\" (index={index})");
                 index++;
             }
             else
             {
                 isDialogActive = false;
+                Debug.Log("[DialogManager] 모든 대화 완료. EndDialogSequence 시작.");
                 EndDialogSequence().Forget();
             }
         }
@@ -93,6 +141,9 @@ public class DialogManager : MonoBehaviour
 
         OnDialogComplete?.Invoke();
         OnDialogComplete = null;
+        
+        // 대화 종료 후 오브젝트 비활성화
+        gameObject.SetActive(false);
     }
 
     private void ClearSpawnedEffects()
@@ -119,28 +170,24 @@ public class DialogManager : MonoBehaviour
 
     public void OnEnable()
     {
-        index = 0; // 대화 시작 시 index 초기화
-        isDialogActive = false; // 마우스 입력 프레임 스킵 가드를 위해 처음에는 false로 설정
-        ShowDialog();
-
-        // 만약 StartDialog가 아니라 단순 SetActive(true)로 켜졌을 때의 폴백 처리
+        // StartDialog를 거치지 않고 직접 활성화되었을 때의 폴백 처리
         if (activeDialogText == null)
         {
             activeDialogText = dialogText;
+            index = 0;
+            isDialogActive = true;
+            ShowDialog();
+
+            if (activeDialogText != null && activeDialogText.Length > 0)
+            {
+                dialog.text = activeDialogText[0];
+                index = 1;
+            }
+            else
+            {
+                dialog.text = "";
+            }
         }
-
-        ////켜지자마자 첫 번째 대사가 바로 표시되도록 설정
-        //if (activeDialogText != null && activeDialogText.Length > 0)
-        //{
-        //    dialog.text = activeDialogText[0];
-        //    index = 1;
-        //}
-        //else
-        //{
-        //    dialog.text = "";
-        //}
-
-        EnableDialogInputAsync().Forget();
     }
 
     private void OnDisable()
@@ -148,23 +195,21 @@ public class DialogManager : MonoBehaviour
         activeDialogText = null;
     }
 
-    // 활성화된 프레임에서의 즉시 클릭을 막기 위해 한 프레임 지연 후 입력 활성화
-    private async UniTask EnableDialogInputAsync()
-    {
-        await UniTask.Yield();
-        isDialogActive = true;
-    }
-
     private async UniTask Effect()//연출 애니메이션
     {
+        Debug.Log("[DialogManager] Effect 연출 애니메이션 시작");
+        
         if (spawnedAnimeEffect != null) spawnedAnimeEffect.SetActive(true);
         else if (animeEffect != null) animeEffect.SetActive(true);
 
-        await UniTask.Delay(1000);
+        // 일시 정지(Time.timeScale=0) 상태여도 연출이 진행될 수 있도록 Realtime 지연 처리
+        await UniTask.Delay(1000, delayType: DelayType.Realtime);
 
         if (spawnedBossName != null) spawnedBossName.SetActive(true);
         else if (bossName != null) bossName.SetActive(true);
 
-        await UniTask.Delay(2000);
+        await UniTask.Delay(2000, delayType: DelayType.Realtime);
+        
+        Debug.Log("[DialogManager] Effect 연출 애니메이션 완료");
     }
 }
