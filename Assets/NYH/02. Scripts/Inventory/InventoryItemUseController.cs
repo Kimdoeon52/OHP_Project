@@ -59,6 +59,10 @@ namespace PrototypeRT
                 Predicate = data => data is PurifyScroll,
                 Handler = item => targetingController != null && targetingController.BeginTargetScroll(item, InventoryScrollTargetKind.Purify)
             });
+            _useStrategies.Add(new ItemUseStrategy {
+                Predicate = data => data is MapScroll,
+                Handler = UseImmediateItem
+            });
         }
 
         /// <summary>
