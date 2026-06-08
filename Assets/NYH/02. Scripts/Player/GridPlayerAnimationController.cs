@@ -193,6 +193,7 @@ public class GridPlayerAnimationController : MonoBehaviour
         _animator.speed = speedMultiplier;
     }
 
+    //최종 공격 성공시
     private void OnAttackPerformed(Vector2Int direction)
     {
         if (_isDead) return;
