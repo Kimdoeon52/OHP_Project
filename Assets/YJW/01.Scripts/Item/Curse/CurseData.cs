@@ -37,7 +37,7 @@ public class CurseData : ScriptableObject
         switch (curseType)
         {
             case CurseType.Slow:
-                // TODO: 이동 쿨타임 +0.2초 시스템 연동
+                NYHPlayerStats.Instance.AddStat(NYHStatType.MoveSpeed, -1);
                 break;
         }
     }
@@ -48,7 +48,8 @@ public class CurseData : ScriptableObject
         switch (curseType)
         {
             case CurseType.Slow:
-                break;
+				NYHPlayerStats.Instance.AddStat(NYHStatType.MoveSpeed, 1);
+				break;
         }
     }
 
@@ -69,6 +70,7 @@ public class CurseData : ScriptableObject
                 if (Random.value < triggerChance)
                 {
                     // TODO: GridSystem으로 랜덤 위치 이동
+                    GridSystem.Instance.MoveRanPos();
                 }
                 break;
         }

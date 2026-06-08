@@ -31,6 +31,7 @@ MonoBehaviour:
   poolType: 10
   attackSpeed: 1
   durability: 10
+  startCount: 3
   duration: 3
   minBleedingDamage: 3
   maxBleedingDamage: 6

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24546455f488342479ae12a74c883f28, type: 3}
   m_Name: FirePotion
   m_EditorClassIdentifier: 
-  id: 0
+  id: 2002
   itemName: "\uD654\uC5FC \uD3EC\uC158"
-  description: 
+  description: "\uC138\uC0C1\uC744 \uBD88\uD0DC\uC6B8 \uC900\uBE44\uAC00 \uB418\uC5C8\uB098."
   icon: {fileID: 21300000, guid: 461e1a6a02609cd4cbc96690a8746814, type: 3}
   itemType: 1
   slot: 0

@@ -1,3 +1,4 @@
+using PrototypeRT;
 using UnityEngine;
 
 public class WeaponProjectile : MonoBehaviour
@@ -6,12 +7,14 @@ public class WeaponProjectile : MonoBehaviour
     [SerializeField] private float speed = 5f;
 
     private ThrowableWeaponInstance weaponInstance;
+    private int thrownDurability;
     private bool isFlying = false;
     private Vector2 flyDirection;
 
-    public void SetInstance(ThrowableWeaponInstance instance)
+    public void SetInstance(ThrowableWeaponInstance instance, int durability)
     {
         weaponInstance = instance;
+        thrownDurability = durability;
     }
 
     public void Fly(Vector2 direction)
@@ -40,7 +43,29 @@ public class WeaponProjectile : MonoBehaviour
                 enemy.TakeDamage(damage);
         }
 
+        Land();
+    }
+
+    private void Land()
+    {
         isFlying = false;
+
+        GroundItemController groundController = FindFirstObjectByType<GroundItemController>();
+        if (groundController != null && GridSystem.Instance != null)
+        {
+            Vector2Int cell = GridSystem.Instance.WorldToGrid(transform.position);
+            var dummy = new ThrowableWeaponInstance { data = weaponInstance.weapon };
+
+            ThrowableWeaponInstance capturedInstance = weaponInstance;
+            int capturedDurability = thrownDurability;
+
+            groundController.DropItem(dummy, 1, cell, () =>
+            {
+                capturedInstance.OnDaggerPickup(capturedDurability);
+                return true;
+            });
+        }
+
         ReturnToPool();
     }
 

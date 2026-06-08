@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 
 public class GridSystem : Singleton<GridSystem>
@@ -187,5 +187,10 @@ public class GridSystem : Singleton<GridSystem>
         if (!_doors.TryGetValue(pos, out var door)) return null;
         if (door == null) { _doors.Remove(pos); return null; }
         return door;
+    }
+
+    public void MoveRanPos()
+    {
+
     }
 }

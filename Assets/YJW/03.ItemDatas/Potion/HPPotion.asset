@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7c9b5f7651f2244a9e470eea43a95ae, type: 3}
   m_Name: HPPotion
   m_EditorClassIdentifier: 
-  id: 0
+  id: 2001
   itemName: "\uD68C\uBCF5 \uD3EC\uC158"
-  description: 
+  description: "\uB538\uAE30\uB9DB\uC774 \uB0A0 \uAC83 \uAC19\uB2E4."
   icon: {fileID: 21300000, guid: 03bcf5d0bb0fed94ab723d73e35175a1, type: 3}
   itemType: 1
   slot: 0

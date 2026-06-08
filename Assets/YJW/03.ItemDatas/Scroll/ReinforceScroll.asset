@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6106e63e97dacca47bb367a8182983cc, type: 3}
   m_Name: ReinforceScroll
   m_EditorClassIdentifier: 
-  id: 0
+  id: 1002
   itemName: "\uAC15\uD654 \uC2A4\uD06C\uB864"
-  description: 
+  description: "\uAC15\uD654 \uC2A4\uD06C\uB864\uC774\uB2E4."
   icon: {fileID: -121239199415173898, guid: 23e366c7800de214690b189c3f6b92d3, type: 3}
   itemType: 2
   slot: 0

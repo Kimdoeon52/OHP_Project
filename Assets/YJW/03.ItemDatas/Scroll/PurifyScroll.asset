@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f219dec76685bfd4690774cf544fb656, type: 3}
   m_Name: PurifyScroll
   m_EditorClassIdentifier: 
-  id: 0
+  id: 1004
   itemName: "\uC815\uD654 \uC2A4\uD06C\uB864"
-  description: 
+  description: "\uC815\uD654 \uC2A4\uD06C\uB864\uC774\uB2E4."
   icon: {fileID: -7440859091487586849, guid: 23e366c7800de214690b189c3f6b92d3, type: 3}
   itemType: 2
   slot: 0

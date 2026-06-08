@@ -41,6 +41,9 @@ namespace PrototypeRT
         // KDU 스포너/상자가 만든 ItemPickup을 주기적으로 스캔하므로, 같은 오브젝트를 중복 등록하지 않기 위해 보관합니다.
         private readonly HashSet<ItemPickup> _registeredPickups = new();
 
+        // 투척 무기 착지처럼 인벤토리 추가 대신 커스텀 동작이 필요한 픽업에 콜백을 저장합니다.
+        private readonly Dictionary<ItemPickup, System.Func<bool>> _pickupCallbacks = new();
+
         // 플레이어 이동 완료 이벤트를 중복 구독하면 자동 줍기가 여러 번 실행되므로 구독 상태를 따로 기록합니다.
         private bool _movementSubscribed;
 
@@ -86,6 +89,7 @@ namespace PrototypeRT
             UnsubscribeMovement();
             _itemsByCell.Clear();
             _registeredPickups.Clear();
+            _pickupCallbacks.Clear();
         }
 
         private void Update()
@@ -114,7 +118,7 @@ namespace PrototypeRT
         /// 지정한 그리드 셀에 기존 KDU/YJW ItemPickup 프리팹을 생성하고 중앙 관리 목록에 등록합니다.
         /// 장비 강화/저주/감정 상태가 보존되도록 ItemInstance를 새로 만들지 않고 그대로 넣습니다.
         /// </summary>
-        public bool DropItem(ItemInstance item, int amount, Vector2Int cell)
+        public bool DropItem(ItemInstance item, int amount, Vector2Int cell, System.Func<bool> onPickup = null)
         {
             if (item == null || GridSystem.Instance == null || itemPickupPrefab == null)
                 return false;
@@ -132,6 +136,10 @@ namespace PrototypeRT
 
             ApplyIcon(pickup);
             RegisterPickup(pickup);
+
+            if (onPickup != null)
+                _pickupCallbacks[pickup] = onPickup;
+
             return true;
         }
 
@@ -215,8 +223,25 @@ namespace PrototypeRT
         /// </summary>
         private bool TryCollectPickup(ItemPickup pickup, List<ItemPickup> list, Vector2Int cell)
         {
+            if (pickup == null) return false;
+
+            // 투척 무기 회수처럼 인벤토리 추가 대신 커스텀 동작이 필요한 경우 콜백으로 처리합니다.
+            if (_pickupCallbacks.TryGetValue(pickup, out System.Func<bool> callback))
+            {
+                bool success = callback();
+                if (success)
+                {
+                    _pickupCallbacks.Remove(pickup);
+                    list.Remove(pickup);
+                    _registeredPickups.Remove(pickup);
+                    RemoveListIfEmpty(cell, list);
+                    Destroy(pickup.gameObject);
+                }
+                return success;
+            }
+
             ResolveReferences();
-            if (pickup == null || pickup.item == null || inventoryController == null)
+            if (pickup.item == null || inventoryController == null)
                 return false;
 
             int amount = GetAmount(pickup);

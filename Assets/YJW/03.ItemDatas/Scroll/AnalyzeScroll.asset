@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7dd7eac0dac754e43918cb2ebc3899bf, type: 3}
   m_Name: AnalyzeScroll
   m_EditorClassIdentifier: 
-  id: 0
+  id: 1003
   itemName: "\uAC10\uC815 \uC2A4\uD06C\uB864"
-  description: 
+  description: "\uAC10\uC815 \uC2A4\uD06C\uB864\uC774\uB2E4."
   icon: {fileID: 4792454202395124893, guid: 23e366c7800de214690b189c3f6b92d3, type: 3}
   itemType: 2
   slot: 0
