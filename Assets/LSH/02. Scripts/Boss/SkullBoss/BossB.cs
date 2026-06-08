@@ -130,8 +130,15 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         base.OnEnable();
         bossSprite = GetComponentInChildren<SpriteRenderer>(); //Phase 2 색 변경용 (자식 포함 검색)
         gridPos = GridSystem.Instance.WorldToGrid(transform.position - BossPivotOffset); //보스 시작 격자 좌표 초기화
+        transform.position = GridSystem.Instance.GridToWorld(gridPos) + BossPivotOffset; // 타일의 중앙으로 위치 스냅
         RegisterBossGridTarget(); // 플레이어가 이동공격 대상으로 보스를 찾을 수 있도록 TurnManager에 등록
         Debug.Log($"보스 시작 위치: {gridPos}"); //디버그용
+        CacheMapBounds();
+
+        actionCases.Clear();
+        AddActionCase(BossAction.Pattern1, 33);
+        AddActionCase(BossAction.Pattern2, 33);
+        AddActionCase(BossAction.Pattern3, 34);
     }
 
     protected override void OnDestroy()
@@ -168,98 +175,20 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
         ClearAllWarnings();
 
-        // 2) 맵 중앙 구하기 (fallback은 보스 현재 위치)
-        var safeCenter = gridPos;
-        if (hasMapBounds)
+        // 보스 사망 애니메이션 실행
+        if (bossAnimation != null)
         {
-            safeCenter = new Vector2Int(mapBounds.xMin + mapBounds.width / 2, mapBounds.yMin + mapBounds.height / 2);
+            bossAnimation.SetTrigger("Dead");
         }
 
-        // 3) 맵 중앙에 푸른 크리스탈 떨어뜨림 (시각 랜드마크)
-        if (crystalPrefab != null)
-        {
-            var crystalWorld = GridSystem.Instance.GridToWorld(safeCenter) + new Vector3(0.5f, 0.5f, 0f);
-            var go = Instantiate(crystalPrefab, crystalWorld, Quaternion.identity);
-            var c = go.GetComponent<Crystal>();
-            if (c != null) 
-                c.Setup(Color.cyan, deathCrystalScale, deathEscapeSec + 5f); // 푸른색 크리스탈 설정
-        }
-
-        // 4) 안전지대: 중앙 3x3 영역
-        var safeCells = new HashSet<Vector2Int>();
-        for (int dx = -1; dx <= 1; dx++)
-        {
-            for (int dy = -1; dy <= 1; dy++)
-            {
-                safeCells.Add(safeCenter + new Vector2Int(dx, dy));
-            }
-        }
-
-        // 5) 안전지대 제외한 모든 AttackFloor 셀에 위험 표시
-        var dangerCells = new List<Vector2Int>();
-        if (hasMapBounds)
-        {
-            for (int x = mapBounds.xMin; x < mapBounds.xMax; x++)
-            {
-                for (int y = mapBounds.yMin; y < mapBounds.yMax; y++)
-                {
-                    var cell = new Vector2Int(x, y);
-                    if (IsInAttackFloor(cell) && !safeCells.Contains(cell))
-                    {
-                        dangerCells.Add(cell);
-                    }
-                }
-            }
-        }
-        ShowWarning(dangerCells);
-
+        // 3초 대기 후 소멸
         try
         {
-            // 6) 도망 시간 (5초 대기)
-            await UniTask.Delay((int)(deathEscapeSec * 1000), cancellationToken: token);
-
-            // 7) 즉사 폭발 발생 (패턴1 Effect 사용)
-            if (attack2Effect != null)
-            {
-                foreach (var cell in dangerCells)
-                {
-                    Vector3 cellWorldPos = GridSystem.Instance.GridToWorld(cell) + new Vector3(0.5f, 0.5f, 0f);
-                    var effectGo = SpawnAttackEffectFacingBoss(attack2Effect, cellWorldPos);
-                    if (effectGo != null)
-                    {
-                        effectGo.transform.localScale = Vector3.one * 0.7f;
-                        Destroy(effectGo, 1.5f);
-                    }
-                }
-            }
-
-            // 8) 즉사 판정: 안전지대 밖이면 즉사
-            if (player != null && !player.IsDead && !safeCells.Contains(player.GridPosition))
-            {
-                player.TakeDamage(deathInstantKillDamage);
-            }
+            await UniTask.Delay(3000, cancellationToken: token);
         }
         catch (System.OperationCanceledException) { }
-        finally
-        {
-            // 경고 타일 정리
-            ClearWarning(dangerCells);
 
-            // 보스 사망 애니메이션 실행
-            if (bossAnimation != null)
-            {
-                bossAnimation.SetTrigger("Dead");
-            }
-
-            // 3초 대기 후 소멸
-            try
-            {
-                await UniTask.Delay(3000, cancellationToken: token);
-            }
-            catch (System.OperationCanceledException) { }
-
-            Destroy(gameObject); // 파괴
-        }
+        Destroy(gameObject); // 파괴
     }
 
     private void DamagePlayerIfInCell(Vector2Int attackCell, int damage)
@@ -375,87 +304,62 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         return cells;
     }
 
-    //==================================== 패턴 메인 흐름 제어 (거리 계산) ====================================
-    protected override async UniTask Phase1BossPattern()
-    {
-        isBossAttacking = true;
-
-        int distance = 0;
-        if (player != null && !player.IsDead)
-        {
-            distance = Mathf.Max(Mathf.Abs(player.GridPosition.x - gridPos.x), Mathf.Abs(player.GridPosition.y - gridPos.y));
-        }
-
-        BossAction bossAction;
-        if (distance < 3)
-            bossAction = BossAction.Pattern1;
-        else if (distance < 8)
-            bossAction = BossAction.Pattern3;
-        else
-            bossAction = BossAction.Pattern2;
-
-        await UniTask.Delay(patternDelay, cancellationToken: cancelToken.Token);
-
-        switch (bossAction)
-        {
-            case BossAction.Pattern1:
-                Phase1Pattern1().Forget();
-                break;
-            case BossAction.Pattern2:
-                Phase1Pattern2().Forget();
-                break;
-            case BossAction.Pattern3:
-                Phase1Pattern3().Forget();
-                break;
-        }
-    }
-
-    protected override async UniTask Phase2BossPattern()
-    {
-        isBossAttacking = true;
-
-        int distance = 0;
-        if (player != null && !player.IsDead)
-        {
-            distance = Mathf.Max(Mathf.Abs(player.GridPosition.x - gridPos.x), Mathf.Abs(player.GridPosition.y - gridPos.y));
-        }
-
-        BossAction bossAction;
-        if (distance < 3)
-            bossAction = BossAction.Pattern1;
-        else if (distance < 6)
-            bossAction = BossAction.Pattern2;
-        else
-            bossAction = BossAction.Pattern3;
-
-        await UniTask.Delay(patternDelay, cancellationToken: cancelToken.Token);
-
-        switch (bossAction)
-        {
-            case BossAction.Pattern1:
-                Phase2Pattern1().Forget();
-                break;
-            case BossAction.Pattern2:
-                Phase2Pattern2().Forget();
-                break;
-            case BossAction.Pattern3:
-                Phase2Pattern3().Forget();
-                break;
-        }
-    }
-
     //=============================== 패턴1 : 주변에 넓게 퍼지는 공격 ====================================
     protected override async UniTask Phase1Pattern1()
     {
-        await ExecuteShockwavePattern(shockwaveMaxRadius);
+        try
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (cancelToken.IsCancellationRequested) break;
+
+                // 1. 플레이어에게 순간이동 (Disappear 1.0초, Appear 0.5초)
+                await TeleportToPlayerAsync(1000, 500);
+
+                // 2. 점진적으로 퍼지는 충격파 실행
+                await ExecuteShockwavePattern(shockwaveMaxRadius, shockwaveStepMs);
+
+                // 3번 반복 중 마지막 반복이 아니라면 1초 간격 대기
+                if (i < 2)
+                {
+                    await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
+                }
+            }
+        }
+        finally
+        {
+            isBossAttacking = false;
+        }
     }
 
     protected override async UniTask Phase2Pattern1()
     {
-        await ExecuteShockwavePattern(phase2ShockwaveRadius);
+        try
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (cancelToken.IsCancellationRequested) break;
+
+                // 1. 플레이어에게 순간이동 (Phase 2이므로 더 빠른 0.5초 / 0.25초 사용)
+                await TeleportToPlayerAsync(500, 250);
+
+                // 2. 점진적으로 퍼지는 충격파 실행 (Phase 2이므로 속도 2배인 shockwaveStepMs / 2 사용)
+                await ExecuteShockwavePattern(phase2ShockwaveRadius, shockwaveStepMs / 2);
+
+                // 3번 반복 중 마지막 반복이 아니라면 1초 간격 대기
+                if (i < 2)
+                {
+                    await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
+                }
+            }
+        }
+        finally
+        {
+            isBossAttacking = false;
+        }
     }
 
-    private async UniTask ExecuteShockwavePattern(int maxRadius)
+    private async UniTask ExecuteShockwavePattern(int maxRadius, int stepDelayMs)
     {
         bossAnimation.SetTrigger("Attack2");
         await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
@@ -473,19 +377,30 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             bool warningCleared = false;
             try
             {
-                await UniTask.Delay(shockwaveStepMs, cancellationToken: cancelToken.Token);
+                await UniTask.Delay(stepDelayMs, cancellationToken: cancelToken.Token);
 
-                if (attack2Effect != null)
+                if (crystalPrefab != null)
                 {
-                    // 각 경고표시 칸마다 개별적으로 이펙트 생성 및 스케일 축소
+                    // 각 경고표시 칸마다 개별적으로 이펙트 생성 및 스케일 축소 (충격파 이미지 -> 크리스탈 교체)
                     foreach (var cell in ringCells)
                     {
-                        Vector3 cellWorldPos = GridSystem.Instance.GridToWorld(cell) + new Vector3(0.5f, 0.5f, 0f);
-                        var go = SpawnAttackEffectFacingBoss(attack2Effect, cellWorldPos);
+                        Vector3 cellWorldPos = GridSystem.Instance.GridToWorld(cell);
+                        var go = Instantiate(crystalPrefab, cellWorldPos, Quaternion.identity);
                         if (go != null)
                         {
-                            go.transform.localScale = Vector3.one * 0.7f; // 격자 1칸에 맞춰 작게 조절
-                            Destroy(go, shockwaveEffectLifetimeSec);
+                            Phase2Crystal p2c = go.GetComponent<Phase2Crystal>();
+                            if (p2c != null)
+                            {
+                                p2c.Setup(chasingCrystalTint, 0.7f, shockwaveEffectLifetimeSec);
+                            }
+                            else
+                            {
+                                Crystal c = go.GetComponent<Crystal>();
+                                if (c != null)
+                                    c.Setup(chasingCrystalTint, 0.7f, shockwaveEffectLifetimeSec);
+                                else
+                                    Destroy(go, shockwaveEffectLifetimeSec);
+                            }
                         }
                     }
                 }
@@ -507,7 +422,6 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
         bossAnimation.SetTrigger("Attack2Fin");
         await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
-        isBossAttacking = false;
     }
 
     //=============================== 패턴2 : 순간이동 후 3x3 or 5x5 공격 ====================================

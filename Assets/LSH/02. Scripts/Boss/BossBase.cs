@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
@@ -61,6 +61,9 @@ public class BossBase : EnemyNormalBASE
 
     protected RectInt mapBounds;
     protected bool hasMapBounds;
+
+    public RectInt MapBounds => mapBounds;
+    public bool HasMapBounds => hasMapBounds;
 
     private bool _patternDelayConverted; // patternDelay 초→ms 변환이 한 번만 일어나도록 가드
 

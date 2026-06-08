@@ -17,12 +17,17 @@ public class Phase2Crystal : MonoBehaviour
         lifetimeSec = defaultLifetimeSec;
     }
 
-    public void SetupWithGridBlock(Color tint, float scaleMultiplier, float lifetime, Vector2Int pos)
+    public void Setup(Color tint, float scaleMultiplier, float lifetime)
     {
         if (sr == null) sr = GetComponentInChildren<SpriteRenderer>();
         if (sr != null) sr.color = tint;
         if (scaleMultiplier > 0f) transform.localScale *= scaleMultiplier;
         if (lifetime > 0f) lifetimeSec = lifetime;
+    }
+
+    public void SetupWithGridBlock(Color tint, float scaleMultiplier, float lifetime, Vector2Int pos)
+    {
+        Setup(tint, scaleMultiplier, lifetime);
 
         gridPos = pos;
         hasGridPos = true;
