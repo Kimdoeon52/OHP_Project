@@ -9,6 +9,8 @@ public class ArmorInstance : EquipmentInstance
 
     public int GetDefense() => Random.Range(GetMinDefense(), GetMaxDefense() + 1);
 
+    public void OnHit() => curse?.OnHit();
+
     public string GetTooltipStats() =>
         $"{Armor.Name}\n" +
         $"----------\n" +

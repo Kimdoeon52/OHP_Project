@@ -69,7 +69,6 @@ public class CurseData : ScriptableObject
             case CurseType.Displace:
                 if (Random.value < triggerChance)
                 {
-                    // TODO: GridSystem으로 랜덤 위치 이동
                     GridSystem.Instance.MoveRanPos();
                 }
                 break;
@@ -84,7 +83,7 @@ public class CurseData : ScriptableObject
             case CurseType.Alert:
                 if (Random.value < triggerChance)
                 {
-                    // TODO: 층의 모든 적에게 플레이어 위치 알림
+                    
                 }
                 break;
 

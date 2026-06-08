@@ -189,8 +189,33 @@ public class GridSystem : Singleton<GridSystem>
         return door;
     }
 
+    /// <summary>
+    /// 플레이어를 Safe/Special 방을 제외한 맵의 랜덤 빈 타일로 순간이동시킵니다.
+    /// 적이 점유한 타일이나 현재 위치는 후보에서 제외됩니다.
+    /// </summary>
     public void MoveRanPos()
     {
+        var player = GameManager.Instance?.player?.GetComponent<EntityBase>();
+        if (player == null || MapGenerator.Instance?.CurrentRooms == null) return;
 
+        var validCells = new List<Vector2Int>();
+        foreach (var room in MapGenerator.Instance.CurrentRooms)
+        {
+            if (room.type == RoomType.Safe || room.type == RoomType.Special)
+                continue;
+
+            foreach (var cell in room.floorCells)
+            {
+                if (cell == player.GridPosition) continue;
+                if (!IsWalkable(cell)) continue;
+                if (IsCellOccupied(cell)) continue;
+                validCells.Add(cell);
+            }
+        }
+
+        if (validCells.Count == 0) return;
+
+        Vector2Int target = MapGenerator.Instance.Rng.Pick(validCells);
+        player.SetGridPosition(target);
     }
 }
