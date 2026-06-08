@@ -13,7 +13,7 @@ public struct StageBossDialogMapping
 }
 
 // 임시 보스 활성화 트리거.
-// 플레이어가 triggerObject의 Y값을 넘어서면 bossObject.SetActive(true).
+// 플레이어가 보스의 AttackFloor를 밟으면 bossObject.SetActive(true) 및 대화 실행.
 // 보스는 씬에 미리 비활성 상태로 배치돼 있어야 함 (인스펙터 SerializeField 참조를 살리기 위해서).
 // 실제 게임에선 BossRoomLoader가 방 진입 시 처리할 자리.
 public class TestScripts : MonoBehaviour
@@ -25,14 +25,11 @@ public class TestScripts : MonoBehaviour
     [Header("층별 보스 및 대화 데이터 매핑")]
     [SerializeField] private List<StageBossDialogMapping> stageDialogs = new List<StageBossDialogMapping>();
 
-    [Header("트리거 오브젝트 (이 Y값을 플레이어가 넘으면 발동)")]
-    [SerializeField] private Transform triggerObject;        // 임시 라인 오브젝트의 Transform
-
     [Header("다이얼로그 매니저")]
     [SerializeField] private DialogManager dialogManager;
 
     [Header("플레이어 (비우면 GridPlayer를 씬에서 자동 검색)")]
-    [SerializeField] private Transform player;
+    [SerializeField] private GridPlayer player;
 
     private GameObject activeBossObject;
     private DialogData activeDialogData;
@@ -42,9 +39,9 @@ public class TestScripts : MonoBehaviour
     {
         if (player == null)
         {
-            var p = FindFirstObjectByType<GridPlayer>();
-            if (p != null) player = p.transform;
+            player = FindFirstObjectByType<GridPlayer>();
         }
+
         if (dialogManager == null)
         {
             // 비활성화(SetActive(false)) 상태의 오브젝트도 감지함
@@ -94,10 +91,19 @@ public class TestScripts : MonoBehaviour
     void Update()
     {
         if (triggered) return;
-        // Y값을 플레이어가 넘어서면 대화 트리거
-        if (player != null && player.position.y > triggerObject.position.y)
+
+        // 플레이어가 활성화된 보스의 AttackFloor를 밟으면 트리거 작동
+        if (player != null && activeBossObject != null)
         {
-            TriggerDialogSequence();
+            BossBase bossComp = activeBossObject.GetComponent<BossBase>();
+            if (bossComp != null && bossComp.AttackFloorTilemap != null)
+            {
+                Vector2Int pPos = player.GridPosition;
+                if (bossComp.AttackFloorTilemap.HasTile(new Vector3Int(pPos.x, pPos.y, 0)))
+                {
+                    TriggerDialogSequence();
+                }
+            }
         }
     }
 
@@ -116,7 +122,7 @@ public class TestScripts : MonoBehaviour
                 }
             };
             dialogManager.StartDialog(activeDialogData); // 다이얼로그 매니저에 데이터 전달 및 시작   
-            Debug.Log($"<color=cyan>[테스트]</color> 플레이어가 라인을 넘음 → 다이얼로그 개시");
+            Debug.Log($"<color=cyan>[테스트]</color> 플레이어가 AttackFloor에 진입 → 다이얼로그 개시");
         }
         else
         {

@@ -11,23 +11,24 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     [Header("보스 공격 이펙트")]
     [SerializeField] private GameObject attack1Effect; //쿵! 패턴1 휘두르기 전용
     [SerializeField] private GameObject attack2Effect; //충격파 패턴 전용. 링 r번째에 scale이 r배로 커지며 spawn
-    [SerializeField] private GameObject swordGround;   //일단 보존만 콰과과과 하는거임.
     
     [Header("패턴2 충격파")]
     [SerializeField] private int shockwaveMaxRadius = 4;            // 링 개수 (N)
     [SerializeField] private int shockwaveStepMs = 1000;            // 각 단계 시간 (사용자 스펙: 1초씩)
     [SerializeField] private int shockwaveDamage = 1;               // 링 한 칸당 데미지
     [SerializeField] private float shockwaveEffectLifetimeSec = 1f; // spawn된 attack2Effect 잔존 시간
+    [SerializeField] private int shockwaveOverlapIntervalMs = 1000; // 충격파 중첩 발사 간격 (ms)
 
-    [Header("패턴3 추격 크리스탈 (0.5초 × 20회)")]
+    [Header("추격 크리스탈 설정")]
     [SerializeField] private GameObject crystalPrefab;              // 3가지 변종 공용 베이스 prefab (Crystal 컴포넌트 부착)
-    [SerializeField] private int chasingCrystalCount = 20;           // 떨굴 총 횟수 (사용자 스펙: 20회)
     [SerializeField] private int chasingCrystalIntervalMs = 500;     // 한 발 사이 간격 (사용자 스펙: 0.5초)
     [SerializeField] private int chasingCrystalWarnMs = 400;         // 떨어지기 전 워닝(=조준) 시간 — 간격보다 짧게 잡아야 hit 사이클이 또렷
-    [SerializeField] private float chasingCrystalLifetimeSec = 0.5f; // 낙하 후 잔존 시간 (사용자 스펙: 떨어진 후 소멸)
+    [SerializeField] private float chasingCrystalLifetimeSec = 1f; // 낙하 후 잔존 시간 (사용자 스펙: 떨어진 후 소멸)
     [SerializeField] private int chasingCrystalDamage = 1;           // 직격 시 데미지
     [SerializeField] private Color chasingCrystalTint = Color.white; // 기본 베이스 색상
-
+    [SerializeField] private float crystalShakeDuration = 0.15f;    // 크리스탈 낙하 시 카메라 흔들림 시간
+    [SerializeField] private float crystalShakeStrength = 0.25f;    // 크리스탈 낙하 시 카메라 흔들림 강도
+    
     [Header("Phase 2 연출")]
     [SerializeField] private Color phase2Tint = new Color(1f, 0.45f, 0.45f, 1f); // 보스 스프라이트 붉은 틴트
     [SerializeField] private float phase2AnimSpeed = 2f;  // Phase 2 진입 시 애니메이터 speed
@@ -39,14 +40,6 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     [SerializeField] private float phase2Attack1EffectScale = 1.6f;
     [SerializeField] private int phase2CrystalRadius = 1; // 1 -> 3x3 area
     [SerializeField] private float phase2CrystalScale = 3f;
-    [SerializeField] private int phase2CrystalCount = 5;
-    [SerializeField] private int phase2CrystalIntervalMs = 1000;
-
-    [Header("죽음 패턴")]
-    [SerializeField] private float deathEscapeSec = 5f;      // 즉사 전 도망 시간
-    [SerializeField] private Color deathCrystalTint = Color.red; // 죽음 크리스탈 색 (붉은색)
-    [SerializeField] private float deathCrystalScale = 2f;  // 죽음 크리스탈 크기 배율 (2배)
-    [SerializeField] private int deathInstantKillDamage = 99999; // 안전지대 밖 즉사 데미지
 
     [Header("패턴 1히트 판정")]
     [SerializeField] private int attack1Damage = 1;   // 패턴1(평타) 데미지
@@ -136,9 +129,8 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         CacheMapBounds();
 
         actionCases.Clear();
-        AddActionCase(BossAction.Pattern1, 33);
-        AddActionCase(BossAction.Pattern2, 33);
-        AddActionCase(BossAction.Pattern3, 34);
+        AddActionCase(BossAction.Pattern1, 50);
+        AddActionCase(BossAction.Pattern2, 50);
     }
 
     protected override void OnDestroy()
@@ -309,22 +301,36 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     {
         try
         {
-            for (int i = 0; i < 3; i++)
+            // 1. 플레이어에게 순간이동 (1번만 실행)
+            await TeleportToPlayerAsync(1000, 500);
+
+            // 보스 공격 애니메이션 시작 (캐스팅 포즈 유지)
+            bossAnimation.SetTrigger("Attack2");
+            await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
+
+            var tasks = new List<UniTask>();
+
+            // 2. 공격(충격파)을 설정된 간격으로 연달아 중첩 실행
+            for (int i = 0; i < 2; i++)
             {
                 if (cancelToken.IsCancellationRequested) break;
 
-                // 1. 플레이어에게 순간이동 (Disappear 1.0초, Appear 0.5초)
-                await TeleportToPlayerAsync(1000, 500);
+                // 비동기로 실행하여 리스트에 등록 (끝나기 전에 다음 충격파가 안쪽에서 다시 시작됨)
+                tasks.Add(ExecuteShockwavePattern(shockwaveMaxRadius, shockwaveStepMs));
 
-                // 2. 점진적으로 퍼지는 충격파 실행
-                await ExecuteShockwavePattern(shockwaveMaxRadius, shockwaveStepMs);
-
-                // 3번 반복 중 마지막 반복이 아니라면 1초 간격 대기
-                if (i < 2)
+                // 마지막이 아니라면 설정된 대기 시간 후 다음 충격파 시작
+                if (i < 1)
                 {
-                    await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
+                    await UniTask.Delay(shockwaveOverlapIntervalMs, cancellationToken: cancelToken.Token);
                 }
             }
+
+            // 모든 충격파 공격이 끝날 때까지 대기
+            await UniTask.WhenAll(tasks);
+
+            // 마무리 애니메이션 재생
+            bossAnimation.SetTrigger("Attack2Fin");
+            await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
         }
         finally
         {
@@ -336,22 +342,34 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     {
         try
         {
+            // 1. 플레이어에게 순간이동 (Phase 2이므로 더 빠른 0.5초 / 0.25초 사용, 1번만 실행)
+            await TeleportToPlayerAsync(500, 250);
+
+            // 보스 공격 애니메이션 시작
+            bossAnimation.SetTrigger("Attack2");
+            await UniTask.Delay(500, cancellationToken: cancelToken.Token);
+
+            var tasks = new List<UniTask>();
+
+            // 2. 공격(충격파)을 설정된 간격으로 연달아 3번 중첩 실행
             for (int i = 0; i < 3; i++)
             {
                 if (cancelToken.IsCancellationRequested) break;
 
-                // 1. 플레이어에게 순간이동 (Phase 2이므로 더 빠른 0.5초 / 0.25초 사용)
-                await TeleportToPlayerAsync(500, 250);
+                // 비동기로 실행하여 리스트에 등록 (속도 2배인 shockwaveStepMs / 2 사용)
+                tasks.Add(ExecuteShockwavePattern(phase2ShockwaveRadius, shockwaveStepMs / 2));
 
-                // 2. 점진적으로 퍼지는 충격파 실행 (Phase 2이므로 속도 2배인 shockwaveStepMs / 2 사용)
-                await ExecuteShockwavePattern(phase2ShockwaveRadius, shockwaveStepMs / 2);
-
-                // 3번 반복 중 마지막 반복이 아니라면 1초 간격 대기
                 if (i < 2)
                 {
-                    await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
+                    await UniTask.Delay(shockwaveOverlapIntervalMs, cancellationToken: cancelToken.Token);
                 }
             }
+
+            await UniTask.WhenAll(tasks);
+
+            // 마무리 애니메이션 재생
+            bossAnimation.SetTrigger("Attack2Fin");
+            await UniTask.Delay(500, cancellationToken: cancelToken.Token);
         }
         finally
         {
@@ -361,9 +379,6 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
     private async UniTask ExecuteShockwavePattern(int maxRadius, int stepDelayMs)
     {
-        bossAnimation.SetTrigger("Attack2");
-        await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
-
         var center = gridPos;
 
         for (int r = 1; r <= maxRadius; r++)
@@ -419,23 +434,20 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
                 }
             }
         }
-
-        bossAnimation.SetTrigger("Attack2Fin");
-        await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
     }
 
     //=============================== 패턴2 : 순간이동 후 3x3 or 5x5 공격 ====================================
     protected override async UniTask Phase1Pattern2()
     {
-        await ExecuteSwingPattern(attack1Range, attack1Width, 1.3f, 1000, 500); // 1.0f -> 1.3f로 확대
+        await ExecuteSwingPattern(attack1Range, attack1Width, 1.3f, 1000, 500, 0, 1f); // 1.0f -> 1.3f로 확대
     }
 
     protected override async UniTask Phase2Pattern2()
     {
-        await ExecuteSwingPattern(phase2Attack1Range, phase2Attack1Width, phase2Attack1EffectScale * 1.2f, 500, 250); // 배율 1.2배 더 확대
+        await ExecuteSwingPattern(phase2Attack1Range, phase2Attack1Width, phase2Attack1EffectScale * 1.2f, 500, 250, phase2CrystalRadius, phase2CrystalScale); // 배율 1.2배 더 확대
     }
 
-    private async UniTask ExecuteSwingPattern(int range, int width, float effectScaleMultiplier, int disappearMs, int appearMs)
+    private async UniTask ExecuteSwingPattern(int range, int width, float effectScaleMultiplier, int disappearMs, int appearMs, int crystalRadius, float crystalScale)
     {
         var dir = await TeleportToPlayerAsync(disappearMs, appearMs);
 
@@ -471,44 +483,25 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         await UniTask.Delay(disappearMs == 500 ? 100 : 200, cancellationToken: cancelToken.Token);
         bossAnimation.SetTrigger("Attack1Fin");
 
-        await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
-        isBossAttacking = false;
-    }
+        await UniTask.Delay(disappearMs == 500 ? 500 : 1000, cancellationToken: cancelToken.Token);
 
-    //=============================== 패턴3 : 플레이어 위치에 크리스탈 생성 ====================================
-    protected override async UniTask Phase1Pattern3()
-    {
-        await ExecuteCrystalPattern(chasingCrystalCount, chasingCrystalIntervalMs, chasingCrystalWarnMs, 0, 1f, chasingCrystalDamage, chasingCrystalTint);
-    }
-
-    protected override async UniTask Phase2Pattern3()
-    {
-        await ExecuteCrystalPattern(phase2CrystalCount, phase2CrystalIntervalMs, chasingCrystalWarnMs, phase2CrystalRadius, phase2CrystalScale, chasingCrystalDamage, chasingCrystalTint);
-    }
-
-    private async UniTask ExecuteCrystalPattern(int count, int intervalMs, int warnMs, int radius, float scale, int damage, Color tint)
-    {
-        bossAnimation.SetTrigger("Attack2");
-        await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
-        GameObject effect = SpawnAttackEffectFacingBoss(swordGround, transform.position);
-
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < 5; i++)
         {
             if (cancelToken.IsCancellationRequested) break;
 
             if (player != null && !player.IsDead)
             {
-                DropCrystalAtCell(player.GridPosition, warnMs, radius, scale, damage, tint).Forget();
+                DropCrystalAtCell(player.GridPosition, chasingCrystalWarnMs, crystalRadius, crystalScale, chasingCrystalDamage, chasingCrystalTint).Forget();
             }
 
-            await UniTask.Delay(intervalMs, cancellationToken: cancelToken.Token);
+            await UniTask.Delay(chasingCrystalIntervalMs, cancellationToken: cancelToken.Token);
         }
 
-        bossAnimation.SetTrigger("Attack2Fin");
-        if (effect != null) Destroy(effect);
         await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
         isBossAttacking = false;
     }
+
+
 
     private async UniTaskVoid DropCrystalAtCell(Vector2Int centerCell, int warnMs, int radius, float scale, int damage, Color tint)
     {
@@ -551,7 +544,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
                 // 크리스탈 낙하 시 카메라 셰이크(흔들림) 효과 추가
                 if (CameraFollow.Instance != null)
                 {
-                    CameraFollow.Instance.Shake(0.15f, 0.25f);
+                    CameraFollow.Instance.Shake(crystalShakeDuration, crystalShakeStrength);
                 }
             }
 

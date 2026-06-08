@@ -538,7 +538,6 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
             return scoreA.CompareTo(scoreB);
         });
-
         return candidates[0];
     }
 

@@ -19,8 +19,6 @@ public class SpecialPattern : MonoBehaviour
 
     [Header("스페셜 패턴 타일 설정")]
     [SerializeField] private UnityEngine.Tilemaps.TileBase obstacleTile; // 새로 그릴 벽 타일 에셋
-    [SerializeField] private float activeDuration = 5f;               // 타일이 유지되는 시간 (초)
-    [SerializeField] private float cooldownDuration = 2f;             // 타일 제거 후 다음 패턴까지 쉬는 시간 (초)
 
     private BossBase boss;
     private CancellationTokenSource cts;
@@ -39,7 +37,15 @@ public class SpecialPattern : MonoBehaviour
         isRunning = true;
 
         cts = new CancellationTokenSource();
-        SpecialPatternLoop().Forget();
+
+        // 1. 패턴1: 가장자리에 타일을 즉시 그리고 플레이어를 밀침 (상시 유지)
+        ExecuteEdgePattern();
+
+        // 2. 패턴2: 남아있는 바닥(이동 가능 셀)을 캐싱하여 크리스탈 비 준비
+        CacheWalkableCells();
+
+        // 3. 패턴2: 크리스탈 비 상시 루프 시작
+        CrystalRainLoop().Forget();
     }
 
     public void StopSpecialPattern()
@@ -62,34 +68,23 @@ public class SpecialPattern : MonoBehaviour
         StopSpecialPattern();
     }
 
-    private async UniTaskVoid SpecialPatternLoop()
+    private async UniTaskVoid CrystalRainLoop()
     {
         var token = cts.Token;
         try
         {
-            while (isRunning && cts != null && !cts.IsCancellationRequested)
+            while (isRunning && cts != null && !token.IsCancellationRequested)
             {
-                // 1. 임의로 패턴 1 또는 패턴 2 선택
-                int patternType = Random.Range(1, 3); // 1 또는 2
-                
-                // 2. 타일 그리기 및 플레이어 밀치기
-                if (patternType == 1)
+                if (walkableCellsCache != null && walkableCellsCache.Count > 0)
                 {
-                    ExecuteEdgePattern();
+                    for (int i = 0; i < rainCellsPerTick; i++)
+                    {
+                        if (token.IsCancellationRequested) break;
+                        var cell = walkableCellsCache[Random.Range(0, walkableCellsCache.Count)];
+                        FallSingleCrystalAsync(cell).Forget();
+                    }
                 }
-                else
-                {
-                    ExecuteCenterPattern();
-                }
-
-                // 3. 5초 경과 대기 (activeDuration)
-                await UniTask.Delay((int)(activeDuration * 1000), cancellationToken: token);
-
-                // 4. 타일 제거 (다시 걸을 수 있음)
-                ClearPaintedTiles();
-
-                // 5. 쿨다운 대기 후 반복 (cooldownDuration)
-                await UniTask.Delay((int)(cooldownDuration * 1000), cancellationToken: token);
+                await UniTask.Delay(rainTickMs, cancellationToken: token);
             }
         }
         catch (System.OperationCanceledException) { }
@@ -143,46 +138,82 @@ public class SpecialPattern : MonoBehaviour
         }
     }
 
-    private void ExecuteCenterPattern()
+    private void CacheWalkableCells()
     {
-        if (boss == null || !boss.HasMapBounds || GridSystem.Instance == null || obstacleTile == null) return;
+        walkableCellsCache = new List<Vector2Int>();
+        if (GridSystem.Instance == null) return;
 
-        RectInt bounds = boss.MapBounds;
-        var wallTilemap = GridSystem.Instance.Tilemaps.wall;
-        if (wallTilemap == null) return;
-
-        ClearPaintedTiles();
-
-        Vector2Int center = new Vector2Int(bounds.xMin + bounds.width / 2, bounds.yMin + bounds.height / 2);
-
-        // 중앙 5x5 영역 (반경 2)
-        for (int dx = -2; dx <= 2; dx++)
+        foreach (var cell in GridSystem.Instance.GetAllWalkableCells())
         {
-            for (int dy = -2; dy <= 2; dy++)
+            // 칠해진 벽 구역을 제외하고 캐싱하여 해당 격자 위에만 비가 오게 함
+            if (!paintedCells.Contains(cell))
             {
-                Vector2Int cell = center + new Vector2Int(dx, dy);
-                
-                if (GridSystem.Instance.IsInBounds(cell))
-                {
-                    var hasFloor = GridSystem.Instance.Tilemaps.floor != null && GridSystem.Instance.Tilemaps.floor.HasTile(new Vector3Int(cell.x, cell.y, 0));
-                    var hasHazard = GridSystem.Instance.Tilemaps.hazard != null && GridSystem.Instance.Tilemaps.hazard.HasTile(new Vector3Int(cell.x, cell.y, 0));
+                walkableCellsCache.Add(cell);
+            }
+        }
+    }
 
-                    if (hasFloor || hasHazard)
+    private async UniTaskVoid FallSingleCrystalAsync(Vector2Int targetPos)
+    {
+        if (boss == null || cts == null || cts.IsCancellationRequested) return;
+
+        boss.ShowWarning(targetPos);
+        bool warningCleared = false;
+        try
+        {
+            await UniTask.Delay(crystalWarnMs, cancellationToken: cts.Token);
+
+            if (crystalPrefab != null)
+            {
+                Vector3 pos = GridSystem.Instance.GridToWorld(targetPos);
+                GameObject go = Instantiate(crystalPrefab, pos, Quaternion.identity);
+                
+                Phase2Crystal p2c = go.GetComponent<Phase2Crystal>();
+                if (p2c != null)
+                {
+                    p2c.Setup(crystalTint, crystalScale, crystalLifetimeSec);
+                }
+                else
+                {
+                    Crystal c = go.GetComponent<Crystal>();
+                    if (c != null)
                     {
-                        wallTilemap.SetTile(new Vector3Int(cell.x, cell.y, 0), obstacleTile);
-                        paintedCells.Add(cell);
+                        c.Setup(crystalTint, crystalScale, crystalLifetimeSec);
+                    }
+                    else
+                    {
+                        Destroy(go, crystalLifetimeSec);
                     }
                 }
             }
+
+            // 즉각적인 타격을 위해 시각적 경고를 먼저 해제
+            if (boss != null)
+            {
+                boss.ClearWarning(targetPos);
+                warningCleared = true;
+            }
+
+            if (boss.Player != null && !boss.Player.IsDead && boss.Player.GridPosition == targetPos)
+            {
+                boss.Player.TakeDamage(crystalDamage);
+
+                // 끼임 방지: 크리스탈에 맞은 플레이어는 근처 이동 가능한 타일로 튕겨냄
+                Vector2Int? knockbackTarget = FindKnockbackTargetNear(targetPos);
+                if (knockbackTarget.HasValue && boss.Player.Movement != null)
+                {
+                    boss.Player.Movement.Knockback(knockbackTarget.Value);
+                    Debug.Log($"[SpecialPattern] 플레이어가 크리스탈에 맞음 -> {knockbackTarget.Value}로 튕겨냄 (끼임 방지)");
+                }
+            }
         }
-
-        // 플레이어가 갇힌 경우 밀어냄
-        PushPlayerIfInsideBlockedArea();
-
-        // 비전 업데이트
-        if (boss.Player != null && VisionSystem.Instance != null)
+        catch (System.OperationCanceledException) { }
+        finally
         {
-            VisionSystem.Instance.UpdateVision(boss.Player.GridPosition);
+            if (boss != null && !warningCleared)
+            {
+                boss.ClearWarning(targetPos);
+            }
         }
     }
 
@@ -222,6 +253,62 @@ public class SpecialPattern : MonoBehaviour
         }
     }
 
+    private Vector2Int? FindKnockbackTargetNear(Vector2Int playerPos)
+    {
+        if (GridSystem.Instance == null) return null;
+
+        var directions = new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+        ShuffleDirections(directions);
+
+        foreach (var dir in directions)
+        {
+            var candidate = playerPos + dir;
+            // 칠해진 벽 영역이 아니고, 원래 이동 가능한 범위인지 검사
+            if (GridSystem.Instance.IsInBounds(candidate) && 
+                GridSystem.Instance.IsWalkable(candidate) &&
+                !paintedCells.Contains(candidate))
+            {
+                if (TurnManager.Instance != null && TurnManager.Instance.GetEntityAt(candidate) == null)
+                {
+                    return candidate;
+                }
+            }
+        }
+
+        var diagonalDirs = new[] {
+            new Vector2Int(1, 1), new Vector2Int(1, -1),
+            new Vector2Int(-1, 1), new Vector2Int(-1, -1)
+        };
+        ShuffleDirections(diagonalDirs);
+
+        foreach (var dir in diagonalDirs)
+        {
+            var candidate = playerPos + dir;
+            if (GridSystem.Instance.IsInBounds(candidate) && 
+                GridSystem.Instance.IsWalkable(candidate) &&
+                !paintedCells.Contains(candidate))
+            {
+                if (TurnManager.Instance != null && TurnManager.Instance.GetEntityAt(candidate) == null)
+                {
+                    return candidate;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private void ShuffleDirections(Vector2Int[] array)
+    {
+        for (int i = array.Length - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            var temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+    }
+
     private Vector2Int? FindNearestWalkableCell(Vector2Int startPos)
     {
         if (GridSystem.Instance == null) return null;
@@ -236,7 +323,6 @@ public class SpecialPattern : MonoBehaviour
         {
             Vector2Int curr = queue.Dequeue();
 
-            // 만약 현재 탐색 좌표가 걸어갈 수 있고, 몬스터가 없고, 새로 칠한 벽 타일 위치가 아니라면
             if (GridSystem.Instance.IsWalkable(curr) && 
                 (TurnManager.Instance == null || TurnManager.Instance.GetEntityAt(curr) == null) &&
                 !paintedCells.Contains(curr))

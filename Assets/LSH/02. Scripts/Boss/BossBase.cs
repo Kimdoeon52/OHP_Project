@@ -59,6 +59,8 @@ public class BossBase : EnemyNormalBASE
     [Header("AttackFloor 타일맵 (이동/공격 제한)")]
     [SerializeField] protected Tilemap attackFloorTilemap;
 
+    public Tilemap AttackFloorTilemap => attackFloorTilemap;
+
     protected RectInt mapBounds;
     protected bool hasMapBounds;
 
