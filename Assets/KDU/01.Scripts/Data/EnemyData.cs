@@ -6,6 +6,15 @@ public enum EnemyGrade { Common, Elite }
 
 public enum EnemyMoveType { Normal, WallPass, Stationary }
 
+/// <summary>몬스터 처치 시 확률로 떨어뜨리는 아이템 한 종류 (GDD 10장 보상표). 바닥 ItemPickup 으로 스폰.</summary>
+[System.Serializable]
+public class ItemDrop
+{
+    public ItemBase item;
+    [Range(0f, 1f)] public float chance = 1f;
+    [Min(1)] public int count = 1;
+}
+
 [CreateAssetMenu(fileName = "EnemyData", menuName = "60s Dungeon/Enemy Data")]
 public class EnemyData : ScriptableObject
 {
@@ -44,8 +53,16 @@ public class EnemyData : ScriptableObject
     [Header("보상")]
     public float timeBonus = 3f;
     public int expReward = 5;
+
+    [Header("드롭 — 골드 (GDD 10장 몬스터별 확률·범위)")]
+    [Tooltip("골드를 떨굴 확률 (0~1). GDD 표의 50%/100% 등. goldMax 가 0이면 어차피 안 떨굼.")]
+    [Range(0f, 1f)] public float goldDropChance = 1f;
     public int goldMin = 0;
     public int goldMax = 0;
+
+    [Header("드롭 — 아이템 (체력 포션 등, GDD 10장)")]
+    [Tooltip("각 항목을 chance 확률로 count 개 떨굼. 예: 체력 포션 30%/1개.")]
+    public ItemDrop[] itemDrops;
 
     [Header("시야")]
     public float visionRange = 6f;

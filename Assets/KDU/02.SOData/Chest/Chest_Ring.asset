@@ -20,7 +20,9 @@ MonoBehaviour:
   itemCategories: 09000000
   itemDropMin: 1
   itemDropMax: 1
-  excludeReinforceScroll: 1
+  excludeItemIds:
+  - 1002
+  - 2003
   goldMin: 0
   goldMax: 0
   closedSprite: {fileID: -2147240515, guid: c5fd1966421bf3d41a951a19748a397f, type: 3}

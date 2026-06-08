@@ -17,10 +17,12 @@ MonoBehaviour:
   openSeconds: 1
   requiresKey: 0
   keyType: 1
-  itemCategories: 
+  itemCategories: 03000000020000000100000009000000
   itemDropMin: 1
   itemDropMax: 1
-  excludeReinforceScroll: 1
+  excludeItemIds:
+  - 1002
+  - 2003
   goldMin: 0
   goldMax: 0
   closedSprite: {fileID: 21300000, guid: c1c1002d529ccc24fb2262528365af5c, type: 3}

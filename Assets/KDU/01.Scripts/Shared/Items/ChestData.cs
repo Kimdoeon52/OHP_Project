@@ -22,12 +22,11 @@ public class ChestData : ScriptableObject
     [SerializeField] private KeyType keyType = KeyType.RingChest;
 
     [Header("아이템 보상 (ID 구간 카테고리)")]
-    [Tooltip("이 상자가 줄 수 있는 카테고리. 풀에서 이 카테고리에 해당하는 아이템만 추첨.")]
     [SerializeField] private ItemCategory[] itemCategories;
     [SerializeField, Min(0)] private int itemDropMin = 1;
     [SerializeField, Min(0)] private int itemDropMax = 1;
-    [Tooltip("랜덤 상자 = 강화 스크롤 제외 (GDD 9.14).")]
-    [SerializeField] private bool excludeReinforceScroll = true;
+    [Tooltip("이 상자에서 제외할 아이템 ID. 고정 스케줄 아이템은 상자에서 안 나오게 함")]
+    [SerializeField] private int[] excludeItemIds = { 1002, 2003 };
 
     [Header("골드 보상 (골드 상자)")]
     [SerializeField, Min(0)] private int goldMin = 0;
@@ -45,7 +44,7 @@ public class ChestData : ScriptableObject
     public ItemCategory[] ItemCategories => itemCategories;
     public int ItemDropMin => itemDropMin;
     public int ItemDropMax => itemDropMax;
-    public bool ExcludeReinforceScroll => excludeReinforceScroll;
+    public int[] ExcludeItemIds => excludeItemIds;
     public int GoldMin => goldMin;
     public int GoldMax => goldMax;
     public Sprite ClosedSprite => closedSprite;

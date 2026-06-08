@@ -201,7 +201,7 @@ public class GridChest : MonoBehaviour
         foreach (var so in itemPool.items)
         {
             if (so == null) continue;
-            if (data.ExcludeReinforceScroll && so is ReinforceScroll) continue;
+            if (data.ExcludeItemIds != null && System.Array.IndexOf(data.ExcludeItemIds, so.Id) >= 0) continue;
             if (System.Array.IndexOf(data.ItemCategories, ItemCategories.Of(so)) >= 0)
                 result.Add(so);
         }

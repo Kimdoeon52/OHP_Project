@@ -28,6 +28,12 @@ public abstract class EnemyBase : EntityBase, IDamageable
     [Tooltip("공격 예고 위치에 생성할 붉은 바닥 프리팹")]
     [SerializeField] protected GameObject warningPrefab;
 
+    [Header("보상 드롭")]
+    [Tooltip("처치 시 떨어뜨릴 골드 픽업 프리팹 (Gold_Pickup). 플레이어가 주워야 지갑에 들어감.")]
+    [SerializeField] private GoldPickup goldPickupPrefab;
+    [Tooltip("처치 시 떨어뜨릴 아이템 픽업 프리팹 (ItemPickUp). EnemyData.itemDrops 에 든 아이템(체력 포션 등) 스폰용.")]
+    [SerializeField] private ItemPickup dropItemPickupPrefab;
+
     [Header("애니메이션 관련 설정")]
     [Tooltip("Animator에서 사망 트리거 파라미터 이름. 기본값 \"Die\".")]
     [SerializeField] private string deathTriggerName = "Die";
@@ -232,11 +238,8 @@ public abstract class EnemyBase : EntityBase, IDamageable
         GameEvents.OnEnemyKilled?.Invoke(GridPosition, data.timeBonus);
         GameEvents.OnExpDropped?.Invoke(GridPosition, data.expReward);
 
-        if (data.goldMax > 0)
-        {
-            int gold = Random.Range(data.goldMin, data.goldMax + 1);
-            if (gold > 0) GameEvents.OnGoldDropped?.Invoke(GridPosition, gold);
-        }
+        // 골드·아이템은 바닥 픽업으로 떨어뜨린다 — 플레이어가 주워야 획득 (상자/맵 드롭과 동일 계약).
+        DropLoot();
 
         // TimeSystem에 남은 시간 추가
         TimeSystem.Instance.AddTime(data.timeBonus);
@@ -244,6 +247,58 @@ public abstract class EnemyBase : EntityBase, IDamageable
         PlayDeathAnimation();
         StartCoroutine(DestroyAfterDeath());
     }
+
+    // ══════════════ 처치 드롭 (골드 / 아이템) ══════════════
+    // GDD 10장 몬스터별 보상표 — 골드(확률·범위)와 아이템(체력 포션 등, 확률·개수)을 바닥 픽업으로 떨굼
+    private void DropLoot()
+    {
+        if (data == null) return;
+
+        // 골드 — goldMax>0 이고 확률 통과 시 1개.
+        if (data.goldMax > 0 && Random.value <= data.goldDropChance)
+        {
+            int gold = Random.Range(data.goldMin, data.goldMax + 1);
+            if (gold > 0) SpawnGoldDrop(gold);
+        }
+
+        // 아이템 — 항목별 확률 판정 후 count 개.
+        if (data.itemDrops != null)
+        {
+            foreach (var drop in data.itemDrops)
+            {
+                if (drop == null || drop.item == null) continue;
+                if (Random.value > drop.chance) continue;
+                for (int i = 0; i < drop.count; i++)
+                    SpawnItemDrop(drop.item);
+            }
+        }
+    }
+
+    private void SpawnGoldDrop(int amount)
+    {
+        if (goldPickupPrefab == null)
+        {
+            Debug.LogWarning($"{name}: goldPickupPrefab 미할당 — 골드 {amount} 드롭 실패. 적 프리팹에 Gold_Pickup 을 연결하세요.");
+            return;
+        }
+        GoldPickup pickup = Instantiate(goldPickupPrefab, WorldOf(GridPosition), Quaternion.identity);
+        pickup.Initialize(GridPosition, amount);
+    }
+
+    private void SpawnItemDrop(ItemBase item)
+    {
+        if (dropItemPickupPrefab == null)
+        {
+            Debug.LogWarning($"{name}: dropItemPickupPrefab 미할당 — '{item.name}' 드롭 실패. 적 프리팹에 ItemPickUp 을 연결하세요.");
+            return;
+        }
+        ItemPickup pickup = Instantiate(dropItemPickupPrefab, WorldOf(GridPosition), Quaternion.identity);
+        pickup.itemSO = item;            // ItemPickup.Start 가 이 SO 로 인스턴스를 구성.
+        pickup.Initialize(GridPosition);
+    }
+
+    private static Vector3 WorldOf(Vector2Int cell)
+        => GridSystem.Instance != null ? GridSystem.Instance.GridToWorld(cell) : new Vector3(cell.x, cell.y, 0);
 
     // ══════════════ 텔레그래프 (공격 범위 예고) ══════════════
 
