@@ -495,7 +495,7 @@ namespace PrototypeRT
             return null;
         }
 
-        private void RefreshSelectedGridUnderMouse()
+        public void RefreshSelectedGridUnderMouse()
         {
             ItemGrid hoveredGrid = FindGridUnderMouse();
             if (hoveredGrid != null)
@@ -701,7 +701,7 @@ namespace PrototypeRT
         /// 드랍 판정 기준이 되는 인벤토리 전체 패널을 찾습니다.
         /// 인스펙터에 연결되어 있으면 그 값을 쓰고, 없으면 기본 인벤토리 그리드의 부모 RectTransform을 임시 기준으로 씁니다.
         /// </summary>
-        private RectTransform ResolveInventoryPanelRect()
+        public RectTransform ResolveInventoryPanelRect()
         {
             if (inventoryPanelRect != null)
                 return inventoryPanelRect;
@@ -799,16 +799,23 @@ namespace PrototypeRT
         {
             if (_selectedItem == null) return true;
 
+            return TryReturnSelectedItemToDefaultGrid(_selectedItem);
+        }
+
+        public bool TryReturnSelectedItemToDefaultGrid(InventoryItem item)
+        {
+            if (item == null) return true;
+
             ItemGrid targetGrid = ResolveItemGrid();
             if (targetGrid == null) return false;
 
-            Vector2Int? pos = targetGrid.FindSpaceForItem(_selectedItem);
+            Vector2Int? pos = targetGrid.FindSpaceForItem(item);
             if (pos == null) return false;
 
-            targetGrid.PlaceItemInternal(_selectedItem, pos.Value.x, pos.Value.y);
-            _selectedItem.SetRaycastTarget(true);
-            if (!_items.Contains(_selectedItem))
-                _items.Add(_selectedItem);
+            targetGrid.PlaceItemInternal(item, pos.Value.x, pos.Value.y);
+            item.SetRaycastTarget(true);
+            if (!_items.Contains(item))
+                _items.Add(item);
 
             return true;
         }
@@ -858,7 +865,7 @@ namespace PrototypeRT
         /// 인벤토리 내용이 바뀌었음을 외부 구독자에게 알립니다.
         /// UI 갱신, 판매 목록 갱신, 장착 상태 갱신 같은 후처리가 이 이벤트를 구독할 수 있습니다.
         /// </summary>
-        private void RaiseInventoryChanged()
+        public void RaiseInventoryChanged()
         {
             OnInventoryChanged?.Invoke();
         }
