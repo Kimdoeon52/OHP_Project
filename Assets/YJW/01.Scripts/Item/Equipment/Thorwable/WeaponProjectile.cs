@@ -7,47 +7,23 @@ public class WeaponProjectile : MonoBehaviour
 
     private ThrowableWeaponInstance weaponInstance;
     private bool isFlying = false;
-    private bool hasTarget = false;
     private Vector2 flyDirection;
-    private Vector3 targetWorldPos;
 
     public void SetInstance(ThrowableWeaponInstance instance)
     {
         weaponInstance = instance;
     }
 
-    public void FlyNoEnemy(Vector2 direction)
+    public void Fly(Vector2 direction)
     {
         flyDirection = direction.normalized;
-        hasTarget = false;
-        isFlying = true;
-    }
-
-    public void FlyEnemy(Vector2 targetWorldPos)
-    {
-        this.targetWorldPos = targetWorldPos;
-        hasTarget = true;
         isFlying = true;
     }
 
     private void Update()
     {
         if (!isFlying) return;
-
-        if (hasTarget)
-        {
-            transform.position = Vector3.MoveTowards(transform.position, targetWorldPos, speed * Time.deltaTime);
-
-            if (Vector3.Distance(transform.position, targetWorldPos) < 0.01f)
-            {
-                isFlying = false;
-                ReturnToPool();
-            }
-        }
-        else
-        {
-            transform.position += (Vector3)(flyDirection * speed * Time.deltaTime);
-        }
+        transform.position += (Vector3)(flyDirection * speed * Time.deltaTime);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)

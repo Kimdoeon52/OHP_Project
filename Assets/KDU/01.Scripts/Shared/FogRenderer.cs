@@ -1,11 +1,11 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
 /// <summary>
 /// 시야 안개 렌더러
 /// </summary>
-public class FogRenderer : MonoBehaviour
+public class FogRenderer : Singleton<FogRenderer>
 {
     [SerializeField] private Tilemap fogTilemap;
     [SerializeField] private TileBase fogTile;
@@ -72,4 +72,12 @@ public class FogRenderer : MonoBehaviour
             fogTilemap.SetTile(pos, VisionSystem.Instance.IsVisible(cell) ? null : exploredTile);
         }
     }
+
+    public void SetTileExplored()
+    {
+		foreach (var cell in GridSystem.Instance.GetAllCells())
+		{
+			fogTilemap.SetTile(new Vector3Int(cell.x, cell.y, 0), exploredTile);
+		}
+	}
 }
