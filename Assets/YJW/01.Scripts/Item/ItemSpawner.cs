@@ -13,15 +13,16 @@ public class ItemSpawner : MonoBehaviour
 
 		ItemInstance instance = randomSO.CreateInstance();
 
-		// 픽업 프리팹 스폰
-		var pickup = Instantiate(itemPickupPrefab, pos, Quaternion.identity);
-		pickup.GetComponent<ItemPickup>().item = instance;
-
 		if (instance is EquipmentInstance equip) 
 		{
 			equip.enhanceLevel = RollEnhanceLevel();
 			equip.curse = RollCurse();
 		}
+
+		// 픽업 프리팹 스폰
+		var pickup = Instantiate(itemPickupPrefab, pos, Quaternion.identity);
+		pickup.GetComponent<ItemPickup>().item = instance;
+
 	}
 
 	private int RollEnhanceLevel()
