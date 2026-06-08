@@ -25,7 +25,8 @@ public class TimeSystem : Singleton<TimeSystem>
 
     private void Update()
     {
-        if (!IsRunning) return;
+        if (!IsRunning) 
+            return;
 
         TimeRemaining -= Time.deltaTime;
         GameEvents.OnTimeChanged?.Invoke(TimeRemaining);
@@ -40,7 +41,8 @@ public class TimeSystem : Singleton<TimeSystem>
 
     public void ConsumeTime(float seconds)
     {
-        if (!IsRunning) return;
+        if (!IsRunning)
+            return;
 
         TimeRemaining = Mathf.Max(0f, TimeRemaining - seconds);
         GameEvents.OnTimeChanged?.Invoke(TimeRemaining);

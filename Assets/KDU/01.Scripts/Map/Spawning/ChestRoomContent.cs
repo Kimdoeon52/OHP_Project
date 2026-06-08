@@ -1,12 +1,6 @@
 using UnityEngine;
 
-/// <summary>
-/// Special/Secret 방 한 종류의 "상자 구성" 정의 SO (GDD 6.2.1 / 6.2.2 중 상자류).
-/// 예) 랜덤 상자 방(랜덤상자 2~3), 골드 상자 방(골드상자 3), 반지 상자 방(반지상자 2),
-///     장비 상자 방(장비상자 1).
-/// ChestSpawner 가 방 타입별 풀에서 이 SO 를 1개 뽑아 배치한다.
-/// 새 상자 방 종류 = SO 1개 추가 + 풀 등록 (코드 수정 X).
-/// </summary>
+// Special/Secret 방 마다 들어갈 상자 구성
 [CreateAssetMenu(fileName = "ChestRoomContent", menuName = "Item/Chest Room")]
 public class ChestRoomContent : ScriptableObject
 {

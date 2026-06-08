@@ -1,10 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-/// <summary>
-/// 화면 페이드 인/아웃. 풀스크린 검정 Image + CanvasGroup 의 알파를 시간 보간.
-/// 타이머가 멈춰도 페이드는 동작해야 하므로 unscaledDeltaTime 사용.
-/// </summary>
+// 화면 페이드 인/아웃
 [RequireComponent(typeof(CanvasGroup))]
 public class ScreenFader : Singleton<ScreenFader>
 {
@@ -29,7 +26,9 @@ public class ScreenFader : Singleton<ScreenFader>
 
     private IEnumerator Fade(float target, float duration)
     {
-        if (_group == null) yield break;
+        if (_group == null) 
+            yield break;
+
         _group.blocksRaycasts = target > 0.001f;
         float start = _group.alpha;
         float t = 0f;

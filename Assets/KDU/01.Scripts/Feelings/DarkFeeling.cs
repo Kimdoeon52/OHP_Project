@@ -4,9 +4,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "DarkFeeling", menuName = "60s Dungeon/Feelings/Dark")]
 public class DarkFeeling : FloorFeeling
 {
-    public override string Id => "Dark";
+    public override string Id => "Dark"; // 아이디 기본값
 
-    [Tooltip("기본 시야 반경에서 빼는 칸 수")]
+    [Tooltip("제한 할 시야 반경")]
     [SerializeField, Min(0)] private int visionRadiusReduction = 2;
 
     public override void ApplyToInit(List<RoomData> rooms)
@@ -17,6 +17,5 @@ public class DarkFeeling : FloorFeeling
             return;
         }
         VisionSystem.Instance.VisionRadiusDelta = -visionRadiusReduction;
-        Debug.Log($"[DarkFeeling] VisionRadiusDelta = -{visionRadiusReduction} 적용");
     }
 }

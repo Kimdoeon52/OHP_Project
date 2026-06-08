@@ -9,28 +9,7 @@ public class DebugUI : MonoBehaviour
     [SerializeField] private TMP_Text keyText;
     [SerializeField] private TMP_Text statusText;
 
-    [Header("디버그 단축키")]
-    [Tooltip("이 키를 누르면 스페셜 방 열쇠 1개 지급(테스트용).")]
-    [SerializeField] private KeyCode debugGrantSpecialKey = KeyCode.K;
-
-    [Tooltip("이 키를 누르면 현재 씬의 모든 Secret 문을 즉시 발견(테스트용).")]
-    [SerializeField] private KeyCode debugRevealSecretsKey = KeyCode.L;
-
     private GridPlayer _player;
-
-    private void OnEnable()
-    {
-        GameEvents.OnPlayerDied += OnPlayerDied;
-        GameEvents.OnTimeUp += OnTimeUp;
-        GameEvents.OnLevelComplete += OnLevelComplete;
-    }
-
-    private void OnDisable()
-    {
-        GameEvents.OnPlayerDied -= OnPlayerDied;
-        GameEvents.OnTimeUp -= OnTimeUp;
-        GameEvents.OnLevelComplete -= OnLevelComplete;
-    }
 
     private void Start()
     {
@@ -54,21 +33,7 @@ public class DebugUI : MonoBehaviour
 
         if (keyText != null && KeyInventory.Instance != null)
             keyText.text = $"열쇠 S:{KeyInventory.Instance.GetCount(KeyType.SpecialRoom)} R:{KeyInventory.Instance.GetCount(KeyType.RingChest)}";
-
-        if (Input.GetKeyDown(debugGrantSpecialKey) && KeyInventory.Instance != null)
-            KeyInventory.Instance.Grant(KeyType.SpecialRoom);
-
-        if (Input.GetKeyDown(debugRevealSecretsKey))
-        {
-            var doors = FindObjectsByType<GridDoor>(FindObjectsSortMode.None);
-            foreach (var d in doors)
-                if (d.Kind == GridDoor.DoorKind.Secret) d.Discover();
-        }
     }
-
-    private void OnPlayerDied()    => SetStatus("사망 - 재시작 중...");
-    private void OnTimeUp()        => SetStatus("시간 초과 - 재시작 중...");
-    private void OnLevelComplete() => SetStatus("클리어! - 재시작 중...");
 
     private void SetStatus(string text)
     {

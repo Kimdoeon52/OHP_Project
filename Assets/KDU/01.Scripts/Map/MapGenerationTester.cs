@@ -20,7 +20,9 @@ public class MapGenerationTester : MonoBehaviour
     [ContextMenu("1) 단일 생성")]
     public void GenerateOnce()
     {
-        if (!ValidateRefs()) return;
+        if (!ValidateRefs())
+            return;
+
         var rooms = generator.Generate(runSeed, depth, builder, painter);
         Report(rooms);
     }
@@ -28,7 +30,9 @@ public class MapGenerationTester : MonoBehaviour
     [ContextMenu("2) 결정론 테스트")]
     public void DeterminismTest()
     {
-        if (!ValidateRefs()) return;
+        if (!ValidateRefs())
+            return;
+
         var hash1 = HashRooms(generator.Generate(runSeed, depth, builder, painter));
         var hash2 = HashRooms(generator.Generate(runSeed, depth, builder, painter));
         bool ok = hash1 == hash2;

@@ -22,7 +22,9 @@ public class PrototypeGameFlow : MonoBehaviour
 
     private void OnGameEnd()
     {
-        if (_gameEnded) return;
+        if (_gameEnded) 
+            return;
+
         _gameEnded = true;
         StartCoroutine(RestartAfterDelay());
     }

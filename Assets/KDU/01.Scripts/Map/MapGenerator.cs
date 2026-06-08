@@ -2,10 +2,6 @@
 using EnemySystem;
 using UnityEngine;
 
-/// <summary>
-/// 절차적 맵 생성 진입점. Initialize → Build → Paint → (Phase 4 Spawn) 파이프라인을 호출한다.
-/// 빌더/페인터/Feeling 은 외부에서 주입받아 결합도 낮춤.
-/// </summary>
 public class MapGenerator : Singleton<MapGenerator>
 {
 
@@ -27,28 +23,27 @@ public class MapGenerator : Singleton<MapGenerator>
     [Header("보스 층 배수")]
     [SerializeField] private int bossDepthInterval = 5;
 
-    [Tooltip("보스 층 로더")]
+    [Tooltip("보스 층")]
     [SerializeField] private BossRoomLoader bossRoomLoader;
 
     [Tooltip("Exit")]
     [SerializeField] private GridExit exitPrefab;
     private GridExit _currentExit;
 
-    // 보스 층 출구 셀 — 보스층은 생성 시점이 아니라 보스 처치(OnBossDefeated) 때 출구를 연다.
     private Vector2Int? _pendingBossExitCell;
 
-    [Tooltip("문 프리팹 — 1칸 통로(벽이 양옆으로 끊긴 입구)마다 배치")]
+    [Tooltip("문 프리팹")]
     [SerializeField] private GridDoor doorPrefab;
     private readonly List<GridDoor> _currentDoors = new();
 
-    [Tooltip("스페셜 방 열쇠 픽업 프리팹 (GDD 9.15). Special 방이 있는 층에 1개 스폰.")]
+    [Tooltip("스페셜 방 열쇠 프리팹")]
     [SerializeField] private KeyPickup specialKeyPickupPrefab;
     private readonly List<KeyPickup> _currentKeys = new();
 
-    [Tooltip("Special/Secret 방 상자 배치 스포너 (GDD 6.2.1/6.2.2 · 9.14).")]
+    [Tooltip("Special/Secret 방 상자 배치 스포너")]
     [SerializeField] private ChestSpawner chestSpawner;
 
-    [Tooltip("바닥 아이템 스포너 — 고정 스케줄(힘포션/강화스크롤) + 랜덤 아이템 (GDD 9).")]
+    [Tooltip("바닥 아이템 스포너")]
     [SerializeField] private MapItemSpawner mapItemSpawner;
 
     public DungeonRandom Rng { get; } = new DungeonRandom();
@@ -57,27 +52,31 @@ public class MapGenerator : Singleton<MapGenerator>
     public int CurrentDepth { get; private set; }
     public FloorFeeling CurrentFeeling { get; private set; }
 
-    /// <summary>현재 층의 Hazard 셀 좌표 — 이동 처리부가 페널티 판정용으로 조회. Generate 호출마다 갱신.</summary>
+    // 현재 층의 Hazard 셀 좌표
     public HashSet<Vector2Int> HazardCells { get; } = new HashSet<Vector2Int>();
 
-    /// <summary>Secret 방으로 들어가는 숨은 문 셀 — 페인터가 wall 로 봉인, 추후 문/탐색 시스템이 개통. Generate 호출마다 갱신.</summary>
+    // Secret 방으로 들어가는 숨은 문 셀
     public HashSet<Vector2Int> SecretGatewayCells { get; } = new HashSet<Vector2Int>();
 
-    /// <summary>Special 방으로 들어가는 잠긴 문 셀 — 통행 가능하되 추후 문/열쇠 시스템이 잠금 처리. Generate 호출마다 갱신.</summary>
+    // Special 방으로 들어가는 잠긴 문 셀
     public HashSet<Vector2Int> LockedGatewayCells { get; } = new HashSet<Vector2Int>();
 
-    /// <summary>Safe Room 출구 문 셀 — 처음엔 일반 문처럼 자동 개폐, 플레이어가 한 번 나가면 영구 잠김 (GDD 11.1).</summary>
+    // Safe Room 출구 문 셀
     public HashSet<Vector2Int> SafeGatewayCells { get; } = new HashSet<Vector2Int>();
 
-    /// <summary>현재 층의 월드 바운드 (floor 셀 + 패딩). 카메라 팬 제한 등에 사용. Generate 호출마다 갱신.</summary>
+    // 현재 층의 월드 바운드
     public Bounds MapWorldBounds { get; private set; }
     public bool MapWorldBoundsValid { get; private set; }
 
-    /// <summary>depth -> 영역(1=하수구, 2=던전, 3=지옥)</summary>
+    // depth로 영역 구분 (1=하수구, 2=던전, 3=지옥)
     public static int AreaFromDepth(int depth)
     {
-        if (depth <= 5) return 1;
-        if (depth <= 10) return 2;
+        if (depth <= 5) 
+            return 1;
+
+        if (depth <= 10) 
+            return 2;
+
         return 3;
     }
 
@@ -96,23 +95,19 @@ public class MapGenerator : Singleton<MapGenerator>
         GameEvents.OnBossDefeated -= OnBossDefeated;
     }
 
-    /// <summary>보스 처치 시 호출 — 보스층에서 미뤄둔 출구 마커를 이때 스폰한다 (GDD 5.1/6.2: Exit 는 보스 처치 시 열림).</summary>
+    // 보스 처치 시 출구 생성
     private void OnBossDefeated()
     {
-        if (!_pendingBossExitCell.HasValue) return;
+        if (!_pendingBossExitCell.HasValue)
+            return;
+
         SpawnExitMarker(_pendingBossExitCell);
         _pendingBossExitCell = null;
     }
 
-    /// <summary>
-    /// 시드 기반 한 층의 맵을 생성한다.
-    /// </summary>
-    public List<RoomData> Generate(
-        int runSeed,
-        int depth,
-        ILayoutBuilder builder = null,
-        IRegionPainter painter = null,
-        FloorFeeling feeling = null)
+
+    // 시드 기반 한 층의 맵을 생성한다.
+    public List<RoomData> Generate( int runSeed, int depth, ILayoutBuilder builder = null, IRegionPainter painter = null, FloorFeeling feeling = null)
     {
 
         CurrentSeed = runSeed;
@@ -125,60 +120,79 @@ public class MapGenerator : Singleton<MapGenerator>
         DestroyCurrentExit();
         DestroyCurrentDoors();
         DestroyCurrentKeys();
-        if (chestSpawner != null) chestSpawner.Clear();
-        if (mapItemSpawner != null) mapItemSpawner.Clear();
+
+        if (chestSpawner != null) 
+            chestSpawner.Clear();
+
+        if (mapItemSpawner != null) 
+            mapItemSpawner.Clear();
+
         // 이전 층의 Feeling 효과 리셋
-        if (VisionSystem.Instance != null) VisionSystem.Instance.VisionRadiusDelta = 0;
-        // 열쇠는 해당 층에서만 사용 가능 (GDD 9.15) → 층 진입 시 폐기.
-        if (KeyInventory.Instance != null) KeyInventory.Instance.ClearAll();
+        if (VisionSystem.Instance != null)
+            VisionSystem.Instance.VisionRadiusDelta = 0;
+
+        // 열쇠는 해당 층에서만 사용 가능
+        if (KeyInventory.Instance != null)
+            KeyInventory.Instance.ClearAll();
+
         Rng.Init(DungeonRandom.DeriveFloorSeed(runSeed, depth));
 
         // 보스 층 분기
         if (IsBossDepth(depth) && bossRoomLoader != null)
         {
             var bossRooms = bossRoomLoader.Load(depth, tilemaps, out var bossExitCell);
-            if (bossRooms == null) return null;
+
+            if (bossRooms == null) 
+                return null;
+
             CurrentRooms = bossRooms;
             CurrentFeeling = null;
-            // 출구는 지금 띄우지 않는다 — 보스 처치(GameEvents.OnBossDefeated) 시 OnBossDefeated 핸들러가 스폰.
+
             _pendingBossExitCell = bossExitCell;
-            if (Spawner != null) Spawner.Spawn(bossRooms, depth, Rng);
+
+            if (Spawner != null)
+                Spawner.Spawn(bossRooms, depth, Rng);
+
             return bossRooms;
         }
 
-        if (feeling == null && feelingPool != null) feeling = feelingPool.Pick(Rng, depth);
-        if (builder == null && builderPool != null) builder = builderPool.Pick(Rng);
-        if (painter == null && painterPool != null) painter = painterPool.Pick(Rng, depth);
+        if (feeling == null && feelingPool != null) 
+            feeling = feelingPool.Pick(Rng, depth);
+        if (builder == null && builderPool != null) 
+            builder = builderPool.Pick(Rng);
+        if (painter == null && painterPool != null) 
+            painter = painterPool.Pick(Rng, depth);
 
-        if (builder == null) { Debug.LogError("[MapGenerator] builder 가 null"); return null; }
-        if (painter == null) { Debug.LogError("[MapGenerator] painter 가 null"); return null; }
+        if (builder == null) 
+        { 
+            Debug.LogError("[MapGenerator] builder 가 null"); 
+            return null; 
+        }
+        if (painter == null) 
+        { 
+            Debug.LogError("[MapGenerator] painter 가 null"); 
+            return null; 
+        }
 
         CurrentFeeling = feeling;
         if (feelingPool == null)
-            Debug.LogWarning("[MapGenerator] feelingPool 슬롯 비어있음 — Feeling 적용 안 됨");
-        else if (feeling == null)
-            Debug.Log($"[MapGenerator] depth={depth} 에서 Feeling 미발동");
-        else
-            Debug.Log($"[MapGenerator] depth={depth} Feeling 발동: {feeling.Id}");
+            Debug.LogWarning("[MapGenerator] feelingpool 비었음");
 
         var rooms = InitializeRooms(depth, Rng);
         feeling?.ApplyToInit(rooms);
 
         rooms = builder.Build(rooms, Rng);
         if (rooms == null)
-        {
-            Debug.LogError("[MapGenerator] Builder가 null 반환함");
             return null;
-        }
 
-        // Special/Secret 막다른 가지의 입구 셀을 게이트 집합으로 노출.
-        // 페인터가 Secret 게이트를 wall 로 봉인하므로 Paint 전에 채워야 함.
         DeriveGatewayCells(rooms);
 
         painter.Paint(rooms, tilemaps, feeling, Rng);
 
         Vector2Int? exitCell = FindExitCell(rooms);
-        if (exitCell.HasValue) ClearHazardAround(exitCell.Value);
+
+        if (exitCell.HasValue) 
+            ClearHazardAround(exitCell.Value);
 
         SpawnExitMarker(exitCell);
 
@@ -188,17 +202,19 @@ public class MapGenerator : Singleton<MapGenerator>
             Spawner.Spawn(rooms, depth, Rng);
         }
 
-        // 문은 스폰 뒤에 배치 — 닫힌 문이 스폰 단계의 도달성 판정을 막지 않도록.
+        // 문 배치
         PlaceDoors(rooms);
 
-        // 열쇠 픽업 배치 — Special 방이 있으면 스페셜 키 1개를 Normal/Exit 방 임의 셀에 (GDD 9.15).
+        // 열쇠 배치
         SpawnKeys(rooms);
 
-        // 상자 배치 — Special/Secret 방 상자 구성 + Normal/Exit 랜덤 상자 20% (GDD 6.2.1/6.2.2 · 9.14).
-        if (chestSpawner != null) chestSpawner.Spawn(rooms, Rng);
+        // 상자 배치
+        if (chestSpawner != null) 
+            chestSpawner.Spawn(rooms, Rng);
 
-        // 바닥 아이템 — 고정 스케줄(힘포션/강화스크롤) + 랜덤 아이템 (GDD 9).
-        if (mapItemSpawner != null) mapItemSpawner.Spawn(rooms, depth, CurrentSeed, Rng);
+        // 바닥 아이템 배치
+        if (mapItemSpawner != null)
+            mapItemSpawner.Spawn(rooms, depth, CurrentSeed, Rng);
 
         ComputeMapBounds(rooms);
 
@@ -220,7 +236,7 @@ public class MapGenerator : Singleton<MapGenerator>
 
         if (IsBossDepth(depth))
         {
-            // 보스 층: Safe + Boss(Giant) + Exit. Normal 없음. Exit 는 보스 처치 시 열림
+            // 보스 층
             rooms.Add(new RoomData { type = RoomType.Boss, sizeCategory = SizeCategory.Giant });
         }
         else
@@ -235,22 +251,18 @@ public class MapGenerator : Singleton<MapGenerator>
                 });
             }
 
-            // 특수 방: 층당 Special 0~1, Secret 0~1 (GDD 6.2). 빌더가 막다른 가지로 따로 부착.
             float specialChance = config != null ? config.specialRoomChance : 0f;
             float secretChance = config != null ? config.secretRoomChance : 0f;
-            // 하위 종류는 여기서 1회 결정(중앙 단일 진실, GDD 6.2.1/6.2.2 균등 1/n).
-            // 이후 ChestSpawner(상자류)·EnemySpawner(몬스터 방 골렘) 등이 이 값을 읽어 분담.
+
             if (rng.Chance(specialChance))
             {
                 var kind = (SpecialRoomKind)rng.Range(0, System.Enum.GetValues(typeof(SpecialRoomKind)).Length);
                 rooms.Add(new RoomData { type = RoomType.Special, sizeCategory = SizeCategory.Normal, specialKind = kind });
-                Debug.Log($"[MapGenerator] depth={depth} Special 방 종류 = {kind}");
             }
             if (rng.Chance(secretChance))
             {
                 var kind = (SecretRoomKind)rng.Range(0, System.Enum.GetValues(typeof(SecretRoomKind)).Length);
                 rooms.Add(new RoomData { type = RoomType.Secret, sizeCategory = SizeCategory.Normal, secretKind = kind });
-                Debug.Log($"[MapGenerator] depth={depth} Secret 방 종류 = {kind}");
             }
         }
 
@@ -258,9 +270,6 @@ public class MapGenerator : Singleton<MapGenerator>
         return rooms;
     }
 
-    /// <summary>
-    /// Secret = 숨은 문(페인터가 wall 봉인), Special = 잠긴 문 - 구현해야됨.
-    /// </summary>
     private void DeriveGatewayCells(List<RoomData> rooms)
     {
         SecretGatewayCells.Clear();
@@ -283,7 +292,8 @@ public class MapGenerator : Singleton<MapGenerator>
     private static Vector2Int? FindExitCell(List<RoomData> rooms)
     {
         var exitRoom = rooms.Find(r => r.type == RoomType.Exit);
-        if (exitRoom == null || exitRoom.floorCells == null || exitRoom.floorCells.Count == 0) return null;
+        if (exitRoom == null || exitRoom.floorCells == null || exitRoom.floorCells.Count == 0)
+            return null;
 
         Vector2 center = Vector2.zero;
         foreach (var c in exitRoom.floorCells) 
@@ -304,9 +314,7 @@ public class MapGenerator : Singleton<MapGenerator>
         return best;
     }
 
-    // 출구 주변 hazard 청소. HazardFeeling 이 2-격자 정렬로만 칠하므로,
-    // clear 영역도 짝수 시작·홀수 끝(2-aligned) 으로 맞춰 1칸짜리 remnant 가 안 남게 함.
-    // 결과: 출구 3×3 을 덮는 4×4 짝수 정렬 블록이 비워짐.
+    // 출구 주변 hazard 없게 정리
     private void ClearHazardAround(Vector2Int center)
     {
         if (tilemaps == null || tilemaps.hazard == null) 
@@ -341,19 +349,16 @@ public class MapGenerator : Singleton<MapGenerator>
             Destroy(_currentExit.gameObject);
         else
             DestroyImmediate(_currentExit.gameObject);
+
         _currentExit = null;
     }
 
-    /// <summary>
-    /// 방 입구(1칸 통로 = 벽이 양옆으로 끊긴 floor 셀)마다 문을 배치한다.
-    /// 후보는 빌드 때 기록된 doorCells(방-복도 접점). 복도 중간엔 doorCell 이 없어 문이 안 생긴다.
-    /// Secret(봉인 상태)·Tunnel 은 제외, 1칸 통로 형태가 아닌 셀(dissolve 로 넓어진 입구 등)도 제외.
-    /// </summary>
+    /// 방 입구마다 문 배치
     private void PlaceDoors(List<RoomData> rooms)
     {
-        if (doorPrefab == null) return;
+        if (doorPrefab == null) 
+            return;
 
-        // SafeExit 의 '바깥 셀' 계산용 — Safe 인테리어 셀 집합.
         var safeRoom = rooms.Find(r => r.type == RoomType.Safe);
         HashSet<Vector2Int> safeFloor = (safeRoom != null && safeRoom.floorCells != null)
             ? new HashSet<Vector2Int>(safeRoom.floorCells)
@@ -362,19 +367,28 @@ public class MapGenerator : Singleton<MapGenerator>
         var placed = new HashSet<Vector2Int>();
         foreach (var room in rooms)
         {
-            if (room.type == RoomType.Secret || room.type == RoomType.Tunnel) continue;
-            if (room.doorCells == null) continue;
+            if (room.type == RoomType.Secret || room.type == RoomType.Tunnel)
+                continue;
+
+            if (room.doorCells == null) 
+                continue;
 
             foreach (var cell in room.doorCells)
             {
-                if (placed.Contains(cell)) continue;
-                if (!IsDoorwayCell(cell, out bool horizontalPassage)) continue;
+                if (placed.Contains(cell))
+                    continue;
+
+                if (!IsDoorwayCell(cell, out bool horizontalPassage))
+                    continue;
 
                 placed.Add(cell);
                 GridDoor.DoorKind kind;
-                if (SafeGatewayCells.Contains(cell)) kind = GridDoor.DoorKind.SafeExit;
-                else if (LockedGatewayCells.Contains(cell)) kind = GridDoor.DoorKind.Locked;
-                else kind = GridDoor.DoorKind.Normal;
+                if (SafeGatewayCells.Contains(cell))
+                    kind = GridDoor.DoorKind.SafeExit;
+                else if (LockedGatewayCells.Contains(cell))
+                    kind = GridDoor.DoorKind.Locked;
+                else
+                    kind = GridDoor.DoorKind.Normal;
 
                 var door = SpawnDoor(cell, horizontalPassage, kind);
                 if (kind == GridDoor.DoorKind.SafeExit && safeFloor != null)
@@ -385,36 +399,32 @@ public class MapGenerator : Singleton<MapGenerator>
             }
         }
 
-        // Secret 게이트: 페인터가 wall 로 봉인한 셀에 숨겨진 문 배치.
-        // 셀 자체는 wall 이므로 IsDoorwayCell 의 floor 전제 검사를 통과 못함 — 별도 판정 사용.
+        // wall 로 봉인되어있는 시크릿 입구에 문 배치
         int secretSpawned = 0;
         foreach (var cell in SecretGatewayCells)
         {
-            if (placed.Contains(cell)) continue;
-            if (!IsSecretDoorwayCell(cell, out bool horizontalPassage)) continue;
+            if (placed.Contains(cell))
+                continue;
+
+            if (!IsSecretDoorwayCell(cell, out bool horizontalPassage)) 
+                continue;
+
             placed.Add(cell);
             SpawnDoor(cell, horizontalPassage, GridDoor.DoorKind.Secret);
             secretSpawned++;
         }
-        if (SecretGatewayCells.Count > 0)
-            Debug.Log($"[MapGenerator] Secret 게이트 {SecretGatewayCells.Count}칸 중 {secretSpawned}개 문 배치");
     }
 
     private GridDoor SpawnDoor(Vector2Int cell, bool horizontalPassage, GridDoor.DoorKind kind)
     {
-        Vector3 pos = GridSystem.Instance != null
-            ? GridSystem.Instance.GridToWorld(cell)
-            : new Vector3(cell.x, cell.y, 0);
+        Vector3 pos = GridSystem.Instance != null ? GridSystem.Instance.GridToWorld(cell) : new Vector3(cell.x, cell.y, 0);
         var door = Instantiate(doorPrefab, pos, Quaternion.identity);
         door.Initialize(cell, horizontalPassage, kind);
         _currentDoors.Add(door);
         return door;
     }
 
-    /// <summary>
-    /// Safe 게이트 셀의 '바깥' 쪽 인접 셀 — 통로 축 두 이웃 중 Safe.floorCells 에 없는 쪽.
-    /// 플레이어가 이 셀에 도달하면 = Safe 를 빠져나간 시점으로 간주.
-    /// </summary>
+    // Safe방 나왔는지 체크
     private static Vector2Int ComputeSafeOutsideCell(Vector2Int cell, bool horizontalPassage, HashSet<Vector2Int> safeFloor)
     {
         if (horizontalPassage)
@@ -429,11 +439,7 @@ public class MapGenerator : Singleton<MapGenerator>
         }
     }
 
-    /// <summary>
-    /// Secret 게이트 셀(wall 봉인) 통로 방향 판정.
-    /// Secret 게이트는 짝(2칸)이라 통로 축에서 한쪽은 floor(호스트/터널), 반대편은 다른 게이트(wall) 형태.
-    /// → "수직축 둘 다 wall + 수평축 중 한 쪽이 floor" 이면 좌우 통로, 그 반대면 상하 통로.
-    /// </summary>
+    // Secret방 문 상하좌우 판단
     private bool IsSecretDoorwayCell(Vector2Int cell, out bool horizontalPassage)
     {
         horizontalPassage = false;
@@ -443,28 +449,34 @@ public class MapGenerator : Singleton<MapGenerator>
         bool floorD = IsOpenFloor(cell + Vector2Int.down);
         bool horiz = !floorU && !floorD && (floorL || floorR);
         bool vert = !floorL && !floorR && (floorU || floorD);
-        if (horiz == vert) return false;
+
+        if (horiz == vert) 
+            return false;
+
         horizontalPassage = horiz;
         return true;
     }
 
-    /// <summary>cell 이 1칸 폭 통로(양옆이 벽, 통로 방향만 트인 floor)인지. horizontalPassage = 좌우로 통하는지.</summary>
+    // 상하 좌우 문
     private bool IsDoorwayCell(Vector2Int cell, out bool horizontalPassage)
     {
         horizontalPassage = false;
-        if (!IsOpenFloor(cell)) return false;
+        if (!IsOpenFloor(cell)) 
+            return false;
 
         bool wallL = IsWallCell(cell + Vector2Int.left);
         bool wallR = IsWallCell(cell + Vector2Int.right);
         bool wallU = IsWallCell(cell + Vector2Int.up);
         bool wallD = IsWallCell(cell + Vector2Int.down);
 
-        // 좌우로 통하는 입구: 위아래가 벽, 좌우가 트임.
+        // 좌우로 통하는 입구
         bool horiz = wallU && wallD && IsOpenFloor(cell + Vector2Int.left) && IsOpenFloor(cell + Vector2Int.right);
-        // 상하로 통하는 입구: 좌우가 벽, 위아래가 트임.
+        // 상하로 통하는 입구
         bool vert = wallL && wallR && IsOpenFloor(cell + Vector2Int.up) && IsOpenFloor(cell + Vector2Int.down);
 
-        if (horiz == vert) return false; // 둘 다거나 둘 다 아니면 1칸 통로가 아님
+        if (horiz == vert)
+            return false;
+
         horizontalPassage = horiz;
         return true;
     }
@@ -474,12 +486,16 @@ public class MapGenerator : Singleton<MapGenerator>
         return tilemaps != null && tilemaps.wall != null && tilemaps.wall.HasTile(new Vector3Int(c.x, c.y, 0));
     }
 
-    // 통행 가능한 바닥(벽/구덩이 아래 깔린 floor 타일은 제외).
+    // 통행 가능한 바닥
     private bool IsOpenFloor(Vector2Int c)
     {
         var cell = new Vector3Int(c.x, c.y, 0);
-        if (tilemaps == null || tilemaps.floor == null || !tilemaps.floor.HasTile(cell)) return false;
-        if (tilemaps.wall != null && tilemaps.wall.HasTile(cell)) return false;
+        if (tilemaps == null || tilemaps.floor == null || !tilemaps.floor.HasTile(cell))
+            return false;
+
+        if (tilemaps.wall != null && tilemaps.wall.HasTile(cell)) 
+            return false;
+
         return true;
     }
 
@@ -487,28 +503,36 @@ public class MapGenerator : Singleton<MapGenerator>
     {
         foreach (var door in _currentDoors)
         {
-            if (door == null) continue;
-            if (Application.isPlaying) Destroy(door.gameObject);
-            else DestroyImmediate(door.gameObject);
+            if (door == null) 
+                continue;
+
+            if (Application.isPlaying)
+                Destroy(door.gameObject);
+            else 
+                DestroyImmediate(door.gameObject);
         }
         _currentDoors.Clear();
     }
 
-    /// <summary>
-    /// 열쇠 픽업 배치. Special 방이 한 층에 있으면 SpecialRoom 키 1개를 Normal/Exit 방의
-    /// floor 셀(doorCells 인접·HazardCells 제외) 중 무작위 1곳에. (GDD 9.15)
-    /// </summary>
+    // 열쇠 배치
     private void SpawnKeys(List<RoomData> rooms)
     {
-        if (specialKeyPickupPrefab == null) return;
-        if (rooms == null) return;
-        if (!rooms.Exists(r => r.type == RoomType.Special)) return;
+        if (specialKeyPickupPrefab == null)
+            return;
 
-        // 입구 인접 셀 제외 — 문 옆에 바로 떨어지면 자동 개폐와 겹쳐 어색.
+        if (rooms == null) 
+            return;
+
+        if (!rooms.Exists(r => r.type == RoomType.Special))
+            return;
+
+        // 입구 인접 셀 제외
         var avoid = new HashSet<Vector2Int>();
         foreach (var room in rooms)
         {
-            if (room.doorCells == null) continue;
+            if (room.doorCells == null) 
+                continue;
+
             foreach (var d in room.doorCells)
             {
                 avoid.Add(d);
@@ -522,21 +546,24 @@ public class MapGenerator : Singleton<MapGenerator>
         var candidates = new List<Vector2Int>();
         foreach (var room in rooms)
         {
-            if (room.type != RoomType.Normal && room.type != RoomType.Exit) continue;
-            if (room.floorCells == null) continue;
+            if (room.type != RoomType.Normal && room.type != RoomType.Exit) 
+                continue;
+            if (room.floorCells == null) 
+                continue;
             foreach (var c in room.floorCells)
             {
-                if (avoid.Contains(c)) continue;
-                if (HazardCells.Contains(c)) continue;
+                if (avoid.Contains(c)) 
+                    continue;
+                if (HazardCells.Contains(c)) 
+                    continue;
                 candidates.Add(c);
             }
         }
-        if (candidates.Count == 0) return;
+        if (candidates.Count == 0) 
+            return;
 
         var cell = Rng.Pick(candidates);
-        Vector3 pos = GridSystem.Instance != null
-            ? GridSystem.Instance.GridToWorld(cell)
-            : new Vector3(cell.x, cell.y, 0);
+        Vector3 pos = GridSystem.Instance != null ? GridSystem.Instance.GridToWorld(cell) : new Vector3(cell.x, cell.y, 0);
         var pickup = Instantiate(specialKeyPickupPrefab, pos, Quaternion.identity);
         pickup.Initialize(cell, KeyType.SpecialRoom);
         _currentKeys.Add(pickup);
@@ -546,25 +573,33 @@ public class MapGenerator : Singleton<MapGenerator>
     {
         foreach (var key in _currentKeys)
         {
-            if (key == null) continue;
-            if (Application.isPlaying) Destroy(key.gameObject);
-            else DestroyImmediate(key.gameObject);
+            if (key == null) 
+                continue;
+
+            if (Application.isPlaying) 
+                Destroy(key.gameObject);
+
+            else 
+                DestroyImmediate(key.gameObject);
         }
         _currentKeys.Clear();
     }
 
-    /// <summary>현재 층의 floor 셀 + 패딩을 감싸는 월드 바운드 계산. CameraFollow 가 팬 제한에 사용.</summary>
+    // 현재 층의 월드 크기 계산
     private void ComputeMapBounds(List<RoomData> rooms)
     {
         MapWorldBoundsValid = false;
-        if (rooms == null || GridSystem.Instance == null) return;
+        if (rooms == null || GridSystem.Instance == null) 
+            return;
 
         int minX = int.MaxValue, minY = int.MaxValue;
         int maxX = int.MinValue, maxY = int.MinValue;
         bool any = false;
         foreach (var r in rooms)
         {
-            if (r.floorCells == null) continue;
+            if (r.floorCells == null) 
+                continue;
+
             foreach (var c in r.floorCells)
             {
                 if (c.x < minX) minX = c.x;
@@ -574,18 +609,16 @@ public class MapGenerator : Singleton<MapGenerator>
                 any = true;
             }
         }
-        if (!any) return;
+        if (!any)
+            return;
 
-        // 외벽이 보이도록 약간 여유.
-        const int padding = 2;
+        const int padding = -2;
         minX -= padding; minY -= padding;
         maxX += padding; maxY += padding;
 
         var wMin = GridSystem.Instance.GridToWorld(new Vector2Int(minX, minY));
         var wMax = GridSystem.Instance.GridToWorld(new Vector2Int(maxX, maxY));
-        MapWorldBounds = new Bounds(
-            (wMin + wMax) * 0.5f,
-            new Vector3(Mathf.Abs(wMax.x - wMin.x), Mathf.Abs(wMax.y - wMin.y), 0f));
+        MapWorldBounds = new Bounds( (wMin + wMax) * 0.5f, new Vector3(Mathf.Abs(wMax.x - wMin.x), Mathf.Abs(wMax.y - wMin.y), 0f));
         MapWorldBoundsValid = true;
     }
 

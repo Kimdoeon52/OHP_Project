@@ -21,14 +21,14 @@ public static class GameEvents
 
     // 보상 드롭
     public static Action<Vector2Int, int> OnExpDropped;     // pos, exp
-    public static Action<Vector2Int, int> OnGoldDropped;    // pos, gold — "골드 획득"(픽업 줍기 등). 지갑이 구독해 가산.
+    public static Action<Vector2Int, int> OnGoldDropped;    // pos, gold
     public static Action<int> OnGoldChanged;                // 지갑 잔액 변동 후 현재 잔액. HUD 가 구독.
 
-    // 상호작용 (튜토리얼 등 구독)
+    // 상호작용
     public static Action<Vector2Int> OnChestOpened;         // 상자 개방 셀
     public static Action<KeyType> OnKeyAcquired;            // 획득한 열쇠 종류
 
-    // 탐색 액션 — center 기준 체비셰프 radius 안의 숨겨진 것(문/함정 등)이 구독해 드러남.
+    // 탐색 액션
     public static Action<Vector2Int, int> OnSearchPerformed; // center, radius (1 = 3x3)
     public static Action<Vector2Int> OnSecretDiscovered;     // 숨겨진 문/함정이 실제로 드러난 셀
 
@@ -39,35 +39,35 @@ public static class GameEvents
     public static Action<IReadOnlyCollection<Vector2Int>, IReadOnlyCollection<Vector2Int>> OnVisionUpdated; // visible, explored
 
     // 게임 상태
-    public static Action OnPlayerDied;
-    public static Action OnLevelComplete;
-    public static Action OnBossDefeated;    // 보스 처치 — 맵 출구 개방 등이 구독
+    public static Action OnPlayerDied;                // 플레이어 사망
+    public static Action OnLevelComplete;             // 레벨업
+    public static Action OnBossDefeated;              // 보스 처치 — 맵 출구 개방 등이 구독
 
     public static void ClearAllEvents()
     {
-        OnTimeChanged = null;
-        OnTimeUp = null;
-        OnPlayerActionCompleted = null;
-        OnEnemyKilled = null;
-        OnPlayerDamaged = null;
-        OnCombatTextRequested = null;
-        OnTrapTriggered = null;
-        OnStatusRequested = null;
-        OnTrapTerrainRequested = null;
-        OnTrapSpawnRequested = null;
-        OnTrapStubRequested = null;
-        OnExpDropped = null;
-        OnGoldDropped = null;
-        OnGoldChanged = null;
-        OnChestOpened = null;
-        OnKeyAcquired = null;
-        OnSearchPerformed = null;
-        OnSecretDiscovered = null;
-        OnStatusEffectApplied = null;
-        OnVisionUpdated = null;
-        OnPlayerDied = null;
-        OnLevelComplete = null;
-        OnBossDefeated = null;
-        CombatTextCriticalContext.Clear();
+        OnTimeChanged = null;               // 타이머
+        OnTimeUp = null;                    // 타이머 종료
+        OnPlayerActionCompleted = null;     // 플레이어 행동 완료
+        OnEnemyKilled = null;               // 적 처치
+        OnPlayerDamaged = null;             // 플레이어 피해
+        OnCombatTextRequested = null;       // 전투 텍스트
+        OnTrapTriggered = null;             // 함정 발동
+        OnStatusRequested = null;           // 상태
+        OnTrapTerrainRequested = null;      // 함정 지형
+        OnTrapSpawnRequested = null;        // 함정 생성
+        OnTrapStubRequested = null;         // 함정 미리보기
+        OnExpDropped = null;                // 경험치 드롭
+        OnGoldDropped = null;               // 골드 드롭
+        OnGoldChanged = null;               // 골드 잔액 변동
+        OnChestOpened = null;               // 상자 개방
+        OnKeyAcquired = null;               // 열쇠 획득
+        OnSearchPerformed = null;           // 탐색 액션
+        OnSecretDiscovered = null;          // 숨겨진 요소 발견
+        OnStatusEffectApplied = null;       // 상태이상 적용
+        OnVisionUpdated = null;             // 시야 업데이트
+        OnPlayerDied = null;                // 플레이어 사망
+        OnLevelComplete = null;             // 레벨업
+        OnBossDefeated = null;              // 보스 처치
+        CombatTextCriticalContext.Clear();  // 전투 텍스트 초기화
     }
 }

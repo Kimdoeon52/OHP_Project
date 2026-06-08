@@ -2,37 +2,25 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 격자 위 상자 (GDD 9.14). GridDoor / KeyPickup 와 같은 패턴.
-/// 플레이어가 인접하면 openSeconds(기본 1초) 동안 머물러 개방 → 보상 드롭.
-/// 반지 상자(RequiresKey)는 해당 열쇠 보유 시에만 개방되며 개방 시 열쇠 1개 소비.
-/// 보상은 생성 시점(Initialize)에 전달받은 DungeonRandom 으로 미리 굴려두어 시드 결정론 유지.
-/// 시야 밖에서는 렌더러를 숨기고, 한 번 탐험된 셀이면 계속 표시.
-/// </summary>
+
+// 상자
 [RequireComponent(typeof(SpriteRenderer))]
 public class GridChest : MonoBehaviour
 {
     public Vector2Int GridPosition { get; private set; }
     public bool IsOpened => _opened;
 
-    [Header("상자 종류 — MapGenerator 가 Initialize 로 덮어씀")]
+    [Header("상자 종류")]
     [SerializeField] private ChestData data;
 
-    [Header("전리품 풀 / 프리팹")]
-    [Tooltip("아이템 추첨 대상 마스터 풀 (ID 구간으로 필터).")]
+    [Header("풀 / 프리팹")]
     [SerializeField] private ItemPool itemPool;
-    [Tooltip("드롭할 아이템 픽업 프리팹.")]
     [SerializeField] private ItemPickup itemPickupPrefab;
-    [Tooltip("드롭할 골드 픽업 프리팹 (골드 상자용).")]
     [SerializeField] private GoldPickup goldPickupPrefab;
-    [Tooltip("장비에 부여할 수 있는 저주 풀 (비우면 저주 없음).")]
     [SerializeField] private CurseData[] cursePool;
 
-    [Header("개방 연출 — 애니메이션 재생 후 상자 제거")]
-    [Tooltip("개방 시 발동할 Animator 트리거 이름 (Animator 는 프리팹에 컴포넌트로 추가).")]
-    [SerializeField] private string openTrigger = "Open";
-    [Tooltip("애니메이션 재생 시간 — 이 시간 뒤 보상 드롭 + 상자 제거.")]
     [SerializeField, Min(0f)] private float openAnimationSeconds = 0.5f;
+    private string openTrigger = "Open";
 
     private struct Reward
     {
@@ -70,14 +58,11 @@ public class GridChest : MonoBehaviour
         GameEvents.OnVisionUpdated -= OnVisionUpdated;
     }
 
-    /// <summary>MapGenerator/스포너가 호출 — 셀·종류 지정 후 보상을 결정론적으로 굴려둔다.</summary>
     public void Initialize(Vector2Int cell, ChestData chestData, DungeonRandom rng)
     {
         GridPosition = cell;
         data = chestData;
-        transform.position = GridSystem.Instance != null
-            ? GridSystem.Instance.GridToWorld(cell)
-            : new Vector3(cell.x, cell.y, 0);
+        transform.position = GridSystem.Instance != null ? GridSystem.Instance.GridToWorld(cell) : new Vector3(cell.x, cell.y, 0);
 
         RollRewards(rng);
         _initialized = true;
@@ -88,14 +73,13 @@ public class GridChest : MonoBehaviour
     {
         _player = FindFirstObjectByType<GridPlayer>();
 
-        // 씬에 직접 배치된 테스트용 상자 — Initialize 가 안 불렸으면 현재 위치로 자체 초기화.
+        // 튜토리얼용 직접 배치 상자
         if (!_initialized && data != null)
         {
-            Vector2Int cell = GridSystem.Instance != null
-                ? GridSystem.Instance.WorldToGrid(transform.position)
-                : Vector2Int.zero;
+            Vector2Int cell = GridSystem.Instance != null ? GridSystem.Instance.WorldToGrid(transform.position) : Vector2Int.zero;
+
             var rng = new DungeonRandom();
-            rng.Init((cell.x * 73856093) ^ (cell.y * 19349663));
+            rng.Init((cell.x * 73856093) ^ (cell.y * 19349663)); // 해시 기반 시드
             Initialize(cell, data, rng);
         }
 
@@ -104,10 +88,11 @@ public class GridChest : MonoBehaviour
 
     private void Update()
     {
-        if (_opened || data == null || _player == null || _player.IsDead) return;
+        if (_opened || data == null || _player == null || _player.IsDead) 
+            return;
 
-        int dist = Mathf.Abs(_player.GridPosition.x - GridPosition.x)
-                 + Mathf.Abs(_player.GridPosition.y - GridPosition.y);
+        int dist = Mathf.Abs(_player.GridPosition.x - GridPosition.x) + Mathf.Abs(_player.GridPosition.y - GridPosition.y);
+
         bool adjacent = dist <= 1;
 
         if (!adjacent)
@@ -116,7 +101,7 @@ public class GridChest : MonoBehaviour
             return;
         }
 
-        // 반지 상자 등 — 열쇠 없으면 개방 진행 불가.
+        // 열쇠 필요
         if (data.RequiresKey)
         {
             var inv = KeyInventory.Instance;
@@ -128,6 +113,7 @@ public class GridChest : MonoBehaviour
         }
 
         _openProgress += Time.deltaTime;
+
         if (_openProgress >= data.OpenSeconds)
             TryOpen();
     }
@@ -147,8 +133,8 @@ public class GridChest : MonoBehaviour
         _opened = true;
         GameEvents.OnChestOpened?.Invoke(GridPosition);
 
-        // Animator 가 있으면 열림 트리거 발동, 없으면 OpenedSprite 로 대체.
         var animator = GetComponentInChildren<Animator>();
+
         if (animator != null && !string.IsNullOrEmpty(openTrigger))
             animator.SetTrigger(openTrigger);
         else
@@ -157,7 +143,6 @@ public class GridChest : MonoBehaviour
         StartCoroutine(OpenRoutine());
     }
 
-    // 열림 애니메이션 재생 후 보상을 드롭하고 상자를 제거 — 드롭된 아이템만 남는다.
     private IEnumerator OpenRoutine()
     {
         if (openAnimationSeconds > 0f)
@@ -167,16 +152,17 @@ public class GridChest : MonoBehaviour
         Destroy(gameObject);
     }
 
-    // ───── 보상 추첨 (Initialize 시점, 시드 결정론) ─────
-
+    // 보상 확정
     private void RollRewards(DungeonRandom rng)
     {
         _itemRewards.Clear();
         _goldReward = 0;
-        if (data == null || rng == null) return;
+        if (data == null || rng == null) 
+            return;
 
         var candidates = BuildCandidates();
         int count = rng.Range(data.ItemDropMin, data.ItemDropMax + 1);
+
         for (int i = 0; i < count && candidates.Count > 0; i++)
         {
             ItemBase so = candidates[rng.Range(0, candidates.Count)];
@@ -200,22 +186,26 @@ public class GridChest : MonoBehaviour
 
         foreach (var so in itemPool.items)
         {
-            if (so == null) continue;
-            if (data.ExcludeItemIds != null && System.Array.IndexOf(data.ExcludeItemIds, so.Id) >= 0) continue;
+            if (so == null) 
+                continue;
+
+            if (data.ExcludeItemIds != null && System.Array.IndexOf(data.ExcludeItemIds, so.Id) >= 0)
+                continue;
+
             if (System.Array.IndexOf(data.ItemCategories, ItemCategories.Of(so)) >= 0)
                 result.Add(so);
         }
+
         return result;
     }
 
-    // ───── 개방 시 드롭 ─────
-
+    // 아이템 드롭
     private void DropRewards()
     {
         for (int i = 0; i < _itemRewards.Count; i++)
             SpawnPickup(_itemRewards[i], DropCell(i));
 
-        // 골드도 바닥 픽업으로 — 아이템과 동일하게 주워야 획득 (GDD 9.13/9.14).
+        // 골드
         if (_goldReward > 0 && goldPickupPrefab != null)
         {
             Vector2Int cell = DropCell(_itemRewards.Count);
@@ -229,53 +219,60 @@ public class GridChest : MonoBehaviour
 
     private void SpawnPickup(Reward reward, Vector2Int cell)
     {
-        if (itemPickupPrefab == null || reward.so == null) return;
+        if (itemPickupPrefab == null || reward.so == null)
+            return;
 
         Vector3 pos = GridSystem.Instance != null
             ? GridSystem.Instance.GridToWorld(cell)
             : new Vector3(cell.x, cell.y, 0);
 
         ItemPickup pickup = Instantiate(itemPickupPrefab, pos, Quaternion.identity);
-        // ItemPickup.Start() 가 이 필드들로 인스턴스를 구성한다.
+
         pickup.itemSO = reward.so;
         pickup.enhanceLevel = reward.enhanceLevel;
         pickup.curse = reward.curse;
         pickup.Initialize(cell);
     }
 
-    /// <summary>드롭 셀: 상자 칸 우선, 보상이 여럿이면 보행 가능한 인접 칸으로 분산.</summary>
+    // 보상 분산
     private Vector2Int DropCell(int index)
     {
-        if (index == 0) return GridPosition;
+        if (index == 0) 
+            return GridPosition;
 
         var free = new List<Vector2Int> { GridPosition };
+
         foreach (var d in Neighbors)
         {
             Vector2Int n = GridPosition + d;
             if (GridSystem.Instance == null || GridSystem.Instance.IsWalkable(n))
                 free.Add(n);
         }
+
         return free[index % free.Count];
     }
 
-    // ───── 시야 기반 표시 (GridDoor / KeyPickup 패턴) ─────
+    // 시야 기반 표시
 
     private void ApplySprite()
     {
-        if (_renderer == null || data == null) return;
+        if (_renderer == null || data == null) 
+            return;
+
         Sprite s = _opened ? data.OpenedSprite : data.ClosedSprite;
         if (s != null) _renderer.sprite = s;
     }
 
-    private void OnVisionUpdated(IReadOnlyCollection<Vector2Int> visible,
-                                 IReadOnlyCollection<Vector2Int> explored)
+    private void OnVisionUpdated(IReadOnlyCollection<Vector2Int> visible, IReadOnlyCollection<Vector2Int> explored)
     {
         UpdateVisibility();
     }
 
     private void UpdateVisibility()
     {
-        if (_renderer == null || VisionSystem.Instance == null) return;
+        if (_renderer == null || VisionSystem.Instance == null) 
+            return;
+
         _renderer.enabled = VisionSystem.Instance.IsExplored(GridPosition);
     }
 }

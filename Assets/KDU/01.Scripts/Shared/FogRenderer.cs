@@ -2,9 +2,7 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-/// <summary>
-/// 시야 안개 렌더러
-/// </summary>
+// 시야 안개 렌더러
 public class FogRenderer : Singleton<FogRenderer>
 {
     [SerializeField] private Tilemap fogTilemap;
@@ -35,7 +33,8 @@ public class FogRenderer : Singleton<FogRenderer>
 
     private void ClearFog()
     {
-        if (fogTilemap == null) return;
+        if (fogTilemap == null) 
+            return;
 
         fogTilemap.ClearAllTiles();
         _initialized = false;
@@ -43,7 +42,8 @@ public class FogRenderer : Singleton<FogRenderer>
 
     private void FillInitialFog()
     {
-        if (fogTilemap == null || fogTile == null || GridSystem.Instance == null) return;
+        if (fogTilemap == null || fogTile == null || GridSystem.Instance == null)
+            return;
 
         fogTilemap.ClearAllTiles();
 
@@ -63,8 +63,11 @@ public class FogRenderer : Singleton<FogRenderer>
             return;
         }
 
-        if (!_initialized) FillInitialFog();
-        if (fogTilemap == null) return;
+        if (!_initialized) 
+            FillInitialFog();
+
+        if (fogTilemap == null) 
+            return;
 
         foreach (var cell in explored)
         {

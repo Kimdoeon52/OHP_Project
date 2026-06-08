@@ -14,7 +14,6 @@ public class StatusEffectData : ScriptableObject
     [Min(0)]
     public int power = 1;
 
-    [Header("이동속도 증가량 (디버프 시 양수)")]
-    [Tooltip("초/칸 기준으로 더해지는 값. 0이면 이동속도 영향 없음")]
+    [Header("이동속도 증가량")]
     public float moveSpeedPenalty = 0f;
 }

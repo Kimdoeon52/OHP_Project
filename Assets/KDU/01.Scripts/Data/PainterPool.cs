@@ -7,13 +7,10 @@ public class PainterPool : ScriptableObject
     [System.Serializable]
     public class Entry
     {
-        [Tooltip("DefaultPainter 등 IRegionPainter SO")]
         public ScriptableObject painter;
 
-        [Tooltip("이 페인터가 적용될 최소 depth (포함)")]
         [Min(1)] public int minDepth = 1;
 
-        [Tooltip("이 페인터가 적용될 최대 depth (포함)")]
         [Min(1)] public int maxDepth = 15;
     }
 
@@ -21,17 +18,27 @@ public class PainterPool : ScriptableObject
 
     public IRegionPainter Pick(DungeonRandom rng, int depth)
     {
-        if (rng == null || entries == null || entries.Count == 0) return null;
+        if (rng == null || entries == null || entries.Count == 0) 
+            return null;
 
         var matches = new List<IRegionPainter>();
         foreach (var e in entries)
         {
-            if (e == null || e.painter == null) continue;
-            if (depth < e.minDepth || depth > e.maxDepth) continue;
-            if (e.painter is IRegionPainter p) matches.Add(p);
-            else Debug.LogWarning($"[PainterPool] {e.painter.name}");
+            if (e == null || e.painter == null) 
+                continue;
+
+            if (depth < e.minDepth || depth > e.maxDepth) 
+                continue;
+
+            if (e.painter is IRegionPainter p) 
+                matches.Add(p);
+
+            else 
+                Debug.LogWarning($"[PainterPool] {e.painter.name}");
         }
-        if (matches.Count == 0) return null;
+        if (matches.Count == 0) 
+            return null;
+
         return rng.Pick(matches);
     }
 }

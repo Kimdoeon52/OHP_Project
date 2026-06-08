@@ -39,11 +39,15 @@ public class VisionSystem : Singleton<VisionSystem>
         {
             for (int dy = -r; dy <= r; dy++)
             {
-                if (dx * dx + dy * dy > r2) continue;
+                if (dx * dx + dy * dy > r2) 
+                    continue;
 
                 var cell = new Vector2Int(playerPos.x + dx, playerPos.y + dy);
-                if (!GridSystem.Instance.IsInBounds(cell)) continue;
-                if (!HasLineOfSight(playerPos, cell)) continue;
+                if (!GridSystem.Instance.IsInBounds(cell)) 
+                    continue;
+
+                if (!HasLineOfSight(playerPos, cell))
+                    continue;
 
                 _visible.Add(cell);
                 _explored.Add(cell);
@@ -74,7 +78,8 @@ public class VisionSystem : Singleton<VisionSystem>
 
         while (true)
         {
-            if (x == to.x && y == to.y) return true;
+            if (x == to.x && y == to.y) 
+                return true;
 
             if (!(x == from.x && y == from.y) && !GridSystem.Instance.IsWalkable(new Vector2Int(x, y)))
                 return false;

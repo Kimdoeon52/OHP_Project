@@ -2,13 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 플레이어 행동 → 적 턴 처리 흐름 관리.
-/// 적/함정은 Register()로 등록, 사망 시 Unregister().
-/// </summary>
 public class TurnManager : Singleton<TurnManager>
 {
-    // 적 턴 사이 딜레이 (애니메이션 여유 시간)
+    // 적 턴 사이 딜레이
     [SerializeField] private float enemyTurnDelay = 0.05f;
 
     private readonly List<IGridEntity> _entities = new();
@@ -23,48 +19,21 @@ public class TurnManager : Singleton<TurnManager>
         base.Awake();
     }
 
-    private void Start()
-    {
-        // 플레이어 캐릭터 생성 대기 후 이동 성공(시작) 이벤트 구독함 - 구조가 바뀌면서 필요없어짐 혹시 몰라 일단 놔둠
-        // StartCoroutine(SetupPlayerMovementSubscription());
-    }
-
-    /// <summary>
-    /// 플레이어 캐릭터의 이동 컴포넌트를 탐색하여 이동 성공(시작) 이벤트를 동적으로 구독함.
-    /// </summary>
-    private IEnumerator SetupPlayerMovementSubscription()
-    {
-        GridPlayer player = null;
-        while (player == null)
-        {
-            player = FindFirstObjectByType<GridPlayer>();
-            yield return null;
-        }
-
-        if (player.Movement != null)
-        {
-            player.Movement.OnMoveSucceeded += OnPlayerMoveSucceeded;
-        }
-    }
-
-    /// <summary>
-    /// 플레이어가 이동을 시작했을 때 호출되는 콜백임.
-    /// 동시성 충돌을 방지하기 위해 즉시 실행하지 않고 도착할 때까지 기다리는 코루틴을 시작함.
-    /// </summary>
+    // 플레이어가 이동을 시작했을 때 호출되는 콜백임.
+    // 동시성 충돌을 방지하기 위해 즉시 실행하지 않고 도착할 때까지 기다리는 코루틴을 시작함.
     private void OnPlayerMoveSucceeded(Vector2Int direction)
     {
         StartCoroutine(WaitAndCompletePlayerMove());
     }
 
-    /// <summary>
-    /// 플레이어가 물리적으로 목표 셀에 안착할 때까지 대기한 후 턴 마감 처리를 완료시킴.
-    /// </summary>
+    // 플레이어가 물리적으로 목표 셀에 안착할 때까지 대기한 후 턴 마감 처리를 완료시킴.
     private IEnumerator WaitAndCompletePlayerMove()
     {
         var player = FindFirstObjectByType<GridPlayer>();
-        if (player == null) yield break;
+        if (player == null) 
+            yield break;
 
-        // 플레이어 이동 보간 시간(CurrentMoveDuration)만큼 대기함
+        // 플레이어 이동 보간 시간만큼 대기함
         float duration = player.Movement.CurrentMoveDuration;
         if (duration > 0f)
         {
@@ -86,10 +55,11 @@ public class TurnManager : Singleton<TurnManager>
 
     private static bool IsEntityAlive(IGridEntity entity)
     {
-        if (entity == null) return false;
+        if (entity == null) 
+            return false;
 
         if(entity is UnityEngine.Object unityObject)
-        return unityObject != null;
+            return unityObject != null;
 
         return true;
     }
@@ -108,9 +78,7 @@ public class TurnManager : Singleton<TurnManager>
         _entities.Remove(entity);
     }
 
-    /// <summary>
-    /// 해당 격자 셀에 등록된 엔티티 반환 (단검 충돌 판정 등에 사용). 없으면 null.
-    /// </summary>
+    // 해당 격자 셀에 등록된 엔티티 반환
     public IGridEntity GetEntityAt(Vector2Int pos)
     {
         for (int i = 0; i < _entities.Count; i++)
@@ -140,14 +108,12 @@ public class TurnManager : Singleton<TurnManager>
             }
 
             if (e != null && e.GridPosition == pos) 
-            return e;
+                return e;
         }
         return null;
     }
 
-    /// <summary>
-    /// 플레이어 행동 완료 시 호출. timeCost는 남은 시간 차감량이 아니라 다음 행동까지의 딜레이 값이다.
-    /// </summary>
+    // 플레이어 행동 완료 시 호출. timeCost는 남은 시간 차감량이 아니라 다음 행동까지의 딜레이 값이다.
     public void OnPlayerActionCompleted(float timeCost)
     {
         OnPlayerActionCompleted(timeCost, false);
@@ -158,10 +124,8 @@ public class TurnManager : Singleton<TurnManager>
         CompletePlayerAction(timeCost, false, false);
     }
 
-    /// <summary>
-    /// 플레이어 행동 완료 후 행동 딜레이 알림과 적 턴을 처리한다.
-    /// skipEnemyTurnDelay가 true면 적 행동 자체는 유지하되, 고속 이동이 끊겨 보이지 않도록 턴 사이 대기만 생략한다.
-    /// </summary>
+    // 플레이어 행동 완료 후 행동 딜레이 알림과 적 턴을 처리한다.
+    // skipEnemyTurnDelay가 true면 적 행동 자체는 유지하되, 고속 이동이 끊겨 보이지 않도록 턴 사이 대기만 생략한다.
     public void OnPlayerActionCompleted(float timeCost, bool skipEnemyTurnDelay)
     {
         CompletePlayerAction(timeCost, skipEnemyTurnDelay, true);
@@ -169,7 +133,8 @@ public class TurnManager : Singleton<TurnManager>
 
     private void CompletePlayerAction(float timeCost, bool skipEnemyTurnDelay, bool processEnemyTurns)
     {
-        if (_processingTurn) return;
+        if (_processingTurn) 
+            return;
 
         LastPlayerActionTimeCost = timeCost;
 
@@ -179,9 +144,12 @@ public class TurnManager : Singleton<TurnManager>
         // timeCost는 이제 TimeSystem을 깎는 값이 아니라 플레이어 행동 딜레이로만 사용한다.
         // TimeSystem.Instance?.ConsumeTime(timeCost);
 
-        // 시간 소진으로 이미 게임오버 처리된 경우 적 턴 차단함 (세이프룸/테스트씬 등 타이머 정지 중에도 적 행동 허용)
-        if (TimeSystem.Instance != null && TimeSystem.Instance.TimeRemaining <= 0f) return;
-        if (!processEnemyTurns) return;
+        // 시간 소진으로 이미 게임오버 처리된 경우 적 턴 차단함
+        if (TimeSystem.Instance != null && TimeSystem.Instance.TimeRemaining <= 0f) 
+            return;
+
+        if (!processEnemyTurns) 
+            return;
 
         StartCoroutine(ProcessEnemyTurns(skipEnemyTurnDelay));
     }
@@ -191,14 +159,16 @@ public class TurnManager : Singleton<TurnManager>
         _processingTurn = true;
         IsPlayerTurn = false;
 
-        // 리스트 복사 — 턴 도중 Unregister가 일어나도 안전
+        // 리스트 복사
         var snapshot = new List<IGridEntity>(_entities);
 
         foreach (var entity in snapshot)
         {
-            if (!IsEntityAlive(entity)) continue;
+            if (!IsEntityAlive(entity))
+                continue;
 
-            if (entity == null) continue;
+            if (entity == null) 
+                continue;
             entity.OnTurnUpdate();
         }
 

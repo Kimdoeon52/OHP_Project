@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 
-/// <summary>
-/// 시드 기반 결정론적 난수. 맵 생성 / 스폰 / Feeling 선택 등 모든 던전 무작위는 이 클래스만 사용.
-/// UnityEngine.Random / System.Random 직접 호출 금지.
-/// </summary>
+
+// 시드 기반 생성을 위한 랜덤
 public class DungeonRandom
 {
     private System.Random rng;
@@ -25,7 +23,6 @@ public class DungeonRandom
         return rng.Next(minInclusive, maxExclusive);
     }
 
-    /// <summary>[0, 1) 범위의 float.</summary>
     public float Value()
     {
         CallCount++;
@@ -34,7 +31,9 @@ public class DungeonRandom
 
     public T Pick<T>(IList<T> list)
     {
-        if (list == null || list.Count == 0) return default;
+        if (list == null || list.Count == 0) 
+            return default;
+
         return list[Range(0, list.Count)];
     }
 
@@ -43,7 +42,7 @@ public class DungeonRandom
         return Value() < probability;
     }
 
-    /// <summary>Run Seed + depth 로 층별 시드를 파생. 같은 (run, depth) -> 같은 층 시드.</summary>
+    // 시드기반 맵 생성을 위해 층 + 시드로 시드값 생성
     public static int DeriveFloorSeed(int runSeed, int depth)
     {
         return runSeed ^ (depth * 31);

@@ -7,7 +7,7 @@ public class HazardFeeling : FloorFeeling
 {
     public override string Id => "Hazard";
 
-    [Header("영역별 위험 바닥 타일")]
+    [Header("Area 별 hazard 타일")]
     [Tooltip("Area 1 (하수구) — 오염수")]
     [SerializeField] private TileBase tileArea1;
     [Tooltip("Area 2 (던전) — 함정 바닥")]
@@ -15,16 +15,18 @@ public class HazardFeeling : FloorFeeling
     [Tooltip("Area 3 (지옥) — 용암")]
     [SerializeField] private TileBase tileArea3;
 
-    [Header("방 면적 대비 위험 바닥 비율")]
     [SerializeField, Range(0f, 1f)] private float coverage = 0.2f;
 
     public TileBase GetTile(int area)
     {
         switch (area)
         {
-            case 1: return tileArea1;
-            case 2: return tileArea2;
-            default: return tileArea3;
+            case 1: 
+                return tileArea1;
+            case 2: 
+                return tileArea2;
+            default: 
+                return tileArea3;
         }
     }
 
@@ -61,17 +63,20 @@ public class HazardFeeling : FloorFeeling
 
         foreach (var room in rooms)
         {
-            // Safe/Tunnel + 보상 방(Special/Secret)은 Hazard 제외 — 보상 동선에 페널티 없음
-            if (room.type == RoomType.Safe || room.type == RoomType.Tunnel
-                || room.type == RoomType.Special || room.type == RoomType.Secret) continue;
-            if (room.floorCells == null || room.floorCells.Count == 0) continue;
+            // Safe/Tunnel + Special/Secret 방은 Hazard 제외
+            if (room.type == RoomType.Safe || room.type == RoomType.Tunnel || room.type == RoomType.Special || room.type == RoomType.Secret) 
+                continue;
+
+            if (room.floorCells == null || room.floorCells.Count == 0) 
+                continue;
 
             roomCandidates.Clear();
             foreach (var c in room.floorCells)
             {
                 if (!IsNearDoor(c, room)) roomCandidates.Add(c);
             }
-            if (roomCandidates.Count < 4) continue;
+            if (roomCandidates.Count < 4) 
+                continue;
 
             seedList.Clear();
             seedList.AddRange(roomCandidates);
@@ -86,9 +91,9 @@ public class HazardFeeling : FloorFeeling
 
             foreach (var seed in seedList)
             {
-                if (painted >= targetCells) break;
+                if (painted >= targetCells) 
+                    break;
 
-                // 룰타일이 1칸짜리 다리/모서리에서 깨지지 않게, 짝수 격자에 스냅해서 2-grid 정렬 보장
                 var s = new Vector2Int(seed.x - (seed.x & 1), seed.y - (seed.y & 1));
 
                 int w = PickEvenSize(rng);
@@ -96,7 +101,9 @@ public class HazardFeeling : FloorFeeling
 
                 if (!CanPaintRect(s, w, h, roomCandidates, hazardCells))
                 {
-                    if (!CanPaintRect(s, 2, 2, roomCandidates, hazardCells)) continue;
+                    if (!CanPaintRect(s, 2, 2, roomCandidates, hazardCells)) 
+                        continue;
+
                     w = 2; h = 2;
                 }
 
@@ -114,15 +121,17 @@ public class HazardFeeling : FloorFeeling
                 totalPainted += blockSize;
             }
         }
-
-        Debug.Log($"[HazardFeeling] area={area} coverage={coverage} 페인트 셀 {totalPainted}개");
     }
 
     private static int PickEvenSize(DungeonRandom rng)
     {
         float r = rng.Value();
-        if (r < 0.6f) return 2;
-        if (r < 0.9f) return 4;
+        if (r < 0.6f) 
+            return 2;
+
+        if (r < 0.9f) 
+            return 4;
+
         return 6;
     }
 
@@ -136,8 +145,11 @@ public class HazardFeeling : FloorFeeling
             for (int dy = 0; dy < h; dy++)
             {
                 var c = new Vector2Int(seed.x + dx, seed.y + dy);
-                if (!allowed.Contains(c)) return false;
-                if (alreadyPainted.Contains(c)) return false;
+                if (!allowed.Contains(c)) 
+                    return false;
+
+                if (alreadyPainted.Contains(c))
+                    return false;
             }
         }
         return true;
@@ -145,10 +157,13 @@ public class HazardFeeling : FloorFeeling
 
     private static bool IsNearDoor(Vector2Int cell, RoomData room)
     {
-        if (room.doorCells == null) return false;
+        if (room.doorCells == null) 
+            return false;
+
         foreach (var d in room.doorCells)
         {
-            if (Mathf.Abs(cell.x - d.x) + Mathf.Abs(cell.y - d.y) <= 1) return true;
+            if (Mathf.Abs(cell.x - d.x) + Mathf.Abs(cell.y - d.y) <= 1)
+                return true;
         }
         return false;
     }

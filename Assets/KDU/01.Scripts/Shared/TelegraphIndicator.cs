@@ -21,7 +21,9 @@ public class TelegraphIndicator : MonoBehaviour
 
     public void RefreshVisibility()
     {
-        if (_renderer == null) return;
+        if (_renderer == null)
+            return;
+
         _renderer.enabled = VisionSystem.Instance != null && VisionSystem.Instance.IsVisible(Cell);
     }
 }

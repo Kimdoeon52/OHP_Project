@@ -5,23 +5,17 @@ public class CameraFollow : MonoBehaviour
 {
     [SerializeField] private Transform target;
     [SerializeField] private Vector3 offset = new Vector3(0f, 0f, -10f);
-    [Tooltip("0 = 즉시 스냅, 0.1~0.3 = 부드러운 추적")]
     [SerializeField, Range(0f, 1f)] private float smoothing = 0.12f;
 
-    [Header("Safe Room 플래닝 모드 (스크롤 줌 + 좌클릭 드래그 팬, 첫 이탈 시 자동 해제)")]
-    [Tooltip("줌을 적용할 카메라. 비우면 GetComponent<Camera>().")]
+    [Header("Safe Room 플래닝 모드")]
     [SerializeField] private Camera planningCamera;
-    [Tooltip("플레이어 — 이 셀이 safe 집합 밖으로 나가면 플래닝 모드 해제.")]
     [SerializeField] private GridPlayer player;
     [SerializeField] private float planningZoomSpeed = 1.5f;
     [SerializeField] private float planningMinSize = 3f;
     [SerializeField] private float planningMaxSize = 15f;
 
-    [Tooltip("ON: 마우스가 화면 가장자리에 있을 때 팬. OFF(기본): 좌클릭 드래그로 팬.")]
     [SerializeField] private bool useMouseEdgePan = false;
-    [Tooltip("엣지 모드 — 마우스가 화면 끝에서 이 픽셀 이내일 때 팬.")]
     [SerializeField] private float planningEdgePixels = 40f;
-    [Tooltip("엣지 모드 — 초당 팬 속도(월드 유닛).")]
     [SerializeField] private float planningPanSpeed = 8f;
 
     private Vector3 _velocity;
@@ -32,20 +26,20 @@ public class CameraFollow : MonoBehaviour
     private bool _dragging;
     private Vector3 _lastMouseScreen;
 
-    /// <summary>현재 플래닝 모드 여부 — GridPlayerInput 등 외부에서 클릭 무시 판단에 사용.</summary>
+    // 현재 플래닝 모드 여부 (튜토리얼용)
     public bool IsPlanningMode => _planningMode;
 
     private bool _hasPanned;
-    /// <summary>ArmSafeRoom 이후 플레이어가 줌/팬을 한 적이 있는가 — 튜토리얼 "맵 둘러보기" 판정용.</summary>
+    // ArmSafeRoom 이후 플레이어가 줌/팬을 한 적이 있는가 (튜토리얼용)
     public bool HasPannedSinceArm => _hasPanned;
 
     public static CameraFollow Instance { get; private set; }
 
-    // 팬 클램프용 명시적 맵 경계 — MapGenerator 가 없는 씬(튜토리얼 등)에서 주입.
+    // 팬 클램프용 명시적 맵 경계 (튜토리얼용)
     private bool _hasExplicitBounds;
     private Bounds _explicitBounds;
 
-    /// <summary>MapGenerator 없는 씬에서 팬 제한 경계를 직접 지정(튜토리얼). MapGenerator 보다 우선.</summary>
+    // MapGenerator 없는 씬에서 팬 제한 경계를 직접 지정 (튜토리얼용)
     public void SetMapBounds(Bounds bounds)
     {
         _explicitBounds = bounds;
@@ -63,7 +57,6 @@ public class CameraFollow : MonoBehaviour
         if (player == null) player = FindFirstObjectByType<GridPlayer>();
     }
 
-    /// <summary>카메라를 지정된 시간과 세기로 흔듭니다.</summary>
     public void Shake(float duration, float strength)
     {
         if (_shakeCoroutine != null)
@@ -79,11 +72,11 @@ public class CameraFollow : MonoBehaviour
         while (elapsed < duration)
         {
             float percentComplete = elapsed / duration;
-            float damper = 1.0f - percentComplete; // 시간이 지날수록 감쇠
+            float damper = 1.0f - percentComplete;
 
             float x = Random.Range(-1f, 1f) * strength * damper;
             if(x == 0f)
-                x = 0.05f * strength * damper; // 완전 0 방지
+                x = 0.05f * strength * damper;
             _shakeOffset = new Vector3(x, 0f, 0f);
 
             elapsed += Time.deltaTime;
@@ -93,7 +86,6 @@ public class CameraFollow : MonoBehaviour
         _shakeCoroutine = null;
     }
 
-    /// <summary>층 진입 시 호출 — safe 셀을 등록하면 플래닝 모드 ON, 플레이어가 처음 이 셀들을 벗어나면 자동 OFF.</summary>
     public void ArmSafeRoom(IReadOnlyCollection<Vector2Int> safeCells)
     {
         if (safeCells == null || safeCells.Count == 0)
@@ -128,7 +120,7 @@ public class CameraFollow : MonoBehaviour
     {
         if (!_planningMode) return;
 
-        // 플레이어 첫 이탈 감지 — 그 즉시 줌/팬 리셋.
+        // 플레이어 세이프룸 밖으로 나가면 플래닝 모드 종료
         if (player != null && _safeCells != null && !_safeCells.Contains(player.GridPosition))
         {
             DisablePlanning();
@@ -153,10 +145,6 @@ public class CameraFollow : MonoBehaviour
         ClampPanToMapBounds();
     }
 
-    /// <summary>
-    /// _planningPan 을 클램프해 카메라 뷰포트가 맵 월드 바운드 밖으로 나가지 않게 함.
-    /// 맵이 뷰포트보다 작으면 맵 중앙에 고정.
-    /// </summary>
     private void ClampPanToMapBounds()
     {
         if (planningCamera == null || target == null) return;
@@ -180,7 +168,7 @@ public class CameraFollow : MonoBehaviour
             : Mathf.Clamp(_planningPan.y, allowedYMin, allowedYMax);
     }
 
-    /// <summary>팬 제한 경계 — 명시적(튜토리얼) 우선, 없으면 MapGenerator. 둘 다 없으면 false.</summary>
+    // 팬 제한 경계
     private bool TryGetMapBounds(out Bounds b)
     {
         if (_hasExplicitBounds) { b = _explicitBounds; return true; }
@@ -193,7 +181,7 @@ public class CameraFollow : MonoBehaviour
         return false;
     }
 
-    /// <summary>카메라 중심 위치를 뷰포트가 맵 밖으로 나가지 않게 클램프(맵이 뷰포트보다 작으면 중앙).</summary>
+    // 카메라 중심 설정
     private Vector3 ClampCameraPos(Vector3 pos)
     {
         if (planningCamera == null || !TryGetMapBounds(out Bounds b)) return pos;
@@ -239,9 +227,7 @@ public class CameraFollow : MonoBehaviour
         Vector3 delta = cur - _lastMouseScreen;
         _lastMouseScreen = cur;
 
-        // 화면 픽셀 → 월드 유닛 환산 (orthographic 카메라).
-        // worldPerPixel = (2 * orthoSize) / Screen.height — X/Y 동일 (aspect 캔슬).
-        // 드래그 방향과 반대로 팬을 누적해야 "월드를 손으로 잡고 끄는" 느낌.
+        // 화면 픽셀 -> 월드 환산
         if (planningCamera == null || Screen.height <= 0) return;
         float worldPerPixel = 2f * planningCamera.orthographicSize / Screen.height;
         _planningPan -= new Vector2(delta.x, delta.y) * worldPerPixel;
@@ -259,8 +245,7 @@ public class CameraFollow : MonoBehaviour
         else
             transform.position = Vector3.SmoothDamp(transform.position, desired, ref _velocity, smoothing);
 
-        // 플래닝 중엔 렌더되는 최종 위치를 경계로 하드 클램프 — 줌을 확 뺄 때 SmoothDamp 지연으로
-        // 맵 밖이 잠깐 보이는 것 방지.
+        // 줌 뺄때 카메라가 맵 밖으로 나가서 넣음
         if (_planningMode)
         {
             Vector3 p = transform.position;
@@ -271,7 +256,7 @@ public class CameraFollow : MonoBehaviour
         }
     }
 
-    /// <summary>층 전환 등 타깃이 순간이동할 때 호출 — smoothdamp 누적 속도를 리셋하고 위치를 즉시 스냅.</summary>
+    // 타깃 위치 변동시 즉시 따라감
     public void SnapToTarget()
     {
         if (target == null) return;

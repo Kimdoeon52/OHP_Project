@@ -1,10 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Floor Feeling 풀 (Hazard/Traps/Dark 3종 고정 — GDD 6.3).
-/// 영역별 가중치(GDD 5.2)로 발동 시 1개 선택, 미발동 시 null 반환.
-/// </summary>
+// Floor Feeling 종류
 [CreateAssetMenu(fileName = "FloorFeelingPool", menuName = "60s Dungeon/Map/Floor Feeling Pool")]
 public class FloorFeelingPool : ScriptableObject
 {
@@ -28,31 +25,40 @@ public class FloorFeelingPool : ScriptableObject
     [Header("발동 확률 (GDD 6.3: 50%)")]
     [SerializeField, Range(0f, 1f)] private float triggerChance = 0.5f;
 
-    /// <summary>
-    /// 발동 시 해당 depth 영역의 가중치로 Feeling 1개를 선택. 미발동 시 null.
-    /// 결정론: 같은 (rng 상태, depth) → 같은 결과.
-    /// </summary>
+    // 시드 기반 랜덤 생성
     public FloorFeeling Pick(DungeonRandom rng, int depth)
     {
-        if (rng == null || entries == null || entries.Count == 0) return null;
-        if (!rng.Chance(triggerChance)) return null;
+        if (rng == null || entries == null || entries.Count == 0)
+            return null;
+
+        if (!rng.Chance(triggerChance))
+            return null;
 
         int area = MapGenerator.AreaFromDepth(depth);
         int totalWeight = 0;
+
         foreach (var e in entries)
         {
-            if (e == null || e.feeling == null) continue;
+            if (e == null || e.feeling == null) 
+                continue;
+
             totalWeight += GetWeight(e, area);
         }
-        if (totalWeight <= 0) return null;
+
+        if (totalWeight <= 0) 
+            return null;
 
         int roll = rng.Range(0, totalWeight);
         int cumulative = 0;
         foreach (var e in entries)
         {
-            if (e == null || e.feeling == null) continue;
+            if (e == null || e.feeling == null) 
+                continue;
+
             cumulative += GetWeight(e, area);
-            if (roll < cumulative) return e.feeling;
+
+            if (roll < cumulative) 
+                return e.feeling;
         }
         return null;
     }
@@ -61,10 +67,14 @@ public class FloorFeelingPool : ScriptableObject
     {
         switch (area)
         {
-            case 1: return e.weightArea1;
-            case 2: return e.weightArea2;
-            case 3: return e.weightArea3;
-            default: return 0;
+            case 1: 
+                return e.weightArea1;
+            case 2: 
+                return e.weightArea2;
+            case 3: 
+                return e.weightArea3;
+            default: 
+                return 0;
         }
     }
 }

@@ -2,10 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-/// <summary>
-/// 가장 단순한 페인터 — 방/터널의 floorCells 합집합을 floor 타일로 깔고,
-/// 그 8방향 이웃 중 floor 가 아닌 셀에 wall 타일을 깐다
-/// </summary>
+
+// 타일맵 칠하기용 페인터
 [CreateAssetMenu(fileName = "DefaultPainter", menuName = "60s Dungeon/Painters/Default Painter")]
 public class DefaultPainter : ScriptableObject, IRegionPainter
 {
@@ -41,12 +39,13 @@ public class DefaultPainter : ScriptableObject, IRegionPainter
         var floorSet = new HashSet<Vector2Int>();
         foreach (var room in rooms)
         {
-            if (room.floorCells == null) continue;
+            if (room.floorCells == null)
+                continue;
+
             foreach (var c in room.floorCells) floorSet.Add(c);
         }
 
-        // Secret 방 입구는 숨은 문 — floor 에서 빼서 wall 로 봉인(추후 문/탐색 시스템이 개통).
-        // wall 산출/dissolve 전에 제거해야 벽으로 잡히고 다시 뚫리지 않음.
+        // Secret 방 입구는 숨은 문
         HashSet<Vector2Int> secretGates = MapGenerator.Instance != null
             ? MapGenerator.Instance.SecretGatewayCells
             : null;
@@ -60,7 +59,9 @@ public class DefaultPainter : ScriptableObject, IRegionPainter
             {
                 for (int dy = -1; dy <= 1; dy++)
                 {
-                    if (dx == 0 && dy == 0) continue;
+                    if (dx == 0 && dy == 0)
+                        continue;
+
                     var n = new Vector2Int(c.x + dx, c.y + dy);
                     if (!floorSet.Contains(n)) wallSet.Add(n);
                 }
@@ -73,8 +74,9 @@ public class DefaultPainter : ScriptableObject, IRegionPainter
             toDissolve.Clear();
             foreach (var w in wallSet)
             {
-                // Secret 게이트는 floor 사이에 끼어도 뚫지 않음 — 봉인 유지.
-                if (secretGates != null && secretGates.Contains(w)) continue;
+                if (secretGates != null && secretGates.Contains(w)) 
+                    continue;
+
                 bool hSandwich =
                     floorSet.Contains(new Vector2Int(w.x - 1, w.y)) &&
                     floorSet.Contains(new Vector2Int(w.x + 1, w.y));
@@ -83,7 +85,9 @@ public class DefaultPainter : ScriptableObject, IRegionPainter
                     floorSet.Contains(new Vector2Int(w.x, w.y + 1));
                 if (hSandwich || vSandwich) toDissolve.Add(w);
             }
-            if (toDissolve.Count == 0) break;
+            if (toDissolve.Count == 0) 
+                break;
+
             foreach (var w in toDissolve)
             {
                 wallSet.Remove(w);
@@ -130,7 +134,9 @@ public class DefaultPainter : ScriptableObject, IRegionPainter
             bool floorN = floorSet.Contains(c + Vector2Int.up);
             bool floorS = floorSet.Contains(c + Vector2Int.down);
             bool isPureRightSideWall = floorW && !floorE && !floorN && !floorS;
-            if (!isPureRightSideWall) continue;
+
+            if (!isPureRightSideWall) 
+                continue;
 
             var pos = new Vector3Int(c.x, c.y, 0);
             tilemaps.wall.SetTransformMatrix(pos, flipMatrix);

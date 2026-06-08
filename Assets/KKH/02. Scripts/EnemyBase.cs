@@ -248,20 +248,18 @@ public abstract class EnemyBase : EntityBase, IDamageable
         StartCoroutine(DestroyAfterDeath());
     }
 
-    // ══════════════ 처치 드롭 (골드 / 아이템) ══════════════
-    // GDD 10장 몬스터별 보상표 — 골드(확률·범위)와 아이템(체력 포션 등, 확률·개수)을 바닥 픽업으로 떨굼
+    // 처치 드롭 (골드 / 아이템)
     private void DropLoot()
     {
         if (data == null) return;
 
-        // 골드 — goldMax>0 이고 확률 통과 시 1개.
         if (data.goldMax > 0 && Random.value <= data.goldDropChance)
         {
             int gold = Random.Range(data.goldMin, data.goldMax + 1);
             if (gold > 0) SpawnGoldDrop(gold);
         }
 
-        // 아이템 — 항목별 확률 판정 후 count 개.
+        // 아이템 — 항목별 확률 판정
         if (data.itemDrops != null)
         {
             foreach (var drop in data.itemDrops)

@@ -1,26 +1,29 @@
 using System.Collections.Generic;
 
-/// <summary>
-/// RoomData 그래프 위에서 도는 BFS 유틸
-/// </summary>
 public static class MapGraph
 {
     // 모든 방이 Safe Room 에서 도달 가능한가
     public static bool IsConnected(List<RoomData> rooms)
     {
-        if (rooms == null || rooms.Count == 0) return false;
+        if (rooms == null || rooms.Count == 0)
+            return false;
 
         RoomData safe = null;
         foreach (var r in rooms)
         {
-            if (r.type == RoomType.Safe) { safe = r; break; }
+            if (r.type == RoomType.Safe) 
+            { 
+                safe = r;
+                break;
+            }
         }
         if (safe == null) return false;
 
         var distances = BFSDistances(safe);
         foreach (var r in rooms)
         {
-            if (!distances.ContainsKey(r)) return false;
+            if (!distances.ContainsKey(r)) 
+                return false;
         }
         return true;
     }
@@ -28,15 +31,17 @@ public static class MapGraph
     // 두 방 사이 경로 존재 여부
     public static bool PathExists(RoomData from, RoomData to)
     {
-        if (from == null || to == null) return false;
+        if (from == null || to == null)
+            return false;
+
         return BFSDistances(from).ContainsKey(to);
     }
 
-    // start 로부터의 그래프 거리
     public static Dictionary<RoomData, int> BFSDistances(RoomData start)
     {
         var distances = new Dictionary<RoomData, int>();
-        if (start == null) return distances;
+        if (start == null) 
+            return distances;
 
         var queue = new Queue<RoomData>();
         distances[start] = 0;
@@ -48,7 +53,9 @@ public static class MapGraph
             int d = distances[cur];
             foreach (var next in cur.connections)
             {
-                if (next == null || distances.ContainsKey(next)) continue;
+                if (next == null || distances.ContainsKey(next))
+                    continue;
+
                 distances[next] = d + 1;
                 queue.Enqueue(next);
             }

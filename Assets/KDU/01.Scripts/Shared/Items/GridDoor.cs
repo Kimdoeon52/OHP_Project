@@ -1,13 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-/// <summary>
-/// 격자 문. 1칸 통로(벽이 양옆으로 끊긴 입구)에만 배치된다.
-/// 상태는 열림/닫힘 2가지. 닫히면 GridSystem.IsWalkable 이 false 가 되어 이동·시야를 막고,
-/// 열리면 통과·시야 관통.
-/// Normal: 인접 시 자동 개폐.
-/// Locked: 열쇠 보유 시 인접하면 1초 후 열림(GDD 9.15), 한 번 열리면 계속 열림.
-/// </summary>
+// 격자 문
 [RequireComponent(typeof(SpriteRenderer))]
 public class GridDoor : MonoBehaviour
 {
@@ -19,52 +13,45 @@ public class GridDoor : MonoBehaviour
     public DoorKind Kind { get; private set; } = DoorKind.Normal;
     public bool IsOpen => State == DoorState.Open;
 
-    [Header("스프라이트 — 옆면 문 (좌우 통로 = 세로 벽 사이)")]
+    [Header("스프라이트 — 옆면 문")]
     [SerializeField] private Sprite sideClosedSprite;
     [SerializeField] private Sprite sideOpenSprite;
 
-    [Header("스프라이트 — 위/아래 문 (상하 통로 = 가로 벽 사이)")]
+    [Header("스프라이트 — 위/아래 문")]
     [SerializeField] private Sprite topClosedSprite;
     [SerializeField] private Sprite topOpenSprite;
 
-    [Header("스프라이트 — 잠긴 옆면 문 (좌우 통로, 비우면 일반 옆면 문으로 폴백)")]
+    [Header("스프라이트 — 잠긴 옆면 문")]
     [SerializeField] private Sprite sideLockedClosedSprite;
     [SerializeField] private Sprite sideLockedOpenSprite;
 
-    [Header("스프라이트 — 잠긴 위/아래 문 (상하 통로, 비우면 일반 위/아래 문으로 폴백)")]
+    [Header("스프라이트 — 잠긴 위/아래 문")]
     [SerializeField] private Sprite topLockedClosedSprite;
     [SerializeField] private Sprite topLockedOpenSprite;
 
-    [Header("스프라이트 — Safe 출구 옆면 문 (좌우 통로, 비우면 일반 옆면 문으로 폴백)")]
+    [Header("스프라이트 — Safe 출구 옆면 문")]
     [SerializeField] private Sprite sideSafeExitClosedSprite;
     [SerializeField] private Sprite sideSafeExitOpenSprite;
 
-    [Header("스프라이트 — Safe 출구 위/아래 문 (상하 통로, 비우면 일반 위/아래 문으로 폴백)")]
+    [Header("스프라이트 — Safe 출구 위/아래 문")]
     [SerializeField] private Sprite topSafeExitClosedSprite;
     [SerializeField] private Sprite topSafeExitOpenSprite;
 
     [Header("동작")]
-    [Tooltip("Normal 문: 플레이어가 인접하면 자동으로 열리고, 멀어지면 닫힘.")]
+    [Tooltip("Normal 문")]
     [SerializeField] private bool autoOpenWhenAdjacent = true;
 
-    [Tooltip("Locked 문 개방 시간(초). GDD 9.15: 1초.")]
+    [Tooltip("Locked 문 열때 걸리는 시간")]
     [SerializeField] private float lockedOpenSeconds = 1f;
 
-    [Header("Secret 패시브 발견 (근처에 있으면 매초 확률로 공개)")]
-    [Tooltip("패시브 발견 범위 — 체비셰프 거리(1 = 플레이어 기준 3x3). F 탐색(즉시)과 별개.")]
-    [SerializeField, Min(0)] private int passiveDiscoveryRange = 1;
-    [Tooltip("범위 안에 머무는 동안 1초마다 발견 확률(0~1). 성공 시 즉시 발견.")]
+    [Header("Secret 패시브 발견")]
+    [SerializeField, Min(0)] private int passiveDiscoveryRange = 3;
     [SerializeField, Range(0f, 1f)] private float passiveDiscoveryChancePerSecond = 0.15f;
 
-    [Header("씬 직접 배치(튜토리얼 등) — MapGenerator 없이 자체 초기화")]
-    [Tooltip("켜면 Initialize 가 안 불렸을 때 Start 에서 현재 위치·아래 설정으로 자체 초기화.")]
+    [Header("튜토리얼용 직접 배치 설정")]
     [SerializeField] private bool selfInitInScene = false;
-    [Tooltip("자체 초기화 시 문 종류.")]
     [SerializeField] private DoorKind sceneKind = DoorKind.Secret;
-    [Tooltip("자체 초기화 시 통로 방향 — true=좌우 통로(세로 벽 사이), false=상하 통로.")]
     [SerializeField] private bool sceneHorizontalPassage = true;
-    [Tooltip("자체 초기화 SafeExit 전용 — 안전방 '바깥'(나가는 쪽) 방향. 이 방향 이웃 셀을 바깥 셀로 등록해 " +
-             "플레이어가 나가 멀어지면 영구 잠금. 예: 안전방이 왼쪽이면 (1,0).")]
     [SerializeField] private Vector2Int sceneSafeExitOutsideDir = Vector2Int.right;
 
     private SpriteRenderer _renderer;
@@ -75,13 +62,13 @@ public class GridDoor : MonoBehaviour
     private DungeonRandom _discoveryRng;
     private bool _initialized;
 
-    // SafeExit 전용 — 플레이어가 outsideCell 에 도달하면 _hasExited=true, 멀어지며 닫힐 때 영구 잠김.
+    // SafeExit 전용
     private Vector2Int _safeOutsideCell;
     private bool _safeOutsideCellSet;
     private bool _safeHasExited;
     private bool _safePermLocked;
 
-    // 통로 안쪽(SafeRoom 쪽) 이웃 셀 — 바깥 셀의 반대편. 되돌아옴 판정용.
+    // Safe방에서 문만 열고 다시 들어올때 대비용
     private Vector2Int InsideCell => GridPosition * 2 - _safeOutsideCell;
 
     private void Awake()
@@ -101,7 +88,7 @@ public class GridDoor : MonoBehaviour
         GameEvents.OnSearchPerformed -= OnSearchPerformed;
     }
 
-    /// <summary>탐색 액션 — center 기준 radius(체비셰프) 안의 숨은 Secret 문이면 즉시 발견.</summary>
+    // 탐색
     private void OnSearchPerformed(Vector2Int center, int radius)
     {
         if (Kind != DoorKind.Secret || State != DoorState.Hidden) return;
@@ -110,7 +97,7 @@ public class GridDoor : MonoBehaviour
         if (cheb <= radius) Discover();
     }
 
-    /// <summary>맵 생성기가 호출 — 셀 위치·통로 방향·문 종류를 지정하고 격자에 등록.</summary>
+    // 문 초기화
     public void Initialize(Vector2Int cell, bool horizontalPassage, DoorKind kind = DoorKind.Normal)
     {
         GridPosition = cell;
@@ -127,7 +114,6 @@ public class GridDoor : MonoBehaviour
         ApplyState();
     }
 
-    /// <summary>SafeExit 문에 '바깥 셀' 등록 — MapGenerator 가 Initialize 직후 호출. (GDD 11.1)</summary>
     public void ConfigureSafeExit(Vector2Int outsideCell)
     {
         _safeOutsideCell = outsideCell;
@@ -138,14 +124,14 @@ public class GridDoor : MonoBehaviour
     {
         _player = FindFirstObjectByType<GridPlayer>();
 
-        // 씬에 직접 배치된 문(튜토리얼 등) — Initialize 가 안 불렸으면 현재 위치로 자체 초기화.
+        // 튜토리얼용 초기화
         if (!_initialized && selfInitInScene)
         {
             Vector2Int cell = GridSystem.Instance != null
                 ? GridSystem.Instance.WorldToGrid(transform.position)
                 : Vector2Int.zero;
             Initialize(cell, sceneHorizontalPassage, sceneKind);
-            // 씬 배치 SafeExit 도 바깥 셀을 등록해야 '나가면 잠금'이 작동 (MapGenerator 대체).
+
             if (sceneKind == DoorKind.SafeExit)
                 ConfigureSafeExit(cell + sceneSafeExitOutsideDir);
         }
@@ -168,7 +154,7 @@ public class GridDoor : MonoBehaviour
         State = state;
         if (state != DoorState.Opening) _openingProgress = 0f;
         ApplyState();
-        // 열리면 너머가 보이도록 즉시 시야 갱신.
+        // 문 열리면 시야 갱신
         if (IsOpen && VisionSystem.Instance != null && _player != null)
             VisionSystem.Instance.UpdateVision(_player.GridPosition);
     }
@@ -176,9 +162,7 @@ public class GridDoor : MonoBehaviour
     private void ApplyState()
     {
         if (_renderer == null) return;
-        // 방향별로 닫힘/열림 스프라이트가 다름 (옆면 문과 위/아래 문은 닫힘·열림 모습이 서로 반대).
-        // Opening 중에는 닫힘 스프라이트 유지(진행바 등 별도 표시는 후속 작업).
-        // Locked/SafeExit 문은 종류별 전용 슬롯(있으면) 우선, 없으면 일반 슬롯으로 폴백.
+        // 방향별로 닫힘/열림 스프라이트가 다름
         bool showOpen = State == DoorState.Open;
         Sprite normal = _horizontalPassage
             ? (showOpen ? sideOpenSprite : sideClosedSprite)
@@ -233,7 +217,7 @@ public class GridDoor : MonoBehaviour
 
     private void UpdateSafeExit(bool adjacent)
     {
-        // 영구 잠금 후엔 항상 닫힘 유지 — 열쇠도 무시(GDD 11.1).
+        // 한번 나오면 다시 못들어가게 막기
         if (_safePermLocked)
         {
             if (State != DoorState.Closed) SetState(DoorState.Closed);
@@ -244,17 +228,16 @@ public class GridDoor : MonoBehaviour
         if (autoOpenWhenAdjacent)
             SetState(adjacent ? DoorState.Open : DoorState.Closed);
 
-        // 바깥 셀 도달 → 빠져나가는 중. 단, 다시 안쪽 셀로 돌아오면 취소.
-        // (안/밖 구분 없이 '멀어지면 잠금'만 하면 되돌아와 안에 갇히는 버그가 생김.)
+        // 바깥 셀 도달
         if (_safeOutsideCellSet)
         {
             if (_player.GridPosition == _safeOutsideCell)
                 _safeHasExited = true;
-            else if (_player.GridPosition == InsideCell)   // 통로 반대편(안쪽) 이웃
+            else if (_player.GridPosition == InsideCell)
                 _safeHasExited = false;
         }
 
-        // 진짜로 나가서(바깥) 문에서 멀어졌을 때만 영구 잠금.
+        // 진짜 나갔는지 체크
         if (_safeHasExited && !adjacent)
         {
             _safePermLocked = true;
@@ -262,48 +245,55 @@ public class GridDoor : MonoBehaviour
         }
     }
 
-    // 패시브 발견 — 범위(체비셰프 passiveDiscoveryRange) 안에 머무는 동안 1초마다 확률 롤.
-    // F 탐색(OnSearchPerformed)은 별개로 즉시 발견시킨다.
+    // 자동 발견
     private void UpdateSecret()
     {
-        if (State != DoorState.Hidden) return; // 발견 후엔 그대로 열림 유지
+        if (State != DoorState.Hidden) 
+            return; // 발견 후엔 그대로 열림 유지
 
         int cheb = Mathf.Max(Mathf.Abs(_player.GridPosition.x - GridPosition.x),
                              Mathf.Abs(_player.GridPosition.y - GridPosition.y));
-        if (cheb > passiveDiscoveryRange) { _secretRollTimer = 0f; return; }
+        if (cheb > passiveDiscoveryRange) 
+        { 
+            _secretRollTimer = 0f; 
+            return; 
+        }
 
         EnsureDiscoveryRng();
         _secretRollTimer += Time.deltaTime;
         while (_secretRollTimer >= 1f)
         {
             _secretRollTimer -= 1f;
-            if (_discoveryRng.Chance(passiveDiscoveryChancePerSecond)) { Discover(); return; }
+            if (_discoveryRng.Chance(passiveDiscoveryChancePerSecond)) 
+            { 
+                Discover();
+                return; 
+            }
         }
     }
 
-    /// <summary>문별 발견 확률 롤용 RNG — 셀 좌표 시드(GridChest 와 같은 패턴). UnityEngine.Random 직접 호출 금지.</summary>
     private void EnsureDiscoveryRng()
     {
-        if (_discoveryRng != null) return;
+        if (_discoveryRng != null) 
+            return;
+
         _discoveryRng = new DungeonRandom();
         _discoveryRng.Init((GridPosition.x * 73856093) ^ (GridPosition.y * 19349663));
     }
 
-    /// <summary>Secret 문 강제 발견 — 디버그/특성 트리거용. 봉인 wall 제거 후 열림 상태로 전환.</summary>
     public void Discover()
     {
-        if (Kind != DoorKind.Secret || State != DoorState.Hidden) return;
-        if (GridSystem.Instance != null
-            && GridSystem.Instance.Tilemaps != null
-            && GridSystem.Instance.Tilemaps.wall != null)
+        if (Kind != DoorKind.Secret || State != DoorState.Hidden)
+            return;
+
+        if (GridSystem.Instance != null && GridSystem.Instance.Tilemaps != null && GridSystem.Instance.Tilemaps.wall != null)
         {
             GridSystem.Instance.Tilemaps.wall.SetTile(new Vector3Int(GridPosition.x, GridPosition.y, 0), null);
         }
+
         SetState(DoorState.Open);
         GameEvents.OnSecretDiscovered?.Invoke(GridPosition);
 
-        // 2칸 이상 폭/두께의 비밀 통로 — 맞붙은 숨겨진 Secret 문도 함께 연다(연쇄 발견).
-        // 이 문은 이미 Open 이라 되돌아와도 위 가드에서 멈춰 무한재귀 없음.
         if (GridSystem.Instance != null)
         {
             TryDiscoverNeighborSecret(GridPosition + Vector2Int.up);
@@ -313,54 +303,69 @@ public class GridDoor : MonoBehaviour
         }
     }
 
-    /// <summary>인접 셀에 숨겨진 Secret 문이 있으면 함께 발견 — 비-Secret/비-Hidden 은 Discover 가드가 무시.</summary>
     private void TryDiscoverNeighborSecret(Vector2Int cell)
     {
         var d = GridSystem.Instance.GetDoorAt(cell);
-        if (d != null) d.Discover();
+
+        if (d != null) 
+            d.Discover();
     }
 
     private void UpdateLocked(bool adjacent)
     {
-        if (State == DoorState.Open) return; // 이미 열림 — 계속 열림 유지(닫히지 않음).
+        if (State == DoorState.Open) 
+            return;
 
         if (!adjacent)
         {
-            if (State == DoorState.Opening) SetState(DoorState.Closed);
+            if (State == DoorState.Opening) 
+                SetState(DoorState.Closed);
+
             return;
         }
 
         var inv = KeyInventory.Instance;
         bool hasKey = inv != null && inv.Has(KeyType.SpecialRoom);
+
         if (!hasKey)
         {
-            if (State == DoorState.Opening) SetState(DoorState.Closed);
+            if (State == DoorState.Opening) 
+                SetState(DoorState.Closed);
+
             return;
         }
 
-        if (State != DoorState.Opening) SetState(DoorState.Opening);
+        if (State != DoorState.Opening) 
+            SetState(DoorState.Opening);
 
         _openingProgress += Time.deltaTime;
+
         if (_openingProgress >= lockedOpenSeconds)
         {
-            if (inv.TryConsume(KeyType.SpecialRoom)) SetState(DoorState.Open);
-            else SetState(DoorState.Closed);
+            if (inv.TryConsume(KeyType.SpecialRoom)) 
+                SetState(DoorState.Open);
+            else 
+                SetState(DoorState.Closed);
         }
     }
 
-    private void OnVisionUpdated(IReadOnlyCollection<Vector2Int> visible,
-                                 IReadOnlyCollection<Vector2Int> explored)
+    private void OnVisionUpdated(IReadOnlyCollection<Vector2Int> visible, IReadOnlyCollection<Vector2Int> explored)
     {
         UpdateVisibility();
     }
 
     private void UpdateVisibility()
     {
-        if (_renderer == null) return;
-        // Secret 문 발견 전엔 시야와 무관하게 숨김 — 벽 타일이 대신 보임.
-        if (State == DoorState.Hidden) { _renderer.enabled = false; return; }
-        if (VisionSystem.Instance == null) return;
-        // 한 번이라도 본 문은 계속 보임 (위치 기억).
+        if (_renderer == null) 
+            return;
+        if (State == DoorState.Hidden) 
+        { 
+            _renderer.enabled = false; 
+            return;
+        }
+        if (VisionSystem.Instance == null) 
+            return;
+
         _renderer.enabled = VisionSystem.Instance.IsExplored(GridPosition);
     }
 }

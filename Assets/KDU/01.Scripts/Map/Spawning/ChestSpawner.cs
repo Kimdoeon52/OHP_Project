@@ -1,15 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 맵 생성 후 Special/Secret 방에 상자를 배치하는 스포너 (GDD 6.2.1 / 6.2.2 · 9.14).
-/// MapGenerator 가 문/열쇠 배치 뒤에 Spawn() 을 호출한다 (EnemySpawner 와 같은 주입 패턴).
-///
-/// 방의 하위 종류(specialKind/secretKind)는 MapGenerator 가 생성 시 1회 결정한다(중앙 단일 진실).
-/// 이 스포너는 그 종류 중 '상자류'만 담당 — room.specialKind/secretKind 를 읽어 해당 상자 구성을 배치.
-/// 몬스터 방(고대 골렘)·스크롤 방·포션 방·골드 방·인챈트 방은 각자 스포너/시스템이 같은 값을 읽어 분담.
-/// 반지 상자 방처럼 상자 열쇠가 필요한 구성은 같은 층 Normal/Exit 방에 열쇠를 떨군다(GDD 9.15).
-/// </summary>
+// 맵 생성 후 Special/Secret 방에 상자를 배치하는 스포너
 public class ChestSpawner : MonoBehaviour
 {
     [Header("프리팹")]
@@ -26,7 +18,6 @@ public class ChestSpawner : MonoBehaviour
     [SerializeField] private ChestRoomContent specialGoldChest;
     [Tooltip("Secret: 장비 상자 방 (장비상자 1).")]
     [SerializeField] private ChestRoomContent secretEquipChest;
-    // 나머지(Special: 몬스터/스크롤, Secret: 포션/골드/인챈트)는 상자 없음 → 각자 스포너 담당.
 
     [Header("랜덤 상자 (Normal/Exit 방당 확률 — GDD 9.14)")]
     [Tooltip("일반/exit 방에 랜덤 등장하는 '랜덤 상자' ChestData.")]
@@ -42,7 +33,7 @@ public class ChestSpawner : MonoBehaviour
 
         foreach (var room in rooms)
         {
-            // 종류는 MapGenerator 가 이미 결정 — 여기선 그 종류의 상자 구성만 읽어 배치.
+            // 룸타입 받아와서 상자 배치
             ChestRoomContent content = room.type switch
             {
                 RoomType.Special => SpecialContent(room.specialKind),
@@ -52,24 +43,24 @@ public class ChestSpawner : MonoBehaviour
             if (content != null) PlaceContent(rooms, room, content, rng);
         }
 
-        // 랜덤 상자 — Normal/Exit 방마다 별도 흐름으로 20% 굴림 (GDD 9.14).
+        // 랜덤 상자 — Normal/Exit 방마다 별도 흐름으로 20% 굴림
         SpawnRandomChests(rooms, rng);
     }
 
-    /// <summary>스페셜 방 하위 종류 → 상자 구성. 상자 아닌 종류(몬스터/스크롤)는 null(다른 스포너).</summary>
+    // 상자 나오는 스페셜 방 종류
     private ChestRoomContent SpecialContent(SpecialRoomKind kind) => kind switch
     {
         SpecialRoomKind.RandomChest => specialRandomChest,
         SpecialRoomKind.RingChest => specialRingChest,
         SpecialRoomKind.GoldChest => specialGoldChest,
-        _ => null,   // Monster, Scroll
+        _ => null, // 나머지는 null 처리
     };
 
-    /// <summary>시크릿 방 하위 종류 → 상자 구성. 상자 아닌 종류(포션/골드/인챈트)는 null(다른 스포너).</summary>
+    // 상자 나오는 시크릿 방 종류
     private ChestRoomContent SecretContent(SecretRoomKind kind) => kind switch
     {
         SecretRoomKind.EquipChest => secretEquipChest,
-        _ => null,   // Potion, Gold, Enchant
+        _ => null, // 나머지는 null 처리
     };
 
     private void SpawnRandomChests(List<RoomData> rooms, DungeonRandom rng)
@@ -112,7 +103,7 @@ public class ChestSpawner : MonoBehaviour
             SpawnChest(cell, content.Chest, rng);
         }
 
-        // 상자 열쇠는 같은 층 Normal/Exit 방에 (GDD 9.15).
+        // 상자 열쇠는 같은 층 Normal/Exit 방에 배치
         if (content.SpawnChestKey && keyPickupPrefab != null)
             SpawnChestKeys(rooms, content.ChestKeyType, content.ChestKeyCount, rng);
     }
