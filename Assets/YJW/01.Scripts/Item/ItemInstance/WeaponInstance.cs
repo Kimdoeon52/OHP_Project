@@ -9,7 +9,7 @@ public class WeaponInstance : EquipmentInstance
 
     public int GetDamage() => Random.Range(GetMinDamage(), GetMaxDamage() + 1);
 
-    public string GetTooltipStats() =>
+    public override string GetToolTipStats() =>
         $"{Weapon.Name}\n" +
         $"----------\n" +
         $"{Weapon.Description}\n" +

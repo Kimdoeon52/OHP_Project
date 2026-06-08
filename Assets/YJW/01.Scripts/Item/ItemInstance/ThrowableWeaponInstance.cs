@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
 {
@@ -16,7 +16,7 @@ public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
         $"착용 힘: {weapon.CanUseStrength}\n" +
         $"데미지: {GetMinDamage()}~{GetMaxDamage()}";
 
-    public void Throw(Vector2Int targetPos)
+    public void Throw(Vector2Int _)
     {
         if (PlayerStats.Instance.Strength < weapon.CanUseStrength)
         {
@@ -24,44 +24,17 @@ public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
             return;
         }
 
-        Vector2Int currentPos = GridSystem.Instance.WorldToGrid(GameManager.Instance.player.transform.position);
-        Vector2Int? targetTile = FindTarget(currentPos, targetPos);
+        Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mouseWorldPos.z = 0f;
+
+        Vector3 playerPos = GameManager.Instance.player.transform.position;
+        Vector2 direction = ((Vector2)(mouseWorldPos - playerPos)).normalized;
 
         GameObject projectile = ObjectPool.Instance.Get(weapon.PoolType);
-        projectile.transform.position = GameManager.Instance.player.transform.position;
+        projectile.transform.position = playerPos;
 
         WeaponProjectile wp = projectile.GetComponent<WeaponProjectile>();
         wp.SetInstance(this);
-
-        if (targetTile.HasValue)
-            wp.FlyEnemy(targetPos);
-        else
-            wp.FlyNoEnemy(targetPos);
-    }
-
-    private Vector2Int? FindTarget(Vector2Int origin, Vector2Int direction)
-    {
-        Vector2Int perp = new Vector2Int(-direction.y, direction.x);
-
-        Vector2Int[] candidates = new Vector2Int[]
-        {
-            origin + direction,
-            origin + direction + perp,
-            origin + direction - perp,
-        };
-
-        foreach (var tile in candidates)
-        {
-            if (HasEnemy(tile))
-                return tile;
-        }
-
-        return null;
-    }
-
-    private bool HasEnemy(Vector2Int tile)
-    {
-        // TODO: 적 감지 로직
-        return false;
+        wp.Fly(direction);
     }
 }
