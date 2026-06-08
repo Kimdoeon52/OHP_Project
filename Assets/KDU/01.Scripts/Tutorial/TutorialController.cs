@@ -298,6 +298,9 @@ public class TutorialController : MonoBehaviour
         _secretDiscovered = false;
     }
 
+    /// <summary>튜토리얼 스킵 버튼(UI onClick)에서 호출 — 즉시 종료하고 1층(KDU_2)으로.</summary>
+    public void Skip() => Finish();
+
     private void Finish()
     {
         if (_finished) return;
