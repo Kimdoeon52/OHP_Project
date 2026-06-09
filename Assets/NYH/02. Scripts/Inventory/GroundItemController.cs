@@ -24,13 +24,7 @@ namespace PrototypeRT
         [SerializeField] private InventoryController inventoryController;
 
         [Header("입력")]
-        [Tooltip("현재 플레이어 칸의 마지막 아이템 하나를 수동으로 줍는 키입니다.")]
-        [SerializeField] private KeyCode manualPickupKey = KeyCode.Space;
-
-        [Tooltip("플레이어가 아이템 칸에 도착하면 들어갈 수 있는 아이템을 전부 자동으로 줍습니다.")]
-        [SerializeField] private bool autoPickupOnMove = false;
-
-        [Tooltip("수동 줍기 키 입력을 사용할지 정합니다.")]
+        [Tooltip("수동 줍기 입력을 사용할지 정합니다. 실제 키는 KeyBindingManager의 Pickup 설정을 사용합니다.")]
         [SerializeField] private bool manualPickupEnabled = true;
 
         [Header("스캔")]
@@ -98,7 +92,7 @@ namespace PrototypeRT
             if (KeyBindingManager.ShouldBlockGameplayInput)
                 return;
 
-            if (!manualPickupEnabled || !Input.GetKeyDown(KeyBindingManager.GetKey(KeyBindingAction.Pickup)))
+            if (!manualPickupEnabled || !KeyBindingManager.GetGameplayKeyDown(KeyBindingAction.Pickup))
                 return;
 
             // 수동 줍기는 한 번에 하나만 줍고, 마지막에 떨어진 아이템부터 처리합니다.

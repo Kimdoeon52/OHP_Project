@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using PrototypeRT;
 
 public class CameraFollow : MonoBehaviour
 {
@@ -119,6 +120,14 @@ public class CameraFollow : MonoBehaviour
     private void Update()
     {
         if (!_planningMode) return;
+
+        if (KeyBindingManager.ShouldBlockGameplayInput)
+        {
+            // UI 창 위에서 드래그를 시작한 상태가 남으면 창을 닫은 뒤 카메라가 튀듯이 움직일 수 있습니다.
+            // 게임 입력 차단 중에는 카메라 입력도 끊고 드래그 상태를 초기화합니다.
+            _dragging = false;
+            return;
+        }
 
         // 플레이어 세이프룸 밖으로 나가면 플래닝 모드 종료
         if (player != null && _safeCells != null && !_safeCells.Contains(player.GridPosition))

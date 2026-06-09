@@ -8,13 +8,11 @@ namespace PrototypeRT
     /// </summary>
     public class InventoryPanelToggle : MonoBehaviour
     {
+        private const string InputBlockSource = "InventoryPanelToggle";
+
         [Header("인벤토리 패널")]
         [Tooltip("열고 닫을 인벤토리 UI 패널입니다. ItemGrid가 들어 있는 패널 오브젝트를 연결합니다.")]
         [SerializeField] private GameObject inventoryPanel;
-
-        [Header("입력")]
-        [Tooltip("인벤토리를 열고 닫을 키입니다.")]
-        [SerializeField] private KeyCode toggleKey = KeyCode.Tab;
 
         [Tooltip("게임 시작 시 인벤토리 패널이 열려 있을지 정합니다. 꺼두면 시작할 때 닫힙니다.")]
         [SerializeField] private bool openOnStart = true;
@@ -49,10 +47,13 @@ namespace PrototypeRT
         private void Update()
         {
             if (inventoryPanel == null) return;
-            if (KeyBindingManager.ShouldBlockGameplayInput) return;
+            if (KeyBindingManager.InputCaptureActive || KeyBindingManager.WasInputCapturedThisFrame()) return;
 
             if (Input.GetKeyDown(KeyBindingManager.GetKey(KeyBindingAction.Inventory)))
             {
+                if (!IsOpen && KeyBindingManager.ShouldBlockGameplayInput)
+                    return;
+
                 // 지금 상태의 반대값을 먼저 계산합니다.
                 // 이렇게 해두면 "열기 처리"와 "닫기 처리"를 SetOpen 하나로 모을 수 있습니다.
                 bool nextOpen = !inventoryPanel.activeSelf;
@@ -70,6 +71,8 @@ namespace PrototypeRT
 
             if (!value)
             {
+                KeyBindingManager.SetUiInputBlock(InputBlockSource, false);
+
                 // 주문서 대상 지정 중에 패널만 꺼지면 커서가 감정/강화/정화 아이콘으로 남습니다.
                 // 닫기 경로에서 먼저 취소시켜 반투명 표시와 마우스 커서를 함께 원복합니다.
                 targetingController?.CancelTargeting();
@@ -84,8 +87,19 @@ namespace PrototypeRT
             // 열 때는 패널을 먼저 활성화한 뒤 컨트롤러 입력을 다시 켭니다.
             // 패널이 켜진 상태에서 하이라이트/그리드 참조를 잡는 쪽이 안전합니다.
             inventoryPanel.SetActive(true);
+            KeyBindingManager.SetUiInputBlock(InputBlockSource, true);
             playerStatsView?.Refresh();
             inventoryController?.SetInventoryOpen(true);
+        }
+
+        private void OnDisable()
+        {
+            KeyBindingManager.SetUiInputBlock(InputBlockSource, false);
+        }
+
+        private void OnDestroy()
+        {
+            KeyBindingManager.SetUiInputBlock(InputBlockSource, false);
         }
     }
 }

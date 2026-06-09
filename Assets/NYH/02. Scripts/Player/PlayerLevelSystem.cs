@@ -13,7 +13,10 @@ public class PlayerLevelSystem : MonoBehaviour
     [Tooltip("현재 플레이어 레벨입니다. 실제 스탯 값은 NYHPlayerStats가 담당하고, 이 값은 성장 단계만 나타냅니다.")]
     [SerializeField, Min(1)] private int level = 1;
 
-    [Tooltip("현재 레벨에서 누적된 경험치입니다. Required Exp 이상이 되면 레벨업하고 남은 경험치는 다음 레벨로 이월됩니다.")]
+    [Tooltip("최대 레벨입니다. 이 레벨에 도달하면 경험치를 얻어도 더 이상 누적/레벨업하지 않고 UI에는 MAX로 표시합니다.")]
+    [SerializeField, Min(1)] private int maxLevel = 10;
+
+    [Tooltip("현재 레벨에서 누적된 경험치입니다. 최대 레벨에서는 더 이상 의미가 없어서 0으로 유지됩니다.")]
     [SerializeField, Min(0)] private int currentExp;
 
     [Tooltip("1레벨에서 2레벨로 오르는 데 필요한 기본 경험치입니다.")]
@@ -58,7 +61,10 @@ public class PlayerLevelSystem : MonoBehaviour
     public int Level => level;
     // 경험치 저장
     public int CurrentExp => currentExp;
-    public int RequiredExp => CalculateRequiredExp(level);
+    public int RequiredExp => IsMaxLevel ? 0 : CalculateRequiredExp(level);
+    public int MaxLevel => maxLevel;
+    public bool IsMaxLevel => level >= maxLevel;
+    public string ExpDisplayText => IsMaxLevel ? "MAX" : $"{currentExp}/{RequiredExp}";
 
     /// <summary>
     /// 씬에서 전역 접근할 레벨 시스템 인스턴스를 등록한다.
@@ -109,15 +115,27 @@ public class PlayerLevelSystem : MonoBehaviour
     {
         if (amount <= 0) return;
 
+        if (IsMaxLevel)
+        {
+            // 최대 레벨 이후 경험치를 계속 쌓아두면 나중에 maxLevel을 올렸을 때 즉시 여러 번 레벨업하는 문제가 생긴다.
+            // GDD 기준 현재 성장 상한은 10레벨이므로, 상한에 도달하면 경험치 통은 MAX 표시용 상태로만 유지한다.
+            currentExp = 0;
+            OnExpChanged?.Invoke(amount);
+            return;
+        }
+
         currentExp += amount;
         bool leveledUp = false;
 
-        while (currentExp >= RequiredExp)
+        while (!IsMaxLevel && currentExp >= RequiredExp)
         {
             currentExp -= RequiredExp;
             LevelUp();
             leveledUp = true;
         }
+
+        if (IsMaxLevel)
+            currentExp = 0;
 
         OnExpChanged?.Invoke(amount);
         if (leveledUp)
@@ -130,9 +148,16 @@ public class PlayerLevelSystem : MonoBehaviour
     /// </summary>
     private void LevelUp()
     {
+        if (IsMaxLevel)
+            return;
+
         level++;
+        if (level > maxLevel)
+            level = maxLevel;
 
         NYHPlayerStats stats = NYHPlayerStats.Instance;
+        GrantTraitPointForLevel(level);
+
         if (stats == null) return;
 
         if (healthPerLevel > 0)
@@ -142,12 +167,33 @@ public class PlayerLevelSystem : MonoBehaviour
             stats.AddStat(NYHStatType.MoveSpeed, moveSpeedPerLevel);
     }
 
+    private void GrantTraitPointForLevel(int reachedLevel)
+    {
+        // GDD 기준 특성 포인트 지급 구간을 레벨업 시점에만 처리한다.
+        // 특성 포인트는 런타임 성장 보상이므로 경험치 UI나 스탯 저장 로직에 섞지 않는다.
+        TraitTier? tier = null;
+
+        if (reachedLevel >= 2 && reachedLevel <= 4)
+            tier = TraitTier.Tier1;
+        else if (reachedLevel >= 5 && reachedLevel <= 7)
+            tier = TraitTier.Tier2;
+        else if (reachedLevel >= 8 && reachedLevel <= 10)
+            tier = TraitTier.Tier3;
+
+        if (tier.HasValue)
+            TraitController.FindAvailableInstance()?.AddPoint(tier.Value, 1);
+    }
+
     /// <summary>
     /// targetLevel에서 다음 레벨로 오르는 데 필요한 경험치를 계산한다.
     /// 공식: baseRequiredExp * requiredExpGrowth^(level - 1)
     /// </summary>
     private int CalculateRequiredExp(int targetLevel)
     {
+        // 최대 레벨에서는 다음 레벨 요구 경험치가 없으므로 외부에는 RequiredExp 0과 ExpDisplayText MAX를 제공한다.
+        if (targetLevel >= maxLevel)
+            return 0;
+
         int index = Mathf.Max(0, targetLevel - 1);
         if (requiredExpByLevel != null && index < requiredExpByLevel.Length)
             return Mathf.Max(1, requiredExpByLevel[index]);
@@ -170,7 +216,11 @@ public class PlayerLevelSystem : MonoBehaviour
     private void OnValidate()
     {
         level = Mathf.Max(1, level);
+        maxLevel = Mathf.Max(1, maxLevel);
+        level = Mathf.Min(level, maxLevel);
         currentExp = Mathf.Max(0, currentExp);
+        if (level >= maxLevel)
+            currentExp = 0;
         baseRequiredExp = Mathf.Max(1, baseRequiredExp);
         requiredExpGrowth = Mathf.Max(1f, requiredExpGrowth);
         healthPerLevel = Mathf.Max(0, healthPerLevel);

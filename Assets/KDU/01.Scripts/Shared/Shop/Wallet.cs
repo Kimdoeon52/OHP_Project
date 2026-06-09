@@ -35,7 +35,13 @@ public class Wallet : Singleton<Wallet>
     {
         if (amount <= 0)
             return;
-        Balance += amount;
+
+        // 골드 획득량 특성은 드랍 생성량이 아니라 실제 지갑에 들어오는 시점에 곱한다.
+        // 이렇게 하면 이미 떨어진 골드 오브젝트 구조를 바꾸지 않아도 배율 효과만 안전하게 적용된다.
+        TraitController traitController = TraitController.FindAvailableInstance();
+        float multiplier = traitController != null ? traitController.GetGoldMultiplier() : 1f;
+        int finalAmount = Mathf.Max(0, Mathf.RoundToInt(amount * multiplier));
+        Balance += finalAmount;
         GameEvents.OnGoldChanged?.Invoke(Balance);
     }
 

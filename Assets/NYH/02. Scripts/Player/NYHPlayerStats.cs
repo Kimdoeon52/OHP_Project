@@ -226,20 +226,30 @@ public static class NYHPlayerAttackCalculator
         if (weaponInstance != null && weaponInstance.Weapon != null)
         {
             CloseWeapon weapon = weaponInstance.Weapon;
+            GetTraitAttackBonus(out int traitMinBonus, out int traitMaxBonus);
             int strengthBonusMax = Mathf.Max(0, stats.Strength - weapon.CanUseStrength);
-            int minDamage = Mathf.Max(0, weaponInstance.GetMinDamage());
-            int maxDamage = Mathf.Max(minDamage, weaponInstance.GetMaxDamage() + strengthBonusMax);
+            int minDamage = Mathf.Max(0, weaponInstance.GetMinDamage() + traitMinBonus);
+            int maxDamage = Mathf.Max(minDamage, weaponInstance.GetMaxDamage() + strengthBonusMax + traitMaxBonus);
 
             return new NYHAttackDamageRange(minDamage, maxDamage, strengthBonusMax, false, weapon.Name);
         }
 
         CloseWeapon fallbackWeapon = GetEquippedCloseWeapon(equipmentController);
         if (fallbackWeapon == null)
-            return new NYHAttackDamageRange(UnarmedDamage, UnarmedDamage, 0, true, "맨손");
+        {
+            GetTraitAttackBonus(out int unarmedTraitMinBonus, out int unarmedTraitMaxBonus);
+            return new NYHAttackDamageRange(
+                UnarmedDamage + unarmedTraitMinBonus,
+                UnarmedDamage + unarmedTraitMaxBonus,
+                0,
+                true,
+                "맨손");
+        }
 
+        GetTraitAttackBonus(out int fallbackTraitMinBonus, out int fallbackTraitMaxBonus);
         int fallbackStrengthBonusMax = Mathf.Max(0, stats.Strength - fallbackWeapon.CanUseStrength);
-        int fallbackMinDamage = Mathf.Max(0, fallbackWeapon.MinDamage);
-        int fallbackMaxDamage = Mathf.Max(fallbackMinDamage, fallbackWeapon.MaxDamage + fallbackStrengthBonusMax);
+        int fallbackMinDamage = Mathf.Max(0, fallbackWeapon.MinDamage + fallbackTraitMinBonus);
+        int fallbackMaxDamage = Mathf.Max(fallbackMinDamage, fallbackWeapon.MaxDamage + fallbackStrengthBonusMax + fallbackTraitMaxBonus);
 
         return new NYHAttackDamageRange(fallbackMinDamage, fallbackMaxDamage, fallbackStrengthBonusMax, false, fallbackWeapon.Name);
     }
@@ -284,5 +294,20 @@ public static class NYHPlayerAttackCalculator
         }
 
         return null;
+    }
+
+    private static void GetTraitAttackBonus(out int minBonus, out int maxBonus)
+    {
+        TraitController traitController = TraitController.FindAvailableInstance();
+        if (traitController != null)
+        {
+            // HeavyBlow는 장비 데이터 자체를 바꾸지 않고 공격 계산 결과에만 더한다.
+            // 장비 원본 수치를 오염시키면 장착 해제/특성 초기화 때 되돌리기 어렵기 때문이다.
+            traitController.GetBaseAttackDamageBonusMinMax(out minBonus, out maxBonus);
+            return;
+        }
+
+        minBonus = 0;
+        maxBonus = 0;
     }
 }
