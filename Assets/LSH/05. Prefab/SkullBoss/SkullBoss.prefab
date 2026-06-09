@@ -164,7 +164,11 @@ MonoBehaviour:
   crystalTint: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   crystalScale: 1
   crystalLifetimeSec: 1
-  obstacleTile: {fileID: 11400000, guid: 149945ecfe1ad424fb7862e16697d6ba, type: 2}
+  obstacleTiles:
+  - {fileID: 11400000, guid: 8f84993ef2bb1fe478b0ae3b467be529, type: 2}
+  - {fileID: 11400000, guid: 7f087d33d4c41fe4b9c17f244d790514, type: 2}
+  - {fileID: 11400000, guid: 7e5b75a072b240040a601ce271d14522, type: 2}
+  - {fileID: 11400000, guid: 676cae32d2e507943b43e5e5b779e952, type: 2}
 --- !u!95 &7917975211014605181
 Animator:
   serializedVersion: 7

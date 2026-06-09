@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animeEffect: {fileID: 3643040275921996530, guid: 8d638dda51e4b6144a6393b5eec2997b, type: 3}
   bossName: {fileID: 6014027397259774390, guid: b42d89b087c04914395075c090dbb848, type: 3}
+  bossBgm: {fileID: 8300000, guid: e9bf2a55b15fb354aaaf15601fafe9fe, type: 3}
   dialogueLines:
   - "\uBF08\uAC00 \uBD80\uB52A\uD788\uB294 \uC18C\uB9AC\uAC00 \uB358\uC804\uC5D0
     \uC6B8\uB824\uD37C\uC9C4\uB2E4."

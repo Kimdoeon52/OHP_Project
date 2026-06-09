@@ -10,10 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 8334909061003502381}
   - component: {fileID: 8334909061003502382}
+  - component: {fileID: 8367488103690757370}
   - component: {fileID: 8334909061003502383}
-  - component: {fileID: -6842381717463094050}
   m_Layer: 0
-  m_Name: SBFallRock
+  m_Name: PhaseSBFallRock
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -79,7 +79,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 10
   m_Sprite: {fileID: -325057623, guid: 0066ceb69c321f545bf207e6635a0137, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.49056602, g: 0.49056602, b: 0.49056602, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -89,6 +89,19 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &8367488103690757370
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8334909061003502288}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8222825c0883a194b81b429f8debeff3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultLifetimeSec: 1.5
 --- !u!95 &8334909061003502383
 Animator:
   serializedVersion: 7
@@ -111,16 +124,3 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &-6842381717463094050
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8334909061003502288}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e6bd9a04a43c69b4a9e61a360bf9903d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  defaultLifetimeSec: 2

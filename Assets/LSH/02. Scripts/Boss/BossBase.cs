@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
@@ -47,6 +47,7 @@ public class BossBase : EnemyNormalBASE
     protected Animator bossAnimation; //보스 애니메이션을 제어하기 위한
     protected CancellationTokenSource cancelToken;
     protected GridPlayer player; //플레이어 참조
+
 
     public Tilemap WarningTilemap => warningTilemap;
     public TileBase WarningTile => warningTile;
@@ -498,9 +499,15 @@ public class BossBase : EnemyNormalBASE
 
     protected bool IsInAttackFloor(Vector2Int cell)
     {
+        // 1) 벽 타일이나 크리스탈 낙하 등으로 인해 막힌 셀(IsWalkable이 false)로는 보스가 절대 이동할 수 없도록 제한
+        if (GridSystem.Instance != null && !GridSystem.Instance.IsWalkable(cell))
+            return false;
+
+        // 2) 보스 공격 전용 구역(AttackFloor) 타일맵이 지정된 경우 해당 타일 위에 있는지도 검사
         if (attackFloorTilemap != null)
             return attackFloorTilemap.GetTile(new Vector3Int(cell.x, cell.y, 0)) != null;
-        return GridSystem.Instance != null && GridSystem.Instance.IsWalkable(cell);
+
+        return true;
     }
 
     protected bool IsAreaInAttackFloor(Vector2Int bottomLeft, Vector2Int size)

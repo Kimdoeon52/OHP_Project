@@ -17,14 +17,17 @@ public class SpecialPattern : MonoBehaviour
     [SerializeField] private float crystalScale = 1f;
     [SerializeField] private float crystalLifetimeSec = 1.5f;
 
-    [Header("스페셜 패턴 타일 설정")]
-    [SerializeField] private UnityEngine.Tilemaps.TileBase obstacleTile; // 새로 그릴 벽 타일 에셋
+    [Header("가장자리 크리스탈 설정")]
+    [SerializeField] private GameObject edgeCrystalPrefab; // 가장자리 벽 전용 크리스탈 프리팹 (비워둘 시 폴백용 crystalPrefab 사용)
+    [SerializeField] private Color edgeCrystalColor = Color.blue;
+    [SerializeField] private float edgeCrystalScale = 1.2f;
 
     private BossBase boss;
     private CancellationTokenSource cts;
     private List<Vector2Int> walkableCellsCache;
     private bool isRunning = false;
     private List<Vector2Int> paintedCells = new List<Vector2Int>();
+    private List<GameObject> spawnedEdgeCrystals = new List<GameObject>();
 
     private void Awake()
     {
@@ -33,19 +36,34 @@ public class SpecialPattern : MonoBehaviour
 
     public void StartSpecialPattern()
     {
+        StartPhase3SpecialPattern();
+    }
+
+    public void StartPhase2SpecialPattern()
+    {
         if (isRunning) return;
         isRunning = true;
 
         cts = new CancellationTokenSource();
 
-        // 1. 패턴1: 가장자리에 타일을 즉시 그리고 플레이어를 밀침 (상시 유지)
-        ExecuteEdgePattern();
-
-        // 2. 패턴2: 남아있는 바닥(이동 가능 셀)을 캐싱하여 크리스탈 비 준비
         CacheWalkableCells();
-
-        // 3. 패턴2: 크리스탈 비 상시 루프 시작
         CrystalRainLoop().Forget();
+    }
+
+    public void StartPhase3SpecialPattern()
+    {
+        if (!isRunning)
+        {
+            isRunning = true;
+            cts = new CancellationTokenSource();
+            ExecuteEdgePattern();
+            CacheWalkableCells();
+            CrystalRainLoop().Forget();
+            return;
+        }
+
+        ExecuteEdgePattern();
+        CacheWalkableCells();
     }
 
     public void StopSpecialPattern()
@@ -92,19 +110,18 @@ public class SpecialPattern : MonoBehaviour
 
     private void ExecuteEdgePattern()
     {
-        if (boss == null || !boss.HasMapBounds || GridSystem.Instance == null || obstacleTile == null) return;
+        GameObject prefabToUse = edgeCrystalPrefab != null ? edgeCrystalPrefab : crystalPrefab;
+        if (boss == null || !boss.HasMapBounds || GridSystem.Instance == null || prefabToUse == null) return;
 
         RectInt bounds = boss.MapBounds;
-        var wallTilemap = GridSystem.Instance.Tilemaps.wall;
-        if (wallTilemap == null) return;
 
         ClearPaintedTiles();
 
-        // 맵 안전성 체크: 최소 크기가 되지 않으면 크기를 동적 조절
-        int xEdge = Mathf.Max(1, Mathf.Min(3, bounds.width / 2 - 1));
-        int yEdge = Mathf.Max(1, Mathf.Min(3, bounds.height / 2 - 1));
+        // 맵 가장자리에서 고정 3칸 두께로 벽 생성
+        int xEdge = 3;
+        int yEdge = 3;
 
-        // 가장자리 xEdge, yEdge 칸만큼 새로운 타일을 그려 좁힘
+        // 가장자리 xEdge, yEdge 칸만큼 크리스탈을 배치하여 좁힘
         for (int x = bounds.xMin; x < bounds.xMax; x++)
         {
             for (int y = bounds.yMin; y < bounds.yMax; y++)
@@ -115,13 +132,33 @@ public class SpecialPattern : MonoBehaviour
                 if (x < bounds.xMin + xEdge || x >= bounds.xMax - xEdge || 
                     y < bounds.yMin + yEdge || y >= bounds.yMax - yEdge)
                 {
-                    // 바닥 또는 함정 타일이 있어 원래 다닐 수 있는 길일 때만 벽을 그림
+                    // 바닥 또는 함정 타일이 있어 원래 다닐 수 있는 길일 때만 크리스탈을 소환
                     var hasFloor = GridSystem.Instance.Tilemaps.floor != null && GridSystem.Instance.Tilemaps.floor.HasTile(new Vector3Int(x, y, 0));
                     var hasHazard = GridSystem.Instance.Tilemaps.hazard != null && GridSystem.Instance.Tilemaps.hazard.HasTile(new Vector3Int(x, y, 0));
 
                     if (hasFloor || hasHazard)
                     {
-                        wallTilemap.SetTile(new Vector3Int(x, y, 0), obstacleTile);
+                        Vector3 worldPos = GridSystem.Instance.GridToWorld(cell);
+                        GameObject go = Instantiate(prefabToUse, worldPos, Quaternion.identity);
+                        
+                        // 프리팹 컴포넌트에 의존하지 않고 SpecialPattern이 직접 이동 불가를 확실하게 세팅
+                        GridSystem.Instance.BlockCell(cell);
+
+                        Phase2Crystal p2c = go.GetComponent<Phase2Crystal>();
+                        if (p2c != null)
+                        {
+                            p2c.Setup(edgeCrystalColor, edgeCrystalScale, 9999f);
+                        }
+                        else
+                        {
+                            Crystal c = go.GetComponent<Crystal>();
+                            if (c != null)
+                            {
+                                c.Setup(edgeCrystalColor, edgeCrystalScale, 9999f);
+                            }
+                        }
+
+                        spawnedEdgeCrystals.Add(go);
                         paintedCells.Add(cell);
                     }
                 }
@@ -197,14 +234,6 @@ public class SpecialPattern : MonoBehaviour
             if (boss.Player != null && !boss.Player.IsDead && boss.Player.GridPosition == targetPos)
             {
                 boss.Player.TakeDamage(crystalDamage);
-
-                // 끼임 방지: 크리스탈에 맞은 플레이어는 근처 이동 가능한 타일로 튕겨냄
-                Vector2Int? knockbackTarget = FindKnockbackTargetNear(targetPos);
-                if (knockbackTarget.HasValue && boss.Player.Movement != null)
-                {
-                    boss.Player.Movement.Knockback(knockbackTarget.Value);
-                    Debug.Log($"[SpecialPattern] 플레이어가 크리스탈에 맞음 -> {knockbackTarget.Value}로 튕겨냄 (끼임 방지)");
-                }
             }
         }
         catch (System.OperationCanceledException) { }
@@ -219,15 +248,22 @@ public class SpecialPattern : MonoBehaviour
 
     private void ClearPaintedTiles()
     {
-        if (GridSystem.Instance == null) return;
-        var wallTilemap = GridSystem.Instance.Tilemaps.wall;
-        if (wallTilemap == null) return;
-
-        foreach (var cell in paintedCells)
+        if (GridSystem.Instance != null)
         {
-            wallTilemap.SetTile(new Vector3Int(cell.x, cell.y, 0), null);
+            foreach (var cell in paintedCells)
+            {
+                GridSystem.Instance.UnblockCell(cell);
+            }
         }
 
+        foreach (var go in spawnedEdgeCrystals)
+        {
+            if (go != null)
+            {
+                Destroy(go);
+            }
+        }
+        spawnedEdgeCrystals.Clear();
         paintedCells.Clear();
 
         if (boss != null && boss.Player != null && VisionSystem.Instance != null)
@@ -250,62 +286,6 @@ public class SpecialPattern : MonoBehaviour
                 boss.Player.Movement.Knockback(targetPos.Value);
                 Debug.Log($"[SpecialPattern] 플레이어가 설치 구역에 갇힘 -> {targetPos.Value} 격자로 밀쳐냄");
             }
-        }
-    }
-
-    private Vector2Int? FindKnockbackTargetNear(Vector2Int playerPos)
-    {
-        if (GridSystem.Instance == null) return null;
-
-        var directions = new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
-        ShuffleDirections(directions);
-
-        foreach (var dir in directions)
-        {
-            var candidate = playerPos + dir;
-            // 칠해진 벽 영역이 아니고, 원래 이동 가능한 범위인지 검사
-            if (GridSystem.Instance.IsInBounds(candidate) && 
-                GridSystem.Instance.IsWalkable(candidate) &&
-                !paintedCells.Contains(candidate))
-            {
-                if (TurnManager.Instance != null && TurnManager.Instance.GetEntityAt(candidate) == null)
-                {
-                    return candidate;
-                }
-            }
-        }
-
-        var diagonalDirs = new[] {
-            new Vector2Int(1, 1), new Vector2Int(1, -1),
-            new Vector2Int(-1, 1), new Vector2Int(-1, -1)
-        };
-        ShuffleDirections(diagonalDirs);
-
-        foreach (var dir in diagonalDirs)
-        {
-            var candidate = playerPos + dir;
-            if (GridSystem.Instance.IsInBounds(candidate) && 
-                GridSystem.Instance.IsWalkable(candidate) &&
-                !paintedCells.Contains(candidate))
-            {
-                if (TurnManager.Instance != null && TurnManager.Instance.GetEntityAt(candidate) == null)
-                {
-                    return candidate;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private void ShuffleDirections(Vector2Int[] array)
-    {
-        for (int i = array.Length - 1; i > 0; i--)
-        {
-            int j = Random.Range(0, i + 1);
-            var temp = array[i];
-            array[i] = array[j];
-            array[j] = temp;
         }
     }
 

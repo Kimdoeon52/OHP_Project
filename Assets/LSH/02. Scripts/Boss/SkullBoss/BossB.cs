@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
@@ -40,6 +40,8 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     [SerializeField] private float phase2Attack1EffectScale = 1.6f;
     [SerializeField] private int phase2CrystalRadius = 1; // 1 -> 3x3 area
     [SerializeField] private float phase2CrystalScale = 3f;
+
+
 
     [Header("패턴 1히트 판정")]
     [SerializeField] private int attack1Damage = 1;   // 패턴1(평타) 데미지
@@ -121,6 +123,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     {
         currentHp = maxHp; // 보스 체력 설정먼저 해야 체력 업데이트가 보임
         base.OnEnable();
+
         bossSprite = GetComponentInChildren<SpriteRenderer>(); //Phase 2 색 변경용 (자식 포함 검색)
         gridPos = GridSystem.Instance.WorldToGrid(transform.position - BossPivotOffset); //보스 시작 격자 좌표 초기화
         transform.position = GridSystem.Instance.GridToWorld(gridPos) + BossPivotOffset; // 타일의 중앙으로 위치 스냅
@@ -167,9 +170,10 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
         ClearAllWarnings();
 
-        // 보스 사망 애니메이션 실행
+        // 보스 사망 애니메이션 실행 (2페이즈 가속도를 원래의 1로 복구)
         if (bossAnimation != null)
         {
+            bossAnimation.speed = 1f;
             bossAnimation.SetTrigger("Dead");
         }
 
@@ -193,6 +197,8 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             player.TakeDamage(damage);
         }
     }
+
+
 
     // 수평 방향일 때만 스프라이트를 플레이어 쪽으로 뒤집음 (기본 우향 가정).
     private void FaceDir(Vector2Int dir)
@@ -218,15 +224,57 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     private async UniTask<Vector2Int> TeleportToPlayerAsync(int disappearMs = 1000, int appearMs = 500)
     {
         bossAnimation.SetTrigger("Teleport");
-        await UniTask.Delay(disappearMs, cancellationToken: cancelToken.Token);
+        await UniTask.Delay(GetScaledDelay(disappearMs), cancellationToken: cancelToken.Token);
 
         var dir = TeleportBesidePlayer();
         if (dir == Vector2Int.zero) dir = DirToPlayer();
         FaceDir(dir);
 
         bossAnimation.SetTrigger("Appear");
-        await UniTask.Delay(appearMs, cancellationToken: cancelToken.Token);
+        await UniTask.Delay(GetScaledDelay(appearMs), cancellationToken: cancelToken.Token);
         return dir;
+    }
+
+    // 보스 전장(AttackFloor)의 중앙 타일로 순간이동하는 프리픽스.
+    private async UniTask TeleportToCenterAsync(int disappearMs = 1000, int appearMs = 500)
+    {
+        bossAnimation.SetTrigger("Teleport");
+        await UniTask.Delay(GetScaledDelay(disappearMs), cancellationToken: cancelToken.Token);
+
+        Vector2Int centerCell = gridPos;
+        if (hasMapBounds)
+        {
+            int centerX = mapBounds.xMin + mapBounds.width / 2;
+            int centerY = mapBounds.yMin + mapBounds.height / 2;
+            centerCell = new Vector2Int(centerX, centerY);
+        }
+        else if (GridSystem.Instance != null)
+        {
+            int minX = int.MaxValue, minY = int.MaxValue, maxX = int.MinValue, maxY = int.MinValue;
+            bool any = false;
+            foreach (var c in GridSystem.Instance.GetAllWalkableCells())
+            {
+                any = true;
+                if (c.x < minX) minX = c.x;
+                if (c.y < minY) minY = c.y;
+                if (c.x > maxX) maxX = c.x;
+                if (c.y > maxY) maxY = c.y;
+            }
+            if (any)
+            {
+                centerCell = new Vector2Int((minX + maxX) / 2, (minY + maxY) / 2);
+            }
+        }
+
+        gridPos = centerCell;
+        transform.position = GridSystem.Instance.GridToWorld(centerCell) + BossPivotOffset;
+
+        // 도착 후 플레이어를 바라봄
+        Vector2Int faceDir = DirToPlayer();
+        FaceDir(faceDir);
+
+        bossAnimation.SetTrigger("Appear");
+        await UniTask.Delay(GetScaledDelay(appearMs), cancellationToken: cancelToken.Token);
     }
 
     private List<Vector2Int> GetRingCells(Vector2Int center, int r)
@@ -302,12 +350,12 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     {
         try
         {
-            // 1. 플레이어에게 순간이동 (1번만 실행)
-            await TeleportToPlayerAsync(1000, 500);
+            // 1. AttackFloor의 중앙 타일로 순간이동 (1번만 실행)
+            await TeleportToCenterAsync(1000, 500);
 
             // 보스 공격 애니메이션 시작 (캐스팅 포즈 유지)
             bossAnimation.SetTrigger("Attack2");
-            await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
+            await UniTask.Delay(GetScaledDelay(1000), cancellationToken: cancelToken.Token);
 
             var tasks = new List<UniTask>();
 
@@ -331,7 +379,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
             // 마무리 애니메이션 재생
             bossAnimation.SetTrigger("Attack2Fin");
-            await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
+            await UniTask.Delay(GetScaledDelay(1000), cancellationToken: cancelToken.Token);
         }
         finally
         {
@@ -343,24 +391,22 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     {
         try
         {
-            // 1. 플레이어에게 순간이동 (Phase 2이므로 더 빠른 0.5초 / 0.25초 사용, 1번만 실행)
-            await TeleportToPlayerAsync(500, 250);
+            // Phase 2는 Phase 1과 동일하게 중앙으로 순간이동
+            await TeleportToCenterAsync(1000, 500);
 
-            // 보스 공격 애니메이션 시작
             bossAnimation.SetTrigger("Attack2");
-            await UniTask.Delay(500, cancellationToken: cancelToken.Token);
+            await UniTask.Delay(GetScaledDelay(1000), cancellationToken: cancelToken.Token);
 
             var tasks = new List<UniTask>();
 
-            // 2. 공격(충격파)을 설정된 간격으로 연달아 3번 중첩 실행
-            for (int i = 0; i < 3; i++)
+            // 2회 중첩 실행 (Phase 2 스펙: 반경 6칸인 phase2ShockwaveRadius 사용)
+            for (int i = 0; i < 2; i++)
             {
                 if (cancelToken.IsCancellationRequested) break;
 
-                // 비동기로 실행하여 리스트에 등록 (속도 2배인 shockwaveStepMs / 2 사용)
-                tasks.Add(ExecuteShockwavePattern(phase2ShockwaveRadius, shockwaveStepMs / 2));
+                tasks.Add(ExecuteShockwavePattern(phase2ShockwaveRadius, shockwaveStepMs));
 
-                if (i < 2)
+                if (i < 1)
                 {
                     await UniTask.Delay(shockwaveOverlapIntervalMs, cancellationToken: cancelToken.Token);
                 }
@@ -368,15 +414,16 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
             await UniTask.WhenAll(tasks);
 
-            // 마무리 애니메이션 재생
             bossAnimation.SetTrigger("Attack2Fin");
-            await UniTask.Delay(500, cancellationToken: cancelToken.Token);
+            await UniTask.Delay(GetScaledDelay(1000), cancellationToken: cancelToken.Token);
         }
         finally
         {
             isBossAttacking = false;
         }
     }
+
+
 
     private async UniTask ExecuteShockwavePattern(int maxRadius, int stepDelayMs)
     {
@@ -440,15 +487,19 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     //=============================== 패턴2 : 순간이동 후 3x3 or 5x5 공격 ====================================
     protected override async UniTask Phase1Pattern2()
     {
-        await ExecuteSwingPattern(attack1Range, attack1Width, 1.3f, 1000, 500, 0, 1f); // 1.0f -> 1.3f로 확대
+        // 1x1 범위 (radius: 0), 개수 5개 낙하
+        await ExecuteSwingPattern(attack1Range, attack1Width, 1.3f, 1000, 500, 0, 1f, 5); 
     }
 
     protected override async UniTask Phase2Pattern2()
     {
-        await ExecuteSwingPattern(phase2Attack1Range, phase2Attack1Width, phase2Attack1EffectScale * 1.2f, 500, 250, phase2CrystalRadius, phase2CrystalScale); // 배율 1.2배 더 확대
+        // 3x3 범위 (radius: 1), 개수 9개 낙하 (Phase 2 사양)
+        await ExecuteSwingPattern(attack1Range, attack1Width, 1.3f, 1000, 500, 1, 1f, 9);
     }
 
-    private async UniTask ExecuteSwingPattern(int range, int width, float effectScaleMultiplier, int disappearMs, int appearMs, int crystalRadius, float crystalScale)
+
+
+    private async UniTask ExecuteSwingPattern(int range, int width, float effectScaleMultiplier, int disappearMs, int appearMs, int crystalRadius, float crystalScale, int chasingCount)
     {
         var dir = await TeleportToPlayerAsync(disappearMs, appearMs);
 
@@ -458,7 +509,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         try
         {
             bossAnimation.SetTrigger("Attack1");
-            await UniTask.Delay(disappearMs == 500 ? 400 : 800, cancellationToken: cancelToken.Token);
+            await UniTask.Delay(GetScaledDelay(800), cancellationToken: cancelToken.Token);
             
             GameObject effect = SpawnAttackEffectFacingBoss(attack1Effect, transform.position);
             if (effect != null)
@@ -481,12 +532,12 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             }
         }
 
-        await UniTask.Delay(disappearMs == 500 ? 100 : 200, cancellationToken: cancelToken.Token);
+        await UniTask.Delay(GetScaledDelay(200), cancellationToken: cancelToken.Token);
         bossAnimation.SetTrigger("Attack1Fin");
 
-        await UniTask.Delay(disappearMs == 500 ? 500 : 1000, cancellationToken: cancelToken.Token);
+        await UniTask.Delay(GetScaledDelay(1000), cancellationToken: cancelToken.Token);
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < chasingCount; i++)
         {
             if (cancelToken.IsCancellationRequested) break;
 
@@ -498,7 +549,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             await UniTask.Delay(chasingCrystalIntervalMs, cancellationToken: cancelToken.Token);
         }
 
-        await UniTask.Delay(1000, cancellationToken: cancelToken.Token);
+        await UniTask.Delay(GetScaledDelay(1000), cancellationToken: cancelToken.Token);
         isBossAttacking = false;
     }
 
@@ -525,24 +576,28 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
             if (crystalPrefab != null)
             {
-                var worldPos = GridSystem.Instance.GridToWorld(centerCell);
-                var go = Instantiate(crystalPrefab, worldPos, Quaternion.identity);
-                
-                Phase2Crystal p2c = go.GetComponent<Phase2Crystal>();
-                if (p2c != null)
+                foreach (var cell in cells)
                 {
-                    p2c.SetupWithGridBlock(tint, scale, chasingCrystalLifetimeSec, centerCell);
-                }
-                else
-                {
-                    Crystal c = go.GetComponent<Crystal>();
-                    if (c != null) 
-                        c.Setup(tint, scale, chasingCrystalLifetimeSec);
-                    else 
-                        Destroy(go, chasingCrystalLifetimeSec);
+                    var worldPos = GridSystem.Instance.GridToWorld(cell);
+                    var go = Instantiate(crystalPrefab, worldPos, Quaternion.identity);
+                    
+                    Phase2Crystal p2c = go.GetComponent<Phase2Crystal>();
+                    if (p2c != null)
+                    {
+                        // 스케일은 늘리지 않고 1f로 둔 상태로 각 격자마다 배치하여 밟지 못하게 함
+                        p2c.SetupWithGridBlock(tint, 1f, chasingCrystalLifetimeSec, cell);
+                    }
+                    else
+                    {
+                        Crystal c = go.GetComponent<Crystal>();
+                        if (c != null) 
+                            c.Setup(tint, 1f, chasingCrystalLifetimeSec);
+                        else 
+                            Destroy(go, chasingCrystalLifetimeSec);
+                    }
                 }
 
-                // 크리스탈 낙하 시 카메라 셰이크(흔들림) 효과 추가
+                // 크리스탈 낙하 시 카메라 셰이크(흔들림) 효과 추가 (한 번만 발생)
                 if (CameraFollow.Instance != null)
                 {
                     CameraFollow.Instance.Shake(crystalShakeDuration, crystalShakeStrength);
@@ -576,7 +631,78 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         var specialPattern = GetComponent<SpecialPattern>();
         if (specialPattern != null)
         {
-            specialPattern.StartSpecialPattern();
+            specialPattern.StartPhase2SpecialPattern();
         }
+    }
+
+    private void EnterPhase3()
+    {
+        bossLevel = 3;
+        Debug.Log("<color=orange>[보스 Phase 3 진입]</color>");
+        
+        var specialPattern = GetComponent<SpecialPattern>();
+        if (specialPattern != null)
+        {
+            specialPattern.StartPhase3SpecialPattern();
+        }
+    }
+
+    protected override async UniTask PhaseState()
+    {
+        if (bossLevel == 1 && currentHp <= maxHp * 0.5f)
+        {
+            Debug.Log($"<color=orange>[보스 Phase 2 진입 조건 충족]</color> 체력 {currentHp} ≤ {maxHp * 0.5f}");
+            EnterPhase2();
+        }
+        else if (bossLevel == 2 && currentHp <= maxHp * 0.3f)
+        {
+            Debug.Log($"<color=orange>[보스 Phase 3 진입 조건 충족]</color> 체력 {currentHp} ≤ {maxHp * 0.3f}");
+            EnterPhase3();
+        }
+
+        switch (bossLevel)
+        {
+            case 1:
+                await Phase1BossPattern();
+                break;
+            case 2:
+                await Phase2BossPattern();
+                break;
+            case 3:
+                await Phase3BossPattern();
+                break;
+        }
+    }
+
+    private async UniTask Phase3BossPattern()
+    {
+        isBossAttacking = true;
+        BossAction bossAction = BossPatternPer();
+        await UniTask.Delay(patternDelay, cancellationToken: cancelToken.Token);
+        switch (bossAction)
+        {
+            case BossAction.Pattern1:
+                Phase2Pattern1().Forget();
+                break;
+            case BossAction.Pattern2:
+                Phase2Pattern2().Forget();
+                break;
+            case BossAction.Pattern3:
+                Phase2Pattern1().Forget();
+                break;
+        }
+    }
+
+    private int GetScaledDelay(int originalDelayMs)
+    {
+        if (bossAnimation != null)
+        {
+            float speed = bossAnimation.speed;
+            if (speed > 0f)
+            {
+                return Mathf.RoundToInt(originalDelayMs / speed);
+            }
+        }
+        return originalDelayMs;
     }
 }

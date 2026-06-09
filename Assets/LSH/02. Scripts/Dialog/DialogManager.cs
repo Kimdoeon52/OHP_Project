@@ -23,6 +23,8 @@ public class DialogManager : MonoBehaviour
     // 동적으로 스폰된 연출 오브젝트들
     private GameObject spawnedAnimeEffect;
     private GameObject spawnedBossName;
+    private AudioSource audioSource;
+    private AudioClip activeBgm;
 
     public System.Action OnDialogComplete;
 
@@ -84,7 +86,8 @@ public class DialogManager : MonoBehaviour
         if (data != null)
         {
             activeDialogText = data.dialogueLines;
-            Debug.Log($"[DialogManager] StartDialog: 대화 데이터 주입됨. 대사 개수 = {activeDialogText?.Length}");
+            activeBgm = data.BossBgm;
+            Debug.Log($"[DialogManager] StartDialog: 대화 데이터 주입됨 (BGM: {activeBgm?.name}). 대사 개수 = {activeDialogText?.Length}");
             
             // 데이터에 기입된 새로운 프리팹 연출 스폰
             if (data.AnimeEffect != null)
@@ -203,6 +206,14 @@ public class DialogManager : MonoBehaviour
 
     public void Awake()
     {
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        audioSource.loop = true;
+        audioSource.playOnAwake = false;
+
         dialogBackground.gameObject.SetActive(false);
         dialog.gameObject.SetActive(false);
         if (animeEffect != null) animeEffect.SetActive(false);
@@ -242,6 +253,13 @@ public class DialogManager : MonoBehaviour
     {
         Debug.Log("[DialogManager] Effect 연출 애니메이션 시작");
         
+        if (audioSource != null && activeBgm != null)
+        {
+            audioSource.clip = activeBgm;
+            audioSource.Play();
+            Debug.Log($"[DialogManager] BGM 재생 시작: {activeBgm.name}");
+        }
+        
         if (spawnedAnimeEffect != null) spawnedAnimeEffect.SetActive(true);
         else if (animeEffect != null) animeEffect.SetActive(true);
 
@@ -254,5 +272,15 @@ public class DialogManager : MonoBehaviour
         await UniTask.Delay(2000, delayType: DelayType.Realtime);
         
         Debug.Log("[DialogManager] Effect 연출 애니메이션 완료");
+    }
+
+    public void StopBgm()
+    {
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            audioSource.Stop();
+            audioSource.clip = null;
+            Debug.Log("[DialogManager] BGM 정지");
+        }
     }
 }

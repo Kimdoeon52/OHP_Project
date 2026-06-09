@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -91,6 +91,8 @@ public class TestScripts : MonoBehaviour
         {
             bossObject.SetActive(false);
         }
+
+        ControlBossBgm(floor);
     }
 
     void Update()
@@ -213,6 +215,23 @@ public class TestScripts : MonoBehaviour
             {
                 activeBossObject.SetActive(true);
                 Debug.LogWarning($"TestScripts: DialogManager가 없어 보스({activeBossObject.name})를 즉시 소환했습니다.");
+            }
+        }
+    }
+
+    // ────────────────────────────────────────────────────────
+    // 보스 층 BGM 제어 관련 함수
+    // ────────────────────────────────────────────────────────
+    private void ControlBossBgm(int floor)
+    {
+        bool isBossFloor = stageDialogs.Exists(m => m.floor == floor && (m.bossObject != null || m.dialogData != null));
+        
+        // 보스 층이 아니라면 대화 BGM을 정지합니다.
+        if (!isBossFloor)
+        {
+            if (dialogManager != null)
+            {
+                dialogManager.StopBgm();
             }
         }
     }
