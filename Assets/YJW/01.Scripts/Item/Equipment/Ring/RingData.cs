@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
-
-enum RingType
+public enum RingType
 {
     Fast,
     Hit,
@@ -16,7 +15,7 @@ public class RingData : ItemBase
 	[SerializeField] private int canUseStrength;
     [SerializeField] private int value;
     [SerializeField] private string effectDescription;
-    [SerializeField] private RingType ringType;
+    public RingType ringType;
 
 
 	public int CanUseStrength => canUseStrength;
