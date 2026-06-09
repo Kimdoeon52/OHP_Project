@@ -40,6 +40,7 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
 
     private GridPlayer _player;
     private NYHPlayerStats _stats;
+    private NYHEquipmentController _equipmentController;
     private Coroutine _regenCoroutine;
 
     public event Action OnHealthChanged;
@@ -97,6 +98,7 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
             _stats = NYHPlayerStats.Instance;
         if (_stats != null)
             _stats.OnStatAdded += OnStatAdded;
+        _equipmentController = GetComponent<NYHEquipmentController>();
 
         CurrentHp = MaxHp;
         PotionCount = startPotionCount;
@@ -251,8 +253,9 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
     private int CalculateIncomingDamage(int rawDamage)
     {
         if (rawDamage <= 0) return 0;
-        if (_stats == null) return rawDamage;
-        return _stats.CalculateIncomingDamage(rawDamage);
+        int armorDefense = NYHPlayerDefenseCalculator.RollArmorDefense(_equipmentController);
+        int flatDefense = _stats != null ? _stats.Defense : 0;
+        return Mathf.Max(0, rawDamage - armorDefense - flatDefense);
     }
 
     private CombatTextType GetCombatTextType(int finalDamage, int criticalReferenceMaxDamage)

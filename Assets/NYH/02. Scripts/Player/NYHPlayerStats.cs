@@ -286,3 +286,42 @@ public static class NYHPlayerAttackCalculator
         return null;
     }
 }
+
+public static class NYHPlayerDefenseCalculator
+{
+    public static int RollArmorDefense(NYHEquipmentController equipmentController)
+    {
+        ArmorInstance armor = GetEquippedArmorInstance(equipmentController);
+        return armor != null ? armor.GetDefense() : 0;
+    }
+
+    public static (int min, int max) GetArmorDefenseRange(NYHEquipmentController equipmentController)
+    {
+        ArmorInstance armor = GetEquippedArmorInstance(equipmentController);
+        if (armor != null)
+            return (armor.GetMinDefense(), armor.GetMaxDefense());
+        return (0, 0);
+    }
+
+    private static ArmorInstance GetEquippedArmorInstance(NYHEquipmentController equipmentController)
+    {
+        if (equipmentController == null)
+            return null;
+
+        if (equipmentController.TryGetEquippedInventoryItem(EquipmentSlot.Armor, 0, out InventoryItem itemView)
+            && itemView != null
+            && itemView.ItemInstance is ArmorInstance viewArmor)
+        {
+            return viewArmor;
+        }
+
+        if (equipmentController.TryGetEquipped(EquipmentSlot.Armor, out NYHEquipmentItemInstance equipped)
+            && equipped != null
+            && equipped.SourceInstance is ArmorInstance sourceArmor)
+        {
+            return sourceArmor;
+        }
+
+        return null;
+    }
+}
