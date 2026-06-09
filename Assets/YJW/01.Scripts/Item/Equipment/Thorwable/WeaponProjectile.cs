@@ -1,4 +1,4 @@
-using PrototypeRT;
+﻿using PrototypeRT;
 using UnityEngine;
 
 public class WeaponProjectile : MonoBehaviour
@@ -73,6 +73,7 @@ public class WeaponProjectile : MonoBehaviour
         {
             EnemyBase enemy = collision.gameObject.GetComponent<EnemyBase>();
             int damage = weaponInstance.GetDamage();
+            Debug.Log($"{enemy.name}한테 투척무기 맞힘");
             weaponInstance.curse?.OnAttack(ref damage);
 
             if (weaponInstance.weapon is IHitEffect hitEffect)
