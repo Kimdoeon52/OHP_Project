@@ -103,6 +103,7 @@ MonoBehaviour:
   data: {fileID: 11400000, guid: 9b631a3b4c5784e4098d341ab6ba3d51, type: 2}
   itemPool: {fileID: 11400000, guid: d0c54d88ee8009d43935660d1b18892c, type: 2}
   itemPickupPrefab: {fileID: 3144045374493979777, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
+  goldPickupPrefab: {fileID: 1257418033240296761, guid: 66ffa8c140c0701468162ba42fae4d28, type: 3}
   cursePool:
   - {fileID: 11400000, guid: 020737b41b6547340895b30440d4e6e7, type: 2}
   - {fileID: 11400000, guid: 0734b831b805c014fb21b8d42783d1fb, type: 2}
@@ -110,3 +111,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3fe4561d6a4d065478871c949943bcba, type: 2}
   - {fileID: 11400000, guid: f9cd78c07fd52e349ac6dabac5c4f12b, type: 2}
   - {fileID: 11400000, guid: 19cf9aecec6db834a86ab57a5ad254fc, type: 2}
+  openAnimationSeconds: 0.5
