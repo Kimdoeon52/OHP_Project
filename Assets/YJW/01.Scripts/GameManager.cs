@@ -1,8 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class GameManager : PersistentSingleton<GameManager>
 {
     public GameObject player { get; private set; }
+
+    public bool isAlerted = false;   // 경보 저주 발동 여부
 
     protected override void Awake()
     {

@@ -83,7 +83,7 @@ public class CurseData : ScriptableObject
             case CurseType.Alert:
                 if (Random.value < triggerChance)
                 {
-                    
+                    GameManager.Instance.isAlerted = true;
                 }
                 break;
 
