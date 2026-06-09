@@ -23,6 +23,19 @@ public class NYHEquipmentController : MonoBehaviour
     [Tooltip("YJW ItemBase에 NYH 장비 스탯을 연결하는 프로필 목록입니다.")]
     [SerializeField] private List<NYHEquipmentProfile> equipmentProfiles = new();
 
+    [Header("시작 장비")]
+    [Tooltip("게임 시작 시 자동으로 장착할 기본 무기 데이터입니다. 비워두면 무기 없이 시작합니다.")]
+    [SerializeField] private ItemBase startingWeapon;
+
+    [Tooltip("게임 시작 시 자동으로 장착할 기본 방어구 데이터입니다. 비워두면 방어구 없이 시작합니다.")]
+    [SerializeField] private ItemBase startingArmor;
+
+    [Tooltip("시작 장비를 나중에 해제할 수 있도록 숨겨진 InventoryItem 뷰를 만들 인벤토리 컨트롤러입니다. 비워두면 씬에서 자동으로 찾습니다.")]
+    [SerializeField] private InventoryController inventoryController;
+
+    [Tooltip("시작 장비 InventoryItem을 임시로 보관할 부모 Transform입니다. 비워두면 InventoryController Transform 아래에 비활성 상태로 둡니다.")]
+    [SerializeField] private Transform startingEquipmentViewParent;
+
     [Tooltip("반지/마법부여/저주가 최종 이동/공격 지연 시간에 개입하는 공용 통로입니다. 비워도 플레이어에서 자동으로 찾아 붙입니다.")]
     [SerializeField] private NYHFinalStatModifierController finalStatModifierController;
 
@@ -47,6 +60,9 @@ public class NYHEquipmentController : MonoBehaviour
     // 로그용으로 이전 총합과 새 총합의 차이를 비교합니다.
     private readonly Dictionary<NYHFinalStatTarget, float> _appliedEquipmentFinalStatTotals = new();
 
+    // 씬 오브젝트가 꺼졌다 켜져도 시작 장비가 중복 장착되지 않도록 한 번만 처리한다.
+    private bool _startingEquipmentApplied;
+
     /// <summary>장비 장착 완료 시 발동하는 이벤트</summary>
     public event Action<EquipmentSlot, NYHEquipmentItemInstance> OnEquipped;
     /// <summary>장비 해제 완료 시 발동하는 이벤트</summary>
@@ -57,6 +73,11 @@ public class NYHEquipmentController : MonoBehaviour
     public event Action<EquipmentSlot, int, InventoryItem> OnInventoryItemUnequipped;
     /// <summary>장착 중인 장비의 강화/감정/정화 같은 내부 상태가 바뀌었을 때 발동하는 이벤트</summary>
     public event Action<EquipmentSlot, int, InventoryItem> OnInventoryItemStateChanged;
+
+    private void Start()
+    {
+        ApplyStartingEquipmentOnce();
+    }
 
     /// <summary>
     /// 플레이어 스탯 시스템에 접근하는 지연 초기화 프로퍼티입니다.
@@ -123,6 +144,90 @@ public class NYHEquipmentController : MonoBehaviour
             return false;
 
         return TryEquip(new NYHEquipmentItemInstance(itemData));
+    }
+
+    private void ApplyStartingEquipmentOnce()
+    {
+        if (_startingEquipmentApplied)
+            return;
+
+        _startingEquipmentApplied = true;
+
+        TryEquipStartingItem(startingWeapon, EquipmentSlot.Weapon);
+        TryEquipStartingItem(startingArmor, EquipmentSlot.Armor);
+    }
+
+    private void TryEquipStartingItem(ItemBase itemData, EquipmentSlot expectedSlot)
+    {
+        if (itemData == null)
+            return;
+
+        if (!TryGetTargetSlotFor(itemData, out EquipmentSlot resolvedSlot, out _) || resolvedSlot != expectedSlot)
+        {
+            Debug.LogWarning($"NYHEquipmentController: 시작 장비 {itemData.Name}의 슬롯이 {expectedSlot}이 아니라 {resolvedSlot}입니다.");
+            return;
+        }
+
+        ItemInstance sourceInstance = itemData.CreateInstance();
+        if (sourceInstance == null)
+        {
+            Debug.LogWarning($"NYHEquipmentController: 시작 장비 {itemData.Name}의 인스턴스를 만들지 못해 장착하지 않습니다.");
+            return;
+        }
+
+        InventoryItem itemView = CreateStartingEquipmentView(sourceInstance);
+        if (itemView == null)
+        {
+            Debug.LogWarning($"NYHEquipmentController: 시작 장비 {itemData.Name}의 UI 아이템을 만들지 못해 장착하지 않습니다.");
+            return;
+        }
+
+        NYHEquipmentSlotKey key = new NYHEquipmentSlotKey(expectedSlot, 0);
+
+        // 방어구/무기 계산은 강화 단계와 저주 같은 런타임 값을 SourceInstance에서 읽는다.
+        // 또한 장비 해제는 InventoryItem 뷰를 손에 드는 방식이라, 시작 장비도 숨겨진 뷰를 함께 등록해야 한다.
+        if (!TryEquipInternal(new NYHEquipmentItemInstance(itemData, sourceInstance), itemView, key, out InventoryItem replacedItem))
+        {
+            if (itemView != null)
+                Destroy(itemView.gameObject);
+            Debug.LogWarning($"NYHEquipmentController: 시작 장비 {itemData.Name} 장착에 실패했습니다.");
+            return;
+        }
+
+        itemView.gameObject.SetActive(false);
+        itemView.SetRaycastTarget(false);
+
+        if (replacedItem != null)
+            replacedItem.gameObject.SetActive(false);
+    }
+
+    private InventoryItem CreateStartingEquipmentView(ItemInstance sourceInstance)
+    {
+        InventoryController targetInventory = ResolveInventoryController();
+        if (targetInventory == null)
+        {
+            Debug.LogWarning("NYHEquipmentController: InventoryController를 찾지 못해 시작 장비는 해제 가능한 UI 아이템 없이 장착됩니다.");
+            return null;
+        }
+
+        Transform parent = startingEquipmentViewParent != null ? startingEquipmentViewParent : targetInventory.transform;
+        InventoryItem itemView = targetInventory.CreateItemView(sourceInstance, parent, true);
+        if (itemView == null)
+            return null;
+
+        // 시작 장비는 인벤토리 칸을 차지하지 않고 장비 슬롯에만 들어간 상태여야 한다.
+        // 해제할 때 InventoryController.HoldItem이 다시 활성화하고 Canvas 아래로 옮긴다.
+        itemView.gameObject.SetActive(false);
+        itemView.SetRaycastTarget(false);
+        return itemView;
+    }
+
+    private InventoryController ResolveInventoryController()
+    {
+        if (inventoryController == null)
+            inventoryController = FindFirstObjectByType<InventoryController>();
+
+        return inventoryController;
     }
 
     /// <summary>

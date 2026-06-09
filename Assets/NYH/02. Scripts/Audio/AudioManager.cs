@@ -30,15 +30,38 @@ public class AudioManager : MonoBehaviour
     [Tooltip("효과음 볼륨을 조절하는 슬라이더입니다. 씬의 SFXVolum 오브젝트를 연결합니다.")]
     [SerializeField] private Slider sfxVolumeSlider;
 
+    [Header("BGM Playback")]
+    [Tooltip("배경음악을 재생할 AudioSource입니다. 비워두면 같은 오브젝트에서 찾고, 없으면 자동으로 추가합니다.")]
+    [SerializeField] private AudioSource bgmSource;
+
+    [Tooltip("BGM AudioSource의 Output에 연결할 AudioMixerGroup입니다. AudioMixer의 BGM 그룹을 연결하면 BGM 슬라이더가 이 소리를 조절합니다.")]
+    [SerializeField] private AudioMixerGroup bgmOutputGroup;
+
+    [Tooltip("게임 시작 시 자동으로 재생할 기본 배경음악 클립입니다.")]
+    [SerializeField] private AudioClip startBgmClip;
+
+    [Tooltip("게임 시작 시 startBgmClip을 자동 재생할지 정합니다.")]
+    [SerializeField] private bool playBgmOnStart = true;
+
+    [Tooltip("시작 배경음악을 반복 재생할지 정합니다.")]
+    [SerializeField] private bool loopStartBgm = true;
+
     private bool _isInitialized;
 
     private void Awake()
     {
+        ResolveBgmSource();
         InitializeSlider(masterVolumeSlider, MasterPrefsKey, MasterMixerParameter);
         InitializeSlider(bgmVolumeSlider, BgmPrefsKey, BgmMixerParameter);
         InitializeSlider(sfxVolumeSlider, SfxPrefsKey, SfxMixerParameter);
 
         _isInitialized = true;
+    }
+
+    private void Start()
+    {
+        if (playBgmOnStart && startBgmClip != null)
+            PlayBgm(startBgmClip, loopStartBgm);
     }
 
     private void OnEnable()
@@ -64,6 +87,59 @@ public class AudioManager : MonoBehaviour
     public void SetSfxVolume(float volume)
     {
         SetVolume(SfxPrefsKey, SfxMixerParameter, volume);
+    }
+
+    public void PlayBgm(AudioClip clip)
+    {
+        PlayBgm(clip, true);
+    }
+
+    public void PlayBgm(AudioClip clip, bool loop)
+    {
+        if (clip == null)
+        {
+            Debug.LogWarning("AudioManager: 재생할 BGM AudioClip이 비어 있습니다.");
+            return;
+        }
+
+        ResolveBgmSource();
+        if (bgmSource == null)
+            return;
+
+        // 같은 곡이 이미 재생 중이면 다시 처음부터 틀지 않습니다.
+        // 장면 UI를 다시 열거나 설정값이 갱신될 때 음악이 튀는 것을 막기 위해서입니다.
+        if (bgmSource.clip == clip && bgmSource.isPlaying)
+        {
+            bgmSource.loop = loop;
+            return;
+        }
+
+        bgmSource.clip = clip;
+        bgmSource.loop = loop;
+        bgmSource.Play();
+    }
+
+    public void StopBgm()
+    {
+        if (bgmSource == null)
+            return;
+
+        bgmSource.Stop();
+    }
+
+    private void ResolveBgmSource()
+    {
+        if (bgmSource == null)
+            bgmSource = GetComponent<AudioSource>();
+
+        if (bgmSource == null)
+            bgmSource = gameObject.AddComponent<AudioSource>();
+
+        // BGM은 효과음과 다른 Mixer Group으로 보내야 BGM 슬라이더만으로 따로 줄일 수 있습니다.
+        if (bgmOutputGroup != null)
+            bgmSource.outputAudioMixerGroup = bgmOutputGroup;
+
+        bgmSource.playOnAwake = false;
     }
 
     private void SubscribeSliders()
