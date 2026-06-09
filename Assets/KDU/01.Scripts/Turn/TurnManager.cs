@@ -178,7 +178,10 @@ public class TurnManager : Singleton<TurnManager>
 
         // 죽은 엔티티 정리
         _entities.RemoveAll(e => e == null);
-
+        if(GameManager.Instance != null)
+        {
+            GameManager.Instance.isAlerted = false;
+        }
         _processingTurn = false;
         IsPlayerTurn = true;
     }

@@ -63,6 +63,10 @@ public abstract class EnemyBase : EntityBase, IDamageable
     protected Animator _animator;
     /// <summary> 중복 사망 처리 방지 플래그 </summary>
     private bool _isDying;
+    /// <summary> 경보 발동 여부 </summary>
+    private bool isAlerted = false;
+    /// <summary> 경보 발생 시 목표 지점 </summary>
+    private Vector2Int? _alarmTarget = null;
 
     // ── 전투 내부 필드 ──
     /// <summary>
@@ -339,9 +343,10 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// 플레이어 방향으로 1칸 접근 시도.
     /// X/Y 차이가 더 큰 축을 주축(Primary)으로 먼저 시도하고, 막히면 부축(Secondary)으로 우회.
     /// </summary>
-    protected void TryStepTowardPlayer()
+    
+    protected void TryStepToward(Vector2Int targetPos)
     {
-        var diff = Player.GridPosition - GridPosition;
+        var diff = targetPos - GridPosition;
 
         var dirX = diff.x != 0 ? new Vector2Int(System.Math.Sign(diff.x), 0) : Vector2Int.zero;
         var dirY = diff.y != 0 ? new Vector2Int(0, System.Math.Sign(diff.y)) : Vector2Int.zero;
@@ -353,6 +358,48 @@ public abstract class EnemyBase : EntityBase, IDamageable
 
         if (primary != Vector2Int.zero && TryStep(primary)) return;
         if (secondary != Vector2Int.zero && TryStep(secondary)) return;
+    }
+
+    protected void TryStepTowardPlayer()
+    {
+        TryStepToward(Player.GridPosition);
+    }
+
+    protected virtual void PerformMovement()
+    {
+        if (IsDead) return;
+
+        // 이번 턴에 경보가 켜졌다면 플레이어 위치 기억
+        if(GameManager.Instance != null && GameManager.Instance.isAlerted)
+        {
+            _alarmTarget = Player.GridPosition;
+        }
+
+        // 시야 안에 플레이어가 있고 
+        if (SquaredDistanceToPlayer() <= data.visionRange*data.visionRange)
+        {
+            TryStepTowardPlayer();
+            _alarmTarget = null;
+            return;
+        }
+
+        if(_alarmTarget != null)
+        {
+            Vector2Int targetCell = _alarmTarget.Value;
+
+            // 플레이어와 충분히 가까워졌으면 다시 목표물로 설정
+            if(GridPosition != targetCell)
+            {
+                TryStepToward(targetCell);
+                return;
+            }
+            else
+            {
+                // 이미 목표 지점이면 경보 해제
+                _alarmTarget = null;
+            }
+        }
+        
     }
 
     /// <summary>
@@ -577,20 +624,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
     }
 
 
-    /// <summary>
-    /// 이동 처리 메서드.
-    /// 기본 동작: 플레이어가 visionRange 내에 있으면 TryStepTowardPlayer 호출.
-    /// 다른 이동 패턴이 필요하면 자식 클래스에서 override.
-    /// </summary>
-    protected virtual void PerformMovement()
-    {
-        if (IsDead) return;
 
-        if (SquaredDistanceToPlayer() <= data.visionRange * data.visionRange)
-        {
-            TryStepTowardPlayer();
-        }
-    }
 
     /// <summary>
     /// 다음 턴 공격 범위 예고 메서드.

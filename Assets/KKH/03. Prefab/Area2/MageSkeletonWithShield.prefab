@@ -12,9 +12,10 @@ GameObject:
   - component: {fileID: 736451032245390980}
   - component: {fileID: 7863717874829550681}
   - component: {fileID: -5139506168983800066}
+  - component: {fileID: 4760220788460714891}
   m_Layer: 0
   m_Name: MageSkeletonWithShield
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -125,7 +126,55 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   data: {fileID: 11400000, guid: 03c2425c363054244988316f46ad1945, type: 2}
   warningPrefab: {fileID: 2305967036810482513, guid: 82098026c316a014fbde25ca2d763954, type: 3}
+  goldPickupPrefab: {fileID: 0}
+  dropItemPickupPrefab: {fileID: 0}
   deathTriggerName: Die
   deathDestroyDelay: 0.6
   moveSpeed: 0
   isDetected: 0
+--- !u!61 &4760220788460714891
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 736451032245390981}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: -0.053663254, y: -0.30409148}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 6.875, y: 6.875}
+    newSize: {x: 2.2, y: 2.2}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 2.617712, y: 1.9737525}
+  m_EdgeRadius: 0

@@ -12,9 +12,10 @@ GameObject:
   - component: {fileID: 59739960092364661}
   - component: {fileID: 5873153663596359792}
   - component: {fileID: 7236581698193187689}
+  - component: {fileID: 2943647882250834475}
   m_Layer: 0
   m_Name: Spider
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -124,9 +125,57 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   data: {fileID: 11400000, guid: 6ce6f9aa8c93afd40849d76c0a151988, type: 2}
-  telegraphPrefab: {fileID: 0}
+  warningPrefab: {fileID: 0}
+  goldPickupPrefab: {fileID: 0}
+  dropItemPickupPrefab: {fileID: 0}
   deathTriggerName: Die
   deathDestroyDelay: 0.6
   moveSpeed: 1
   isDetected: 0
   slowDebuffData: {fileID: 11400000, guid: e295d397c1f97ea44b55bc93c83d09f9, type: 2}
+--- !u!61 &2943647882250834475
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8475319111217402187}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0.01563692, y: 0.114670575}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 2, y: 2}
+    newSize: {x: 0.64, y: 0.64}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 1.3015523, y: 0.95754063}
+  m_EdgeRadius: 0

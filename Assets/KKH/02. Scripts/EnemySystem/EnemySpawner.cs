@@ -163,7 +163,21 @@ namespace EnemySystem
         /// </summary>
         private void SpawnEliteInExitRoom(List<RoomData> rooms, FloorSpawnConfig config, DungeonRandom rng)
         {
-            if (config.spawnTable == null || config.spawnTable.tiers == null) return;
+            if (config == null)
+            {
+                Debug.LogWarning("[SpawnEliteInExitRoom] FloorSpawnConfig가 null입니다.");
+                return;
+            }
+            if (config.spawnTable == null)
+            {
+                Debug.LogWarning($"[SpawnEliteInExitRoom] {config.name}의 spawnTable이 null입니다.");
+                return;
+            }
+            if (config.spawnTable.tiers == null)
+            {
+                Debug.LogWarning($"[SpawnEliteInExitRoom] {config.spawnTable.name}의 tiers가 null입니다.");
+                return;
+            }
 
             // 1. 스폰 테이블의 모든 티어에서 Elite 등급 몬스터 수집
             List<EnemyData> eliteCandidates = new List<EnemyData>();
@@ -172,29 +186,45 @@ namespace EnemySystem
                 if (tier?.pool == null) continue;
                 foreach (var poolEntry in tier.pool)
                 {
-                    if (poolEntry?.enemyData != null
-                        && poolEntry.enemyData.grade == EnemyGrade.Elite
-                        && !eliteCandidates.Contains(poolEntry.enemyData))
+                    if (poolEntry?.enemyData != null)
                     {
-                        eliteCandidates.Add(poolEntry.enemyData);
+                        if (poolEntry.enemyData.grade == EnemyGrade.Elite && !eliteCandidates.Contains(poolEntry.enemyData))
+                        {
+                            eliteCandidates.Add(poolEntry.enemyData);
+                        }
                     }
                 }
+            }
+
+            Debug.Log($"[SpawnEliteInExitRoom] 수집된 엘리트 후보군 개수: {eliteCandidates.Count}");
+            foreach (var candidate in eliteCandidates)
+            {
+                Debug.Log($"[SpawnEliteInExitRoom] 엘리트 후보: {candidate.displayName} (grade: {candidate.grade})");
             }
 
             if (eliteCandidates.Count == 0) return; // 이 층에 엘리트 없음
 
             // 2. Exit Room 탐색
             RoomData exitRoom = null;
+            Debug.Log($"[SpawnEliteInExitRoom] 전체 방(rooms) 목록 탐색 (총 {rooms.Count}개):");
             foreach (var room in rooms)
             {
+                Debug.Log($"  - 방 ID/타입: {room.type}, floorCells 개수: {(room.floorCells != null ? room.floorCells.Count : 0)}");
                 if (room.type == RoomType.Exit)
                 {
                     exitRoom = room;
-                    break;
                 }
             }
 
-            if (exitRoom == null) return; // Exit Room 없음 (보스층 등)
+            if (exitRoom == null)
+            {
+                Debug.LogWarning("[SpawnEliteInExitRoom] Exit Room 검출 실패: rooms 목록에 RoomType.Exit 방이 없습니다.");
+                return;
+            }
+            else
+            {
+                Debug.Log($"[SpawnEliteInExitRoom] Exit Room 검출 성공! floorCells 개수: {exitRoom.floorCells.Count}");
+            }
 
             // 3. 출구(Exit) 타일 인접 Walkable 위치 탐색
             //    MapGenerator.FindExitCell과 동일한 방식으로 실제 출구 타일을 찾음
