@@ -16,8 +16,8 @@ public class ItemSpawner : MonoBehaviour
 		if (instance is EquipmentInstance equip) 
 		{
 			equip.enhanceLevel = RollEnhanceLevel();
-			equip.curse = RollCurse();
-		}
+			equip.curse = RollCurse(equip);
+        }
 
 		// 픽업 프리팹 스폰
 		var pickup = Instantiate(itemPickupPrefab, pos, Quaternion.identity);
@@ -34,9 +34,14 @@ public class ItemSpawner : MonoBehaviour
 		return 3;
 	}
 
-	private CurseData RollCurse()
+	private CurseData RollCurse(ItemInstance instance)
 	{
 		if (Random.value > 0.5f) return null; // 50% 확률로 저주 없음
-		return allCurses[Random.Range(0, allCurses.Length)];
-	}
+		if(instance is ArmorInstance armor)
+			return allCurses[Random.Range(0, 3)];   // 방어구용 저주 3개
+		else if (instance is WeaponInstance weapon)
+			return allCurses[Random.Range(3, 6)];   // 무기용 저주 3개
+		else
+			return null; // 기타 아이템은 저주 없음
+    }
 }
