@@ -63,7 +63,7 @@ public class GoldPickup : MonoBehaviour
         if (KeyBindingManager.ShouldBlockGameplayInput) 
             return;
 
-        if (!KeyBindingManager.AutoPickupEnabled && !Input.GetKeyDown(KeyBindingManager.GetKey(KeyBindingAction.Pickup))) 
+        if (!KeyBindingManager.AutoPickupEnabled && !KeyBindingManager.GetGameplayKeyDown(KeyBindingAction.Pickup))
             return;
 
         Collect();

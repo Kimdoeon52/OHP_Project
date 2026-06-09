@@ -44,6 +44,15 @@ namespace PrototypeRT
         // 현재 실행 중인 키 설정값입니다. EnsureLoaded()에서 PlayerPrefs 값을 읽어 채웁니다.
         private static readonly Dictionary<KeyBindingAction, KeyCode> Bindings = new();
 
+        // UI 창이 열려 있을 때 게임 입력을 막는 요청 목록입니다.
+        // 여러 UI가 동시에 열릴 수 있으므로 bool 하나가 아니라 source별로 관리해야 한쪽이 닫혀도 다른 차단이 유지됩니다.
+        private static readonly HashSet<string> UiInputBlockSources = new();
+
+        // 키 설정 직후 눌려 있는 키가 바로 이동/퀵슬롯으로 흘러가지 않도록 임시 차단하는 키 목록입니다.
+        // 사용자가 그 키에서 손을 떼면 자동으로 해제됩니다.
+        private static readonly HashSet<KeyCode> SuppressedGameplayKeys = new();
+        private static readonly List<KeyCode> ReleasedSuppressedKeys = new();
+
         // 저장값이 없을 때 사용하는 기본 키입니다.
         private static readonly Dictionary<KeyBindingAction, KeyCode> Defaults = new()
         {
@@ -97,8 +106,17 @@ namespace PrototypeRT
         /// 키 변경 대기 중이거나 방금 키 변경 입력을 처리한 프레임이면 true입니다.
         /// 플레이어 이동, 줍기, 퀵슬롯 같은 게임 입력은 이 값이 true일 때 쉬어야 합니다.
         /// </summary>
-        public static bool ShouldBlockGameplayInput =>
-            InputCaptureActive || _inputCapturedFrame == Time.frameCount;
+        public static bool ShouldBlockGameplayInput
+        {
+            get
+            {
+                PurgeReleasedSuppressedKeys();
+                return InputCaptureActive
+                    || _inputCapturedFrame == Time.frameCount
+                    || UiInputBlockSources.Count > 0
+                    || SuppressedGameplayKeys.Count > 0;
+            }
+        }
 
         private void Awake()
         {
@@ -110,6 +128,30 @@ namespace PrototypeRT
         {
             EnsureLoaded();
             return Bindings.TryGetValue(action, out KeyCode key) ? key : GetDefaultKey(action);
+        }
+
+        /// <summary>
+        /// 실제 게임플레이 입력에서 사용할 키를 반환합니다.
+        /// 키 설정 직후 눌려 있는 키는 KeyCode.None으로 돌려 바로 행동하지 못하게 합니다.
+        /// </summary>
+        public static KeyCode GetGameplayKey(KeyBindingAction action)
+        {
+            KeyCode key = GetKey(action);
+            PurgeReleasedSuppressedKeys();
+            return SuppressedGameplayKeys.Contains(key) ? KeyCode.None : key;
+        }
+
+        /// <summary>
+        /// UI 차단과 키 변경 직후 suppress를 모두 반영한 GetKeyDown helper입니다.
+        /// 이동/줍기/퀵슬롯처럼 게임 행동을 발생시키는 입력은 이 함수를 우선 사용합니다.
+        /// </summary>
+        public static bool GetGameplayKeyDown(KeyBindingAction action)
+        {
+            if (ShouldBlockGameplayInput)
+                return false;
+
+            KeyCode key = GetGameplayKey(action);
+            return key != KeyCode.None && Input.GetKeyDown(key);
         }
 
         /// <summary>퀵슬롯 index(0~9)를 키 설정 액션으로 변환합니다.</summary>
@@ -162,8 +204,24 @@ namespace PrototypeRT
             Bindings[action] = key;
             PlayerPrefs.SetInt(GetPrefsKey(action), (int)key);
             PlayerPrefs.Save();
+            SuppressGameplayKeyUntilReleased(key);
             OnBindingChanged?.Invoke(action, key);
             return true;
+        }
+
+        /// <summary>
+        /// UI 창 열림/닫힘 상태를 게임 입력 차단 게이트에 등록합니다.
+        /// source는 "UIManager.Window"처럼 호출자를 구분할 수 있는 고정 문자열을 사용합니다.
+        /// </summary>
+        public static void SetUiInputBlock(string source, bool active)
+        {
+            if (string.IsNullOrWhiteSpace(source))
+                return;
+
+            if (active)
+                UiInputBlockSources.Add(source);
+            else
+                UiInputBlockSources.Remove(source);
         }
 
         /// <summary>자동 줍기 ON/OFF를 변경하고 PlayerPrefs에 저장합니다.</summary>
@@ -215,6 +273,33 @@ namespace PrototypeRT
         public static bool WasInputCapturedThisFrame()
         {
             return _inputCapturedFrame == Time.frameCount;
+        }
+
+        private static void SuppressGameplayKeyUntilReleased(KeyCode key)
+        {
+            if (key == KeyCode.None)
+                return;
+
+            // 키 설정에 사용한 키는 현재 GetKeyDown 상태일 가능성이 높습니다.
+            // 이 키가 바로 이동/퀵슬롯으로 이어지지 않도록 손을 뗄 때까지 게임 입력에서 제외합니다.
+            SuppressedGameplayKeys.Add(key);
+            _inputCapturedFrame = Time.frameCount;
+        }
+
+        private static void PurgeReleasedSuppressedKeys()
+        {
+            if (SuppressedGameplayKeys.Count == 0)
+                return;
+
+            ReleasedSuppressedKeys.Clear();
+            foreach (KeyCode key in SuppressedGameplayKeys)
+            {
+                if (!Input.GetKey(key))
+                    ReleasedSuppressedKeys.Add(key);
+            }
+
+            for (int i = 0; i < ReleasedSuppressedKeys.Count; i++)
+                SuppressedGameplayKeys.Remove(ReleasedSuppressedKeys[i]);
         }
 
         /// <summary>저장된 키 설정을 한 번만 로드합니다.</summary>

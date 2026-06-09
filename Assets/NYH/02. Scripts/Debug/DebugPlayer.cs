@@ -347,7 +347,7 @@ public class DebugPlayer : MonoBehaviour
         if (!TryGetLevelSystem(out PlayerLevelSystem targetLevel)) return;
 
         targetLevel.AddExp(expAmount);
-        Debug.Log($"[DebugPlayer] 경험치 추가: {expAmount}, Lv {targetLevel.Level}, EXP {targetLevel.CurrentExp}/{targetLevel.RequiredExp}");
+        Debug.Log($"[DebugPlayer] 경험치 추가: {expAmount}, Lv {targetLevel.Level}, EXP {targetLevel.ExpDisplayText}");
         RefreshStatsUI();
     }
 

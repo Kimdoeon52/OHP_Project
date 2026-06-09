@@ -37,22 +37,22 @@ public class GridPlayerInput : MonoBehaviour
             return false;
         }
 
-        if (Input.GetKey(KeyBindingManager.GetKey(KeyBindingAction.MoveUp)))
+        if (Input.GetKey(KeyBindingManager.GetGameplayKey(KeyBindingAction.MoveUp)))
         {
             direction = Vector2Int.up;
             return true;
         }
-        if (Input.GetKey(KeyBindingManager.GetKey(KeyBindingAction.MoveDown)))
+        if (Input.GetKey(KeyBindingManager.GetGameplayKey(KeyBindingAction.MoveDown)))
         {
             direction = Vector2Int.down;
             return true;
         }
-        if (Input.GetKey(KeyBindingManager.GetKey(KeyBindingAction.MoveLeft)))
+        if (Input.GetKey(KeyBindingManager.GetGameplayKey(KeyBindingAction.MoveLeft)))
         {
             direction = Vector2Int.left;
             return true;
         }
-        if (Input.GetKey(KeyBindingManager.GetKey(KeyBindingAction.MoveRight)))
+        if (Input.GetKey(KeyBindingManager.GetGameplayKey(KeyBindingAction.MoveRight)))
         {
             direction = Vector2Int.right;
             return true;
@@ -108,7 +108,7 @@ public class GridPlayerInput : MonoBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(KeyBindingManager.GetKey(KeyBindingAction.UseHealthPotion)))
+        if (KeyBindingManager.GetGameplayKeyDown(KeyBindingAction.UseHealthPotion))
         {
             _player.Health.TryUsePotion();
         }
@@ -119,10 +119,13 @@ public class GridPlayerInput : MonoBehaviour
     /// </summary>
     private void CheckQuickSlotInputs()
     {
+        if (KeyBindingManager.ShouldBlockGameplayInput)
+            return;
+
         for (int i = 0; i < 10; i++)
         {
             KeyBindingAction action = KeyBindingManager.GetQuickSlotAction(i);
-            if (Input.GetKeyDown(KeyBindingManager.GetKey(action)))
+            if (KeyBindingManager.GetGameplayKeyDown(action))
             {
                 OnQuickSlotNumberPressed?.Invoke(i);
                 break;

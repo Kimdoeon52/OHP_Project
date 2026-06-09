@@ -19,7 +19,11 @@ public class VisionSystem : Singleton<VisionSystem>
         get
         {
             int baseRadius = config != null ? config.visionRadius : 5;
-            return Mathf.Max(1, baseRadius + VisionRadiusDelta);
+            // Eagle Eye 특성은 기존 VisionRadiusDelta와 더해지는 보너스로만 처리한다.
+            // 포션/층 효과 같은 임시 시야 변화와 특성 보너스가 서로 덮어쓰지 않게 하기 위해서다.
+            TraitController traitController = TraitController.FindAvailableInstance();
+            int traitBonus = traitController != null ? traitController.GetVisionBonus() : 0;
+            return Mathf.Max(1, baseRadius + VisionRadiusDelta + traitBonus);
         }
     }
 

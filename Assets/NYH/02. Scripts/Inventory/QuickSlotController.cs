@@ -243,8 +243,28 @@ namespace PrototypeRT
             if (inventoryController == null)
                 ResolveInventoryController();
 
-            if (inventoryController == null || !inventoryController.TryConsumeOneItem(item))
+            if (inventoryController == null || item == null || item.ItemInstance == null)
                 return false;
+
+            if (item.Count > 1)
+            {
+                // 퀵슬롯 아이템은 실제로 quickSlotGrid에 배치되어 있으므로, 수량만 줄어드는 경우에는
+                // 일반 인벤토리 그리드 제거 흐름을 타지 않고 현재 슬롯을 유지한 채 HUD만 즉시 갱신합니다.
+                if (!item.TryDecreaseCount(1))
+                    return false;
+
+                inventoryController.RaiseInventoryChanged();
+                ApplyUseDelay();
+                RaiseQuickSlotsChanged();
+                return true;
+            }
+
+            // 마지막 1개를 사용한 경우에는 퀵슬롯 그리드에서 직접 제거해야 합니다.
+            // InventoryController.TryConsumeOneItem은 일반 인벤토리 그리드를 기준으로 제거할 수 있어서,
+            // 퀵슬롯 HUD가 다음 이동/갱신 전까지 이전 아이콘을 들고 있는 문제가 생길 수 있습니다.
+            inventoryController.ForgetItem(item);
+            if (quickSlotGrid != null)
+                quickSlotGrid.RemoveItem(item);
 
             ApplyUseDelay();
             RaiseQuickSlotsChanged();
@@ -314,6 +334,9 @@ namespace PrototypeRT
         /// </summary>
         private bool CanUseQuickSlot()
         {
+            if (KeyBindingManager.ShouldBlockGameplayInput)
+                return false;
+
             // 씬 로딩 순서 때문에 Awake에서 못 찾았거나 플레이어가 교체됐을 가능성을 대비합니다.
             if (_player == null)
                 _player = FindFirstObjectByType<GridPlayer>();

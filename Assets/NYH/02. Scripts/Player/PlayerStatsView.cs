@@ -39,7 +39,7 @@ public class PlayerStatsView : MonoBehaviour
     [Tooltip("현재 레벨을 표시할 Text입니다.")]
     [SerializeField] private TMP_Text levelText;
 
-    [Tooltip("현재 경험치와 다음 레벨 요구 경험치를 표시할 Text입니다. 예: EXP 4/10")]
+    [Tooltip("현재 경험치와 다음 레벨 요구 경험치를 표시할 Text입니다. 최대 레벨이면 EXP MAX로 표시합니다.")]
     [SerializeField] private TMP_Text expText;
 
     [Tooltip("방어력 수치를 표시할 Text입니다.")]
@@ -188,7 +188,7 @@ public class PlayerStatsView : MonoBehaviour
         string level = playerLevel != null ? playerLevel.Level.ToString() : "-";
         string defense = playerStats != null ? playerStats.Defense.ToString() : "-";
         string evasion = playerStats != null ? $"{playerStats.Evasion}%" : "-";
-        string exp = playerLevel != null ? $"{playerLevel.CurrentExp}/{playerLevel.RequiredExp}" : "-";
+        string exp = playerLevel != null ? playerLevel.ExpDisplayText : "-";
         string attack = playerStats != null
             ? NYHPlayerAttackCalculator.CalculateMeleeRange(playerStats, equipmentController).ToDisplayText()
             : "-";

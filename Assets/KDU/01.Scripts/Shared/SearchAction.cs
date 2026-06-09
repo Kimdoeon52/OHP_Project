@@ -23,7 +23,7 @@ public class SearchAction : MonoBehaviour
         if (KeyBindingManager.ShouldBlockGameplayInput)
             return;
 
-        if (!Input.GetKeyDown(KeyBindingManager.GetKey(KeyBindingAction.Search)))
+        if (!KeyBindingManager.GetGameplayKeyDown(KeyBindingAction.Search))
             return;
 
         GameEvents.OnSearchPerformed?.Invoke(player.GridPosition, searchRadius);

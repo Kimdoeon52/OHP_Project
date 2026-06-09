@@ -7,6 +7,8 @@ namespace PrototypeRT
     // InventoryPanel 안의 큰 탭, 시스템 하위 탭, 확인창을 한 곳에서 전환한다.
     public class UIManager : MonoBehaviour
     {
+        private const string InputBlockSource = "UIManager.Window";
+
         public enum MainTab
         {
             Inventory,
@@ -24,7 +26,6 @@ namespace PrototypeRT
         [Header("Window Root")]
         [Tooltip("Tab으로 열고 닫는 전체 UI 창 루트. 예: InventoryPanel")]
         [SerializeField] private GameObject windowRoot;
-
         [Header("Main Buttons")]
         [Tooltip("인벤토리 탭을 여는 오른쪽 버튼.")]
         [SerializeField] private Button inventoryButton;
@@ -32,6 +33,8 @@ namespace PrototypeRT
         [SerializeField] private Button tuckSungButton;
         [Tooltip("시스템 탭을 여는 오른쪽 버튼.")]
         [SerializeField] private Button systemButton;
+        [Tooltip("메인에서 시스템 창을 여는 버튼.")]
+        [SerializeField] private Button mainToSystemButton;
 
         [Header("Main Panels")]
         [Tooltip("인벤토리 내용 패널. InventoryBT를 누르면 이것만 켜진다.")]
@@ -102,6 +105,7 @@ namespace PrototypeRT
             RegisterButton(inventoryButton, OpenInventory);
             RegisterButton(tuckSungButton, OpenTuckSung);
             RegisterButton(systemButton, OpenSystem);
+            RegisterButton(mainToSystemButton, ToggleSystemWindow);
             RegisterButton(keySettingButton, OpenKeySetting);
             RegisterButton(audioSettingButton, OpenAudioSetting);
             RegisterButton(gameExitOpenButton, OpenGameExitPanel);
@@ -121,6 +125,7 @@ namespace PrototypeRT
             OpenMainTab(defaultMainTab);
             _lastWindowActive = IsWindowActive();
             SyncInventoryInput();
+            SyncUiInputBlock();
         }
 
         private void LateUpdate()
@@ -129,7 +134,15 @@ namespace PrototypeRT
                 return;
 
             if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                if (!IsWindowActive())
+                {
+                    OpenSystemWindow();
+                    return;
+                }
+
                 CloseTopUI();
+            }
 
             bool isWindowActive = IsWindowActive();
             if (isWindowActive == _lastWindowActive) return;
@@ -142,6 +155,7 @@ namespace PrototypeRT
                 CloseAllModalPanels();
 
             SyncInventoryInput();
+            SyncUiInputBlock();
         }
 
         public void OpenInventory()
@@ -155,6 +169,44 @@ namespace PrototypeRT
         }
 
         public void OpenSystem()
+        {
+            OpenMainTab(MainTab.System);
+        }
+
+        public void OpenSystemWindow()
+        {
+            // 게임 진행 중 ESC키 또는 메인 시스템 버튼으로 들어올 때는 전체 창을 먼저 켠 뒤 시스템 탭을 바로 보여줍니다.
+            // _lastWindowActive를 같이 맞춰두지 않으면 LateUpdate의 창 활성 변화 감지가 기본 인벤토리 탭으로 덮어쓸 수 있습니다.
+            if (windowRoot != null && !windowRoot.activeSelf)
+                windowRoot.SetActive(true);
+
+            CloseAllModalPanels();
+            ShowSystemTab();
+            _lastWindowActive = IsWindowActive();
+            SyncInventoryInput();
+            SyncUiInputBlock();
+        }
+
+        public void ToggleSystemWindow()
+        {
+            // 이미 시스템 탭이 열린 상태에서 시스템 버튼을 다시 누르면 창을 닫습니다.
+            // 다른 탭이 열려 있거나 창이 닫혀 있으면 시스템 탭으로 전환합니다.
+            if (IsWindowActive() && _currentMainTab == MainTab.System && _topModalPanel == null)
+            {
+                if (windowRoot != null)
+                    windowRoot.SetActive(false);
+
+                CloseAllModalPanels();
+                _lastWindowActive = IsWindowActive();
+                SyncInventoryInput();
+                SyncUiInputBlock();
+                return;
+            }
+
+            OpenSystemWindow();
+        }
+
+        private void ShowSystemTab()
         {
             OpenMainTab(MainTab.System);
         }
@@ -186,11 +238,13 @@ namespace PrototypeRT
                 _topModalPanel.SetActive(false);
                 _topModalPanel = null;
                 SyncInventoryInput();
+                SyncUiInputBlock();
                 return;
             }
 
             CloseAllModalPanels();
             SyncInventoryInput();
+            SyncUiInputBlock();
         }
 
         public void OpenMainTab(MainTab tab)
@@ -210,6 +264,7 @@ namespace PrototypeRT
                 HideSystemSubPanels();
 
             SyncInventoryInput();
+            SyncUiInputBlock();
         }
 
         public void OpenSystemTab(SystemTab tab)
@@ -232,6 +287,7 @@ namespace PrototypeRT
             panel.transform.SetAsLastSibling();
             _topModalPanel = panel;
             SyncInventoryInput();
+            SyncUiInputBlock();
         }
 
         private void CloseTopUI()
@@ -247,6 +303,7 @@ namespace PrototypeRT
                 windowRoot.SetActive(false);
                 CloseAllModalPanels();
                 SyncInventoryInput();
+                SyncUiInputBlock();
             }
         }
 
@@ -261,6 +318,24 @@ namespace PrototypeRT
         {
             bool canUseInventory = IsWindowActive() && _currentMainTab == MainTab.Inventory && _topModalPanel == null;
             inventoryController?.SetInventoryOpen(canUseInventory);
+        }
+
+        private void SyncUiInputBlock()
+        {
+            // windowRoot가 실제로 켜진 동안은 인벤/특성/시스템/확인창 어디든 게임 입력을 막습니다.
+            // 인벤토리 내부 드래그는 InventoryController가 따로 관리하므로 여기서는 플레이어/카메라 입력만 막는 게이트에 등록합니다.
+            bool shouldBlock = windowRoot != null && windowRoot.activeInHierarchy;
+            KeyBindingManager.SetUiInputBlock(InputBlockSource, shouldBlock);
+        }
+
+        private void OnDisable()
+        {
+            KeyBindingManager.SetUiInputBlock(InputBlockSource, false);
+        }
+
+        private void OnDestroy()
+        {
+            KeyBindingManager.SetUiInputBlock(InputBlockSource, false);
         }
 
         private bool IsWindowActive()
