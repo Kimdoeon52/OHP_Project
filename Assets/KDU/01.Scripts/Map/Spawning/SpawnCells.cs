@@ -26,13 +26,19 @@ public static class SpawnCells
         }
 
         var hazard = MapGenerator.Instance != null ? MapGenerator.Instance.HazardCells : null;
+        var grid = GridSystem.Instance;
         foreach (var c in room.floorCells)
         {
-            if (avoid.Contains(c)) 
+            if (avoid.Contains(c))
                 continue;
 
             if (hazard != null && hazard.Contains(c))
                 continue;
+
+            // 실제 통행 가능한 셀만 (맵 밖/벽 위 배치 방지)
+            if (grid != null && !grid.IsWalkable(c))
+                continue;
+
             result.Add(c);
         }
         return result;

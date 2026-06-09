@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -10,7 +10,7 @@ public class DefaultPainter : ScriptableObject, IRegionPainter
     [SerializeField] private TileBase floorTile;
     [SerializeField] private TileBase wallTile;
 
-    [SerializeField] private int outerWallPadding = 5;
+    [SerializeField] private int outerWallPadding = 10;
 
     public void Paint(
         List<RoomData> rooms,

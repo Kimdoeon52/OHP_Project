@@ -624,7 +624,7 @@ public class MapGenerator : Singleton<MapGenerator>
         if (!any)
             return;
 
-        const int padding = -2;
+        const int padding = 8;
         minX -= padding; minY -= padding;
         maxX += padding; maxY += padding;
 

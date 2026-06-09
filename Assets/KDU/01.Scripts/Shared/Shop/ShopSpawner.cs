@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 // 1/6/11층 Safe Room 테두리에 상품 진열대를 결정론 배치
@@ -121,6 +121,7 @@ public class ShopSpawner : MonoBehaviour
         }
 
         var hazard = MapGenerator.Instance != null ? MapGenerator.Instance.HazardCells : null;
+        var grid = GridSystem.Instance;
         var result = new List<Vector2Int>();
 
         foreach (var c in room.floorCells)
@@ -128,6 +129,8 @@ public class ShopSpawner : MonoBehaviour
             if (avoid.Contains(c))
                 continue;
             if (hazard != null && hazard.Contains(c))
+                continue;
+            if (grid != null && !grid.IsWalkable(c))
                 continue;
 
             bool onBorder = false;
@@ -147,9 +150,7 @@ public class ShopSpawner : MonoBehaviour
 
     private void SpawnStall(Vector2Int cell, Product p)
     {
-        Vector3 pos = GridSystem.Instance != null
-            ? GridSystem.Instance.GridToWorld(cell)
-            : new Vector3(cell.x, cell.y, 0);
+        Vector3 pos = GridSystem.Instance != null ? GridSystem.Instance.GridToWorld(cell) : new Vector3(cell.x, cell.y, 0);
 
         ShopStall stall = Instantiate(stallPrefab, pos, Quaternion.identity);
         stall.Initialize(cell, p.item, p.price, p.enhanceLevel);
@@ -162,9 +163,7 @@ public class ShopSpawner : MonoBehaviour
             return;
 
         Vector2Int center = CenterCell(safe.floorCells);
-        Vector3 pos = GridSystem.Instance != null
-            ? GridSystem.Instance.GridToWorld(center)
-            : new Vector3(center.x, center.y, 0);
+        Vector3 pos = GridSystem.Instance != null ? GridSystem.Instance.GridToWorld(center) : new Vector3(center.x, center.y, 0);
         _spawned.Add(Instantiate(merchantPrefab, pos, Quaternion.identity));
     }
 

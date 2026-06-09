@@ -69,7 +69,10 @@ public class ShopStall : MonoBehaviour
     {
         if (_sold || itemSO == null || _player == null || _player.IsDead)
             return;
-        if (_player.GridPosition != GridPosition)
+
+        // 같은 칸 또는 인접
+        int dist = Mathf.Abs(_player.GridPosition.x - GridPosition.x) + Mathf.Abs(_player.GridPosition.y - GridPosition.y);
+        if (dist > 1)
             return;
         if (KeyBindingManager.ShouldBlockGameplayInput)
             return;
@@ -80,8 +83,12 @@ public class ShopStall : MonoBehaviour
 
         if (_popup == null)
             _popup = FindFirstObjectByType<ShopPurchasePopup>();
-        if (_popup != null)
-            _popup.Open(this);
+        if (_popup == null)
+        {
+            Debug.LogWarning("[ShopStall] ShopPurchasePopup 씬에 없음 — 팝업 배선 필요");
+            return;
+        }
+        _popup.Open(this);
     }
 
     // 구매 인스턴스 생성 (ItemPickup 패턴)

@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   floorTile: {fileID: 11400000, guid: 27f577d1c0668fb4b9945b824ad33d63, type: 2}
   wallTile: {fileID: 11400000, guid: c708d1830b38d484c8fb46527514cc64, type: 2}
-  outerWallPadding: 5
+  outerWallPadding: 10

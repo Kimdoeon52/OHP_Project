@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using PrototypeRT;
 
@@ -49,6 +49,18 @@ public class CameraFollow : MonoBehaviour
 
     private Vector3 _shakeOffset = Vector3.zero;
     private Coroutine _shakeCoroutine;
+
+
+    // 맵 밖이 안 보이는 최대 줌
+    private float MaxSizeForMap()
+    {
+        if (planningCamera == null || !TryGetMapBounds(out Bounds b))
+            return planningMaxSize;
+        float byH = b.size.y * 0.5f;
+        float byW = b.size.x * 0.5f / planningCamera.aspect;
+        return Mathf.Min(planningMaxSize, byH, byW);
+    }
+
 
     private void Awake()
     {
@@ -143,7 +155,7 @@ public class CameraFollow : MonoBehaviour
             if (scroll != 0f)
             {
                 float ns = planningCamera.orthographicSize - scroll * planningZoomSpeed;
-                planningCamera.orthographicSize = Mathf.Clamp(ns, planningMinSize, planningMaxSize);
+                planningCamera.orthographicSize = Mathf.Clamp(ns, planningMinSize, MaxSizeForMap());
                 _hasPanned = true;
             }
         }
@@ -153,6 +165,7 @@ public class CameraFollow : MonoBehaviour
 
         ClampPanToMapBounds();
     }
+
 
     private void ClampPanToMapBounds()
     {

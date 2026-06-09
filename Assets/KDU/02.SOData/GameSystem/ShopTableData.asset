@@ -1,0 +1,111 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 688b125ee7b139a49b35336818a3a8e8, type: 3}
+  m_Name: ShopTableData
+  m_EditorClassIdentifier: 
+  entries:
+  - item: {fileID: 11400000, guid: 1efeec532b4dda745ba1e717c064b061, type: 2}
+    oneOfSet: []
+    appearChance:
+    - 100
+    - 100
+    - 100
+    countRange:
+    - {x: 1, y: 1}
+    price: 320000006400000096000000
+    enhanceLevel: 0
+  - item: {fileID: 11400000, guid: 08c5050595ee80c48aa3c372eb3b993e, type: 2}
+    oneOfSet: []
+    appearChance:
+    - 100
+    - 100
+    - 100
+    countRange:
+    - {x: 1, y: 1}
+    price: 320000006400000096000000
+    enhanceLevel: 0
+  - item: {fileID: 11400000, guid: c05dbb8970dbc19489f55418cf8a49fa, type: 2}
+    oneOfSet: []
+    appearChance:
+    - 100
+    - 100
+    - 100
+    countRange:
+    - {x: 1, y: 1}
+    price: 320000006400000096000000
+    enhanceLevel: 0
+  - item: {fileID: 11400000, guid: 3d58ea8b93cac164ebdee663f580b67c, type: 2}
+    oneOfSet:
+    - {fileID: 11400000, guid: 3d58ea8b93cac164ebdee663f580b67c, type: 2}
+    - {fileID: 11400000, guid: 8bb432fa8eef84945a9b933bd6bf6a51, type: 2}
+    appearChance:
+    - 100
+    - 0
+    - 0
+    countRange:
+    - {x: 1, y: 1}
+    price: 320000000000000000000000
+    enhanceLevel: 0
+  - item: {fileID: 11400000, guid: e6dfe69788e81a44e96f249557671b12, type: 2}
+    oneOfSet:
+    - {fileID: 11400000, guid: e6dfe69788e81a44e96f249557671b12, type: 2}
+    - {fileID: 11400000, guid: af15f1485f14a8e4890b7e1866684ca0, type: 2}
+    appearChance:
+    - 0
+    - 100
+    - 0
+    countRange:
+    - {x: 1, y: 1}
+    price: 000000006400000000000000
+    enhanceLevel: 0
+  - item: {fileID: 11400000, guid: 3d58ea8b93cac164ebdee663f580b67c, type: 2}
+    oneOfSet:
+    - {fileID: 11400000, guid: 7bb6faaacb5885f46b2f47ad855427d8, type: 2}
+    - {fileID: 11400000, guid: a1a6322013c39b743b78a96efe46ee48, type: 2}
+    appearChance:
+    - 0
+    - 0
+    - 100
+    countRange:
+    - {x: 1, y: 1}
+    price: 0000000000000000c8000000
+    enhanceLevel: 0
+  - item: {fileID: 11400000, guid: f3c09012cf906e541a56fb28c238034e, type: 2}
+    oneOfSet: []
+    appearChance:
+    - 100
+    - 0
+    - 0
+    countRange:
+    - {x: 1, y: 1}
+    price: 640000000000000000000000
+    enhanceLevel: 0
+  - item: {fileID: 11400000, guid: 2ed3874c5c5e380418e7bc27ffe264f9, type: 2}
+    oneOfSet: []
+    appearChance:
+    - 0
+    - 100
+    - 0
+    countRange:
+    - {x: 1, y: 1}
+    price: 000000009600000000000000
+    enhanceLevel: 0
+  - item: {fileID: 11400000, guid: 2ed3874c5c5e380418e7bc27ffe264f9, type: 2}
+    oneOfSet: []
+    appearChance:
+    - 0
+    - 0
+    - 100
+    countRange:
+    - {x: 1, y: 1}
+    price: 00000000000000002c010000
+    enhanceLevel: 0
