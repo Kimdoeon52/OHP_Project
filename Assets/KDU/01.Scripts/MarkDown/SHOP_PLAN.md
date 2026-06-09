@@ -1,6 +1,6 @@
 # SHOP_PLAN.md — 상점 (Safe Room 상점 모드) 구현 계획
 
-> 상태: **계획만** (코드 미구현). 승인 후 단계별 구현.
+> 상태: **코드 구현 완료 (M1~M3)**. 남은 작업 = Unity 에디터 수동 배선(프리팹/SO/씬) + GDD 11.4 표 입력(M4). 구현 코드: `Assets/KDU/01.Scripts/Shared/Shop/` (Wallet/GoldHud/ShopStall/ShopPurchasePopup/ShopItemEntry/ShopTableData/ShopSpawner). 구매 모델은 계획의 즉시구매가 아니라 **E → 팝업 → 구매 버튼**. 구매키 = `KeyBindingAction.Buy`(기본 E).
 > 디자인 수치 원본은 **GDD 11.4** (Safe Room 두 가지 모드 / 상점 표). 이 문서는 수치를 복붙하지 않고 **구조·흐름**만 정의한다. 가격·확률·개수는 전부 `ShopTableData` SO 에서 GDD 11.4 표를 보고 인스펙터로 입력 → 코드/문서에 하드코딩 X.
 
 ---

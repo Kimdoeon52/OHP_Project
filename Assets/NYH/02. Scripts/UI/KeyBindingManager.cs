@@ -27,7 +27,8 @@ namespace PrototypeRT
         QuickSlot8,
         QuickSlot9,
         QuickSlot10,
-        UseHealthPotion
+        UseHealthPotion,
+        Buy
     }
 
     /// <summary>
@@ -63,7 +64,8 @@ namespace PrototypeRT
             { KeyBindingAction.QuickSlot8, KeyCode.Alpha8 },
             { KeyBindingAction.QuickSlot9, KeyCode.Alpha9 },
             { KeyBindingAction.QuickSlot10, KeyCode.Alpha0 },
-            { KeyBindingAction.UseHealthPotion, KeyCode.Q }
+            { KeyBindingAction.UseHealthPotion, KeyCode.Q },
+            { KeyBindingAction.Buy, KeyCode.E }
         };
 
         private static bool _loaded;

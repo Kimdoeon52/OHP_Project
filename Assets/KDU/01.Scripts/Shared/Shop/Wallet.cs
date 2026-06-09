@@ -8,11 +8,20 @@ public class Wallet : Singleton<Wallet>
     private void OnEnable()
     {
         GameEvents.OnGoldDropped += OnGoldAcquired;
+        GameEvents.OnPlayerDied += ResetBalance;
     }
 
     private void OnDisable()
     {
         GameEvents.OnGoldDropped -= OnGoldAcquired;
+        GameEvents.OnPlayerDied -= ResetBalance;
+    }
+
+    // 사망 시 잔액 0
+    private void ResetBalance()
+    {
+        Balance = 0;
+        GameEvents.OnGoldChanged?.Invoke(Balance);
     }
 
     private void Start()

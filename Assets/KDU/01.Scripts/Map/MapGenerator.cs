@@ -46,6 +46,9 @@ public class MapGenerator : Singleton<MapGenerator>
     [Tooltip("바닥 아이템 스포너")]
     [SerializeField] private MapItemSpawner mapItemSpawner;
 
+    [Tooltip("상점 스포너 (1/6/11층)")]
+    [SerializeField] private ShopSpawner shopSpawner;
+
     public DungeonRandom Rng { get; } = new DungeonRandom();
     public List<RoomData> CurrentRooms { get; private set; }
     public int CurrentSeed { get; private set; }
@@ -216,6 +219,10 @@ public class MapGenerator : Singleton<MapGenerator>
         if (mapItemSpawner != null)
             mapItemSpawner.Spawn(rooms, depth, CurrentSeed, Rng);
 
+        // 상점 배치 (1/6/11층 Safe Room)
+        if (shopSpawner != null && IsShopDepth(depth))
+            shopSpawner.Spawn(rooms, depth, Rng);
+
         ComputeMapBounds(rooms);
 
         CurrentRooms = rooms;
@@ -225,6 +232,11 @@ public class MapGenerator : Singleton<MapGenerator>
     public bool IsBossDepth(int depth)
     {
         return bossDepthInterval > 0 && depth > 0 && depth % bossDepthInterval == 0;
+    }
+
+    public bool IsShopDepth(int depth)
+    {
+        return depth == 1 || depth == 6 || depth == 11;
     }
 
     private List<RoomData> InitializeRooms(int depth, DungeonRandom rng)

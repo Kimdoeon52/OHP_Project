@@ -23,6 +23,7 @@ public static class GameEvents
     public static Action<Vector2Int, int> OnExpDropped;     // pos, exp
     public static Action<Vector2Int, int> OnGoldDropped;    // pos, gold
     public static Action<int> OnGoldChanged;                // 지갑 잔액 변동 후 현재 잔액. HUD 가 구독.
+    public static Action<ItemBase> OnItemPurchased;         // 상점 구매 성공한 상품. 사운드/연출 구독.
 
     // 상호작용
     public static Action<Vector2Int> OnChestOpened;         // 상자 개방 셀
@@ -59,6 +60,7 @@ public static class GameEvents
         OnExpDropped = null;                // 경험치 드롭
         OnGoldDropped = null;               // 골드 드롭
         OnGoldChanged = null;               // 골드 잔액 변동
+        OnItemPurchased = null;             // 상점 구매
         OnChestOpened = null;               // 상자 개방
         OnKeyAcquired = null;               // 열쇠 획득
         OnSearchPerformed = null;           // 탐색 액션
