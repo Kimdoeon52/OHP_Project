@@ -30,6 +30,7 @@ public class FirePotion : ThrowablePotion
     {
         // 불 이펙트만 띄우면 화면에는 불이 보여도 TrapTerrainController가 바닥 상태를 모릅니다.
         // 기존 Fire terrain -> Burn 상태이상 경로를 쓰기 위해 착탄 지점을 불 장판으로 등록합니다.
+        // 장판 등록 후에는 생성 즉시, 밟고 들어올 때, 플레이어 행동 완료 틱마다 Burn 판정이 처리됩니다.
         GameEvents.OnTrapTerrainRequested?.Invoke(new TrapTerrainRequest(
             origin,
             fireTerrainRadius,

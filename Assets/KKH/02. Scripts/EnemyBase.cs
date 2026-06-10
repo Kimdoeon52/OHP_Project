@@ -425,6 +425,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
         if (_animator != null) _animator.SetBool("Walk", true);
 
         SetGridPosition(next);
+        TrapTerrainController.TryApplyTerrainAt(this, next);
         UpdateVisibility();
         UpdateSpriteDirection(next);
         return true;

@@ -176,6 +176,7 @@ public class EnemyGoblinThief : EnemyBase
             GridSystem.Instance.RegisterOccupancy(next, this);
         }
         GridPosition = next;
+        TrapTerrainController.TryApplyTerrainAt(this, next);
         return true;
     }
 

@@ -224,6 +224,7 @@ public class GridPlayerMovement : MonoBehaviour
         TrapSystem.Instance?.TryTriggerAt(target, _player);
         HazardTerrainEffect.ApplyOnEnter(_player, target);
         VisionSystem.Instance.UpdateVision(_player.GridPosition);
+        TrapTerrainController.TryApplyTerrainAt(_player, target);
 
         const bool skipEnemyTurnDelay = false;
 

@@ -25,3 +25,5 @@ MonoBehaviour:
   canAnalyze: 0
   potionType: 4
   value: 0
+  fireTerrainRadius: 1
+  fireTerrainDurationTurns: 1

@@ -5,16 +5,16 @@ public class DebugUI : MonoBehaviour
 {
     [SerializeField] private TMP_Text timeText;
     [SerializeField] private TMP_Text hpText;
-    [SerializeField] private TMP_Text potionText;
-    [SerializeField] private TMP_Text keyText;
-    [SerializeField] private TMP_Text statusText;
+    [SerializeField] private TMP_Text expText;
+    [SerializeField] private TMP_Text levelText;
 
+    private PlayerLevelSystem _levelSystem;
     private GridPlayer _player;
 
     private void Start()
     {
         _player = FindFirstObjectByType<GridPlayer>();
-        if (statusText != null) statusText.text = "";
+        _levelSystem = _player != null ? _player.GetComponent<PlayerLevelSystem>() : FindFirstObjectByType<PlayerLevelSystem>();
     }
 
     private void Update()
@@ -27,17 +27,11 @@ public class DebugUI : MonoBehaviour
         if (hpText != null)
             hpText.text = $"HP {_player.CurrentHp}/{_player.MaxHp}";
 
+        if (levelText != null && _levelSystem != null)
+            levelText.text = $"LVL {_levelSystem.Level}";
 
-        if (potionText != null)
-            potionText.text = $"포션 {_player.Health.PotionCount}";
-
-        if (keyText != null && KeyInventory.Instance != null)
-            keyText.text = $"열쇠 S:{KeyInventory.Instance.GetCount(KeyType.SpecialRoom)} R:{KeyInventory.Instance.GetCount(KeyType.RingChest)}";
-    }
-
-    private void SetStatus(string text)
-    {
-        if (statusText != null) statusText.text = text;
+        if (expText != null && _levelSystem != null)
+            expText.text = $"EXP {_levelSystem.ExpDisplayText}";
     }
 }
 

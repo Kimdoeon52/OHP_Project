@@ -72,6 +72,7 @@ public class EnemyBat : EnemyBase
         }
         // 논리 좌표만 즉시 반영 (시각은 SmoothMoveVisual에서 처리)
         GridPosition = next;
+        TrapTerrainController.TryApplyTerrainAt(this, next);
         return true;
     }
 

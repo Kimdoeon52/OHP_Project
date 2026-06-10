@@ -148,7 +148,7 @@ namespace PrototypeRT
             if (_player == null || _player.Input == null)
                 return;
 
-            _player.Input.OnQuickSlotNumberPressed += SelectSlot;
+            _player.Input.OnQuickSlotNumberPressed += HandleQuickSlotNumberPressed;
             _player.Input.OnQuickSlotScroll += MoveSelectedSlot;
             _inputSubscribed = true;
         }
@@ -160,11 +160,19 @@ namespace PrototypeRT
 
             if (_player != null && _player.Input != null)
             {
-                _player.Input.OnQuickSlotNumberPressed -= SelectSlot;
+                _player.Input.OnQuickSlotNumberPressed -= HandleQuickSlotNumberPressed;
                 _player.Input.OnQuickSlotScroll -= MoveSelectedSlot;
             }
 
             _inputSubscribed = false;
+        }
+
+        private void HandleQuickSlotNumberPressed(int index)
+        {
+            // 숫자키는 여전히 "선택 슬롯 변경" 역할을 먼저 수행합니다.
+            // 단, 힐/힘 포션처럼 먹는 포션은 버튼만 눌러도 즉시 사용되도록 아래에서 한 번 더 검사합니다.
+            SelectSlot(index);
+            TryUseInstantConsumableSlot(index);
         }
 
         /// <summary>
@@ -184,6 +192,24 @@ namespace PrototypeRT
         public bool TryUseSelectedSlotAt(Vector2Int targetCell)
         {
             return TryUseSelectedSlotAt(SelectedIndex, targetCell);
+        }
+
+        private bool TryUseInstantConsumableSlot(int slotIndex)
+        {
+            InventoryItem item = GetItem(slotIndex);
+            if (item == null || item.ItemData == null)
+                return false;
+
+            if (!CanUseQuickSlot())
+                return false;
+
+            // PotionData이면서 IThrowable이 아닌 것만 즉시 사용합니다.
+            // FirePotion/IcePotion 같은 투척 포션은 선택만 하고, 기존처럼 좌클릭 타일 지정으로 던집니다.
+            if (item.ItemData is not PotionData || item.ItemData is IThrowable)
+                return false;
+
+            item.ItemData.Use();
+            return ConsumeUsedQuickSlotItem(item);
         }
 
         private bool TryUseSelectedSlotAt(int slotIndex, Vector2Int targetCell)

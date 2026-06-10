@@ -74,6 +74,10 @@ public class StatusController : MonoBehaviour
     {
         if (request.DurationTurns <= 0 && request.Power <= 0) return;
 
+        // 상태 로직은 이 컴포넌트가 담당하고, 색/아이콘 같은 표시는 PlayerStatusVisual이 담당합니다.
+        // 몬스터와 보스는 StatusController가 동적으로 붙는 경우가 많으므로 여기서 비주얼도 같이 보장합니다.
+        PlayerStatusVisual.EnsureFor(gameObject);
+
         float duration = Mathf.Max(0.1f, request.DurationTurns);
         int power = Mathf.Max(1, request.Power);
         float tickInterval = GetTickInterval(request.StatusType);

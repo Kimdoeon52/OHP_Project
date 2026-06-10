@@ -23,6 +23,8 @@ public class PlayerStatusVisual : MonoBehaviour
     [Header("기본 색")]
     [Tooltip("아무 상태도 없을 때 플레이어에게 되돌릴 색입니다.")]
     [SerializeField] private Color normalColor = Color.white;
+    [Tooltip("켜면 시작할 때 SpriteRenderer의 현재 색을 정상 색으로 기억합니다. 보스처럼 기본 색이 흰색이 아닌 대상에 사용합니다.")]
+    [SerializeField] private bool captureInitialColor = true;
 
     [Header("상태별 표시")]
     [Tooltip("상태별 색, 아이콘, 이펙트 설정입니다. 위에 있는 항목일수록 여러 상태가 겹쳤을 때 우선 표시됩니다.")]
@@ -42,12 +44,39 @@ public class PlayerStatusVisual : MonoBehaviour
     private StatusController _statusController;
     private GameObject _activeEffect;
 
+    public static PlayerStatusVisual EnsureFor(GameObject target)
+    {
+        if (target == null)
+            return null;
+
+        // 이미 비주얼 컴포넌트가 있으면 중복으로 붙이지 않습니다.
+        PlayerStatusVisual visual = target.GetComponent<PlayerStatusVisual>();
+        if (visual != null)
+            return visual;
+
+        // SpriteRenderer가 없는 순수 로직 오브젝트에는 색 변경 비주얼을 붙여도 의미가 없습니다.
+        // 보스처럼 스프라이트가 자식에 있는 경우까지 허용하기 위해 InChildren으로 검사합니다.
+        if (target.GetComponentInChildren<SpriteRenderer>() == null)
+            return null;
+
+        // StatusController.ApplyStatus에서 호출되므로, 상태이상이 처음 걸리는 순간 자동으로 표시 기능이 붙습니다.
+        // 몬스터/보스 프리팹마다 수동으로 PlayerStatusVisual을 붙이지 않아도 됩니다.
+        return target.AddComponent<PlayerStatusVisual>();
+    }
+
     private void Awake()
     {
         _statusController = GetComponent<StatusController>();
 
         if (playerRenderer == null)
             playerRenderer = GetComponent<SpriteRenderer>();
+        if (playerRenderer == null)
+            playerRenderer = GetComponentInChildren<SpriteRenderer>();
+
+        // 보스 Phase 색상처럼 기본 색이 흰색이 아닐 수 있으므로 시작 색을 정상 색으로 기억합니다.
+        // 상태이상이 끝났을 때 무조건 흰색으로 돌아가면 기존 연출을 덮어버릴 수 있습니다.
+        if (captureInitialColor && playerRenderer != null)
+            normalColor = playerRenderer.color;
 
         if (effectAnchor == null)
             effectAnchor = transform;
