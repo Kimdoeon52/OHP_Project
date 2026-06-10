@@ -127,8 +127,12 @@ public class MapGenerator : Singleton<MapGenerator>
         if (chestSpawner != null) 
             chestSpawner.Clear();
 
-        if (mapItemSpawner != null) 
+        if (mapItemSpawner != null)
             mapItemSpawner.Clear();
+
+        // 상점은 상점 층에서만 Spawn(=Clear 포함)되므로, 비-상점 층 진입 시 여기서 비워야 진열대가 안 남음.
+        if (shopSpawner != null)
+            shopSpawner.Clear();
 
         // 이전 층의 Feeling 효과 리셋
         if (VisionSystem.Instance != null)
