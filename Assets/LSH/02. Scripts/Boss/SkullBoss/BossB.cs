@@ -10,7 +10,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 {
     [Header("보스 공격 이펙트")]
     [SerializeField] private GameObject attack1Effect; //쿵! 패턴1 휘두르기 전용
-    [SerializeField] private GameObject attack2Effect; //충격파 패턴 전용. 링 r번째에 scale이 r배로 커지며 spawn
+
     
     [Header("패턴2 충격파")]
     [SerializeField] private int shockwaveMaxRadius = 4;            // 링 개수 (N)
@@ -35,11 +35,6 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
     [Header("Phase 2 강화 패턴 설정")]
     [SerializeField] private int phase2ShockwaveRadius = 6;
-    [SerializeField] private int phase2Attack1Range = 5;
-    [SerializeField] private int phase2Attack1Width = 2;
-    [SerializeField] private float phase2Attack1EffectScale = 1.6f;
-    [SerializeField] private int phase2CrystalRadius = 1; // 1 -> 3x3 area
-    [SerializeField] private float phase2CrystalScale = 3f;
 
 
 
@@ -76,11 +71,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
     private Vector3 BossPivotOffset => new Vector3((bossSize.x - 1) * 0.5f, (bossSize.y - 1) * 0.5f, 0f);
 
-    private bool IsBossOccupying(Vector2Int cell)
-    {
-        return cell.x >= gridPos.x && cell.x < gridPos.x + bossSize.x &&
-               cell.y >= gridPos.y && cell.y < gridPos.y + bossSize.y;
-    }
+
 
     public void TakeDamage(int amount)
     {
@@ -188,15 +179,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         base.OnDeath().Forget();
     }
 
-    private void DamagePlayerIfInCell(Vector2Int attackCell, int damage)
-    {
-        if (player == null || player.IsDead) return;
 
-        if (player.GridPosition == attackCell)
-        {
-            player.TakeDamage(damage);
-        }
-    }
 
 
 

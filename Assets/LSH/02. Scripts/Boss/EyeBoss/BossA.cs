@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -42,7 +42,6 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     [SerializeField] private Vector2Int bossSize = new Vector2Int(2, 2); // 보스가 차지하는 크기 (2,2)
 
     // ─── 내부 상태 ───────────────────────────────────────────────────
-    private SpriteRenderer _bossSprite;
     private Vector2Int gridPos;
     // BossA가 OnEnable 시점에 여러 번 등록되는 것을 막기 위한 상태값이다.
     private bool isRegisteredToTurnManager;
@@ -119,7 +118,6 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     {
         base.OnEnable(); // patternDelay 변환, 보스전 120초 타이머 시작 및 WaitBossCoolTime 구동
         currentHp = maxHp;
-        _bossSprite = GetComponentInChildren<SpriteRenderer>();
         CacheMapBounds();
 
         if (GridSystem.Instance != null)
@@ -134,10 +132,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         AddActionCase(BossAction.Pattern2, 50);
     }
 
-        private void Start()
-    {
-        RegisterBossGridTargetNextFrameAsync().Forget();
-    }
+
 
     // Unity 실행 순서상 BossA.OnEnable이 TurnManager.Awake보다 먼저 실행될 수 있어 한 프레임 뒤에 등록을 보장한다.
     private async UniTaskVoid RegisterBossGridTargetNextFrameAsync()

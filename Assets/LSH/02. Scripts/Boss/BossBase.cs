@@ -32,8 +32,7 @@ public class BossBase : EnemyNormalBASE
     [Header("보스 패턴 딜레이 (초)")]
     [SerializeField] protected int patternDelay; //보스 패턴 행동 사이의 딜레이 시간
 
-    [Header("페이즈 전환 (남은 시간 기준)")]
-    [SerializeField] protected float phase2TimeThreshold = 60f;     //남은 시간이 이 값(초) 이하가 되면 Phase 2 진입
+    [Header("페이즈 전환 설정")]
     [SerializeField, Range(0.05f, 1f)] protected float phase2DelayMultiplier = 0.3f; //Phase 2 진입 시 patternDelay에 곱하는 배율
 
     [Header("보스전 시간")]
@@ -175,15 +174,7 @@ public class BossBase : EnemyNormalBASE
         ClearAllWarnings(); //취소된 패턴이 남긴 워닝 타일 정리
     }
 
-    protected virtual void PatternStop()
-    {
-        //보스 패턴을 중단
-        if (cancelToken != null)
-        {
-            cancelToken.Cancel();
-            cancelToken.Dispose();
-        }
-    }
+
 
     //==================== 데미지 / 페이즈 전환 / 사망 ====================
     protected bool isDying; // 죽음 패턴 진행 중 추가 데미지 무시 + 재진입 방지
@@ -452,23 +443,7 @@ public class BossBase : EnemyNormalBASE
     }
 
 
-    private void CopyTilemapData(Tilemap src, Tilemap dest)
-    {
-        if (src == null || dest == null) return;
-        foreach (var pos in src.cellBounds.allPositionsWithin)
-        {
-            var tile = src.GetTile(pos);
-            if (tile == null) continue;
-            
-            dest.SetTile(pos, tile);
-            var mat = src.GetTransformMatrix(pos);
-            if (mat != Matrix4x4.identity)
-            {
-                dest.SetTransformMatrix(pos, mat);
-                dest.SetTileFlags(pos, src.GetTileFlags(pos));
-            }
-        }
-    }
+
 
     protected void CacheMapBounds()
     {
