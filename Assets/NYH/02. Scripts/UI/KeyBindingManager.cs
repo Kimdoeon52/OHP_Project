@@ -225,6 +225,11 @@ namespace PrototypeRT
         }
 
         /// <summary>자동 줍기 ON/OFF를 변경하고 PlayerPrefs에 저장합니다.</summary>
+        public static void ClearUiInputBlocks()
+        {
+            UiInputBlockSources.Clear();
+        }
+
         public static void SetAutoPickupEnabled(bool enabled)
         {
             EnsureLoaded();

@@ -61,6 +61,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
     protected GridPlayer Player { get; private set; }
     /// <summary> 자신 또는 자식 오브젝트에서 캐싱한 Animator. 없으면 null. </summary>
     protected Animator _animator;
+    private StatusController _statusController;
     /// <summary> 중복 사망 처리 방지 플래그 </summary>
     private bool _isDying;
     /// <summary> 경보 발동 여부 </summary>
@@ -99,6 +100,9 @@ public abstract class EnemyBase : EntityBase, IDamageable
         // Animator 자동 캐싱 (자식 오브젝트까지 탐색)
         _animator = GetComponent<Animator>();
         if (_animator == null) _animator = GetComponentInChildren<Animator>();
+        _statusController = GetComponent<StatusController>();
+        if (_statusController == null)
+            _statusController = gameObject.AddComponent<StatusController>();
 
         if (data == null)
         {
@@ -494,7 +498,14 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// </summary>
     public float GetMoveCost()
     {
-        return data != null ? data.moveSpeed : 1.0f;
+        float cost = data != null ? data.moveSpeed : 1.0f;
+        if (_statusController == null)
+            _statusController = GetComponent<StatusController>();
+
+        if (_statusController != null)
+            cost = _statusController.ModifyMoveTimeCost(cost);
+
+        return cost;
     }
 
     /// <summary>
@@ -503,7 +514,11 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// </summary>
     public float GetAttackCost()
     {
-        return (data != null && data.attackSpeed > 0f) ? (1f / data.attackSpeed) : 1.0f;
+        float cost = (data != null && data.attackSpeed > 0f) ? (1f / data.attackSpeed) : 1.0f;
+        if (_statusController == null)
+            _statusController = GetComponent<StatusController>();
+
+        return _statusController != null ? _statusController.ModifyAttackCooldown(cost) : cost;
     }
 
     /// <summary>

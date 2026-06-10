@@ -71,7 +71,6 @@ namespace PrototypeRT
 
             if (!value)
             {
-                KeyBindingManager.SetUiInputBlock(InputBlockSource, false);
 
                 // 주문서 대상 지정 중에 패널만 꺼지면 커서가 감정/강화/정화 아이콘으로 남습니다.
                 // 닫기 경로에서 먼저 취소시켜 반투명 표시와 마우스 커서를 함께 원복합니다.
@@ -81,6 +80,7 @@ namespace PrototypeRT
                 // 그래야 마우스에 들려 있던 아이템을 원래 칸으로 돌려놓고 입력을 차단할 수 있습니다.
                 inventoryController?.SetInventoryOpen(false);
                 inventoryPanel.SetActive(false);
+                KeyBindingManager.ClearUiInputBlocks();
                 return;
             }
 
