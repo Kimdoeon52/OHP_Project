@@ -25,9 +25,9 @@ MonoBehaviour:
   canAnalyze: 1
   minDamage: 4
   maxDamage: 20
-  minEnhanceBonus: 0
-  maxEnhanceBonus: 0
-  canUseStrength: 0
+  minEnhanceBonus: 1
+  maxEnhanceBonus: 3
+  canUseStrength: 16
   attackSpeed: 1
   minMinusDamage: 0
   maxMinusDamage: 3
