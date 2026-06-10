@@ -114,8 +114,21 @@ public class GridChest : MonoBehaviour
 
         _openProgress += Time.deltaTime;
 
-        if (_openProgress >= data.OpenSeconds)
+        if (_openProgress >= GetEffectiveOpenSeconds())
             TryOpen();
+    }
+
+    // 탐욕의 초침 마법이 있으면 0.5초 고정, 아니면 data.OpenSeconds
+    private float GetEffectiveOpenSeconds()
+    {
+        if (_player == null)
+            return data.OpenSeconds;
+        NYHEquipmentController eq = _player.GetComponent<NYHEquipmentController>();
+        if (eq == null || !eq.TryGetEquipped(EquipmentSlot.Armor, out NYHEquipmentItemInstance item))
+            return data.OpenSeconds;
+        if (item.SourceInstance is EquipmentInstance inst && inst.magic != null && inst.magic.OverridesPickupTime)
+            return 0.5f;
+        return data.OpenSeconds;
     }
 
     private void TryOpen()

@@ -129,7 +129,10 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
         }
 
         CurrentHp = Mathf.Max(0, CurrentHp - finalDamage);
-        
+
+        if (finalDamage > 0)
+            GetArmorMagic()?.OnHit();
+
         OnDamaged?.Invoke(finalDamage);
         GameEvents.OnPlayerDamaged?.Invoke(finalDamage);
         PublishCombatText(finalDamage, GetCombatTextType(finalDamage, criticalReferenceMaxDamage));
@@ -244,6 +247,16 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
             Heal(amount);
 
         RaiseHealthChanged();
+    }
+
+    // 장착 갑옷의 MagicData를 가져옴
+    private MagicData GetArmorMagic()
+    {
+        if (_equipmentController == null)
+            return null;
+        if (!_equipmentController.TryGetEquipped(EquipmentSlot.Armor, out NYHEquipmentItemInstance item))
+            return null;
+        return item.SourceInstance is EquipmentInstance inst ? inst.magic : null;
     }
 
     /// <summary>

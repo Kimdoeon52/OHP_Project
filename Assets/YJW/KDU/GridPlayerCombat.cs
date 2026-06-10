@@ -87,9 +87,14 @@ public class GridPlayerCombat : MonoBehaviour
         IGridEntity entity = TurnManager.Instance.GetEntityAt(target);
         if (entity is IDamageable damageable && (UnityEngine.Object)damageable != _player)
         {
-            if (entity is EnemyBase enemy && !RollPlayerHit(enemy.Data != null ? enemy.Data.evasion : 0))
+            MagicData weaponMagic = GetEquippedMagic(EquipmentSlot.Weapon);
+            EnemyBase enemyTarget = entity as EnemyBase;
+
+            bool hitGuaranteed = weaponMagic != null && weaponMagic.IsHitGuaranteed;
+            if (!hitGuaranteed && enemyTarget != null && !RollPlayerHit(enemyTarget.Data != null ? enemyTarget.Data.evasion : 0))
             {
                 // 플레이어 공격도 적의 회피 스탯을 반영합니다. 보스는 아직 회피 데이터가 없어서 이 분기를 타지 않습니다.
+                weaponMagic?.OnMiss();
                 PublishCombatText(GetCombatWorldPosition(damageable), "Miss", 0, CombatTextType.Miss);
                 FinishMeleeAttack(dir);
                 return;
@@ -97,6 +102,7 @@ public class GridPlayerCombat : MonoBehaviour
 
             NYHAttackDamageRange damageRange = GetMeleeDamageRange();
             int damage = GetModifiedOutgoingDamage(RollMeleeDamage(damageRange));
+            weaponMagic?.OnAttack(ref damage, enemyTarget, damageRange.MaxDamage);
             int beforeHp = damageable.CurrentHp;
             CombatTextCriticalContext.SetCurrentMaxDamage(damageRange.MaxDamage);
             try
@@ -108,6 +114,9 @@ public class GridPlayerCombat : MonoBehaviour
                 CombatTextCriticalContext.Clear();
             }
             int finalDamage = Mathf.Max(0, beforeHp - damageable.CurrentHp);
+
+            if (damageable.CurrentHp <= 0)
+                weaponMagic?.OnKill();
 
             // BossBase는 BossTakeDamage 내부에서도 표시 이벤트를 쏘므로 여기서 중복 표시하지 않습니다.
             if (finalDamage > 0 && damageable is not BossBase)
@@ -268,6 +277,16 @@ public class GridPlayerCombat : MonoBehaviour
             _stats = NYHPlayerStats.Instance;
 
         return _stats != null ? _stats.AttackSpeed : 0;
+    }
+
+    // 장착 장비의 MagicData를 가져옴
+    private MagicData GetEquippedMagic(EquipmentSlot slot)
+    {
+        if (equipmentController == null)
+            equipmentController = FindFirstObjectByType<NYHEquipmentController>();
+        if (equipmentController == null || !equipmentController.TryGetEquipped(slot, out NYHEquipmentItemInstance item))
+            return null;
+        return item.SourceInstance is EquipmentInstance inst ? inst.magic : null;
     }
 
     /// <summary>

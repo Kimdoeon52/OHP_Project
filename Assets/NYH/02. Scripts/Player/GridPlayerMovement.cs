@@ -91,6 +91,7 @@ public class GridPlayerMovement : MonoBehaviour
     private GridPlayer _player;
     private NYHPlayerStats _stats;
     private PlayerLevelSystem _levelSystem;
+    private NYHEquipmentController _equipmentController;
     private Coroutine _moveCoroutine;
 
     public void Init(GridPlayer player)
@@ -103,6 +104,8 @@ public class GridPlayerMovement : MonoBehaviour
         _levelSystem = GetComponent<PlayerLevelSystem>();
         if (_levelSystem == null)
             _levelSystem = PlayerLevelSystem.Instance;
+
+        _equipmentController = GetComponent<NYHEquipmentController>();
     }
 
     /// <summary>
@@ -254,17 +257,34 @@ public class GridPlayerMovement : MonoBehaviour
 
     private float GetMoveActionDelay()
     {
+        float delay;
         if (TryGetLevelMoveActionDelay(out float levelDelay))
-            return Mathf.Max(minMoveActionDelay, levelDelay);
+        {
+            delay = levelDelay;
+        }
+        else
+        {
+            float baseDelay = _player.Config != null ? _player.Config.moveTimeDelay : 1f;
+            int moveSpeed = GetMoveSpeed();
+            float progress = moveSpeedForMinActionDelay <= 1
+                ? 1f
+                : Mathf.Clamp01((moveSpeed - 1f) / (moveSpeedForMinActionDelay - 1f));
+            delay = Mathf.Lerp(baseDelay, minMoveActionDelay, progress);
+        }
 
-        float baseDelay = _player.Config != null ? _player.Config.moveTimeDelay : 1f;
-        int moveSpeed = GetMoveSpeed();
+        float magicBonus = (GetEquippedMagic(EquipmentSlot.Armor)?.GetMoveCooldownBonus() ?? 0f)
+                         + (GetEquippedMagic(EquipmentSlot.Weapon)?.GetMoveCooldownBonus() ?? 0f);
+        return Mathf.Max(minMoveActionDelay, delay + magicBonus);
+    }
 
-        float progress = moveSpeedForMinActionDelay <= 1
-            ? 1f
-            : Mathf.Clamp01((moveSpeed - 1f) / (moveSpeedForMinActionDelay - 1f));
-
-        return Mathf.Lerp(baseDelay, minMoveActionDelay, progress);
+    // 장착 장비의 MagicData를 가져옴
+    private MagicData GetEquippedMagic(EquipmentSlot slot)
+    {
+        if (_equipmentController == null)
+            _equipmentController = GetComponent<NYHEquipmentController>();
+        if (_equipmentController == null || !_equipmentController.TryGetEquipped(slot, out NYHEquipmentItemInstance item))
+            return null;
+        return item.SourceInstance is EquipmentInstance inst ? inst.magic : null;
     }
 
     private bool TryGetLevelMoveActionDelay(out float delay)

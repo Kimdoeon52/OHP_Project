@@ -21,6 +21,9 @@ public static class HazardTerrainEffect
         if (!ShouldApplyHazard(entity, targetCell))
             return baseCost;
 
+        if (GetArmorMagic(entity)?.IgnoresHazardSlow == true)
+            return baseCost;
+
         return Mathf.Max(0.01f, baseCost * HazardMoveCostMultiplier);
     }
 
@@ -29,8 +32,14 @@ public static class HazardTerrainEffect
         if (!ShouldApplyHazard(entity, cell))
             return;
 
-        TrapEffectUtility.RequestStatus(entity, cell, StatusType.Slow, HazardSlowDurationTurns, 1, null);
-        TrapEffectUtility.RequestStatus(entity, cell, HazardDamageStatusType, HazardDamageDurationTurns, HazardDamagePower, null);
+        MagicData magic = GetArmorMagic(entity);
+        bool emptyStep = magic?.HalvesHazardDamage == true;
+
+        if (!emptyStep)
+            TrapEffectUtility.RequestStatus(entity, cell, StatusType.Slow, HazardSlowDurationTurns, 1, null);
+
+        int power = emptyStep ? Mathf.Max(1, HazardDamagePower / 2) : HazardDamagePower;
+        TrapEffectUtility.RequestStatus(entity, cell, HazardDamageStatusType, HazardDamageDurationTurns, power, null);
     }
 
     private static bool ShouldApplyHazard(IGridEntity entity, Vector2Int cell)
@@ -46,5 +55,16 @@ public static class HazardTerrainEffect
         }
 
         return true;
+    }
+
+    // 엔티티의 장착 갑옷 MagicData를 가져옴
+    private static MagicData GetArmorMagic(IGridEntity entity)
+    {
+        if (entity is not Component component)
+            return null;
+        NYHEquipmentController eq = component.GetComponent<NYHEquipmentController>();
+        if (eq == null || !eq.TryGetEquipped(EquipmentSlot.Armor, out NYHEquipmentItemInstance item))
+            return null;
+        return item.SourceInstance is EquipmentInstance inst ? inst.magic : null;
     }
 }

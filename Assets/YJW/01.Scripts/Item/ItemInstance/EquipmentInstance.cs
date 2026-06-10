@@ -1,15 +1,16 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class EquipmentInstance : ItemInstance
 {
-    public int enhanceLevel;        // °­È­ ´Ü°è
-    public CurseData curse;         // ÀúÁÖ Á¤º¸ (nullÀÌ¸é ÀúÁÖ ¾øÀ½)
-    public bool isAnalyzed;         // °¨Á¤ ¿©ºÎ
+    public int enhanceLevel;        // ê°•í™” ë‹¨ê³„
+    public CurseData curse;         // ì €ì£¼ ì •ë³´ (nullì´ë©´ ì €ì£¼ ì—†ìŒ)
+    public MagicData magic;
+    public bool isAnalyzed;         // ê°ì • ì—¬ë¶€
 
-    public bool IsBound => curse != null; // ÀúÁÖ ÀÖÀ¸¸é ±Í¼Ó (ÇØÁ¦ ºÒ°¡)
+    public bool IsBound => curse != null; // ì €ì£¼ ìˆìœ¼ë©´ ê·€ì† (í•´ì œ ë¶ˆê°€)
 
     public void Purify()
     {
-        curse = null; // Á¤È­ ½ºÅ©·Ñ »ç¿ë ½Ã È£Ãâ
+        curse = null; // ì •í™” ìŠ¤í¬ë¡¤ ì‚¬ìš© ì‹œ í˜¸ì¶œ
     }
 }
