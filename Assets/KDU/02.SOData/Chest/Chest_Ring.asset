@@ -20,10 +20,8 @@ MonoBehaviour:
   itemCategories: 09000000
   itemDropMin: 1
   itemDropMax: 1
-  excludeItemIds:
-  - 1002
-  - 2003
+  excludeItemIds: ea030000d3070000
   goldMin: 0
   goldMax: 0
-  closedSprite: {fileID: -2147240515, guid: c5fd1966421bf3d41a951a19748a397f, type: 3}
-  openedSprite: {fileID: -1736702348, guid: c5fd1966421bf3d41a951a19748a397f, type: 3}
+  closedSprite: {fileID: 7974924177460735221, guid: 2f54295223d1e6541a96b80cf16ac4a3, type: 3}
+  openedSprite: {fileID: -2195290666962788298, guid: 67cba7463a86ee34eb3b637f1df7df4a, type: 3}
