@@ -43,3 +43,9 @@ MonoBehaviour:
       requiresLineOfSight: 0
     minCount: 1
     maxCount: 1
+  - pool:
+    - enemyData: {fileID: 11400000, guid: 80e4f62cac613e04f9a06a1b4d0f0d96, type: 2}
+      weight: 1
+      requiresLineOfSight: 0
+    minCount: 1
+    maxCount: 1

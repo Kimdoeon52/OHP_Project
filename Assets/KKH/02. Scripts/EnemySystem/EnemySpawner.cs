@@ -64,7 +64,7 @@ namespace EnemySystem
             // 2. 수집된 셀로 가상 Normal 방 구성 (거리 2 = 2티어 난이도)
             RoomData mockRoom = new RoomData
             {
-                type         = RoomType.Normal,
+                type = RoomType.Normal,
                 sizeCategory = SizeCategory.Normal,
                 distanceFromSafe = 2,
             };
@@ -132,13 +132,14 @@ namespace EnemySystem
 
             // 1단계: 엘리트 몬스터 Exit Room 확정 배치 (단독)
             SpawnEliteInExitRoom(rooms, currentConfig, rng);
+            SpawnGolemInSpecialMonsterRoom(rooms, currentConfig, rng);
 
             // 2단계: 방별 일반 스폰 (Exit Room은 엘리트 단독이므로 스킵)
             foreach (var room in rooms)
             {
                 if (room.type == RoomType.Tunnel) continue; // 복도는 스킵
                 if (room.type == RoomType.Exit) continue;   // Exit Room은 엘리트 단독
-
+                if (room.type == RoomType.Special && room.specialKind == SpecialRoomKind.Monster) continue;
                 // 방 타입에 맞는 RoomSpawnRule 결정
                 RoomSpawnRule rule = ResolveRule(room.type);
                 if (rule == null) continue;
@@ -308,8 +309,74 @@ namespace EnemySystem
             InstantiateOne(spawnEntry, config);
 
             Debug.Log($"EnemySpawner: Exit Room에 엘리트 '{selectedElite.displayName}' 배치 완료 ({spawnPos}).");
+            return;
         }
 
+        /// <summary>
+        /// SpecialMonsterRoom에 골렘을 배치함
+        /// </summary>
+        private void SpawnGolemInSpecialMonsterRoom(List<RoomData> rooms, FloorSpawnConfig config, DungeonRandom rng)
+        {
+            if (config == null || config.prefabMappings == null)
+            {
+                Debug.LogWarning("스페셜 룸 골램 생성 실패: 설정이 없거나 프리팹 매핑이 비어있습니다.");
+                return;
+            }
+
+            // 1. EnemyData에서 골램 정보 찾기
+            EnemyData golemData = null;
+            foreach (var mapping in config.prefabMappings)
+            {
+                if (mapping.enemyData != null && mapping.enemyData.displayName == "Golem")
+                {
+                    golemData = mapping.enemyData;
+                    break;
+                }
+            }
+            if (golemData == null)
+            {
+                Debug.Log("스페셜 룸 골램 생성 실패: EnemyData에서 골램 정보를 찾을 수 없습니다.");
+                return;
+            }
+            foreach (var room in rooms)
+            {
+                if (room.type == RoomType.Special && room.specialKind == SpecialRoomKind.Monster)
+                {
+                    Vector2Int center = new Vector2Int(
+                        room.bounds.x + room.bounds.width / 2,
+                        room.bounds.y + room.bounds.height / 2
+                    );
+                    Vector2Int spawnPos = center;
+                    bool foundWalkable = false;
+                    float minDist = float.MaxValue;
+
+                    foreach (var cell in room.floorCells)
+                    {
+                        bool isWalkable = GridSystem.Instance == null || GridSystem.Instance.IsWalkable(cell);
+                        if (isWalkable)
+                        {
+                            float dist = (cell - center).sqrMagnitude;
+                            if (dist < minDist)
+                            {
+                                minDist = dist;
+                                spawnPos = cell;
+                                foundWalkable = true;
+                            }
+                        }
+                    }
+
+                    if (!foundWalkable && room.floorCells.Count > 0)
+                    {
+                        spawnPos = room.floorCells[0];
+                    }
+
+                    var spawnEntry = new EnemySpawnEntry(golemData, spawnPos);
+                    InstantiateOne(spawnEntry, config);
+
+                    Debug.Log($"EnemySpawner: 스페셜 몬스터 룸({room.specialKind})에 골램 '{golemData.displayName}' 배치 완료 ({spawnPos}).");
+                }
+            }
+        }
         /// <summary>
         /// 지정한 depth가 적용 범위에 맞는 FloorSpawnConfig SO를 검색하여 반환함.
         /// 일치 항목 없으면 null 반환함.
@@ -334,10 +401,10 @@ namespace EnemySystem
         {
             switch (type)
             {
-                case RoomType.Safe:    return new SafeRoomSpawnRule();
-                case RoomType.Normal:  return new NormalRoomSpawnRule();
-                case RoomType.Exit:    return new ExitRoomSpawnRule();
-                case RoomType.Boss:    return new BossRoomSpawnRule();
+                case RoomType.Safe: return new SafeRoomSpawnRule();
+                case RoomType.Normal: return new NormalRoomSpawnRule();
+                case RoomType.Exit: return new ExitRoomSpawnRule();
+                case RoomType.Boss: return new BossRoomSpawnRule();
                 case RoomType.Special:
                 case RoomType.Secret:
                     return new NormalRoomSpawnRule(); // TODO: 전용 룰로 교체 예정

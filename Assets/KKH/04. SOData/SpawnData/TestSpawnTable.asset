@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d7e2e62e288229a46b36673560dc3e54, type: 3}
-  m_Name: SpawnTable
+  m_Name: TestSpawnTable
   m_EditorClassIdentifier: 
   tiers:
   - pool:
@@ -19,39 +19,30 @@ MonoBehaviour:
       requiresLineOfSight: 0
     minCount: 1
     maxCount: 1
-    eliteChance: 0
   - pool:
     - enemyData: {fileID: 11400000, guid: 4deeeeb4a4b6d2f4ea9867031dadf490, type: 2}
       weight: 1
       requiresLineOfSight: 0
     minCount: 1
     maxCount: 1
-    eliteChance: 0
-  - pool:
-    - enemyData: {fileID: 11400000, guid: 38c624b21ca52a540b954e08e5d08d62, type: 2}
-      weight: 1
-      requiresLineOfSight: 0
+  - pool: []
     minCount: 4
     maxCount: 5
-    eliteChance: 0
   - pool:
     - enemyData: {fileID: 11400000, guid: 4deeeeb4a4b6d2f4ea9867031dadf490, type: 2}
       weight: 1
       requiresLineOfSight: 0
     minCount: 1
     maxCount: 5
-    eliteChance: 0
   - pool:
     - enemyData: {fileID: 11400000, guid: 4deeeeb4a4b6d2f4ea9867031dadf490, type: 2}
       weight: 1
       requiresLineOfSight: 0
     minCount: 1
     maxCount: 5
-    eliteChance: 0
   - pool:
     - enemyData: {fileID: 11400000, guid: 4deeeeb4a4b6d2f4ea9867031dadf490, type: 2}
       weight: 1
       requiresLineOfSight: 0
     minCount: 1
     maxCount: 5
-    eliteChance: 0

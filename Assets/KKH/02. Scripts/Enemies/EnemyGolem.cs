@@ -12,6 +12,7 @@ public class EnemyGolem : EnemyBase
     [Tooltip("바닥에 아이템을 드롭할 때 소환할 ItemPickup 프리팹")]
     [SerializeField] private GameObject itemPickupPrefab;
 
+    private bool _golemDead = false;
     // 런타임 장착 무기 상태
     private WeaponInstance _holdingWeaponInstance;
     private int _weaponEnhanceLevel;
@@ -87,8 +88,8 @@ public class EnemyGolem : EnemyBase
     /// </summary>
     protected override void Die()
     {
-        if (IsDead) return;
-
+        if (_golemDead) return;
+        _golemDead = true;
         // 사망 연출 및 Base 사망 처리 전 무기 드롭 실행
         DropWeaponOnFloor();
 
