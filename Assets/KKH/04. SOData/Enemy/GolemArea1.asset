@@ -15,7 +15,7 @@ MonoBehaviour:
   id: 1005
   displayName: Golem
   sprite: {fileID: -774327837, guid: 9ab21432c5f70fe4f88c7a8d9f2e93f7, type: 3}
-  grade: 0
+  grade: 1
   moveType: 2
   hasShield: 0
   maxHp: 50
@@ -30,7 +30,9 @@ MonoBehaviour:
   accuracy: 12
   timeBonus: 10
   expReward: 10
+  goldDropChance: 1
   goldMin: 0
   goldMax: 0
+  itemDrops: []
   visionRange: 6
   onHitEffect: {fileID: 0}
