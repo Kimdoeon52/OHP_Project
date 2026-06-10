@@ -12,6 +12,7 @@ public class GridExit : MonoBehaviour
     private SpriteRenderer _renderer;
     private GridPlayer _player;
     private bool _triggered;
+    private bool _revealed;   // 지도 스크롤로 강제 공개 — 탐험 여부와 무관하게 계속 표시.
 
     private void Awake()
     {
@@ -70,12 +71,19 @@ public class GridExit : MonoBehaviour
         UpdateVisibility();
     }
 
+    /// <summary>지도 스크롤 등으로 출구 위치만 강제 공개 — 탐험 게이팅을 무시하고 계속 표시.</summary>
+    public void Reveal()
+    {
+        _revealed = true;
+        UpdateVisibility();
+    }
+
     private void UpdateVisibility()
     {
-        if (_renderer == null || VisionSystem.Instance == null) 
+        if (_renderer == null || VisionSystem.Instance == null)
             return;
 
-        // 한 번이라도 봤으면 계속 보임
-        _renderer.enabled = VisionSystem.Instance.IsExplored(GridPosition);
+        // 한 번이라도 봤거나(탐험) 지도 스크롤로 공개됐으면 계속 보임.
+        _renderer.enabled = _revealed || VisionSystem.Instance.IsExplored(GridPosition);
     }
 }
