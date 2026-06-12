@@ -25,7 +25,7 @@ MonoBehaviour:
   canCurse: 1
   canAnalyze: 1
   minDefense: 0
-  maxDefense: 0
-  minEnhanceBonus: 0
-  maxEnhanceBonus: 0
-  canUseStrength: 0
+  maxDefense: 8
+  minEnhanceBonus: 1
+  maxEnhanceBonus: 5
+  canUseStrength: 16
