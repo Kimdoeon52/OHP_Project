@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 540295784307779796}
   - component: {fileID: 540295784307779795}
   - component: {fileID: 540295784307779794}
+  - component: {fileID: -7766983815807085804}
   - component: {fileID: 7635701196953913368}
   m_Layer: 0
   m_Name: Imp
@@ -111,6 +112,26 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &-7766983815807085804
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 540295784307779793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 019858c7b559e374b9e209db518bb29b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: {fileID: 0}
+  warningPrefab: {fileID: 2305967036810482513, guid: 82098026c316a014fbde25ca2d763954, type: 3}
+  goldPickupPrefab: {fileID: 0}
+  dropItemPickupPrefab: {fileID: 0}
+  deathTriggerName: Die
+  deathDestroyDelay: 0.6
+  moveSpeed: 0
+  isDetected: 0
 --- !u!61 &7635701196953913368
 BoxCollider2D:
   m_ObjectHideFlags: 0
