@@ -15,8 +15,17 @@ public class ArmorData : ItemBase
     public int MaxEnhanceBonus => maxEnhanceBonus;
     public int CanUseStrength => canUseStrength;
 
-	public override ItemInstance CreateInstance()
-	{
-		return new ArmorInstance { data = this };
-	}
+    public override ItemInstance CreateInstance()
+    {
+        return new ArmorInstance { data = this };
+    }
+
+    public override string GetToolTipStats()
+    {
+        return $"{Name}\n" +
+               $"----------\n" +
+               $"{Description}\n" +
+               $"착용 힘: {CanUseStrength}\n" +
+               $"피해 감소: {MinDefense}~{MaxDefense}";
+    }
 }
