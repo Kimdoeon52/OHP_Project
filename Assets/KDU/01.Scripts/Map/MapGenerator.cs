@@ -215,8 +215,11 @@ public class MapGenerator : Singleton<MapGenerator>
         // 열쇠 배치
         SpawnKeys(rooms);
 
+        // 스포너 간 셀 점유 초기화 (상자/아이템/골드 중복 배치 방지)
+        SpawnCells.ResetOccupied();
+
         // 상자 배치
-        if (chestSpawner != null) 
+        if (chestSpawner != null)
             chestSpawner.Spawn(rooms, Rng);
 
         // 바닥 아이템 배치

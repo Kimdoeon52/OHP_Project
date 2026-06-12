@@ -132,6 +132,8 @@ public class ShopSpawner : MonoBehaviour
                 continue;
             if (grid != null && !grid.IsWalkable(c))
                 continue;
+            if (SpawnCells.IsOccupied(c))
+                continue;
 
             bool onBorder = false;
             foreach (var n in Neighbors)
