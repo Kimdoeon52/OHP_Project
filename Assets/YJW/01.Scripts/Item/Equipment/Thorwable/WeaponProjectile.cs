@@ -61,18 +61,17 @@ public class WeaponProjectile : MonoBehaviour
         transform.position += (Vector3)(flyDirection * moveDistance);
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnTriggerEnter2D(Collider2D other)
     {
         if (weaponInstance == null)
         {
-            Debug.Log("인스턴스가 없어용");
             Land();
             return;
         }
 
-        if (collision.gameObject.CompareTag("Enemy"))
+        if (other.CompareTag("Enemy"))
         {
-            EnemyBase enemy = collision.gameObject.GetComponent<EnemyBase>();
+            EnemyBase enemy = other.GetComponent<EnemyBase>();
             int damage = weaponInstance.GetDamage();
             Debug.Log($"{enemy.name}한테 투척무기 맞힘");
             weaponInstance.curse?.OnAttack(ref damage);
