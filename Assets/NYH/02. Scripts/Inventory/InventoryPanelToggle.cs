@@ -23,9 +23,10 @@ namespace PrototypeRT
         [Tooltip("감정/강화/정화 주문서처럼 마우스 대상 지정 중인 상태를 관리합니다. 인벤토리를 닫을 때 자동 취소하기 위해 사용합니다.")]
         [SerializeField] private InventoryTargetingController targetingController;
 
-        public bool IsOpen => inventoryPanel != null && inventoryPanel.activeSelf;
+        public bool IsOpen => inventoryPanel != null && inventoryPanel.activeInHierarchy;
 
         private PlayerStatsView playerStatsView;
+        private bool _inputBlockActive;
 
         private void Start()
         {
@@ -47,6 +48,7 @@ namespace PrototypeRT
         private void Update()
         {
             if (inventoryPanel == null) return;
+            SyncInputBlockWithActualVisibility();
             if (KeyBindingManager.InputCaptureActive || KeyBindingManager.WasInputCapturedThisFrame()) return;
 
             if (Input.GetKeyDown(KeyBindingManager.GetKey(KeyBindingAction.Inventory)))
@@ -56,7 +58,7 @@ namespace PrototypeRT
 
                 // 지금 상태의 반대값을 먼저 계산합니다.
                 // 이렇게 해두면 "열기 처리"와 "닫기 처리"를 SetOpen 하나로 모을 수 있습니다.
-                bool nextOpen = !inventoryPanel.activeSelf;
+                bool nextOpen = !IsOpen;
                 SetOpen(nextOpen);
             }
         }
@@ -80,26 +82,47 @@ namespace PrototypeRT
                 // 그래야 마우스에 들려 있던 아이템을 원래 칸으로 돌려놓고 입력을 차단할 수 있습니다.
                 inventoryController?.SetInventoryOpen(false);
                 inventoryPanel.SetActive(false);
-                KeyBindingManager.ClearUiInputBlocks();
+                SetInputBlock(false);
                 return;
             }
 
             // 열 때는 패널을 먼저 활성화한 뒤 컨트롤러 입력을 다시 켭니다.
             // 패널이 켜진 상태에서 하이라이트/그리드 참조를 잡는 쪽이 안전합니다.
             inventoryPanel.SetActive(true);
-            KeyBindingManager.SetUiInputBlock(InputBlockSource, true);
+            SetInputBlock(inventoryPanel.activeInHierarchy);
             playerStatsView?.Refresh();
-            inventoryController?.SetInventoryOpen(true);
+            inventoryController?.SetInventoryOpen(inventoryPanel.activeInHierarchy);
         }
 
         private void OnDisable()
         {
-            KeyBindingManager.SetUiInputBlock(InputBlockSource, false);
+            SetInputBlock(false);
         }
 
         private void OnDestroy()
         {
-            KeyBindingManager.SetUiInputBlock(InputBlockSource, false);
+            SetInputBlock(false);
+        }
+
+        private void SyncInputBlockWithActualVisibility()
+        {
+            // ESC나 UIManager가 부모 windowRoot를 직접 끄면 inventoryPanel.activeSelf는 true로 남을 수 있습니다.
+            // 이때는 화면에는 인벤토리가 없는데 InventoryPanelToggle 차단 소스만 남아 플레이어 입력이 막히므로,
+            // 실제 계층 표시 상태(activeInHierarchy)를 기준으로 차단과 인벤토리 입력 상태를 정리합니다.
+            if (_inputBlockActive && !inventoryPanel.activeInHierarchy)
+            {
+                inventoryController?.SetInventoryOpen(false);
+                SetInputBlock(false);
+            }
+        }
+
+        private void SetInputBlock(bool active)
+        {
+            if (_inputBlockActive == active)
+                return;
+
+            _inputBlockActive = active;
+            KeyBindingManager.SetUiInputBlock(InputBlockSource, active);
         }
     }
 }

@@ -66,6 +66,7 @@ public class WeaponProjectile : MonoBehaviour
         if (weaponInstance == null)
         {
             Land();
+            Debug.LogWarning("WeaponProjectile에 WeaponInstance가 설정되지 않았습니다.");
             return;
         }
 

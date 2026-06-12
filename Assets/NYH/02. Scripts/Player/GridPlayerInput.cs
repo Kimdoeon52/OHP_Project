@@ -102,8 +102,6 @@ public class GridPlayerInput : MonoBehaviour
                     if (_quickSlotController != null && _quickSlotController.TryUseSelectedSlotAt(clickedCell))
                         return;
                 }
-
-                _player.Combat.TryMeleeAt(clickedCell);
             }
             return;
         }
