@@ -65,6 +65,7 @@ public class WeaponProjectile : MonoBehaviour
     {
         if (weaponInstance == null)
         {
+            Debug.Log("인스턴스가 없어용");
             Land();
             return;
         }

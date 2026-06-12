@@ -26,9 +26,9 @@ MonoBehaviour:
   canAnalyze: 1
   minDamage: 4
   maxDamage: 10
-  minEnhanceBonus: 0
-  maxEnhanceBonus: 0
-  canUseStrength: 0
+  minEnhanceBonus: 1
+  maxEnhanceBonus: 3
+  canUseStrength: 11
   poolType: 5
   attackSpeed: 1
   durability: 5
