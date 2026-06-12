@@ -1,7 +1,13 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.UI;
 
+/// <summary>
+/// 게임 전체 오디오의 진입점입니다.
+/// 볼륨 저장/복원, 구역/보스 BGM 전환, 공통 SFX 재생을 한 곳에서 관리합니다.
+/// </summary>
 public class AudioManager : MonoBehaviour
 {
     private const string MasterPrefsKey = "Audio.MasterVolume";
@@ -16,41 +22,99 @@ public class AudioManager : MonoBehaviour
     private const float MinSliderVolume = 0.0001f;
     private const float MutedDecibel = -80f;
 
+    public static AudioManager Instance { get; private set; }
+
     [Header("Audio Mixer")]
-    [Tooltip("Master/BGM/SFX 볼륨 파라미터가 노출된 AudioMixer입니다.")]
+    [Tooltip("MasterVolume/BGMVolume/SFXVolume 파라미터가 노출된 AudioMixer입니다.")]
     [SerializeField] private AudioMixer audioMixer;
 
+    [Tooltip("BGM AudioSource들이 출력될 Mixer Group입니다. BGM 슬라이더가 배경음만 줄이려면 반드시 BGM 그룹을 연결해야 합니다.")]
+    [SerializeField] private AudioMixerGroup bgmOutputGroup;
+
+    [Tooltip("SFX AudioSource들이 출력될 Mixer Group입니다. SFX 슬라이더가 효과음만 줄이려면 반드시 SFX 그룹을 연결해야 합니다.")]
+    [SerializeField] private AudioMixerGroup sfxOutputGroup;
+
     [Header("Volume Sliders")]
-    [Tooltip("전체 볼륨을 조절하는 슬라이더입니다. 씬의 MasterVolum 오브젝트를 연결합니다.")]
+    [Tooltip("전체 볼륨을 조절하는 슬라이더입니다. UI의 MasterVolum 오브젝트를 연결합니다.")]
     [SerializeField] private Slider masterVolumeSlider;
 
-    [Tooltip("배경음 볼륨을 조절하는 슬라이더입니다. 씬의 BGMVolum 오브젝트를 연결합니다.")]
+    [Tooltip("배경음 볼륨을 조절하는 슬라이더입니다. UI의 BGMVolum 오브젝트를 연결합니다.")]
     [SerializeField] private Slider bgmVolumeSlider;
 
-    [Tooltip("효과음 볼륨을 조절하는 슬라이더입니다. 씬의 SFXVolum 오브젝트를 연결합니다.")]
+    [Tooltip("효과음 볼륨을 조절하는 슬라이더입니다. UI의 SFXVolum 오브젝트를 연결합니다.")]
     [SerializeField] private Slider sfxVolumeSlider;
 
     [Header("BGM Playback")]
-    [Tooltip("배경음악을 재생할 AudioSource입니다. 비워두면 같은 오브젝트에서 찾고, 없으면 자동으로 추가합니다.")]
+    [Tooltip("층 번호와 보스 여부에 따라 어떤 BGM을 재생할지 정하는 테이블입니다.")]
+    [SerializeField] private MusicTable musicTable;
+
+    [Tooltip("기존 인스펙터 연결을 유지하기 위한 첫 번째 BGM AudioSource입니다. 비워두면 자동으로 찾거나 추가합니다.")]
     [SerializeField] private AudioSource bgmSource;
 
-    [Tooltip("BGM AudioSource의 Output에 연결할 AudioMixerGroup입니다. AudioMixer의 BGM 그룹을 연결하면 BGM 슬라이더가 이 소리를 조절합니다.")]
-    [SerializeField] private AudioMixerGroup bgmOutputGroup;
+    [Tooltip("페이드 전환 때 다음 곡을 미리 재생할 두 번째 BGM AudioSource입니다. 비워두면 자동으로 추가합니다.")]
+    [SerializeField] private AudioSource secondaryBgmSource;
 
-    [Tooltip("게임 시작 시 자동으로 재생할 기본 배경음악 클립입니다.")]
+    [Tooltip("게임 시작 시 자동으로 재생할 기본 BGM입니다. 층 전환 시스템이 곧 BGM을 지정한다면 비워두거나 자동 재생을 끄면 됩니다.")]
     [SerializeField] private AudioClip startBgmClip;
 
-    [Tooltip("게임 시작 시 startBgmClip을 자동 재생할지 정합니다.")]
+    [Tooltip("게임 시작 때 startBgmClip을 자동 재생할지 정합니다.")]
     [SerializeField] private bool playBgmOnStart = true;
 
-    [Tooltip("시작 배경음악을 반복 재생할지 정합니다.")]
+    [Tooltip("시작 BGM을 반복 재생할지 정합니다.")]
     [SerializeField] private bool loopStartBgm = true;
 
+    [Tooltip("BGM이 바뀔 때 서로 교차 페이드되는 시간입니다.")]
+    [SerializeField, Min(0f)] private float defaultBgmFadeSeconds = 0.75f;
+
+    [Header("SFX Playback")]
+    [Tooltip("동시에 재생 가능한 기본 SFX Source 개수입니다. 짧은 효과음이 겹쳐도 앞 소리가 끊기지 않도록 풀을 둡니다.")]
+    [SerializeField, Min(1)] private int sfxPoolSize = 8;
+
+    [Tooltip("SFX가 동시에 너무 많이 나면 Source를 임시로 늘릴지 정합니다. 꺼두면 가장 오래된 Source를 재사용합니다.")]
+    [SerializeField] private bool expandSfxPoolWhenFull = true;
+
+    [Header("Game Event SFX")]
+    [Tooltip("플레이어가 피해를 입었을 때 재생할 효과음입니다.")]
+    [SerializeField] private AudioCue playerDamagedCue;
+
+    [Tooltip("적이 처치되었을 때 재생할 효과음입니다.")]
+    [SerializeField] private AudioCue enemyKilledCue;
+
+    [Tooltip("함정이 발동했을 때 재생할 효과음입니다.")]
+    [SerializeField] private AudioCue trapTriggeredCue;
+
+    [Tooltip("상자가 열렸을 때 재생할 효과음입니다.")]
+    [SerializeField] private AudioCue chestOpenedCue;
+
+    [Tooltip("열쇠를 획득했을 때 재생할 효과음입니다.")]
+    [SerializeField] private AudioCue keyAcquiredCue;
+
+    [Tooltip("상점에서 아이템 구매에 성공했을 때 재생할 효과음입니다.")]
+    [SerializeField] private AudioCue itemPurchasedCue;
+
+    [Tooltip("숨겨진 문/함정 같은 요소를 발견했을 때 재생할 효과음입니다.")]
+    [SerializeField] private AudioCue secretDiscoveredCue;
+
+    [Tooltip("보스가 처치되었을 때 재생할 효과음입니다.")]
+    [SerializeField] private AudioCue bossDefeatedCue;
+
+    private readonly List<AudioSource> _sfxSources = new List<AudioSource>();
+
+    private AudioSource _activeBgmSource;
+    private AudioSource _inactiveBgmSource;
+    private Coroutine _bgmFadeCoroutine;
     private bool _isInitialized;
 
     private void Awake()
     {
-        ResolveBgmSource();
+        if (Instance != null && Instance != this)
+            Debug.LogWarning("AudioManager: 씬에 AudioManager가 둘 이상 있습니다. 마지막으로 켜진 인스턴스를 사용합니다.");
+
+        Instance = this;
+
+        ResolveBgmSources();
+        ResolveSfxPool();
+
         InitializeSlider(masterVolumeSlider, MasterPrefsKey, MasterMixerParameter);
         InitializeSlider(bgmVolumeSlider, BgmPrefsKey, BgmMixerParameter);
         InitializeSlider(sfxVolumeSlider, SfxPrefsKey, SfxMixerParameter);
@@ -61,17 +125,25 @@ public class AudioManager : MonoBehaviour
     private void Start()
     {
         if (playBgmOnStart && startBgmClip != null)
-            PlayBgm(startBgmClip, loopStartBgm);
+            PlayBgm(startBgmClip, loopStartBgm, 0f);
     }
 
     private void OnEnable()
     {
         SubscribeSliders();
+        SubscribeGameEvents();
     }
 
     private void OnDisable()
     {
         UnsubscribeSliders();
+        UnsubscribeGameEvents();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
     }
 
     public void SetMasterVolume(float volume)
@@ -91,10 +163,15 @@ public class AudioManager : MonoBehaviour
 
     public void PlayBgm(AudioClip clip)
     {
-        PlayBgm(clip, true);
+        PlayBgm(clip, true, defaultBgmFadeSeconds);
     }
 
     public void PlayBgm(AudioClip clip, bool loop)
+    {
+        PlayBgm(clip, loop, defaultBgmFadeSeconds);
+    }
+
+    public void PlayBgm(AudioClip clip, bool loop = true, float fadeSeconds = -1f)
     {
         if (clip == null)
         {
@@ -102,32 +179,154 @@ public class AudioManager : MonoBehaviour
             return;
         }
 
-        ResolveBgmSource();
-        if (bgmSource == null)
+        ResolveBgmSources();
+        if (_activeBgmSource == null || _inactiveBgmSource == null)
             return;
 
-        // 같은 곡이 이미 재생 중이면 다시 처음부터 틀지 않습니다.
-        // 장면 UI를 다시 열거나 설정값이 갱신될 때 음악이 튀는 것을 막기 위해서입니다.
-        if (bgmSource.clip == clip && bgmSource.isPlaying)
+        // 같은 곡을 다시 요청할 때 처음부터 재생하면 층 UI 갱신이나 설정창 조작 때 음악이 튈 수 있습니다.
+        if (_activeBgmSource.clip == clip && _activeBgmSource.isPlaying)
         {
-            bgmSource.loop = loop;
+            _activeBgmSource.loop = loop;
             return;
         }
 
-        bgmSource.clip = clip;
-        bgmSource.loop = loop;
-        bgmSource.Play();
+        float duration = fadeSeconds >= 0f ? fadeSeconds : defaultBgmFadeSeconds;
+        if (_bgmFadeCoroutine != null)
+            StopCoroutine(_bgmFadeCoroutine);
+
+        if (duration <= 0f || !_activeBgmSource.isPlaying)
+            PlayBgmImmediately(clip, loop);
+        else
+            _bgmFadeCoroutine = StartCoroutine(CrossFadeBgmCoroutine(clip, loop, duration));
+    }
+
+    public void PlayBgmForDepth(int depth, bool isBoss)
+    {
+        if (musicTable == null)
+        {
+            Debug.LogWarning("AudioManager: MusicTable이 연결되지 않아 층별 BGM을 재생할 수 없습니다.");
+            return;
+        }
+
+        AudioClip clip = musicTable.GetBgmForDepth(depth, isBoss);
+        if (clip == null)
+        {
+            Debug.LogWarning($"AudioManager: {depth}층에 사용할 BGM이 MusicTable에 없습니다.");
+            return;
+        }
+
+        PlayBgm(clip, true, defaultBgmFadeSeconds);
     }
 
     public void StopBgm()
     {
-        if (bgmSource == null)
-            return;
+        if (_bgmFadeCoroutine != null)
+        {
+            StopCoroutine(_bgmFadeCoroutine);
+            _bgmFadeCoroutine = null;
+        }
 
-        bgmSource.Stop();
+        if (bgmSource != null)
+            bgmSource.Stop();
+
+        if (secondaryBgmSource != null)
+            secondaryBgmSource.Stop();
     }
 
-    private void ResolveBgmSource()
+    public void PlaySfx(AudioClip clip)
+    {
+        PlaySfx(clip, 1f);
+    }
+
+    public void PlaySfx(AudioClip clip, float volumeScale = 1f)
+    {
+        PlaySfxInternal(clip, Mathf.Clamp01(volumeScale), 1f);
+    }
+
+    public void PlaySfx(AudioCue cue)
+    {
+        if (cue == null)
+            return;
+
+        PlaySfxInternal(cue.PickClip(), cue.VolumeScale, cue.PickPitch());
+    }
+
+    private void PlayBgmImmediately(AudioClip clip, bool loop)
+    {
+        _activeBgmSource.Stop();
+        _activeBgmSource.clip = clip;
+        _activeBgmSource.loop = loop;
+        _activeBgmSource.volume = 1f;
+        _activeBgmSource.Play();
+
+        _inactiveBgmSource.Stop();
+        _inactiveBgmSource.volume = 0f;
+    }
+
+    private IEnumerator CrossFadeBgmCoroutine(AudioClip nextClip, bool loop, float duration)
+    {
+        AudioSource from = _activeBgmSource;
+        AudioSource to = _inactiveBgmSource;
+
+        to.Stop();
+        to.clip = nextClip;
+        to.loop = loop;
+        to.volume = 0f;
+        to.Play();
+
+        float fromStartVolume = from.volume;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+
+            from.volume = Mathf.Lerp(fromStartVolume, 0f, t);
+            to.volume = Mathf.Lerp(0f, 1f, t);
+            yield return null;
+        }
+
+        from.Stop();
+        from.volume = 0f;
+        to.volume = 1f;
+
+        _activeBgmSource = to;
+        _inactiveBgmSource = from;
+        _bgmFadeCoroutine = null;
+    }
+
+    private void PlaySfxInternal(AudioClip clip, float volumeScale, float pitch)
+    {
+        if (clip == null)
+            return;
+
+        ResolveSfxPool();
+
+        AudioSource source = GetAvailableSfxSource();
+        if (source == null)
+            return;
+
+        // AudioSource의 pitch는 PlayOneShot에도 영향을 주므로, Cue마다 살짝 다른 소리를 만들 수 있습니다.
+        source.pitch = Mathf.Clamp(pitch, 0.1f, 3f);
+        source.PlayOneShot(clip, Mathf.Clamp01(volumeScale));
+    }
+
+    private AudioSource GetAvailableSfxSource()
+    {
+        for (int i = 0; i < _sfxSources.Count; i++)
+        {
+            if (_sfxSources[i] != null && !_sfxSources[i].isPlaying)
+                return _sfxSources[i];
+        }
+
+        if (expandSfxPoolWhenFull)
+            return CreateSfxSource();
+
+        return _sfxSources.Count > 0 ? _sfxSources[0] : null;
+    }
+
+    private void ResolveBgmSources()
     {
         if (bgmSource == null)
             bgmSource = GetComponent<AudioSource>();
@@ -135,11 +334,54 @@ public class AudioManager : MonoBehaviour
         if (bgmSource == null)
             bgmSource = gameObject.AddComponent<AudioSource>();
 
-        // BGM은 효과음과 다른 Mixer Group으로 보내야 BGM 슬라이더만으로 따로 줄일 수 있습니다.
-        if (bgmOutputGroup != null)
-            bgmSource.outputAudioMixerGroup = bgmOutputGroup;
+        if (secondaryBgmSource == null || secondaryBgmSource == bgmSource)
+            secondaryBgmSource = gameObject.AddComponent<AudioSource>();
 
-        bgmSource.playOnAwake = false;
+        ConfigureBgmSource(bgmSource);
+        ConfigureBgmSource(secondaryBgmSource);
+
+        if (_activeBgmSource == null)
+            _activeBgmSource = bgmSource;
+
+        if (_inactiveBgmSource == null || _inactiveBgmSource == _activeBgmSource)
+            _inactiveBgmSource = secondaryBgmSource;
+    }
+
+    private void ConfigureBgmSource(AudioSource source)
+    {
+        if (source == null)
+            return;
+
+        source.playOnAwake = false;
+        source.spatialBlend = 0f;
+
+        // BGM은 SFX와 다른 Mixer Group으로 보내야 BGM 슬라이더만으로 따로 줄일 수 있습니다.
+        if (bgmOutputGroup != null)
+            source.outputAudioMixerGroup = bgmOutputGroup;
+    }
+
+    private void ResolveSfxPool()
+    {
+        if (_sfxSources.Count >= sfxPoolSize)
+            return;
+
+        while (_sfxSources.Count < sfxPoolSize)
+            CreateSfxSource();
+    }
+
+    private AudioSource CreateSfxSource()
+    {
+        AudioSource source = gameObject.AddComponent<AudioSource>();
+        source.playOnAwake = false;
+        source.loop = false;
+        source.spatialBlend = 0f;
+
+        // SFX는 별도 Mixer Group으로 보내야 효과음 슬라이더가 배경음에 영향을 주지 않습니다.
+        if (sfxOutputGroup != null)
+            source.outputAudioMixerGroup = sfxOutputGroup;
+
+        _sfxSources.Add(source);
+        return source;
     }
 
     private void SubscribeSliders()
@@ -166,6 +408,39 @@ public class AudioManager : MonoBehaviour
             sfxVolumeSlider.onValueChanged.RemoveListener(SetSfxVolume);
     }
 
+    private void SubscribeGameEvents()
+    {
+        GameEvents.OnPlayerDamaged += OnPlayerDamaged;
+        GameEvents.OnEnemyKilled += OnEnemyKilled;
+        GameEvents.OnTrapTriggered += OnTrapTriggered;
+        GameEvents.OnChestOpened += OnChestOpened;
+        GameEvents.OnKeyAcquired += OnKeyAcquired;
+        GameEvents.OnItemPurchased += OnItemPurchased;
+        GameEvents.OnSecretDiscovered += OnSecretDiscovered;
+        GameEvents.OnBossDefeated += OnBossDefeated;
+    }
+
+    private void UnsubscribeGameEvents()
+    {
+        GameEvents.OnPlayerDamaged -= OnPlayerDamaged;
+        GameEvents.OnEnemyKilled -= OnEnemyKilled;
+        GameEvents.OnTrapTriggered -= OnTrapTriggered;
+        GameEvents.OnChestOpened -= OnChestOpened;
+        GameEvents.OnKeyAcquired -= OnKeyAcquired;
+        GameEvents.OnItemPurchased -= OnItemPurchased;
+        GameEvents.OnSecretDiscovered -= OnSecretDiscovered;
+        GameEvents.OnBossDefeated -= OnBossDefeated;
+    }
+
+    private void OnPlayerDamaged(int damage) => PlaySfx(playerDamagedCue);
+    private void OnEnemyKilled(Vector2Int position, float timeBonus) => PlaySfx(enemyKilledCue);
+    private void OnTrapTriggered(Vector2Int position) => PlaySfx(trapTriggeredCue);
+    private void OnChestOpened(Vector2Int position) => PlaySfx(chestOpenedCue);
+    private void OnKeyAcquired(KeyType keyType) => PlaySfx(keyAcquiredCue);
+    private void OnItemPurchased(ItemBase item) => PlaySfx(itemPurchasedCue);
+    private void OnSecretDiscovered(Vector2Int position) => PlaySfx(secretDiscoveredCue);
+    private void OnBossDefeated() => PlaySfx(bossDefeatedCue);
+
     private void InitializeSlider(Slider slider, string prefsKey, string mixerParameter)
     {
         float savedVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(prefsKey, DefaultVolume));
@@ -175,7 +450,7 @@ public class AudioManager : MonoBehaviour
             slider.minValue = 0f;
             slider.maxValue = 1f;
 
-            // SetValueWithoutNotify를 써야 초기화 중 onValueChanged가 중복 호출되지 않습니다.
+            // 초기화 중 onValueChanged가 다시 저장을 때리면 Inspector 기본값과 저장값 적용 순서가 꼬일 수 있습니다.
             slider.SetValueWithoutNotify(savedVolume);
         }
 
@@ -188,7 +463,7 @@ public class AudioManager : MonoBehaviour
 
         ApplyMixerVolume(mixerParameter, clampedVolume);
 
-        // 슬라이더를 움직일 때마다 저장해서 설정창을 닫거나 씬이 바뀌어도 값이 보존되게 합니다.
+        // 설정창을 닫거나 씬이 바뀌어도 사용자가 마지막으로 맞춘 음량을 유지합니다.
         PlayerPrefs.SetFloat(prefsKey, clampedVolume);
         PlayerPrefs.Save();
     }
@@ -210,11 +485,11 @@ public class AudioManager : MonoBehaviour
     private static float ConvertSliderValueToDecibel(float volume)
     {
         // AudioMixer는 선형 0~1 값이 아니라 dB 값을 사용합니다.
-        // 사람이 듣는 음량 변화가 자연스럽게 느껴지도록 로그 변환을 적용합니다.
+        // 사람 귀는 볼륨 변화를 로그에 가깝게 느끼므로 Log10 변환을 거쳐야 슬라이더 감각이 자연스럽습니다.
         if (volume <= 0f)
             return MutedDecibel;
 
-        // Mathf.Log10(0)은 음의 무한대가 되므로, 0에 가까운 값은 최소값으로 보정합니다.
+        // Mathf.Log10(0)은 음의 무한대가 되므로, 0은 Unity Mixer에서 사실상 음소거로 쓰는 -80dB에 고정합니다.
         float safeVolume = Mathf.Max(volume, MinSliderVolume);
         return Mathf.Log10(safeVolume) * 20f;
     }

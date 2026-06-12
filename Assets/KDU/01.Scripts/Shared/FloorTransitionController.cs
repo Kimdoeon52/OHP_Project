@@ -111,6 +111,12 @@ public class FloorTransitionController : MonoBehaviour
             yield break;
         }
 
+        // 맵 생성이 성공한 뒤에 BGM을 바꿉니다.
+        // 실패한 층에서 음악만 먼저 바뀌면 화면/게임 상태와 소리가 서로 다른 층을 가리키는 문제가 생길 수 있습니다.
+        AudioManager.Instance?.PlayBgmForDepth(
+            runState.CurrentDepth,
+            mapGenerator.IsBossDepth(runState.CurrentDepth));
+
         // 안개 생성 
         FogRenderer fogRenderer = FindFirstObjectByType<FogRenderer>();
         if (fogRenderer != null)

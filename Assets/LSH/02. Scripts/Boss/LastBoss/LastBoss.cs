@@ -30,7 +30,8 @@ public class LastBoss : BossBase
     [SerializeField] private GameObject bottomHandPrefab;
     [SerializeField] private GameObject fistHandPrefab;
     [SerializeField] private GameObject pillarPrefab;
-    [SerializeField] private GameObject lavaTilePrefab;
+    [UnityEngine.Serialization.FormerlySerializedAs("lavaTilePrefab")]
+    [SerializeField] private GameObject lavaPrefab;
 
     [Header("하데스 패턴 데미지")]
     [SerializeField] private int handSweepDamage = 15;
@@ -520,17 +521,33 @@ public class LastBoss : BossBase
 
     private void SpawnLavaZone(List<Vector2Int> cells)
     {
-        if (lavaTilePrefab == null) return;
+        if (lavaPrefab == null) return;
 
-        foreach (var cell in cells)
+        // 타일들의 중앙 좌표를 계산합니다.
+        Vector3 spawnPos = Vector3.zero;
+        if (cells.Count > 0 && GridSystem.Instance != null)
         {
-            Vector3 worldPos = GridSystem.Instance.GridToWorld(cell);
-            GameObject lavaObj = Instantiate(lavaTilePrefab, worldPos, Quaternion.identity);
-            LavaTile lava = lavaObj.GetComponent<LavaTile>();
-            if (lava != null)
+            Vector2 sum = Vector2.zero;
+            foreach (var cell in cells)
             {
-                lava.Init(cell, lavaDamage, 2f);
+                sum += cell;
             }
+            Vector2 avg = sum / cells.Count;
+            Vector2Int centerCell = new Vector2Int(Mathf.RoundToInt(avg.x), Mathf.RoundToInt(avg.y));
+            spawnPos = GridSystem.Instance.GridToWorld(centerCell);
+        }
+
+        GameObject lavaObj = Instantiate(lavaPrefab, spawnPos, Quaternion.identity);
+        Lava lava = lavaObj.GetComponent<Lava>();
+        if (lava == null)
+        {
+            // 프리팹에 Lava 컴포넌트가 없을 경우 런타임에 동적으로 붙여 줍니다.
+            lava = lavaObj.AddComponent<Lava>();
+        }
+
+        if (lava != null)
+        {
+            lava.Init(cells, lavaDamage, 2f);
         }
     }
 
