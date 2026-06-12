@@ -15147,14 +15147,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audioMixer: {fileID: 24100000, guid: 8dda7e131e5de2349b3a19dfa444b3cf, type: 2}
+  bgmOutputGroup: {fileID: -745965464865114447, guid: 8dda7e131e5de2349b3a19dfa444b3cf, type: 2}
+  sfxOutputGroup: {fileID: 0}
   masterVolumeSlider: {fileID: 2074554780}
   bgmVolumeSlider: {fileID: 1231969944}
   sfxVolumeSlider: {fileID: 886630927}
+  musicTable: {fileID: 11400000, guid: aeeaa586637576c449a0b15cf5303b86, type: 2}
   bgmSource: {fileID: 2119153680}
-  bgmOutputGroup: {fileID: -745965464865114447, guid: 8dda7e131e5de2349b3a19dfa444b3cf, type: 2}
-  startBgmClip: {fileID: 8300000, guid: 1664a2e1a1d023847bec7f2976ae4f41, type: 3}
+  secondaryBgmSource: {fileID: 0}
+  startBgmClip: {fileID: 8300000, guid: 387251ed1d3801e4991037eba23a0fd0, type: 3}
   playBgmOnStart: 1
   loopStartBgm: 1
+  defaultBgmFadeSeconds: 0.75
+  sfxPoolSize: 8
+  expandSfxPoolWhenFull: 1
+  playerDamagedCue: {fileID: 0}
+  enemyKilledCue: {fileID: 0}
+  trapTriggeredCue: {fileID: 0}
+  chestOpenedCue: {fileID: 0}
+  keyAcquiredCue: {fileID: 0}
+  itemPurchasedCue: {fileID: 0}
+  secretDiscoveredCue: {fileID: 0}
+  bossDefeatedCue: {fileID: 0}
 --- !u!82 &2119153680
 AudioSource:
   m_ObjectHideFlags: 0
