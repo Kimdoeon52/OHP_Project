@@ -16,8 +16,8 @@ public class ArmorInstance : EquipmentInstance
         if (!isAnalyzed)
             return Armor.GetToolTipStats();
 
-        return $"{Armor.Name}\n" +
-               $"----------\n" +
+        return $"[{Armor.Name}] {(enhanceLevel > 0 ? $"<color=yellow>+{enhanceLevel}</color>" : "")}\n" +
+               $"--------------------\n" +
                $"{Armor.Description}\n" +
                $"착용 힘: {Armor.CanUseStrength}\n" +
                $"피해 감소: {GetMinDefense()}~{GetMaxDefense()}";

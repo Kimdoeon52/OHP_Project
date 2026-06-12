@@ -22,8 +22,8 @@ public class ArmorData : ItemBase
 
     public override string GetToolTipStats()
     {
-        return $"{Name}\n" +
-               $"----------\n" +
+        return $"[{Name}]  <color=red>미감정</color>\n" +
+               $"--------------------\n" +
                $"{Description}\n" +
                $"착용 힘: {CanUseStrength}\n" +
                $"피해 감소: {MinDefense}~{MaxDefense}";
