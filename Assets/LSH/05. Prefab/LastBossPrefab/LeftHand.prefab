@@ -10,8 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 995375774583805280}
   - component: {fileID: 4393028342404808412}
+  - component: {fileID: -4582791092655515159}
+  - component: {fileID: 1031763348162266714}
   m_Layer: 0
-  m_Name: GoLeft _-
+  m_Name: LeftHand
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -87,3 +89,62 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &-4582791092655515159
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4969682912724932867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2089242b4100ad4f99f2d2a43cf4a4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHp: 0
+  currentHp: 0
+  stepDelayMs: 0
+  bossLevel: 0
+  actionCases: []
+  patternDelay: 0
+  phase2DelayMultiplier: 0.3
+  bossFightTimeLimit: 120
+  warningTilemap: {fileID: 0}
+  warningTile: {fileID: 0}
+  hpBar: {fileID: 0}
+  attackFloorTilemap: {fileID: 0}
+  side: 0
+  roamStepDelayMs: 500
+  minStepsBetweenAttacks: 4
+  maxStepsBetweenAttacks: 7
+  slamStayDuration: 2
+  sweepSpeed: 0.5
+  slamSpeed: 0.25
+  warningDuration: 1.5
+  fistWarningDuration: 1
+  knockbackDist: 3
+  onlyDamageableWhenSlammed: 1
+  fistSlamDamage: 25
+  sweepDamage: 15
+  scratchDamage: 15
+  openHandVisual: {fileID: 4969682912724932867}
+  fistVisual: {fileID: 262716880080911743, guid: f36c0e2542684db4ea85832dd2520394, type: 3}
+  scratchVisual: {fileID: 6867298390762188175, guid: 8e2c7d0077f05eb4ca35ddbf1b308f41, type: 3}
+--- !u!114 &1031763348162266714
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4969682912724932867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1273ce595004da4592506354708fdb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  allHpBar: {fileID: 0}
+  fillimage: {fileID: 0}
+  shakeDuration: 0.2
+  shakeStrength: 4
+  shakeVibrato: 16
+  shakeRandomness: 90

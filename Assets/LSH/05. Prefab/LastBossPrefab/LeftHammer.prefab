@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2315337352402706025}
   - component: {fileID: 2375892255809986382}
   m_Layer: 0
-  m_Name: Hamering
+  m_Name: LeftHammer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -78,7 +78,7 @@ SpriteRenderer:
   m_SortingOrder: 10
   m_Sprite: {fileID: 21300000, guid: b8161a7e0d1514648a34d2159a2e2db1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 0
+  m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 0.96, y: 1.6}

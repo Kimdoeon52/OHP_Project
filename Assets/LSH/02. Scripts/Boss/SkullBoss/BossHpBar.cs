@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -18,12 +18,29 @@ public class BossHpBar : MonoBehaviour
     [SerializeField] private int shakeVibrato = 16;        // 진동 횟수
     [SerializeField] private float shakeRandomness = 90f;  // 방향 무작위성
 
-    private Vector3 originalLocalPos;     // 진동 후 복귀 기준점
+    private Vector3 _originalLocalPos;     // 진동 후 복귀 기준점 복사본
+    private bool _hasOriginalPos;
+    private Vector3 originalLocalPos
+    {
+        get
+        {
+            if (!_hasOriginalPos && fillimage != null)
+            {
+                _originalLocalPos = fillimage.rectTransform.localPosition;
+                _hasOriginalPos = true;
+            }
+            return _originalLocalPos;
+        }
+    }
     private Tween activeShakeTween;       // 같은 트윈이 누적되지 않게 관리
 
     private void Awake()
     {
-        originalLocalPos = fillimage.rectTransform.localPosition;
+        if (fillimage != null)
+        {
+            _originalLocalPos = fillimage.rectTransform.localPosition;
+            _hasOriginalPos = true;
+        }
     }
 
     private void OnEnable()

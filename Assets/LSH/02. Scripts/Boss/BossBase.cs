@@ -55,6 +55,7 @@ public class BossBase : EnemyNormalBASE
     public virtual Vector2Int GridPosition => Vector2Int.zero;
 
     [SerializeField] protected BossHpBar hpBar;
+    public BossHpBar HpBar { get => hpBar; set => hpBar = value; }
 
     [Header("AttackFloor 타일맵 (이동/공격 제한)")]
     [SerializeField] protected Tilemap attackFloorTilemap;
