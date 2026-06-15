@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0e7a2b97c0f498da1c7b8e1f0a2d3b4, type: 3}
   m_Name: LastBossDialog
   m_EditorClassIdentifier: 
-  animeEffect: {fileID: 0}
-  bossName: {fileID: 0}
+  animeEffect: {fileID: 209386061519010049, guid: 4fc6cd1849a7b9c4bb77de9f8f1ca4a2, type: 3}
+  bossName: {fileID: 4501841638095913877, guid: a1651bf27e1ccad44ac33c5ff56674ad, type: 3}
   bossBgm: {fileID: 8300000, guid: b16032d5b2eda8445806e22a3613f65b, type: 3}
   dialogueLines:
   - "\uC800\uC8FC\uC758 \uC6D0\uD749\uC774\uC790 \uC7AC\uC559\uC758 \uADFC\uC6D0\uC774

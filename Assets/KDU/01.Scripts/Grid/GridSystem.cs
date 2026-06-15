@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 public class GridSystem : Singleton<GridSystem>
@@ -129,33 +129,33 @@ public class GridSystem : Singleton<GridSystem>
 
         return visited;
     }
-    private readonly Dictionary<Vector2Int, EntityBase> _occupiedCells = new();
+    private readonly Dictionary<Vector2Int, IGridEntity> _occupiedCells = new();
  
     public bool IsCellOccupied(Vector2Int pos) 
     {
         if (!_occupiedCells.TryGetValue(pos, out var entity))
             return false;
     
-        if (entity == null)
+        if (entity == null || (entity is Object unityObj && unityObj == null))
         {
             _occupiedCells.Remove(pos); // Garbage data 청소
             return false;
         }
         return true;
     }
-    public EntityBase GetEntityAt(Vector2Int pos)
+    public IGridEntity GetEntityAt(Vector2Int pos)
     {
         if (!_occupiedCells.TryGetValue(pos, out var entity))
             return null;
         
-        if (entity == null)
+        if (entity == null || (entity is Object unityObj && unityObj == null))
         {
             _occupiedCells.Remove(pos); // Garbage data 청소
             return null;
         }
         return entity;
     }
-    public void RegisterOccupancy(Vector2Int pos, EntityBase entity)
+    public void RegisterOccupancy(Vector2Int pos, IGridEntity entity)
     {
         _occupiedCells[pos] = entity;
     }

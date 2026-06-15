@@ -18,9 +18,17 @@ public class LastBoss : BossBase
     [Header("각 손의 최대 체력")]
     [SerializeField] private int handMaxHp = 100;
 
-    [Header("각 손 전용 HP 바 UI")]
-    [SerializeField] private BossHpBar leftHandHpBar;
-    [SerializeField] private BossHpBar rightHandHpBar;
+    [Header("공유 손 HP 바 UI (하나로 표시)")]
+    [SerializeField] private HandHpBar sharedHandHpBar;
+
+    [Header("머리 페이즈 설정")]
+    [SerializeField] private GameObject headPrefab;
+    [SerializeField] private int headMaxHp = 200;
+    [SerializeField] private int headSpawnYOffset = 1; // 머리 소환 Y 오프셋 (기본 1: 기존 대비 1칸 위로 소환)
+    
+    private LastBossHead spawnedHead;
+    private bool isHeadPhaseStarted = false;
+
 
     protected override void OnEnable()
     {
@@ -42,37 +50,77 @@ public class LastBoss : BossBase
             return;
         }
 
+        // 안전장치: 좌/우 손 참조 유실 시 자동 복구
+        if (leftHand == null || rightHand == null)
+        {
+            LastBossHand[] hands = GetComponentsInChildren<LastBossHand>(true);
+            foreach (var hand in hands)
+            {
+                string handName = hand.name.ToLower();
+                if (handName.Contains("left"))
+                {
+                    leftHand = hand;
+                }
+                else if (handName.Contains("right"))
+                {
+                    rightHand = hand;
+                }
+            }
+            if (hands.Length == 2 && (leftHand == null || rightHand == null))
+            {
+                leftHand = hands[0];
+                rightHand = hands[1];
+            }
+        }
+
         if (leftHand == null)
         {
-            Debug.LogError("<color=red>[하데스]</color> leftHand가 인스펙터에 할당되지 않았습니다!");
+            Debug.LogError("<color=red>[하데스]</color> leftHand가 인스펙터에 할당되지 않았으며 자동 감지에도 실패했습니다!");
         }
         if (rightHand == null)
         {
-            Debug.LogError("<color=red>[하데스]</color> rightHand가 인스펙터에 할당되지 않았습니다!");
+            Debug.LogError("<color=red>[하데스]</color> rightHand가 인스펙터에 할당되지 않았으며 자동 감지에도 실패했습니다!");
         }
 
-        // Left Hand 초기화
+        // 안전장치: 공유 손 HP 바 참조 유실 시 자동 복구 (비활성화된 오브젝트 포함)
+        if (sharedHandHpBar == null)
+        {
+            sharedHandHpBar = FindFirstObjectByType<HandHpBar>(FindObjectsInactive.Include);
+        }
+
+        // Left Hand 초기화 (플레이어 기준 좌측에 있으므로 하데스 기준 오른손)
+        int leftHp = handMaxHp;
         if (leftHand != null)
         {
             leftHand.gameObject.SetActive(true);
             leftHand.enabled = true; // 스크립트 활성화 보장
-            if (leftHandHpBar != null) leftHand.HpBar = leftHandHpBar;
-            leftHand.InitHand(this, LastBossHand.HandSide.Left, handMaxHp, perimeter, 0, false);
+            if (leftHand.maxHp > 0) leftHp = leftHand.maxHp;
+            if (sharedHandHpBar != null) leftHand.HandHpBar = sharedHandHpBar;
+            leftHand.InitHand(this, LastBossHand.HandSide.Right, leftHp, perimeter, 0, false);
         }
 
-        // Right Hand 초기화
+        // Right Hand 초기화 (플레이어 기준 우측에 있으므로 하데스 기준 왼손)
+        int rightHp = handMaxHp;
         if (rightHand != null)
         {
             rightHand.gameObject.SetActive(true);
             rightHand.enabled = true; // 스크립트 활성화 보장
-            if (rightHandHpBar != null) rightHand.HpBar = rightHandHpBar;
-            rightHand.InitHand(this, LastBossHand.HandSide.Right, handMaxHp, perimeter, perimeter.Count / 2, true);
+            if (rightHand.maxHp > 0) rightHp = rightHand.maxHp;
+            if (sharedHandHpBar != null) rightHand.HandHpBar = sharedHandHpBar;
+            rightHand.InitHand(this, LastBossHand.HandSide.Left, rightHp, perimeter, perimeter.Count / 2, true);
         }
 
-        // Combined HP 설정
-        maxHp = handMaxHp * 2;
+        // Combined HP 설정 (양 손의 합산 체력)
+        maxHp = leftHp + rightHp;
         currentHp = maxHp;
-        if (hpBar != null) hpBar.UpdateBar();
+        if (hpBar != null)
+        {
+            hpBar.UpdateBar();
+            if (hpBar.allHpBar != null)
+            {
+                hpBar.allHpBar.SetActive(false); // 손 페이즈 동안 보스 메인 HP 바 UI는 감춤
+            }
+        }
     }
 
     private List<Vector2Int> GeneratePerimeterPath()
@@ -135,16 +183,7 @@ public class LastBoss : BossBase
 
     public void OnHandDamaged(int amount)
     {
-        int beforeHp = currentHp;
-        currentHp = Mathf.Max(0, currentHp - amount);
-
-        if (hpBar != null) hpBar.UpdateBar();
-
-        if (currentHp <= 0 && !isDying)
-        {
-            isDying = true;
-            OnDeath().Forget();
-        }
+        // 손 페이즈 동안에는 보스 본체 체력바를 갱신하지 않고 비주얼을 감춘 상태로 둡니다.
     }
 
     public void OnHandDefeated(LastBossHand hand)
@@ -154,11 +193,93 @@ public class LastBoss : BossBase
 
         if (leftHand == null && rightHand == null)
         {
-            if (!isDying)
+            StartHeadPhase().Forget();
+        }
+        else
+        {
+            // 한쪽 손이 제거됨 -> 아직 살아남은 다른 쪽 손으로 HP 바 타겟 전환
+            LastBossHand remainingHand = (leftHand != null) ? leftHand : rightHand;
+            if (sharedHandHpBar != null && remainingHand != null)
             {
-                isDying = true;
-                OnDeath().Forget();
+                sharedHandHpBar.Init(remainingHand);
+                sharedHandHpBar.UpdateBar();
             }
+        }
+    }
+
+    private async UniTaskVoid StartHeadPhase()
+    {
+        if (isHeadPhaseStarted || isDying) return;
+        isHeadPhaseStarted = true;
+
+        Debug.Log("<color=red>[하데스]</color> 양 손 파괴 완료. 본체 페이즈로 전환합니다. 연출 시작!");
+
+        // 1. DOTween으로 아래로 2만큼 내려가는 연출 (부드럽게 이동)
+        await transform.DOMoveY(transform.position.y - 10f, 1.5f)
+            .SetEase(Ease.InOutSine)
+            .AsyncWaitForCompletion();
+
+        if (isDying) return;
+
+        // 2. 맵 최상단 가로 중앙 구역 계산 (실제 플레이어가 도달 가능한 구역 기준)
+        int maxY = int.MinValue;
+        int minX = int.MaxValue;
+        int maxX = int.MinValue;
+        bool foundArea = false;
+
+        if (GridSystem.Instance != null)
+        {
+            foreach (var cell in GridSystem.Instance.GetAllWalkableCells())
+            {
+                if (IsInAttackFloor(cell))
+                {
+                    foundArea = true;
+                    if (cell.y > maxY) maxY = cell.y;
+                    if (cell.x < minX) minX = cell.x;
+                    if (cell.x > maxX) maxX = cell.x;
+                }
+            }
+        }
+
+        if (!foundArea)
+        {
+            // 폴백 (예외 방지)
+            minX = mapBounds.xMin;
+            maxX = mapBounds.xMax - 1;
+            maxY = mapBounds.yMax - 1;
+        }
+
+        int centerX = minX + (maxX - minX) / 2;
+        int topY = maxY + headSpawnYOffset;
+        Vector2Int headGridPos = new Vector2Int(centerX - 2, topY);
+
+        if (headPrefab != null)
+        {
+            GameObject headObj = Instantiate(headPrefab);
+            spawnedHead = headObj.GetComponent<LastBossHead>();
+            if (spawnedHead != null)
+            {
+                spawnedHead.Init(this, headGridPos, headMaxHp);
+            }
+            else
+            {
+                Debug.LogError("<color=red>[하데스]</color> headPrefab에 LastBossHead 컴포넌트가 존재하지 않습니다!");
+            }
+        }
+        else
+        {
+            Debug.LogError("<color=red>[하데스]</color> headPrefab이 할당되지 않았습니다!");
+        }
+
+        // 3. 체력 및 HP바 설정
+        if (hpBar != null)
+        {
+            if (hpBar.allHpBar != null)
+            {
+                hpBar.allHpBar.SetActive(true); // 머리 페이즈 시작 시 메인 HP 바 UI 활성화!
+            }
+            hpBar.Init(spawnedHead); // 타겟을 LastBossHead 본체로 설정
+            hpBar.UpdateBar();
         }
     }
 
@@ -177,3 +298,5 @@ public class LastBoss : BossBase
         Destroy(gameObject);
     }
 }
+
+

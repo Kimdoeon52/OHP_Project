@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using System.Collections.Generic;
 
-public class LastBossHand : BossBase, IGridEntity, IDamageable
+public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
 {
     public enum HandSide
     {
@@ -41,6 +41,14 @@ public class LastBossHand : BossBase, IGridEntity, IDamageable
     [SerializeField] private GameObject openHandVisual;
     [SerializeField] private GameObject fistVisual;
     [SerializeField] private GameObject scratchVisual;
+    [SerializeField] private GameObject slamEffectPrefab;
+
+    [Header("Slam Camera Shake Settings")]
+    [SerializeField] private float slamShakeDuration = 0.3f;
+    [SerializeField] private float slamShakeStrength = 0.4f;
+
+    private HandHpBar handHpBar;
+    public HandHpBar HandHpBar { get => handHpBar; set => handHpBar = value; }
 
     private LastBoss _ownerBoss;
     private Vector2Int _gridPos;
@@ -50,14 +58,80 @@ public class LastBossHand : BossBase, IGridEntity, IDamageable
     private bool _isAttackable = false;
     private bool _isInitialized = false;
     private Vector2Int _lastRoamPos;
+    private HandMode _lastVisualMode = (HandMode)(-1);
+    private bool isRegisteredToTurnManager;
 
-    // IGridEntity implementations
+    private async UniTaskVoid RegisterBossGridTargetNextFrameAsync()
+    {
+        await UniTask.Yield();
+
+        if (!isActiveAndEnabled || IsDead)
+            return;
+
+        RegisterBossGridTarget();
+    }
+
+    #region 플레이어 이동공격 대상 등록 프록시
+    public override Vector2Int BossSize => bossSize;
     public override Vector2Int GridPosition => _gridPos;
-
-    // IDamageable implementations
     public int CurrentHp => currentHp;
     public int MaxHp => maxHp;
     public bool IsDead => currentHp <= 0;
+
+    public IEnumerable<Vector2Int> OccupiedCells
+    {
+        get
+        {
+            if (IsDead)
+                yield break;
+
+            // 내려찍혀서 딜타임 상태가 아닐 때는 공격 대상에서 제외시킴
+            if (onlyDamageableWhenSlammed && !_isAttackable)
+                yield break;
+
+            // 왼손은 우측 방향으로 확장, 오른손은 좌측 방향으로 2x2 피격 판정이 확장되도록 함
+            int xSign = (side == HandSide.Left) ? 1 : -1;
+
+            for (int x = 0; x < bossSize.x; x++)
+            for (int y = 0; y < bossSize.y; y++)
+                yield return _gridPos + new Vector2Int(x * xSign, y);
+        }
+    }
+
+    private Vector3 BossPivotOffset => new Vector3((bossSize.x - 1) * 0.5f, (bossSize.y - 1) * 0.5f, 0f);
+
+    private void RegisterBossGridTarget()
+    {
+        if (isRegisteredToTurnManager)
+            return;
+
+        if (TurnManager.Instance == null)
+        {
+            Debug.LogWarning($"하데스 손 ({side}): TurnManager가 아직 준비되지 않아 다음 프레임에 다시 등록을 시도합니다.");
+            return;
+        }
+
+        TurnManager.Instance.Register(this);
+        isRegisteredToTurnManager = true;
+    }
+
+    private void UnregisterBossGridTarget()
+    {
+        if (isRegisteredToTurnManager && TurnManager.Instance != null)
+        {
+            TurnManager.Instance?.Unregister(this);
+        }
+        isRegisteredToTurnManager = false;
+    }
+
+    private void OnDisable()
+    {
+        UnregisterBossGridTarget();
+    }
+    #endregion
+
+    [Header("Grid Target Proxy Settings")]
+    [SerializeField] private Vector2Int bossSize = new Vector2Int(1, 1);
 
     public void InitHand(LastBoss owner, HandSide handSide, int maxHpValue, List<Vector2Int> path, int startIndex, bool clockwise)
     {
@@ -68,6 +142,8 @@ public class LastBossHand : BossBase, IGridEntity, IDamageable
         _perimeterPath = path;
         _currentPathIndex = startIndex;
         _moveClockwise = clockwise;
+
+        if (handHpBar != null) handHpBar.Init(this);
 
         Debug.Log($"<color=green>[하데스 손 ({side})]</color> InitHand 호출됨. 경로 크기: {(path != null ? path.Count : 0)}, isActiveAndEnabled: {isActiveAndEnabled}");
 
@@ -96,12 +172,20 @@ public class LastBossHand : BossBase, IGridEntity, IDamageable
     {
         base.OnEnable();
 
+        // 안전장치: 부모 클래스의 base.OnEnable()에서 메인 보스 HP바(BossHpBar)를 강탈하는 것을 방지
+        if (hpBar != null)
+        {
+            if (hpBar.allHpBar != null)
+            {
+                hpBar.allHpBar.SetActive(false);
+            }
+            hpBar = null;
+        }
+
         Debug.Log($"<color=green>[하데스 손 ({side})]</color> OnEnable 호출됨. _isInitialized: {_isInitialized}");
 
-        if (TurnManager.Instance != null)
-        {
-            TurnManager.Instance.Register(this);
-        }
+        RegisterBossGridTarget();
+        RegisterBossGridTargetNextFrameAsync().Forget();
 
         if (_isInitialized)
         {
@@ -186,12 +270,40 @@ public class LastBossHand : BossBase, IGridEntity, IDamageable
                     break;
                 }
 
+                int tempIndex = _currentPathIndex;
                 if (_moveClockwise)
-                    _currentPathIndex = (_currentPathIndex + 1) % _perimeterPath.Count;
+                    tempIndex = (tempIndex + 1) % _perimeterPath.Count;
                 else
-                    _currentPathIndex = (_currentPathIndex - 1 + _perimeterPath.Count) % _perimeterPath.Count;
+                    tempIndex = (tempIndex - 1 + _perimeterPath.Count) % _perimeterPath.Count;
 
-                Vector2Int nextPos = _perimeterPath[_currentPathIndex];
+                Vector2Int nextPos = _perimeterPath[tempIndex];
+
+                if (!hasMapBounds) CacheMapBounds();
+                int centerX = mapBounds.xMin + mapBounds.width / 2;
+
+                bool crossLimit = false;
+                if (side == HandSide.Left && nextPos.x < centerX)
+                {
+                    crossLimit = true;
+                }
+                else if (side == HandSide.Right && nextPos.x > centerX)
+                {
+                    crossLimit = true;
+                }
+
+                if (crossLimit)
+                {
+                    _moveClockwise = !_moveClockwise;
+                    if (_moveClockwise)
+                        _currentPathIndex = (_currentPathIndex + 1) % _perimeterPath.Count;
+                    else
+                        _currentPathIndex = (_currentPathIndex - 1 + _perimeterPath.Count) % _perimeterPath.Count;
+                    nextPos = _perimeterPath[_currentPathIndex];
+                }
+                else
+                {
+                    _currentPathIndex = tempIndex;
+                }
                 Debug.Log($"<color=green>[하데스 손 ({side})]</color> {i + 1}/{stepsToTake} 걸음: {nextPos} 셀로 이동.");
                 await MoveToCell(nextPos);
 
@@ -253,11 +365,15 @@ public class LastBossHand : BossBase, IGridEntity, IDamageable
 
     private void UpdateVisualForPosition(Vector2Int position)
     {
-        HandMode mode = GetModeForPosition(position);
-        UpdateVisualMode(mode);
+        HandMode mode = GetDefaultModeForPosition(position);
+        if (mode != _lastVisualMode)
+        {
+            _lastVisualMode = mode;
+            UpdateVisualMode(mode);
+        }
     }
 
-    private HandMode GetModeForPosition(Vector2Int position)
+    private HandMode GetDefaultModeForPosition(Vector2Int position)
     {
         if (!hasMapBounds) CacheMapBounds();
 
@@ -275,6 +391,45 @@ public class LastBossHand : BossBase, IGridEntity, IDamageable
         }
     }
 
+    private HandMode GetAttackModeForPosition(Vector2Int position)
+    {
+        if (!hasMapBounds) CacheMapBounds();
+
+        if (player == null || player.IsDead)
+        {
+            return GetDefaultModeForPosition(position);
+        }
+
+        Vector2Int playerPos = player.GridPosition;
+
+        // 위나 아래 벽에 위치할 때
+        if (position.y >= mapBounds.yMax || position.y < mapBounds.yMin)
+        {
+            // 플레이어가 손 기준 가로 4칸 영역(x-1 ~ x+2) 내에 있다면 세로 긁기 (Scratch)
+            if (playerPos.x >= position.x - 1 && playerPos.x <= position.x + 2)
+            {
+                return HandMode.Scratch;
+            }
+            else
+            {
+                return HandMode.Fist;
+            }
+        }
+        // 좌우 벽에 위치할 때
+        else
+        {
+            // 플레이어가 손 기준 세로 4칸 영역(y-1 ~ y+2) 내에 있다면 가로 쓸기 (OpenHand)
+            if (playerPos.y >= position.y - 1 && playerPos.y <= position.y + 2)
+            {
+                return HandMode.OpenHand;
+            }
+            else
+            {
+                return HandMode.Fist;
+            }
+        }
+    }
+
     private void UpdateVisualMode(HandMode mode)
     {
         SetVisualActive(openHandVisual, mode == HandMode.OpenHand);
@@ -284,10 +439,18 @@ public class LastBossHand : BossBase, IGridEntity, IDamageable
 
     private async UniTask ExecuteAttackAtCurrentPosition()
     {
+        if (player == null || player.IsDead || !IsInAttackFloor(player.GridPosition))
+        {
+            Debug.Log("<color=gray>[하데스 손]</color> 플레이어가 AttackFloor 범위 밖에 있어 공격을 수행하지 않고 대기합니다.");
+            return;
+        }
+
         isBossAttacking = true;
         _lastRoamPos = _gridPos;
 
-        HandMode mode = GetModeForPosition(_gridPos);
+        HandMode mode = GetAttackModeForPosition(_gridPos);
+        _lastVisualMode = mode;
+        UpdateVisualMode(mode);
 
         switch (mode)
         {
@@ -345,10 +508,17 @@ public class LastBossHand : BossBase, IGridEntity, IDamageable
 
         if (isDying || cancelToken.IsCancellationRequested) return;
 
+        // Spawn slam effect
+        if (slamEffectPrefab != null)
+        {
+            GameObject effect = Instantiate(slamEffectPrefab, slamTargetWorld, Quaternion.identity);
+            Destroy(effect, 2.0f);
+        }
+
         // Camera Shake
         if (CameraFollow.Instance != null)
         {
-            CameraFollow.Instance.Shake(0.3f, 0.4f);
+            CameraFollow.Instance.Shake(slamShakeDuration, slamShakeStrength);
         }
 
         // Hit check & knockback
@@ -380,15 +550,19 @@ public class LastBossHand : BossBase, IGridEntity, IDamageable
     {
         if (!hasMapBounds) CacheMapBounds();
 
-        int targetY = _gridPos.y;
+        int baseTargetY = _gridPos.y;
 
         List<Vector2Int> targetCells = new List<Vector2Int>();
-        for (int x = mapBounds.xMin; x <= mapBounds.xMax; x++)
+        for (int yOffset = -1; yOffset <= 2; yOffset++)
         {
-            Vector2Int cell = new Vector2Int(x, targetY);
-            if (IsInAttackFloor(cell))
+            int targetY = baseTargetY + yOffset;
+            for (int x = mapBounds.xMin; x <= mapBounds.xMax; x++)
             {
-                targetCells.Add(cell);
+                Vector2Int cell = new Vector2Int(x, targetY);
+                if (IsInAttackFloor(cell))
+                {
+                    targetCells.Add(cell);
+                }
             }
         }
 
@@ -400,13 +574,13 @@ public class LastBossHand : BossBase, IGridEntity, IDamageable
 
         if (isDying || cancelToken.IsCancellationRequested) return;
 
-        // 2. Sweep: Left Hand sweeps Right -> Left, Right Hand sweeps Left -> Right
+        // 2. Sweep: Left Hand sweeps Right -> Left, Right Hand sweeps Left -> Right (over 4 rows)
         int startX = (side == HandSide.Left) ? mapBounds.xMax + 2 : mapBounds.xMin - 2;
         int endX = (side == HandSide.Left) ? mapBounds.xMin - 2 : mapBounds.xMax + 2;
         Vector2Int sweepDir = (side == HandSide.Left) ? Vector2Int.left : Vector2Int.right;
 
-        Vector3 startWorld = GridSystem.Instance.GridToWorld(new Vector2Int(startX, targetY));
-        Vector3 endWorld = GridSystem.Instance.GridToWorld(new Vector2Int(endX, targetY));
+        Vector3 startWorld = GridSystem.Instance.GridToWorld(new Vector2Int(startX, baseTargetY));
+        Vector3 endWorld = GridSystem.Instance.GridToWorld(new Vector2Int(endX, baseTargetY));
 
         transform.position = startWorld;
 
@@ -429,7 +603,7 @@ public class LastBossHand : BossBase, IGridEntity, IDamageable
 
         if (isDying || cancelToken.IsCancellationRequested) return;
 
-        if (player != null && !player.IsDead && player.GridPosition.y == targetY && targetCells.Contains(player.GridPosition))
+        if (player != null && !player.IsDead && targetCells.Contains(player.GridPosition))
         {
             player.TakeDamage(sweepDamage);
             Vector2Int kbTarget = FindKnockbackTargetOutsideRange(player.GridPosition, targetCells, sweepDir);
@@ -444,27 +618,34 @@ public class LastBossHand : BossBase, IGridEntity, IDamageable
 
         if (isDying || cancelToken.IsCancellationRequested) return;
 
-        // Stay at the end of the sweep and update the path index
-        UpdatePathIndexToCurrentPosition();
+        // 3. Return to perimeter
+        Vector3 returnWorldPos = GridSystem.Instance.GridToWorld(_lastRoamPos);
+        await transform.DOMove(returnWorldPos, 0.4f).SetEase(Ease.OutQuad).AsyncWaitForCompletion();
+        _gridPos = _lastRoamPos;
+        UpdateVisualForPosition(_gridPos);
     }
 
     private async UniTask ExecuteScratchMode()
     {
         if (!hasMapBounds) CacheMapBounds();
 
-        int targetX = _gridPos.x;
+        int baseTargetX = _gridPos.x;
 
-        // Target cells: Left Hand sweeps only 4 cells, Right Hand sweeps full column
+        // Target cells: both hands sweep the full column
         List<Vector2Int> targetCells = new List<Vector2Int>();
         int startY = mapBounds.yMin;
-        int endY = (side == HandSide.Left) ? mapBounds.yMin + 3 : mapBounds.yMax;
+        int endY = mapBounds.yMax;
 
-        for (int y = startY; y <= endY; y++)
+        for (int xOffset = -1; xOffset <= 2; xOffset++)
         {
-            Vector2Int cell = new Vector2Int(targetX, y);
-            if (IsInAttackFloor(cell))
+            int targetX = baseTargetX + xOffset;
+            for (int y = startY; y <= endY; y++)
             {
-                targetCells.Add(cell);
+                Vector2Int cell = new Vector2Int(targetX, y);
+                if (IsInAttackFloor(cell))
+                {
+                    targetCells.Add(cell);
+                }
             }
         }
 
@@ -476,12 +657,12 @@ public class LastBossHand : BossBase, IGridEntity, IDamageable
 
         if (isDying || cancelToken.IsCancellationRequested) return;
 
-        // 2. Sweep Bottom -> Top
+        // 2. Sweep Bottom -> Top (over 4 columns)
         int sweepStartY = mapBounds.yMin - 2;
         int sweepEndY = endY + 2;
 
-        Vector3 startWorld = GridSystem.Instance.GridToWorld(new Vector2Int(targetX, sweepStartY));
-        Vector3 endWorld = GridSystem.Instance.GridToWorld(new Vector2Int(targetX, sweepEndY));
+        Vector3 startWorld = GridSystem.Instance.GridToWorld(new Vector2Int(baseTargetX, sweepStartY));
+        Vector3 endWorld = GridSystem.Instance.GridToWorld(new Vector2Int(baseTargetX, sweepEndY));
 
         transform.position = startWorld;
 
@@ -504,7 +685,7 @@ public class LastBossHand : BossBase, IGridEntity, IDamageable
 
         if (isDying || cancelToken.IsCancellationRequested) return;
 
-        if (player != null && !player.IsDead && player.GridPosition.x == targetX && targetCells.Contains(player.GridPosition))
+        if (player != null && !player.IsDead && targetCells.Contains(player.GridPosition))
         {
             player.TakeDamage(scratchDamage);
             Vector2Int kbTarget = FindKnockbackTargetOutsideRange(player.GridPosition, targetCells, Vector2Int.up);
@@ -573,7 +754,11 @@ public class LastBossHand : BossBase, IGridEntity, IDamageable
             ));
         }
 
-        if (hpBar != null) hpBar.UpdateBar();
+        if (handHpBar != null)
+        {
+            handHpBar.Init(this);
+            handHpBar.UpdateBar();
+        }
 
         if (_ownerBoss != null)
         {
@@ -590,7 +775,11 @@ public class LastBossHand : BossBase, IGridEntity, IDamageable
     {
         if (IsDead) return;
         currentHp = Mathf.Min(maxHp, currentHp + amount);
-        if (hpBar != null) hpBar.UpdateBar();
+        if (handHpBar != null)
+        {
+            handHpBar.Init(this);
+            handHpBar.UpdateBar();
+        }
     }
 
     private void Die()

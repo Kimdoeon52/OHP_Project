@@ -1,4 +1,4 @@
-﻿using PrototypeRT;
+using PrototypeRT;
 using UnityEngine;
 
 public class WeaponProjectile : MonoBehaviour
@@ -72,15 +72,19 @@ public class WeaponProjectile : MonoBehaviour
 
         if (other.CompareTag("Enemy"))
         {
-            EnemyBase enemy = other.GetComponent<EnemyBase>();
-            int damage = weaponInstance.GetDamage();
-            Debug.Log($"{enemy.name}한테 투척무기 맞힘");
-            weaponInstance.curse?.OnAttack(ref damage);
+            IDamageable damageable = other.GetComponent<IDamageable>();
+            if (damageable != null)
+            {
+                int damage = weaponInstance.GetDamage();
+                Debug.Log($"{other.name}한테 투척무기 맞힘");
+                weaponInstance.curse?.OnAttack(ref damage);
 
-            if (weaponInstance.weapon is IHitEffect hitEffect)
-                hitEffect.ApplyEffect(enemy, damage);
-            else
-                enemy.TakeDamage(damage);
+                EnemyBase enemy = damageable as EnemyBase;
+                if (weaponInstance.weapon is IHitEffect hitEffect && enemy != null)
+                    hitEffect.ApplyEffect(enemy, damage);
+                else
+                    damageable.TakeDamage(damage);
+            }
         }
 
         Land();
