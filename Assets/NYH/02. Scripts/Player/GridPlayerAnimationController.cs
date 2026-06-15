@@ -61,16 +61,22 @@ public class GridPlayerAnimationController : MonoBehaviour
     [Tooltip("컨트롤러에서 공격 클립 길이를 찾지 못했을 때 사용할 기본 길이입니다.")]
     [SerializeField, Min(0.01f)] private float attackClipLengthFallback = 1.1f;
 
+    [Header("Move Visual Readability")]
+    [Tooltip("실제 이동 속도는 그대로 두고, 걷기/달리기 모션이 화면에 최소 이 시간만큼 보이게 합니다.")]
+    [SerializeField, Min(0f)] private float minMoveAnimationVisibleTime = 0.12f;
+
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
     private GridPlayer _player;
     private Coroutine _attackSpeedCoroutine;
+    private Coroutine _moveFinishCoroutine;
     private bool _isDead;
     private bool _isFacingRight;
     private bool _isSubscribed;
     private bool _isMoveVisualActive;
     private bool _isAttackVisualActive;
     private float _cachedAttackClipLength = -1f;
+    private float _lastMoveStartedTime;
 
     private void Awake()
     {
@@ -98,6 +104,12 @@ public class GridPlayerAnimationController : MonoBehaviour
         {
             StopCoroutine(_attackSpeedCoroutine);
             _attackSpeedCoroutine = null;
+        }
+
+        if (_moveFinishCoroutine != null)
+        {
+            StopCoroutine(_moveFinishCoroutine);
+            _moveFinishCoroutine = null;
         }
 
         if (_animator != null)
@@ -160,6 +172,13 @@ public class GridPlayerAnimationController : MonoBehaviour
     {
         if (_isDead) return;
 
+        if (_moveFinishCoroutine != null)
+        {
+            StopCoroutine(_moveFinishCoroutine);
+            _moveFinishCoroutine = null;
+        }
+
+        _lastMoveStartedTime = Time.time;
         UpdateHorizontalFacing(direction);
         ResetTriggerIfConfigured(moveTriggerName);
         SetBoolIfConfigured(isMovingBoolName, true);
@@ -170,6 +189,35 @@ public class GridPlayerAnimationController : MonoBehaviour
     }
 
     private void OnMoveFinished()
+    {
+        if (_moveFinishCoroutine != null)
+            return;
+
+        float remainingVisibleTime = minMoveAnimationVisibleTime - (Time.time - _lastMoveStartedTime);
+        if (remainingVisibleTime > 0f)
+        {
+            _moveFinishCoroutine = StartCoroutine(FinishMoveVisualAfterDelay(remainingVisibleTime));
+            return;
+        }
+
+        ApplyMoveFinishedVisual();
+    }
+
+    private IEnumerator FinishMoveVisualAfterDelay(float delaySeconds)
+    {
+        yield return new WaitForSeconds(delaySeconds);
+        _moveFinishCoroutine = null;
+
+        if (_isDead)
+            yield break;
+
+        if (_player != null && _player.Movement != null && _player.Movement.IsMoving)
+            yield break;
+
+        ApplyMoveFinishedVisual();
+    }
+
+    private void ApplyMoveFinishedVisual()
     {
         ResetTriggerIfConfigured(moveTriggerName);
         SetBoolIfConfigured(isMovingBoolName, false);
@@ -225,6 +273,12 @@ public class GridPlayerAnimationController : MonoBehaviour
         {
             StopCoroutine(_attackSpeedCoroutine);
             _attackSpeedCoroutine = null;
+        }
+
+        if (_moveFinishCoroutine != null)
+        {
+            StopCoroutine(_moveFinishCoroutine);
+            _moveFinishCoroutine = null;
         }
 
         if (_animator != null)
