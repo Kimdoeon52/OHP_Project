@@ -211,6 +211,14 @@ public abstract class EnemyBase : EntityBase, IDamageable
     }
 
     /// <summary>
+    /// 데미지 타입을 포함한 피해 처리 메서드.
+    /// </summary>
+    public virtual void TakeDamage(int amount, DamageType damageType)
+    {
+        TakeDamage(amount);
+    }
+
+    /// <summary>
     /// HP 회복. MaxHp 초과 안 됨.
     /// </summary>
     public void Heal(int amount)
@@ -234,6 +242,11 @@ public abstract class EnemyBase : EntityBase, IDamageable
 
         _isDying = true;
         CurrentHp = 0;
+
+        // 사망 폭발 이펙트 동적 생성
+        GameObject gibEffectObj = new GameObject($"{name}_GibEffect");
+        gibEffectObj.transform.position = transform.position;
+        gibEffectObj.AddComponent<DeathGibEffect>();
 
         StopAllCoroutines();
         ClearTelegraphs();
@@ -748,3 +761,16 @@ public abstract class EnemyBase : EntityBase, IDamageable
         return false;
     }
 }
+
+public enum DamageType
+{
+    Melee,
+    Ranged,
+    StatusEffect
+}
+
+public static class DamageContext
+{
+    public static DamageType CurrentDamageType = DamageType.Melee;
+}
+

@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95ae69ab44fdc2f449301d0fbafbdcbf, type: 3}
+  m_Name: FireSpirit
+  m_EditorClassIdentifier: 
+  id: 3004
+  displayName: "\uBD88\uC758 \uC815\uB839"
+  sprite: {fileID: 0}
+  grade: 1
+  moveType: 0
+  hasShield: 0
+  maxHp: 110
+  attackMin: 15
+  attackMax: 22
+  attackPattern: 0
+  moveSpeed: 0.3
+  attackSpeed: 1
+  defenseMin: 2
+  defenseMax: 5
+  evasion: 12
+  accuracy: 18
+  timeBonus: 5
+  expReward: 30
+  goldMin: 30
+  goldMax: 50
+  visionRange: 6
+  onHitEffect: {fileID: 11400000, guid: 785fd12345ab4e0987c2b9f390ef14ab, type: 2}

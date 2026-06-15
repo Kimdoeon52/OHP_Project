@@ -34,12 +34,14 @@ Area 3(불타는 저승, 11~15층)에서 등장하는 지옥 테마의 몬스터
 ### 3.1 작은 악마 (`EnemyImp.cs`)
 
 **기믹**: 3x3 화염 장판 공격 예고(텔레그래프) 및 지형 생성
+
 * **CheckAttackTelegraph 오버라이드**:
   플레이어가 사정거리 내에 있을 때, targetCell을 중심으로 3x3 범위 of 모든 타일에 예고를 띄웁니다.
 * **ExecutePendingAttack 오버라이드**:
   예고 후 1.5초 대기(delaySeconds)하고, 해당 범위 내에 플레이어가 위치하면 롤링한 데미지를 가합니다. 공격이 종료되면 해당 타일에 1초 동안 유지되는 화염(Fire) 장판을 `TrapTerrainController` 등을 통해 스폰합니다.
 
 #### 구현 예시 코드
+
 ```csharp
 using System.Collections;
 using System.Collections.Generic;
@@ -117,12 +119,14 @@ public class EnemyImp : EnemyBase
 ### 3.2 지렁이 (`EnemyWorm.cs`)
 
 **기믹**: 이동 중 원거리 공격 면역 (투척 및 마법 무효)
+
 * **데미지 타입 확장**:
   기존 `TakeDamage(int amount)`는 공격 타입을 알 수 없으므로, 원거리 공격 무력화를 처리하기 위해 데미지 타입을 구분하도록 `EnemyBase`나 인터페이스를 일부 수정하거나, `TakeDamage` 오버로드/체크 방식을 사용합니다.
 * **이동 상태 감지**:
   이동 보간 코루틴(`_moveCoroutine != null`)이 진행 중이거나, `Walk` 애니메이션 플래그가 true인 동안 원거리 타입의 데미지를 `0`으로 처리합니다.
 
 #### 구현 예시 코드
+
 ```csharp
 using UnityEngine;
 
@@ -196,10 +200,12 @@ public enum DamageType
 ### 3.3 핑크 트롤 (`EnemyPinkTroll.cs`)
 
 **기믹**: 기믹 없음, 높은 체력을 가진 기본 근접 탱커형
+
 * **구현 최소화**:
   핑크 트롤은 특수 행동이 전혀 없습니다. `EnemyBase`를 상속받은 뒤, 특별히 오버라이드할 로직이 없으므로 상속만 받아주고 수치 튜닝은 ScriptableObject `EnemyData`에서 전적으로 처리합니다.
 
 #### 구현 예시 코드
+
 ```csharp
 using UnityEngine;
 
@@ -215,6 +221,7 @@ public class EnemyPinkTroll : EnemyBase
 ### 3.4 불의 정령 (`EnemyFireSpirit.cs`)
 
 **기믹**: 공격 명중 시 3초간 화상 (1초당 2 데미지) 디버프 적용
+
 * **코드 수정 최소화**:
   이미 부모 클래스인 `EnemyBase.cs`에 명중 시 상태이상을 주입해 주는 `TryApplyOnHitEffect` 기능이 구현되어 있습니다. 따라서 C# 코드 추가 대신, **인스펙터의 ScriptableObject 설정만으로 구현할 것을 강력 권장**합니다.
 * **ScriptableObject 설정법**:
@@ -225,6 +232,7 @@ public class EnemyPinkTroll : EnemyBase
 만약 코드상에서 이를 제어해야 하거나 추가 처리가 필요하다면, 아래와 같이 오버라이드할 수 있습니다.
 
 #### 구현 예시 코드 (필요 시에만 오버라이드)
+
 ```csharp
 using UnityEngine;
 
@@ -247,6 +255,7 @@ public class EnemyFireSpirit : EnemyBase
 각 몬스터를 활성화하기 위해 ScriptableObject 데이터를 신규 생성하고 프리팹에 바인딩해야 합니다.
 
 ### 4.1 ScriptableObject 생성
+
 1. Unity Project 창에서 `Assets/KKH/04. SOData/Enemies/Area 3/` 폴더로 이동합니다.
 2. 우클릭 후 `Create > 60s Dungeon > Enemy Data`를 선택하여 생성합니다.
 3. 명세서에 나와 있는 상세 스탯 수치를 인스펙터에 기입합니다.
@@ -263,13 +272,16 @@ public class EnemyFireSpirit : EnemyBase
      * `On Hit Effect`: `StatusType.Burn` (지속: 3, 파워: 2)
 
 ### 4.2 프리팹 구성
+
 1. `Assets/KKH/03. Prefab/Enemies/Area 3/` 폴더에 각 몬스터 프리팹을 생성합니다.
 2. 각 몬스터 프리팹에 새로 작성한 C# 컴포넌트(`EnemyImp`, `EnemyWorm`, `EnemyPinkTroll`, `EnemyFireSpirit`)를 붙입니다.
 3. 컴포넌트 내의 `Data` 슬롯에 방금 생성한 ScriptableObject를 연결합니다.
 4. **텔레그래프 타일맵 경고 연동**: `warningTilemap` 슬롯에 씬의 Warning Tilemap을 연결하고, `warningTile` 슬롯에 경고 타일 에셋을 장착합니다.
 
 ### 4.3 FloorSpawnConfig 연동
+
 지하 11~14층(지옥 구역)에서 정상 스폰되도록 스폰 테이블을 수정합니다.
+
 1. `Assets/KKH/04. SOData/EnemySystem/Area3_HellConfig.asset`을 엽니다.
 2. `minDepth` = 11, `maxDepth` = 14로 범위가 잘 되어있는지 확인합니다.
 3. `prefabMappings` 리스트에 다음을 등록합니다:

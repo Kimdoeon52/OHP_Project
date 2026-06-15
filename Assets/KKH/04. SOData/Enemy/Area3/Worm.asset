@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95ae69ab44fdc2f449301d0fbafbdcbf, type: 3}
+  m_Name: Worm
+  m_EditorClassIdentifier: 
+  id: 3002
+  displayName: "\uC9C0\uB7E5\uC774"
+  sprite: {fileID: 0}
+  grade: 0
+  moveType: 1
+  hasShield: 0
+  maxHp: 60
+  attackMin: 10
+  attackMax: 15
+  attackPattern: 0
+  moveSpeed: 0.3
+  attackSpeed: 1
+  defenseMin: 1
+  defenseMax: 3
+  evasion: 6
+  accuracy: 10
+  timeBonus: 3
+  expReward: 15
+  goldMin: 10
+  goldMax: 20
+  visionRange: 6
+  onHitEffect: {fileID: 0}
