@@ -7,20 +7,20 @@ public class EnemyWorm : EnemyBase
     private Coroutine _moveCoroutine;
     private bool _isMovingVisual = false;
 
-    public void TakeDamage(int amount, DamageType damageType)
-    {
-        if (IsDead || amount <= 0) return;
+    //public void TakeDamage(int amount, DamageType damageType)
+    //{
+    //    if (IsDead || amount <= 0) return;
 
-        if ((_isMovingVisual || (_animator.GetBool("Walk"))) && damageType == DamageType.Ranged)
-        {
-            if (_isMovingVisual)
-            {
-                return;
-            }
-        }
+    //    if ((_isMovingVisual || (_animator.GetBool("Walk"))) && damageType == DamageType.Ranged)
+    //    {
+    //        if (_isMovingVisual)
+    //        {
+    //            return;
+    //        }
+    //    }
 
-        base.TakeDamage(amount);
-    }
+    //    base.TakeDamage(amount);
+    //}
     protected override void CheckAttackTelegraph()
     {
         if (IsDead || _isAttacking) return;
