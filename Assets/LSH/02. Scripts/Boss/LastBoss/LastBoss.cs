@@ -259,7 +259,7 @@ public class LastBoss : BossBase
             spawnedHead = headObj.GetComponent<LastBossHead>();
             if (spawnedHead != null)
             {
-                spawnedHead.Init(this, headGridPos, headMaxHp);
+                spawnedHead.Init(this, headGridPos, headMaxHp, warningTilemap, warningTile);
             }
             else
             {

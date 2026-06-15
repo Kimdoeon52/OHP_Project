@@ -100,3 +100,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12c405555c0dfb3448ffa6b06b6f3be6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHp: 100
+  currentHp: 0
+  stepDelayMs: 0
+  bossLevel: 0
+  actionCases: []
+  patternDelay: 0
+  phase2DelayMultiplier: 0.3
+  bossFightTimeLimit: 120
+  warningTilemap: {fileID: 0}
+  warningTile: {fileID: 0}
+  hpBar: {fileID: 0}
+  attackFloorTilemap: {fileID: 0}
+  wanderMoveDuration: 0.25
+  wanderStepIntervalMs: 500
+  wanderStepsBeforePattern: 3
+  laserPrefab: {fileID: 2077247882900368732, guid: cc8367d279447e545ab98905e33d2ff7, type: 3}
+  laserWarningPrefab: {fileID: 514800885492457613, guid: eaec8e44df4dd6c47b35c15911e81ed1, type: 3}
+  laserVisualThickness: 3.5
+  laserDamage: 20
+  laserTelegraphMs: 1500
+  laserActiveMs: 800
+  meteorDamage: 30
+  meteorTelegraphMs: 1500
+  meteorPrefab: {fileID: 7285790912591436799, guid: 7029ddd6a56fbea4b8727ffc52311d4c, type: 3}
