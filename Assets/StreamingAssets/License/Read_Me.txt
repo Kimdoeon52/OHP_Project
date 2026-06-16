@@ -23,6 +23,18 @@
   - 라이센스: Standard Unity Asset Store EULA
   - 라이센스 파일: Standard_Unity_Asset_Store_EULA(Eng), Standard_Unity_Asset_Store_EULA(Kor)
 
+- Neo둥근고딕Pro
+  - 저작권자: Dalgona
+  - 라이센스 전문: https://github.com/neodgm/neodgm?tab=readme-ov-file
+  - 라이센스: SIL Open Font License 1.1
+  - 라이센스 파일: SIL_Open_Font_License_1.1(Eng), SIL_Open_Font_License_1.1(Kor)
+
+- UniTask
+  - 저작권자: Cysharp
+  - 라이센스 전문: https://github.com/Cysharp/UniTask/blob/master/LICENSE
+  - 라이센스: MIT License
+  - 라이센스 파일: MIT_License(Eng), MIT_License(Kor)
+
 - Pixel Monsters Animated Boss Pack #1
   - 저작권자: Hippo
   - 라이센스 전문: https://unity.com/kr/legal/as-terms
@@ -96,17 +108,6 @@
   - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
   - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
 
-- Neo둥근고딕Pro
-  - 저작권자: Dalgona
-  - 라이센스 전문: https://github.com/neodgm/neodgm?tab=readme-ov-file
-  - 라이센스: SIL Open Font License 1.1
-  - 라이센스 파일: SIL_Open_Font_License_1.1(Eng), SIL_Open_Font_License_1.1(Kor)
-
-- UniTask
-  - 저작권자: Cysharp
-  - 라이센스 전문: https://github.com/Cysharp/UniTask/blob/master/LICENSE
-  - 라이센스: MIT License
-  - 라이센스 파일: MIT_License(Eng), MIT_License(Kor)
 
 - liberationfonts
   - 저작권자: Red Hat, Inc.
@@ -305,3 +306,9 @@
   - 라이선스 전문: https://openai.com/policies/terms-of-use, https://openai.com/policies/usage-policies
   - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
   - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
+
+- [리터칭한 이미지 파일명 기재] (예: Character_Hero_Retouched)
+  - 저작권자: Base image created with Gemini (Retouched by 창작자/팀명)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
