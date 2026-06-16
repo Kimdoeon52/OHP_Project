@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class VisionSystem : Singleton<VisionSystem>
@@ -13,6 +15,9 @@ public class VisionSystem : Singleton<VisionSystem>
     public IReadOnlyCollection<Vector2Int> Explored => _explored;
 
     public int VisionRadiusDelta { get; set; } = 0;
+
+    private Vector2Int _lastPlayerPos;
+    private CancellationTokenSource _torchCts;
 
     private int VisionRadius
     {
@@ -32,8 +37,14 @@ public class VisionSystem : Singleton<VisionSystem>
         base.Awake();
     }
 
+    private void OnDestroy()
+    {
+        CancelTorchEffect();
+    }
+
     public void UpdateVision(Vector2Int playerPos)
     {
+        _lastPlayerPos = playerPos;
         _visible.Clear();
 
         int r = VisionRadius;
@@ -66,10 +77,44 @@ public class VisionSystem : Singleton<VisionSystem>
 
     public void ResetForNewFloor()
     {
+        CancelTorchEffect();
         _visible.Clear();
         _explored.Clear();
         VisionRadiusDelta = 0;
         GameEvents.OnVisionUpdated?.Invoke(_visible, _explored);
+    }
+
+    // 횃불 등 소모품이 시야를 일시적으로 확장할 때 사용. 중복 사용 시 타이머가 리셋된다.
+    public void ApplyTorchEffect(int radiusDelta, float durationSeconds)
+    {
+        CancelTorchEffect();
+        _torchCts = new CancellationTokenSource();
+        TorchEffectAsync(radiusDelta, durationSeconds, _torchCts.Token).Forget();
+    }
+
+    private async UniTaskVoid TorchEffectAsync(int radiusDelta, float durationSeconds, CancellationToken ct)
+    {
+        VisionRadiusDelta += radiusDelta;
+        UpdateVision(_lastPlayerPos);
+        try
+        {
+            await UniTask.Delay(System.TimeSpan.FromSeconds(durationSeconds), cancellationToken: ct);
+        }
+        catch (System.OperationCanceledException)
+        {
+            return;
+        }
+        VisionRadiusDelta -= radiusDelta;
+        UpdateVision(_lastPlayerPos);
+    }
+
+    private void CancelTorchEffect()
+    {
+        if (_torchCts == null)
+            return;
+        _torchCts.Cancel();
+        _torchCts.Dispose();
+        _torchCts = null;
     }
 
     private bool HasLineOfSight(Vector2Int from, Vector2Int to)

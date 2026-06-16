@@ -3123,6 +3123,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 302626574}
+  - component: {fileID: 302626575}
   m_Layer: 0
   m_Name: AudioSetingPanel
   m_TagString: Untagged
@@ -3153,6 +3154,21 @@ RectTransform:
   m_AnchoredPosition: {x: 1.3217773, y: 7.9317017}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &302626575
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 302626573}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6f35f0968d8d5043a12c5f4daa68cbf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  masterVolumeSlider: {fileID: 2074554780}
+  bgmVolumeSlider: {fileID: 1231969944}
+  sfxVolumeSlider: {fileID: 886630927}
 --- !u!1 &309340835
 GameObject:
   m_ObjectHideFlags: 0
@@ -4168,7 +4184,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2119153678}
   - {fileID: 1922974368}
   - {fileID: 1385306429}
   - {fileID: 1085017828}
@@ -7819,7 +7834,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93daaf8a018e7d24a98e155905dd47ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  loadingSceneName: Loding
+  loadingSceneName: Loading
   newGameSceneName: NYH_Grid
   continueSceneName: NYH_Grid
   challengeSceneName: NYH_Grid
@@ -18822,12 +18837,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2119153677}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 413848294}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2119153679
 MonoBehaviour:
@@ -18843,7 +18858,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   audioMixer: {fileID: 24100000, guid: 8dda7e131e5de2349b3a19dfa444b3cf, type: 2}
   bgmOutputGroup: {fileID: -745965464865114447, guid: 8dda7e131e5de2349b3a19dfa444b3cf, type: 2}
-  sfxOutputGroup: {fileID: 0}
+  sfxOutputGroup: {fileID: -9071239870643665011, guid: 8dda7e131e5de2349b3a19dfa444b3cf, type: 2}
   masterVolumeSlider: {fileID: 2074554780}
   bgmVolumeSlider: {fileID: 1231969944}
   sfxVolumeSlider: {fileID: 886630927}
@@ -18856,13 +18871,13 @@ MonoBehaviour:
   defaultBgmFadeSeconds: 0.75
   sfxPoolSize: 8
   expandSfxPoolWhenFull: 1
-  playerDamagedCue: {fileID: 0}
-  enemyKilledCue: {fileID: 0}
+  playerDamagedCue: {fileID: 11400000, guid: f2cc6c4d4b093d240af2e74194c7e7b4, type: 2}
+  enemyKilledCue: {fileID: 11400000, guid: 37e08d12ea7809545a2f9b2c41891863, type: 2}
   trapTriggeredCue: {fileID: 0}
-  chestOpenedCue: {fileID: 0}
-  keyAcquiredCue: {fileID: 0}
-  itemPurchasedCue: {fileID: 0}
-  secretDiscoveredCue: {fileID: 0}
+  chestOpenedCue: {fileID: 11400000, guid: 6ad9172a375b92948a7c6e9fe68d1713, type: 2}
+  keyAcquiredCue: {fileID: 11400000, guid: 43d55d78dff41844594272fb496df358, type: 2}
+  itemPurchasedCue: {fileID: 11400000, guid: 98113314ba3eb7744b49e452c171e134, type: 2}
+  secretDiscoveredCue: {fileID: 11400000, guid: 862bc6e50f96c774da47b0f1471d5f57, type: 2}
   bossDefeatedCue: {fileID: 0}
 --- !u!82 &2119153680
 AudioSource:
@@ -19044,6 +19059,7 @@ SceneRoots:
   - {fileID: 2002177939}
   - {fileID: 820294438}
   - {fileID: 530109694}
+  - {fileID: 2119153678}
   - {fileID: 413848294}
   - {fileID: 890060251}
   - {fileID: 1848843860}

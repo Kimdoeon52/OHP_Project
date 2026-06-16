@@ -63,6 +63,14 @@ namespace PrototypeRT
                 Predicate = data => data is MapScroll,
                 Handler = UseImmediateItem
             });
+            _useStrategies.Add(new ItemUseStrategy {
+                Predicate = data => data is TorchData,
+                Handler = UseImmediateItem
+            });
+            _useStrategies.Add(new ItemUseStrategy {
+                Predicate = data => data is FragmentsOfLife,
+                Handler = UseImmediateItem
+            });
         }
 
         /// <summary>

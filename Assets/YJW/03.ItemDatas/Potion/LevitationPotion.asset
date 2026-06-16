@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7c9b5f7651f2244a9e470eea43a95ae, type: 3}
+  m_Name: LevitationPotion
+  m_EditorClassIdentifier: 
+  id: 2007
+  itemName: "\uBD80\uC720 \uD3EC\uC158"
+  description: "\uC7A0\uC2DC \uB545\uC744 \uC78A\uC5B4\uB77C. \uC704\uD5D8 \uC9C0\uD615\uB3C4
+    \uBC1C\uB05D \uC544\uB798 \uC2A4\uCCD0 \uC9C0\uB098\uAC04\uB2E4."
+  icon: {fileID: 21300000, guid: c5e76b9b876ef36418c94f126c6ae9fa, type: 3}
+  itemType: 1
+  slot: 0
+  width: 1
+  height: 1
+  canEnhance: 0
+  canCurse: 0
+  canAnalyze: 0
+  potionType: 7
+  value: 10
