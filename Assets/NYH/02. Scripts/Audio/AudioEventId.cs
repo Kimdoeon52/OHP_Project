@@ -43,5 +43,7 @@ public enum AudioEventId
     LastBoss_Sweep,
     LastBoss_Scratch,
     LastBoss_HeadLaser,
-    LastBoss_Meteor
+    LastBoss_Meteor,
+
+    DaggerThrow
 }

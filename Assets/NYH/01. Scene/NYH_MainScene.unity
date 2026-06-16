@@ -137,7 +137,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &31893673
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3493,7 +3493,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &302626574
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6868,7 +6868,7 @@ RectTransform:
   m_Father: {fileID: 557349281}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: -5, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0, y: 0.5}
@@ -8085,7 +8085,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &741168560
 RectTransform:
   m_ObjectHideFlags: 0
@@ -10172,7 +10172,7 @@ RectTransform:
   m_Father: {fileID: 439474780}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: -5, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0, y: 0.5}
@@ -11306,7 +11306,7 @@ RectTransform:
   m_Father: {fileID: 1205066304}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 6, y: 0.0000076293945}
   m_SizeDelta: {x: 21.614, y: 7.9944}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -12171,7 +12171,7 @@ RectTransform:
   m_Father: {fileID: 968389200}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 6, y: 0.0000076293945}
   m_SizeDelta: {x: 21.614, y: 7.9944}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -14542,7 +14542,7 @@ MonoBehaviour:
   keySettingPanel: {fileID: 147761288}
   audioSettingPanel: {fileID: 302626573}
   gameExitPanel: {fileID: 274989965}
-  creditPanel: {fileID: 0}
+  creditPanel: {fileID: 741168559}
   confirmExitButton: {fileID: 77445561}
   cancelExitButton: {fileID: 1156182855}
 --- !u!1 &1391963398
@@ -15990,7 +15990,7 @@ RectTransform:
   m_Father: {fileID: 1384266206}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 6, y: 0.0000076293945}
   m_SizeDelta: {x: 21.614, y: 7.9944}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -21431,7 +21431,7 @@ RectTransform:
   m_Father: {fileID: 1671871853}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: -5, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0, y: 0.5}
@@ -21610,6 +21610,7 @@ MonoBehaviour:
   defaultBgmFadeSeconds: 0.75
   sfxPoolSize: 8
   expandSfxPoolWhenFull: 1
+  audioCueTable: {fileID: 0}
   playerDamagedCue: {fileID: 11400000, guid: f2cc6c4d4b093d240af2e74194c7e7b4, type: 2}
   enemyKilledCue: {fileID: 11400000, guid: 37e08d12ea7809545a2f9b2c41891863, type: 2}
   trapTriggeredCue: {fileID: 0}

@@ -69,6 +69,7 @@ public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
 
         wp.SetInstance(this, thrownDurability, weapon.PoolType, pooledProjectile);
         wp.FlyTo(targetWorldPos);
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.DaggerThrow);
     }
 
     // WeaponProjectile이 플레이어에게 픽업될 때 호출

@@ -46,6 +46,7 @@ public class GridDagger : MonoBehaviour
         transform.position = fromWorld;
         _renderer.enabled = true;  // 비행 중엔 항상 표시
 
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.DaggerThrow);
         StartCoroutine(FlightCoroutine(fromWorld, toCell, onLand));
     }
 
