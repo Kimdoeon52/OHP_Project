@@ -104,8 +104,9 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         TurnManager.Instance?.Unregister(this);
     }
 
-    private void OnDisable()
+    protected override void OnDisable()
     {
+        base.OnDisable();
         UnregisterBossGridTarget();
     }
     #endregion

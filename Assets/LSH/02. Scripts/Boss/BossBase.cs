@@ -116,7 +116,7 @@ public class BossBase : EnemyNormalBASE
 
         // 2) HP 바 연결. 프리팹으로 소환된 경우 인스펙터 참조가 끊겨 있을 수 있어,
         //    null이면 씬에서 자동 검색하고, 그래도 없으면 경고만 띄우고 계속 진행.
-        if (hpBar == null) hpBar = FindFirstObjectByType<BossHpBar>();
+        if (hpBar == null) hpBar = FindFirstObjectByType<BossHpBar>(FindObjectsInactive.Include);
         if (hpBar != null) hpBar.Init(this);
         else Debug.LogWarning("BossBase.OnEnable: BossHpBar를 찾지 못함. HP바 표시가 동작하지 않습니다.");
 
@@ -140,6 +140,16 @@ public class BossBase : EnemyNormalBASE
         }
  
         WaitBossCoolTime().Forget();
+    }
+    protected virtual void OnDisable()
+    {
+        if (cancelToken != null)
+        {
+            cancelToken.Cancel();
+            cancelToken.Dispose();
+            cancelToken = null;
+        }
+        ClearAllWarnings();
     }
     protected async UniTask WaitBossCoolTime()
     {

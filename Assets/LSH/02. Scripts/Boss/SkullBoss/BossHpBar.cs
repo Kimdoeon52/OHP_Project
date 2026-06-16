@@ -56,19 +56,43 @@ public class BossHpBar : MonoBehaviour
     public void UpdateBar()
     {
         if (boss == null) return;
+        if (allHpBar != null && !allHpBar.activeSelf)
+        {
+            allHpBar.SetActive(true); // 꺼져 있는 경우 복구 활성화
+        }
         RefreshVisual().Forget();
         PlayShake();
     }
 
     private async UniTask RefreshVisual()
     {
-        float ratio = (float)boss.currentHp / boss.maxHp;
-        fillimage.fillAmount = ratio;
+        // 유니티 오브젝트 파괴 여부까지 포함해 안전 체크 (MissingReferenceException 방지)
+        if (boss == null || (boss is Object unityObj && unityObj == null)) return;
+
+        float ratio = 0f;
+        if (boss.maxHp > 0)
+        {
+            ratio = (float)boss.currentHp / boss.maxHp;
+        }
+
+        if (float.IsNaN(ratio) || float.IsInfinity(ratio))
+        {
+            ratio = 0f;
+        }
+
+        if (fillimage != null)
+        {
+            fillimage.fillAmount = ratio;
+        }
+
         //text.text = boss.currentHp.ToString() + " / " + boss.maxHp.ToString();
         if(ratio <= 0f)
         {
             await UniTask.Delay(1000); // 1초 대기 후 HP 바 사라짐
-            allHpBar.SetActive(false);
+            if (this != null && allHpBar != null && boss != null && !(boss is Object uObj && uObj == null) && boss.currentHp <= 0)
+            {
+                allHpBar.SetActive(false);
+            }
         }
     }
 

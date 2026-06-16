@@ -31,16 +31,23 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
     private int _maxX;
     private int _topY;
     private bool _isRegisteredToTurnManager = false;
+    private bool _isInitialized = false;
 
+    [Header("프록시 설정")]
+    [SerializeField] private Vector2Int bossSize = new Vector2Int(5, 1);
+    private Vector2Int gridPos => _gridPos;
+
+    // 피격 이펙트 관련 필드
+    private SpriteRenderer[] _spriteRenderers;
+    private Dictionary<SpriteRenderer, Color> _originalColors = new Dictionary<SpriteRenderer, Color>();
+    private List<Tween> _activeTweens = new List<Tween>();
+
+    #region 플레이어 이동공격 대상 등록 프록시
+    public override Vector2Int BossSize => bossSize;
+    public override Vector2Int GridPosition => gridPos;
     public int CurrentHp => currentHp;
     public int MaxHp => maxHp;
     public bool IsDead => currentHp <= 0;
-
-    #region 플레이어 이동공격 대상 등록 프록시
-    public override Vector2Int BossSize => new Vector2Int(5, 1);
-    public override Vector2Int GridPosition => _gridPos;
-
-    private Vector3 BossPivotOffset => new Vector3((BossSize.x - 1) * 0.5f, (BossSize.y - 1) * 0.5f, 0f);
 
     public IEnumerable<Vector2Int> OccupiedCells
     {
@@ -49,39 +56,56 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
             if (IsDead)
                 yield break;
 
-            // Renders 3 layers vertically (top, middle, bottom relative to _gridPos.y)
-            // to ensure player bump attacks from maxY successfully strike the head spawned at maxY + 1.
-            for (int x = 0; x < BossSize.x; x++)
+            // 플레이어 공격이 닿는 범위(maxY)를 포함하여 3라인 판정 구성
+            for (int x = 0; x < bossSize.x; x++)
             {
-                yield return _gridPos + new Vector2Int(x, 0);   // Head body row (maxY + 1)
-                yield return _gridPos + new Vector2Int(x, -1);  // Reaching player hit row (maxY)
-                yield return _gridPos + new Vector2Int(x, 1);   // Top row (maxY + 2)
+                yield return _gridPos + new Vector2Int(x, 0);   // 몸통 줄 (maxY + 1)
+                yield return _gridPos + new Vector2Int(x, -1);  // 플레이어 피격 가능 줄 (maxY)
+                yield return _gridPos + new Vector2Int(x, 1);   // 머리 윗 줄 (maxY + 2)
             }
         }
     }
 
+    private Vector3 BossPivotOffset => new Vector3((bossSize.x - 1) * 0.5f, (bossSize.y - 1) * 0.5f, 0f);
+
+
+
     public void TakeDamage(int amount)
     {
+        if (hpBar == null)
+        {
+            hpBar = FindFirstObjectByType<BossHpBar>(FindObjectsInactive.Include);
+        }
+
+        if (hpBar != null)
+        {
+            hpBar.Init(this);
+        }
+
         BossTakeDamage(amount);
+        PlayHitEffect();
     }
 
     public virtual void Heal(int amount)
     {
         if (amount <= 0 || IsDead) return;
         currentHp = Mathf.Min(maxHp, currentHp + amount);
+        if (hpBar == null)
+        {
+            hpBar = FindFirstObjectByType<BossHpBar>(FindObjectsInactive.Include);
+        }
         if (hpBar != null) hpBar.UpdateBar();
     }
 
     public void OnTurnUpdate()
     {
-        // Satisfies IGridEntity requirement
     }
 
     private void RegisterBossGridTarget()
     {
         if (TurnManager.Instance == null)
         {
-            Debug.LogWarning("BossHead: TurnManager가 없어 플레이어 이동공격 대상으로 등록하지 못했습니다.");
+            Debug.LogWarning("BossB: TurnManager가 없어 플레이어 이동공격 대상으로 등록하지 못했습니다.");
             return;
         }
 
@@ -90,16 +114,27 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
 
     private void UnregisterBossGridTarget()
     {
-        if (TurnManager.Instance != null)
-        {
-            TurnManager.Instance.Unregister(this);
-        }
+        TurnManager.Instance?.Unregister(this);
     }
 
-    private void OnDisable()
+    protected override void OnDisable()
     {
+        base.OnDisable();
         UnregisterBossGridTarget();
         UnregisterGridOccupancy();
+        UnblockGridOccupancy();
+    }
+
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        if (_isInitialized)
+        {
+            RegisterBossGridTarget();
+            RegisterGridOccupancy();
+            BlockGridOccupancy();
+            Debug.Log($"<color=red>[하데스 머리]</color> 재활성화로 인해 TurnManager, 격자 점유 및 진입 블록 복구 완료.");
+        }
     }
     #endregion
 
@@ -128,6 +163,10 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
         // Cache map width bounds of AttackFloor for horizontal movement range
         CacheAttackFloorWidthBounds();
 
+        // 플레이어가 최상단 바닥 줄로 올라서서 머리와 겹치거나 통과해버리는 오작동을 차단하기 위해,
+        // 머리가 움직이는 가로 영역 범위 전체의 Y = _gridPos.y - 1 (즉, maxY) 줄을 블록 처리하여 플레이어 진입을 완전히 가로막습니다.
+        BlockGridOccupancy();
+
         // Register to TurnManager
         RegisterBossGridTarget();
 
@@ -136,39 +175,16 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
         AddActionCase(BossAction.Pattern1, 50); // Laser pattern
         AddActionCase(BossAction.Pattern2, 50); // Meteor pattern
 
-        Debug.Log($"<color=red>[하데스 머리]</color> 소환 완료! 위치: {_gridPos}, 5x1 영역 등록.");
+        _isInitialized = true;
+        Debug.Log($"<color=red>[하데스 머리]</color> 소환 완료! 위치: {_gridPos}, 5x1 영역 등록 및 최상단 바닥 라인 진입 블록 완료.");
     }
 
     private void CacheAttackFloorWidthBounds()
     {
-        int minX = int.MaxValue;
-        int maxX = int.MinValue;
-        int maxY = int.MinValue;
-        bool found = false;
+        if (!hasMapBounds) CacheMapBounds();
 
-        if (GridSystem.Instance != null)
-        {
-            foreach (var cell in GridSystem.Instance.GetAllWalkableCells())
-            {
-                if (IsInAttackFloor(cell))
-                {
-                    found = true;
-                    if (cell.x < minX) minX = cell.x;
-                    if (cell.x > maxX) maxX = cell.x;
-                    if (cell.y > maxY) maxY = cell.y;
-                }
-            }
-        }
-
-        if (!found)
-        {
-            minX = mapBounds.xMin;
-            maxX = mapBounds.xMax - 1;
-            maxY = mapBounds.yMax - 1;
-        }
-
-        _minX = minX;
-        _maxX = maxX;
+        _minX = mapBounds.xMin;
+        _maxX = mapBounds.xMax - 1;
         _topY = _gridPos.y;
     }
 
@@ -176,9 +192,12 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
     {
         if (GridSystem.Instance != null)
         {
-            for (int x = 0; x < 5; x++)
+            for (int x = 0; x < bossSize.x; x++)
             {
+                // 몸통 줄 (maxY + 1) 점유 등록
                 GridSystem.Instance.RegisterOccupancy(_gridPos + new Vector2Int(x, 0), this);
+                // 플레이어가 때릴 수 있는 최상단 바닥 줄 (maxY) 점유 등록하여 플레이어 진입을 막고 정상 이동공격(TryMeleeAt) 유도
+                GridSystem.Instance.RegisterOccupancy(_gridPos + new Vector2Int(x, -1), this);
             }
         }
     }
@@ -187,9 +206,10 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
     {
         if (GridSystem.Instance != null)
         {
-            for (int x = 0; x < 5; x++)
+            for (int x = 0; x < bossSize.x; x++)
             {
                 GridSystem.Instance.UnRegisterOccupancy(_gridPos + new Vector2Int(x, 0));
+                GridSystem.Instance.UnRegisterOccupancy(_gridPos + new Vector2Int(x, -1));
             }
         }
     }
@@ -257,15 +277,15 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
 
             if (nextX >= _minX && nextX <= _maxX - 4)
             {
-                UnregisterGridOccupancy();
-                _gridPos.x = nextX;
-                RegisterGridOccupancy();
-
-                Vector3 targetWorld = GridSystem.Instance.GridToWorld(_gridPos + new Vector2Int(2, 0));
+                Vector3 targetWorld = GridSystem.Instance.GridToWorld(new Vector2Int(nextX, _gridPos.y) + new Vector2Int(2, 0));
                 
                 await transform.DOMove(targetWorld, wanderMoveDuration)
                     .SetEase(Ease.InOutSine)
                     .AsyncWaitForCompletion();
+
+                UnregisterGridOccupancy();
+                _gridPos.x = nextX;
+                RegisterGridOccupancy();
 
                 Debug.Log($"<color=red>[하데스 머리 이동 완료]</color> 현재 머리 격자 점유 영역: (X: {_gridPos.x} ~ {_gridPos.x + 4}, Y: {_gridPos.y})");
             }
@@ -284,15 +304,15 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
         int startX = moveToLeft ? _minX : _maxX - 4;
         int oppositeX = moveToLeft ? _maxX - 4 : _minX;
 
-        UnregisterGridOccupancy();
-        _gridPos.x = startX;
-        RegisterGridOccupancy();
-
-        Vector3 startWorld = GridSystem.Instance.GridToWorld(_gridPos + new Vector2Int(2, 0));
+        Vector3 startWorld = GridSystem.Instance.GridToWorld(new Vector2Int(startX, _gridPos.y) + new Vector2Int(2, 0));
         // 빠르게 (0.5초) 이동
         await transform.DOMoveX(startWorld.x, 0.5f)
             .SetEase(Ease.OutQuad)
             .AsyncWaitForCompletion();
+
+        UnregisterGridOccupancy();
+        _gridPos.x = startX;
+        RegisterGridOccupancy();
 
         if (cancelToken.IsCancellationRequested || isDying) return;
 
@@ -337,6 +357,12 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
             }
             ClearWarning(laserCells); // 주황색 경고 장판도 제거
 
+            // 레이저 공격 애니메이션 시작
+            if (bossAnimation != null)
+            {
+                bossAnimation.SetBool("HeadAttack", true);
+            }
+
             // 3. 진짜 레이저 생성 및 반대편 끝으로 부드럽게 쓸기 (1.5초 소요)
             GameObject laserObj = null;
             if (laserPrefab != null)
@@ -350,12 +376,7 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
                 laserObj.transform.localScale = new Vector3(vLength, laserVisualThickness, 1f);
             }
 
-            // 반대편 끝 목적지 계산
-            UnregisterGridOccupancy();
-            _gridPos.x = oppositeX;
-            RegisterGridOccupancy();
-
-            Vector3 oppositeWorld = GridSystem.Instance.GridToWorld(_gridPos + new Vector2Int(2, 0));
+            Vector3 oppositeWorld = GridSystem.Instance.GridToWorld(new Vector2Int(oppositeX, _gridPos.y) + new Vector2Int(2, 0));
             bool hasDamagedPlayer = false;
 
             // DOTween 이동 (1.5초 동안 선형 이동)
@@ -401,11 +422,19 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
             // 위치 정렬 보정
             transform.position = new Vector3(oppositeWorld.x, transform.position.y, transform.position.z);
 
+            UnregisterGridOccupancy();
+            _gridPos.x = oppositeX;
+            RegisterGridOccupancy();
+
             if (laserObj != null) Destroy(laserObj);
         }
         finally
         {
             if (warningLaserObj != null) Destroy(warningLaserObj);
+            if (bossAnimation != null)
+            {
+                bossAnimation.SetBool("HeadAttack", false);
+            }
         }
     }
 
@@ -524,6 +553,7 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
     {
         UnregisterBossGridTarget();
         UnregisterGridOccupancy();
+        UnblockGridOccupancy();
         
         Debug.Log("<color=red>[하데스 머리]</color> 완전히 패배함. 소멸 연출 시작.");
 
@@ -541,6 +571,62 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
         Destroy(gameObject);
     }
 
+    private void PlayHitEffect()
+    {
+        // 자식 오브젝트를 포함하여 모든 SpriteRenderer 캐싱 및 최초 색상 저장
+        if (_spriteRenderers == null)
+        {
+            _spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+            foreach (var sr in _spriteRenderers)
+            {
+                if (sr != null && !_originalColors.ContainsKey(sr))
+                {
+                    _originalColors[sr] = sr.color;
+                }
+            }
+        }
+
+        // 진행 중이던 기존 트윈 중단
+        foreach (var t in _activeTweens)
+        {
+            if (t != null && t.IsActive()) t.Kill();
+        }
+        _activeTweens.Clear();
+
+        // 빨간색으로 변경 후 0.1초 동안 원래 색상으로 복구
+        foreach (var sr in _spriteRenderers)
+        {
+            if (sr == null) continue;
+            if (_originalColors.TryGetValue(sr, out Color originColor))
+            {
+                sr.color = Color.red;
+                Tween t = sr.DOColor(originColor, 0.1f).SetEase(Ease.OutQuad);
+                _activeTweens.Add(t);
+            }
+        }
+    }
+
+    private void BlockGridOccupancy()
+    {
+        if (GridSystem.Instance != null)
+        {
+            for (int x = _minX; x <= _maxX; x++)
+            {
+                GridSystem.Instance.BlockCell(new Vector2Int(x, _gridPos.y - 1));
+            }
+        }
+    }
+
+    private void UnblockGridOccupancy()
+    {
+        if (GridSystem.Instance != null)
+        {
+            for (int x = _minX; x <= _maxX; x++)
+            {
+                GridSystem.Instance.UnblockCell(new Vector2Int(x, _gridPos.y - 1));
+            }
+        }
+    }
 }
 
 

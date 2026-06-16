@@ -115,11 +115,15 @@ public class LastBoss : BossBase
         currentHp = maxHp;
         if (hpBar != null)
         {
-            hpBar.UpdateBar();
             if (hpBar.allHpBar != null)
             {
-                hpBar.allHpBar.SetActive(false); // 손 페이즈 동안 보스 메인 HP 바 UI는 감춤
+                hpBar.allHpBar.SetActive(true); // 손 페이즈 시작할 때 공통 HP 바 UI 노출
             }
+            if (leftHand != null)
+            {
+                hpBar.Init(leftHand); // 기본 타겟을 왼손으로 설정
+            }
+            hpBar.UpdateBar();
         }
     }
 
@@ -199,10 +203,10 @@ public class LastBoss : BossBase
         {
             // 한쪽 손이 제거됨 -> 아직 살아남은 다른 쪽 손으로 HP 바 타겟 전환
             LastBossHand remainingHand = (leftHand != null) ? leftHand : rightHand;
-            if (sharedHandHpBar != null && remainingHand != null)
+            if (hpBar != null && remainingHand != null)
             {
-                sharedHandHpBar.Init(remainingHand);
-                sharedHandHpBar.UpdateBar();
+                hpBar.Init(remainingHand);
+                hpBar.UpdateBar();
             }
         }
     }
@@ -249,6 +253,18 @@ public class LastBoss : BossBase
             maxY = mapBounds.yMax - 1;
         }
 
+        // 플레이어가 최상단 바닥 줄(maxY)에 있으면, 머리 소환 및 격자 블록 시점 전에 안전하게 한 칸 아래(maxY - 1)로 이동시킵니다.
+        if (player != null && !player.IsDead && player.GridPosition.y >= maxY)
+        {
+            Vector2Int newPlayerPos = new Vector2Int(player.GridPosition.x, maxY - 1);
+            player.SetGridPosition(newPlayerPos);
+            if (VisionSystem.Instance != null)
+            {
+                VisionSystem.Instance.UpdateVision(newPlayerPos);
+            }
+            Debug.Log($"<color=orange>[하데스]</color> 플레이어가 최상단 바닥 줄에 있어 {newPlayerPos}로 위치를 재조정했습니다.");
+        }
+
         int centerX = minX + (maxX - minX) / 2;
         int topY = maxY + headSpawnYOffset;
         Vector2Int headGridPos = new Vector2Int(centerX - 2, topY);
@@ -272,6 +288,11 @@ public class LastBoss : BossBase
         }
 
         // 3. 체력 및 HP바 설정
+        if (hpBar == null)
+        {
+            hpBar = FindFirstObjectByType<BossHpBar>(FindObjectsInactive.Include);
+        }
+
         if (hpBar != null)
         {
             if (hpBar.allHpBar != null)

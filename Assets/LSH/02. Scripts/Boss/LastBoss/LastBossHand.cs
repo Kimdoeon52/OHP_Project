@@ -31,6 +31,7 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
     [SerializeField] private float fistWarningDuration = 1.0f;
     [SerializeField] private int knockbackDist = 3;
     [SerializeField] private bool onlyDamageableWhenSlammed = true;
+    [SerializeField] private int startDelayMs = 2500; // 보스 소환 연출 대기 지연 시간 (초기화 대기)
 
     [Header("Damage Parameters")]
     [SerializeField] private int fistSlamDamage = 25;
@@ -124,8 +125,9 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
         isRegisteredToTurnManager = false;
     }
 
-    private void OnDisable()
+    protected override void OnDisable()
     {
+        base.OnDisable();
         UnregisterBossGridTarget();
     }
     #endregion
@@ -171,16 +173,6 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
     protected override void OnEnable()
     {
         base.OnEnable();
-
-        // 안전장치: 부모 클래스의 base.OnEnable()에서 메인 보스 HP바(BossHpBar)를 강탈하는 것을 방지
-        if (hpBar != null)
-        {
-            if (hpBar.allHpBar != null)
-            {
-                hpBar.allHpBar.SetActive(false);
-            }
-            hpBar = null;
-        }
 
         Debug.Log($"<color=green>[하데스 손 ({side})]</color> OnEnable 호출됨. _isInitialized: {_isInitialized}");
 
@@ -253,68 +245,75 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
     private async UniTaskVoid RoamAndAttackLoop()
     {
         Debug.Log($"<color=green>[하데스 손 ({side})]</color> RoamAndAttackLoop 진입 완료!");
-        // Delay slightly for initial setup
-        await UniTask.Delay(100, cancellationToken: cancelToken.Token);
-
-        while (!isDying && !cancelToken.IsCancellationRequested)
+        try
         {
-            // 1. Roam a random number of steps
-            int stepsToTake = Random.Range(minStepsBetweenAttacks, maxStepsBetweenAttacks + 1);
-            Debug.Log($"<color=green>[하데스 손 ({side})]</color> {stepsToTake}걸음 이동 결정. 경로 길이: {(_perimeterPath != null ? _perimeterPath.Count : 0)}");
-            for (int i = 0; i < stepsToTake; i++)
+            // 보스 소환 연출 및 컷씬을 위한 대기 지연 적용
+            await UniTask.Delay(startDelayMs, cancellationToken: cancelToken.Token);
+
+            while (!isDying && !cancelToken.IsCancellationRequested)
             {
-                if (isDying || cancelToken.IsCancellationRequested) break;
-                if (_perimeterPath == null || _perimeterPath.Count == 0)
+                // 1. Roam a random number of steps
+                int stepsToTake = Random.Range(minStepsBetweenAttacks, maxStepsBetweenAttacks + 1);
+                Debug.Log($"<color=green>[하데스 손 ({side})]</color> {stepsToTake}걸음 이동 결정. 경로 길이: {(_perimeterPath != null ? _perimeterPath.Count : 0)}");
+                for (int i = 0; i < stepsToTake; i++)
                 {
-                    Debug.LogWarning($"<color=red>[하데스 손 ({side})]</color> 이동 경로가 비어 있습니다!");
-                    break;
-                }
+                    if (isDying || cancelToken.IsCancellationRequested) break;
+                    if (_perimeterPath == null || _perimeterPath.Count == 0)
+                    {
+                        Debug.LogWarning($"<color=red>[하데스 손 ({side})]</color> 이동 경로가 비어 있습니다!");
+                        break;
+                    }
 
-                int tempIndex = _currentPathIndex;
-                if (_moveClockwise)
-                    tempIndex = (tempIndex + 1) % _perimeterPath.Count;
-                else
-                    tempIndex = (tempIndex - 1 + _perimeterPath.Count) % _perimeterPath.Count;
-
-                Vector2Int nextPos = _perimeterPath[tempIndex];
-
-                if (!hasMapBounds) CacheMapBounds();
-                int centerX = mapBounds.xMin + mapBounds.width / 2;
-
-                bool crossLimit = false;
-                if (side == HandSide.Left && nextPos.x < centerX)
-                {
-                    crossLimit = true;
-                }
-                else if (side == HandSide.Right && nextPos.x > centerX)
-                {
-                    crossLimit = true;
-                }
-
-                if (crossLimit)
-                {
-                    _moveClockwise = !_moveClockwise;
+                    int tempIndex = _currentPathIndex;
                     if (_moveClockwise)
-                        _currentPathIndex = (_currentPathIndex + 1) % _perimeterPath.Count;
+                        tempIndex = (tempIndex + 1) % _perimeterPath.Count;
                     else
-                        _currentPathIndex = (_currentPathIndex - 1 + _perimeterPath.Count) % _perimeterPath.Count;
-                    nextPos = _perimeterPath[_currentPathIndex];
-                }
-                else
-                {
-                    _currentPathIndex = tempIndex;
-                }
-                Debug.Log($"<color=green>[하데스 손 ({side})]</color> {i + 1}/{stepsToTake} 걸음: {nextPos} 셀로 이동.");
-                await MoveToCell(nextPos);
+                        tempIndex = (tempIndex - 1 + _perimeterPath.Count) % _perimeterPath.Count;
 
-                await UniTask.Delay(roamStepDelayMs, cancellationToken: cancelToken.Token);
+                    Vector2Int nextPos = _perimeterPath[tempIndex];
+
+                    if (!hasMapBounds) CacheMapBounds();
+                    int centerX = mapBounds.xMin + mapBounds.width / 2;
+
+                    bool crossLimit = false;
+                    if (side == HandSide.Left && nextPos.x < centerX)
+                    {
+                        crossLimit = true;
+                    }
+                    else if (side == HandSide.Right && nextPos.x > centerX)
+                    {
+                        crossLimit = true;
+                    }
+
+                    if (crossLimit)
+                    {
+                        _moveClockwise = !_moveClockwise;
+                        if (_moveClockwise)
+                            _currentPathIndex = (_currentPathIndex + 1) % _perimeterPath.Count;
+                        else
+                            _currentPathIndex = (_currentPathIndex - 1 + _perimeterPath.Count) % _perimeterPath.Count;
+                        nextPos = _perimeterPath[_currentPathIndex];
+                    }
+                    else
+                    {
+                        _currentPathIndex = tempIndex;
+                    }
+                    Debug.Log($"<color=green>[하데스 손 ({side})]</color> {i + 1}/{stepsToTake} 걸음: {nextPos} 셀로 이동.");
+                    await MoveToCell(nextPos);
+
+                    await UniTask.Delay(roamStepDelayMs, cancellationToken: cancelToken.Token);
+                }
+
+                if (isDying || cancelToken.IsCancellationRequested) break;
+
+                // 2. Perform attack based on current position
+                Debug.Log($"<color=green>[하데스 손 ({side})]</color> Roam 완료. 현재 위치: {_gridPos}, 공격 패턴 실행 시작.");
+                await ExecuteAttackAtCurrentPosition();
             }
-
-            if (isDying || cancelToken.IsCancellationRequested) break;
-
-            // 2. Perform attack based on current position
-            Debug.Log($"<color=green>[하데스 손 ({side})]</color> Roam 완료. 현재 위치: {_gridPos}, 공격 패턴 실행 시작.");
-            await ExecuteAttackAtCurrentPosition();
+        }
+        catch (System.OperationCanceledException)
+        {
+            Debug.Log($"<color=green>[하데스 손 ({side})]</color> RoamAndAttackLoop가 취소되었습니다.");
         }
     }
 
@@ -740,6 +739,18 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
             return;
         }
 
+        // 자가 치유: 런타임 참조 유실 시 재탐색
+        if (hpBar == null)
+        {
+            hpBar = FindFirstObjectByType<BossHpBar>(FindObjectsInactive.Include);
+        }
+
+        // 공통 HP바 타겟을 자신으로 즉시 바인딩
+        if (hpBar != null)
+        {
+            hpBar.Init(this);
+        }
+
         int beforeHp = currentHp;
         currentHp = Mathf.Max(0, currentHp - amount);
         int finalDamage = Mathf.Max(0, beforeHp - currentHp);
@@ -754,10 +765,9 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
             ));
         }
 
-        if (handHpBar != null)
+        if (hpBar != null)
         {
-            handHpBar.Init(this);
-            handHpBar.UpdateBar();
+            hpBar.UpdateBar();
         }
 
         if (_ownerBoss != null)
@@ -775,10 +785,16 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
     {
         if (IsDead) return;
         currentHp = Mathf.Min(maxHp, currentHp + amount);
-        if (handHpBar != null)
+
+        if (hpBar == null)
         {
-            handHpBar.Init(this);
-            handHpBar.UpdateBar();
+            hpBar = FindFirstObjectByType<BossHpBar>(FindObjectsInactive.Include);
+        }
+
+        if (hpBar != null)
+        {
+            hpBar.Init(this);
+            hpBar.UpdateBar();
         }
     }
 
