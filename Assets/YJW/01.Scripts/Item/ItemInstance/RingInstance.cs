@@ -3,11 +3,11 @@ using static UnityEngine.Rendering.DebugUI;
 
 public class RingInstance : EquipmentInstance
 {
-	public RingData Weapon => data as RingData;
-    public int enhanceValue => enhanceLevel * Weapon.Value;
+	public RingData Ring => data as RingData;
+    public int enhanceValue => enhanceLevel * Ring.Value;
     private void OnEquip()
     {
-        switch (Weapon.ringType)
+        switch (Ring.ringType)
         {
             case RingType.Fast:
                 NYHPlayerStats.Instance.AddStat(NYHStatType.MoveSpeed, enhanceValue);
@@ -32,11 +32,16 @@ public class RingInstance : EquipmentInstance
 
 
 
-    public override string GetToolTipStats() =>
-		$"{Weapon.Name}\n" +
-		$"----------\n" +
-		$"{Weapon.Description}\n" +
-		$"착용 힘: {Weapon.CanUseStrength}\n" +
-		$"효과: {Weapon.EffectDescription} {(Weapon.Value >= 0 ? "+" : "")}{Weapon.Value}";
+    public override string GetToolTipStats()
+    {
+        if (!isAnalyzed)
+            return Ring.GetToolTipStats();
+
+        return $"[{Ring.Name}] {(enhanceLevel > 0 ? $"<color=yellow>+{enhanceLevel}</color>" : "")}\n" +
+               $"--------------------\n" +
+               $"{Ring.Description}\n" +
+               $"착용 힘: {Ring.CanUseStrength}\n" +
+               $"효과: {Ring.EffectDescription} {(Ring.Value >= 0 ? "+" : "")}{Ring.Value}";
+    }
 
 }

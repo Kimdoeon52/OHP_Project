@@ -21,4 +21,14 @@ public class CloseWeapon : ItemBase
 	{
 		return new WeaponInstance { data = this };
 	}
+
+    public override string GetToolTipStats()
+    {
+        return $"[{Name}]  <color=red>미감정</color>\n" +
+               $"--------------------\n" +
+               $"{Description}\n" +
+               $"착용 힘: {CanUseStrength}\n" +
+               $"데미지: {MinDamage}~{MaxDamage}" +
+               $"공격속도: {AttackSpeed}";
+    }
 }

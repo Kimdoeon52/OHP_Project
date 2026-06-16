@@ -19,7 +19,7 @@ public class MagicData : ScriptableObject
 	[SerializeField] private string description;
 	[SerializeField] private MagicType magicType;
 
-	public string MasicName => magicName;
+	public string MagicName => magicName;
 	public string Description => description;
 	public MagicType Type => magicType;
 

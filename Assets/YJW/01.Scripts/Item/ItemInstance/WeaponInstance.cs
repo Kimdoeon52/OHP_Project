@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Net.NetworkInformation;
+using UnityEngine;
 
 public class WeaponInstance : EquipmentInstance
 {
@@ -9,10 +10,18 @@ public class WeaponInstance : EquipmentInstance
 
     public int GetDamage() => Random.Range(GetMinDamage(), GetMaxDamage() + 1);
 
-    public override string GetToolTipStats() =>
-        $"{Weapon.Name}\n" +
-        $"----------\n" +
-        $"{Weapon.Description}\n" +
-        $"착용 힘: {Weapon.CanUseStrength}\n" +
-        $"데미지: {GetMinDamage()}~{GetMaxDamage()}";
+    public override string GetToolTipStats()
+    {
+        if (!isAnalyzed)
+            return Weapon.GetToolTipStats();
+
+        return $"[{Weapon.Name}] {(enhanceLevel > 0 ? $"<color=yellow>+{enhanceLevel}</color>" : "")}\n" +
+               $"--------------------\n" +
+               $"{Weapon.Description}\n" +
+               $"착용 힘: {Weapon.CanUseStrength}\n" +
+               $"데미지: {GetMinDamage()}~{GetMaxDamage()}" + 
+               $"공격속도: {Weapon.AttackSpeed}" +
+               $"{(curse != null ? $"\n{curse.CurseName}: {curse.Description}" : "")}" +
+               $"{(magic != null ? $"\n{magic.MagicName}: {magic.Description}" : "")}";
+    }
 }

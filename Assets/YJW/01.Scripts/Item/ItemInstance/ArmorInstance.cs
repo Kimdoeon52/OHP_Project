@@ -20,6 +20,8 @@ public class ArmorInstance : EquipmentInstance
                $"--------------------\n" +
                $"{Armor.Description}\n" +
                $"착용 힘: {Armor.CanUseStrength}\n" +
-               $"피해 감소: {GetMinDefense()}~{GetMaxDefense()}";
+               $"피해 감소: {GetMinDefense()}~{GetMaxDefense()}" +
+               $"{(curse != null ? $"\n{curse.CurseName}: {curse.Description}" : "")}" +
+               $"{(magic != null ? $"\n{magic.MagicName}: {magic.Description}" : "")}";
     }
 }

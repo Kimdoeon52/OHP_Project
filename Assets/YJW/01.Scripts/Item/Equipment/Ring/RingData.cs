@@ -51,4 +51,13 @@ public class RingData : ItemBase
         // 강화 주문서가 enhanceLevel을 올릴 수 있도록 반지도 장비 인스턴스로 생성한다.
         return new RingInstance { data = this };
     }
+
+    public override string GetToolTipStats()
+    {
+        return $"[{Name}]  <color=red>미감정</color>\n" +
+               $"--------------------\n" +
+               $"{Description}\n" +
+               $"착용 힘: {CanUseStrength}\n" +
+               $"효과: {EffectDescription} +{value}";
+    }
 }
