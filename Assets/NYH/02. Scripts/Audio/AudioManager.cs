@@ -108,9 +108,15 @@ public class AudioManager : MonoBehaviour
     private void Awake()
     {
         if (Instance != null && Instance != this)
-            Debug.LogWarning("AudioManager: 씬에 AudioManager가 둘 이상 있습니다. 마지막으로 켜진 인스턴스를 사용합니다.");
+        {
+            Debug.LogWarning("AudioManager: 씬에 AudioManager가 둘 이상 있어 새 인스턴스를 제거합니다.");
+            Destroy(gameObject);
+            return;
+        }
 
         Instance = this;
+        // 씬 전환 중에도 BGM과 볼륨 설정이 끊기지 않도록 최초 인스턴스를 유지한다.
+        DontDestroyOnLoad(gameObject);
 
         ResolveBgmSources();
         ResolveSfxPool();
@@ -159,6 +165,34 @@ public class AudioManager : MonoBehaviour
     public void SetSfxVolume(float volume)
     {
         SetVolume(SfxPrefsKey, SfxMixerParameter, volume);
+    }
+
+    public void BindVolumeSliders(Slider masterSlider, Slider bgmSlider, Slider sfxSlider)
+    {
+        UnsubscribeSliders();
+
+        masterVolumeSlider = masterSlider;
+        bgmVolumeSlider = bgmSlider;
+        sfxVolumeSlider = sfxSlider;
+
+        InitializeSlider(masterVolumeSlider, MasterPrefsKey, MasterMixerParameter);
+        InitializeSlider(bgmVolumeSlider, BgmPrefsKey, BgmMixerParameter);
+        InitializeSlider(sfxVolumeSlider, SfxPrefsKey, SfxMixerParameter);
+
+        SubscribeSliders();
+    }
+
+    public void UnbindVolumeSliders(Slider masterSlider, Slider bgmSlider, Slider sfxSlider)
+    {
+        if (masterVolumeSlider != masterSlider && bgmVolumeSlider != bgmSlider && sfxVolumeSlider != sfxSlider)
+            return;
+
+        UnsubscribeSliders();
+
+        // 씬 UI는 씬 전환 때 파괴되므로 유지되는 AudioManager가 오래된 참조를 잡지 않게 비운다.
+        masterVolumeSlider = null;
+        bgmVolumeSlider = null;
+        sfxVolumeSlider = null;
     }
 
     public void PlayBgm(AudioClip clip)
