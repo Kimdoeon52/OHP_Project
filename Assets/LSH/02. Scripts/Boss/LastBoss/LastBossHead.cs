@@ -421,13 +421,27 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
             // 플레이어의 실시간 최신 위치를 타겟팅
             Vector2Int targetCell = player.GridPosition;
 
-            // 1. 1x1 주황색 경고 장판 0.3초 노출
-            ShowWarning(targetCell);
+            // 3x3 범위 계산
+            List<Vector2Int> targetCells = new List<Vector2Int>();
+            for (int x = -1; x <= 1; x++)
+            {
+                for (int y = -1; y <= 1; y++)
+                {
+                    Vector2Int cell = targetCell + new Vector2Int(x, y);
+                    if (GridSystem.Instance != null && GridSystem.Instance.IsInBounds(cell))
+                    {
+                        targetCells.Add(cell);
+                    }
+                }
+            }
+
+            // 1. 3x3 주황색 경고 장판 0.3초 노출
+            ShowWarning(targetCells);
             await UniTask.Delay(300, cancellationToken: cancelToken.Token);
 
             if (cancelToken.IsCancellationRequested || isDying)
             {
-                ClearWarning(targetCell);
+                ClearWarning(targetCells);
                 break;
             }
 
@@ -438,6 +452,11 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
                 Vector3 spawnPos = targetWorld + new Vector3(3f, 10f, 0f);
 
                 GameObject effect = Instantiate(meteorPrefab, spawnPos, Quaternion.identity);
+                
+                // 운석의 크기 Scale을 3배로 증가 (3x3 크기)
+                Vector3 originalScale = effect.transform.localScale;
+                Vector3 startScale = originalScale * 3f;
+                effect.transform.localScale = startScale;
                 
                 // 낙하 진행
                 await effect.transform.DOMove(targetWorld, 0.3f)
@@ -450,29 +469,50 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
                     CameraFollow.Instance.Shake(0.15f, 0.3f);
                 }
 
-                if (player != null && !player.IsDead && player.GridPosition == targetCell)
+                // 플레이어가 3x3 영역 내에 있는지 검사
+                bool hit = false;
+                foreach (var cell in targetCells)
                 {
-                    player.TakeDamage(meteorDamage);
-                    Debug.Log($"<color=red>[용암 낙하 타격]</color> 플레이어가 {targetCell} 에서 용암에 맞았습니다!");
+                    if (player != null && !player.IsDead && player.GridPosition == cell)
+                    {
+                        hit = true;
+                        break;
+                    }
                 }
 
-                // 바닥 안착 후 크기를 1.5배로 서서히(0.3초) 확대
-                Vector3 originalScale = effect.transform.localScale;
-                effect.transform.DOScale(originalScale * 1.5f, 0.3f).SetEase(Ease.OutQuad);
+                if (hit)
+                {
+                    player.TakeDamage(meteorDamage);
+                    Debug.Log($"<color=red>[용암 낙하 타격]</color> 플레이어가 3x3 범위 내에서 맞았습니다!");
+                }
+
+                // 바닥 안착 후 크기를 1.5배로 서서히(0.3초) 확대 (최종 4.5배)
+                effect.transform.DOScale(startScale * 1.5f, 0.3f).SetEase(Ease.OutQuad);
 
                 // 4. 경고 타일 및 이펙트 소멸 정리
-                ClearWarning(targetCell);
+                ClearWarning(targetCells);
                 Destroy(effect, 0.5f); // 부풀고 0.5초 뒤 회수
             }
             else
             {
                 // 프리팹이 없을 경우 0.3초 대기 후 데미지 처리
                 await UniTask.Delay(300, cancellationToken: cancelToken.Token);
-                if (player != null && !player.IsDead && player.GridPosition == targetCell)
+                
+                bool hit = false;
+                foreach (var cell in targetCells)
+                {
+                    if (player != null && !player.IsDead && player.GridPosition == cell)
+                    {
+                        hit = true;
+                        break;
+                    }
+                }
+
+                if (hit)
                 {
                     player.TakeDamage(meteorDamage);
                 }
-                ClearWarning(targetCell);
+                ClearWarning(targetCells);
             }
 
             // 각 용암 드롭 사이의 간격 대기 (0.2초)
