@@ -15,17 +15,23 @@ MonoBehaviour:
   entries:
   - eventId: 1
     cue: {fileID: 0}
-  - eventId: 5
+  - eventId: 6
     cue: {fileID: 0}
   - eventId: 3
     cue: {fileID: 0}
   - eventId: 4
     cue: {fileID: 0}
   - eventId: 6
-    cue: {fileID: 0}
+    cue: {fileID: 11400000, guid: baffc0b857b80a942a65017b24911275, type: 2}
   - eventId: 7
     cue: {fileID: 0}
   - eventId: 8
     cue: {fileID: 0}
   - eventId: 37
     cue: {fileID: 0}
+  - eventId: 24
+    cue: {fileID: 11400000, guid: 7868e666c8c01f04bbc896917fda4d2d, type: 2}
+  - eventId: 23
+    cue: {fileID: 0}
+  - eventId: 22
+    cue: {fileID: 11400000, guid: 598ee9846dc834645a765e260b14dad5, type: 2}

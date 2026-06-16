@@ -21610,7 +21610,7 @@ MonoBehaviour:
   defaultBgmFadeSeconds: 0.75
   sfxPoolSize: 8
   expandSfxPoolWhenFull: 1
-  audioCueTable: {fileID: 0}
+  audioCueTable: {fileID: 11400000, guid: f9325e07f9e32a947a94f1beba394bd5, type: 2}
   playerDamagedCue: {fileID: 11400000, guid: f2cc6c4d4b093d240af2e74194c7e7b4, type: 2}
   enemyKilledCue: {fileID: 11400000, guid: 37e08d12ea7809545a2f9b2c41891863, type: 2}
   trapTriggeredCue: {fileID: 0}
