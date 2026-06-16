@@ -5,7 +5,7 @@ public class RingInstance : EquipmentInstance
 {
 	public RingData Ring => data as RingData;
     public int enhanceValue => enhanceLevel * Ring.Value;
-    private void OnEquip()
+    public void OnEquip()
     {
         switch (Ring.ringType)
         {
@@ -19,13 +19,38 @@ public class RingInstance : EquipmentInstance
                 NYHPlayerStats.Instance.AddStat(NYHStatType.Strength, enhanceValue);
                 break;
             case RingType.Snipe:
-                // 투척 무기 강화 + 1
+                ThrowableWeaponInstance.snipeBonus++;
                 break;
             case RingType.Avoidance:
                 NYHPlayerStats.Instance.AddStat(NYHStatType.Evasion, enhanceValue);
                 break;
             case RingType.Accuracy:
                 NYHPlayerStats.Instance.AddStat(NYHStatType.Accuracy, enhanceValue);
+                break;
+        }
+    }
+
+    public void OnUnequip()
+    {
+        switch (Ring.ringType)
+        {
+            case RingType.Fast:
+                NYHPlayerStats.Instance.AddStat(NYHStatType.MoveSpeed, -enhanceValue);
+                break;
+            case RingType.Hit:
+                NYHPlayerStats.Instance.AddStat(NYHStatType.AttackSpeed, -enhanceValue);
+                break;
+            case RingType.Strength:
+                NYHPlayerStats.Instance.AddStat(NYHStatType.Strength, -enhanceValue);
+                break;
+            case RingType.Snipe:
+                ThrowableWeaponInstance.snipeBonus--;
+                break;
+            case RingType.Avoidance:
+                NYHPlayerStats.Instance.AddStat(NYHStatType.Evasion, -enhanceValue);
+                break;
+            case RingType.Accuracy:
+                NYHPlayerStats.Instance.AddStat(NYHStatType.Accuracy, -enhanceValue);
                 break;
         }
     }

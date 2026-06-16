@@ -356,6 +356,8 @@ public class NYHEquipmentController : MonoBehaviour
         if (_equippedViews.TryGetValue(key, out itemView))
             _equippedViews.Remove(key);
 
+        NotifyRingUnequip(item);
+
         // 장비가 빠지면 그 장비가 주던 최종 초 단위 보정도 즉시 빠져야 한다.
         // 기존 정수 스탯과 finalStatModifiers 모두 장착 중인 전체 장비를 다시 훑어서 새 목록으로 교체한다.
         RebuildEquipmentStats("[해제]", item);
@@ -454,6 +456,7 @@ public class NYHEquipmentController : MonoBehaviour
             if (_equippedViews.TryGetValue(key, out replacedItem))
                 _equippedViews.Remove(key);
 
+            NotifyRingUnequip(oldItem);
             OnUnequipped?.Invoke(key.Slot, oldItem);
             OnInventoryItemUnequipped?.Invoke(key.Slot, key.Index, replacedItem);
         }
@@ -474,6 +477,7 @@ public class NYHEquipmentController : MonoBehaviour
         // 같은 source(this)로 SetModifiers를 호출하기 때문에 이전 장비 보정과 중복 누적되지 않는다.
         RebuildEquipmentStats("[장착]", item);
         RebuildFinalStatModifiers("[장착]", item);
+        NotifyRingEquip(item);
 
         OnEquipped?.Invoke(key.Slot, item);
         OnInventoryItemEquipped?.Invoke(key.Slot, key.Index, inventoryView);
@@ -929,6 +933,20 @@ public class NYHEquipmentController : MonoBehaviour
     {
         RebuildEquipmentStats();
         RebuildFinalStatModifiers();
+    }
+
+    // 반지 장착 시 RingInstance.OnEquip() 호출
+    private static void NotifyRingEquip(NYHEquipmentItemInstance item)
+    {
+        if (item?.SourceInstance is RingInstance ring)
+            ring.OnEquip();
+    }
+
+    // 반지 해제 시 RingInstance.OnUnequip() 호출
+    private static void NotifyRingUnequip(NYHEquipmentItemInstance item)
+    {
+        if (item?.SourceInstance is RingInstance ring)
+            ring.OnUnequip();
     }
 }
 

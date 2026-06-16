@@ -46,6 +46,7 @@ public class StatusController : MonoBehaviour
     public bool IsHungry => HasStatus(StatusType.Hunger);
     public bool IsFloating => HasStatus(StatusType.Float);
     public bool IsHasted => HasStatus(StatusType.Haste);
+    public bool IsPurifiedStatus => HasStatus(StatusType.Purified);
 
     // 기존 코드 호환용 별칭입니다.
     public bool IsCrippled => IsSlowed;
@@ -73,6 +74,8 @@ public class StatusController : MonoBehaviour
     public void ApplyStatus(StatusRequest request)
     {
         if (request.DurationTurns <= 0 && request.Power <= 0) return;
+
+        if (IsPurified(request.StatusType)) return;
 
         // 상태 로직은 이 컴포넌트가 담당하고, 색/아이콘 같은 표시는 PlayerStatusVisual이 담당합니다.
         // 몬스터와 보스는 StatusController가 동적으로 붙는 경우가 많으므로 여기서 비주얼도 같이 보장합니다.
@@ -266,6 +269,17 @@ public class StatusController : MonoBehaviour
     private bool IsUnremovable(StatusType type)
     {
         return type == StatusType.Bleed;
+    }
+
+    // 정화 상태가 활성화된 동안 Poison·Slow·Cripple은 새로 걸리지 않는다.
+    private bool IsPurified(StatusType incoming)
+    {
+        if (!IsPurifiedStatus)
+            return false;
+
+        return incoming == StatusType.Poison
+            || incoming == StatusType.Slow
+            || incoming == StatusType.Cripple;
     }
 
     private float GetTickInterval(StatusType type)

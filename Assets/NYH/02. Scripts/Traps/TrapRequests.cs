@@ -1,25 +1,26 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public enum StatusType
 {
-    Poison = 0,     // µ¶
-    Bleed = 1,      // ÃâÇ÷
-    Cripple = 2,    // ºÒ±¸ / Àı¸§¹ßÀÌ / ÀÌµ¿ ºÒ´É °è¿­
-    Blind = 3,      // ½Ç¸í
-    Weakness = 4,   // ¾àÈ­
-    Curse = 5,      // ÀúÁÖ
-    Ooze = 6,       // Á¡¾× / ²öÀûÀÓ
-    Chill = 7,      // ³Ã±â
-    Burn = 8,       // È­»ó
-    Shock = 9,      // °¨Àü
-    Confusion = 10, // È¥¶õ
-    Corrosion = 11, // ºÎ½Ä
-    Paralysis = 12, // ¸¶ºñ
-    Fall = 13,      // Ãß¶ô
-    Slow = 14,      // µĞÈ­
-    Hunger = 15,    // ±¾ÁÖ¸²
-    Float = 16,     // ºÎÀ¯
-    Haste = 17      // ½Å¼Ó
+    Poison = 0,     // ï¿½ï¿½
+    Bleed = 1,      // ï¿½ï¿½ï¿½ï¿½
+    Cripple = 2,    // ï¿½Ò±ï¿½ / ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ / ï¿½Ìµï¿½ ï¿½Ò´ï¿½ ï¿½è¿­
+    Blind = 3,      // ï¿½Ç¸ï¿½
+    Weakness = 4,   // ï¿½ï¿½È­
+    Curse = 5,      // ï¿½ï¿½ï¿½ï¿½
+    Ooze = 6,       // ï¿½ï¿½ï¿½ï¿½ / ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    Chill = 7,      // ï¿½Ã±ï¿½
+    Burn = 8,       // È­ï¿½ï¿½
+    Shock = 9,      // ï¿½ï¿½ï¿½ï¿½
+    Confusion = 10, // È¥ï¿½ï¿½
+    Corrosion = 11, // ï¿½Î½ï¿½
+    Paralysis = 12, // ï¿½ï¿½ï¿½ï¿½
+    Fall = 13,      // ï¿½ß¶ï¿½
+    Slow = 14,      // ï¿½ï¿½È­
+    Hunger = 15,    // ï¿½ï¿½ï¿½Ö¸ï¿½
+    Float = 16,     // ï¿½ï¿½ï¿½ï¿½
+    Haste = 17,     // ì‹ ì†
+    Purified = 18   // ì •í™” (Poison, Slow ë©´ì—­)
 }
 
 public enum TrapTerrainType

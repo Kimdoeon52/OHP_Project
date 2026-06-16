@@ -9,7 +9,9 @@ public enum PotionType
     experience,
     fire,
     ice,
-    moveSpeed
+    moveSpeed,
+    levitation,
+    purify
 }
 
 [CreateAssetMenu(fileName = "NewPotion", menuName = "Item/Potion/NewPotion")]
@@ -42,6 +44,12 @@ public class PotionData : ItemBase
                 break;
             case PotionType.moveSpeed:
                 AddNYHStat(NYHStatType.MoveSpeed);
+                break;
+            case PotionType.levitation:
+                ApplyPlayerStatus(StatusType.Float, value);
+                break;
+            case PotionType.purify:
+                PurifyPlayer();
                 break;
         }
     }
@@ -84,5 +92,39 @@ public class PotionData : ItemBase
             return;
         }
         health.Heal(amount);
+    }
+
+    // 플레이어에게 지정 상태이상을 적용한다. value 필드를 지속 시간(초)으로 사용
+    private void ApplyPlayerStatus(StatusType type, int durationSeconds)
+    {
+        StatusController status = GetPlayerStatusController();
+        if (status == null)
+        {
+            Debug.LogWarning("PotionData: StatusController를 찾지 못해 포션 효과를 적용하지 못했습니다.");
+            return;
+        }
+        status.ApplyStatus(new StatusRequest(null, Vector2Int.zero, type, durationSeconds, 1, null));
+    }
+
+    // 정화 포션: 독·둔화 제거 후 10초간 면역
+    private void PurifyPlayer()
+    {
+        StatusController status = GetPlayerStatusController();
+        if (status == null)
+        {
+            Debug.LogWarning("PotionData: StatusController를 찾지 못해 정화 포션 효과를 적용하지 못했습니다.");
+            return;
+        }
+        status.TryRemoveStatus(StatusType.Poison);
+        status.TryRemoveStatus(StatusType.Slow);
+        status.TryRemoveStatus(StatusType.Cripple);
+        status.ApplyStatus(new StatusRequest(null, Vector2Int.zero, StatusType.Purified, value, 1, null));
+    }
+
+    private static StatusController GetPlayerStatusController()
+    {
+        if (GameManager.Instance?.player != null)
+            return GameManager.Instance.player.GetComponent<StatusController>();
+        return null;
     }
 }

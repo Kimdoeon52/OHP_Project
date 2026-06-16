@@ -6,20 +6,28 @@ public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
     public ThrowableWeapon weapon => data as ThrowableWeapon;
     public List<int> currentDurabilities = new();
 
-    public int GetMinDamage() => weapon.MinDamage + enhanceLevel * weapon.MinEnhanceBonus;
-    public int GetMaxDamage() => weapon.MaxDamage + enhanceLevel * weapon.MaxEnhanceBonus;
+    // 저격의 반지가 장착된 동안 모든 투척 무기에 더해지는 유효 강화 보너스
+    public static int snipeBonus = 0;
+
+    public int GetMinDamage() => weapon.MinDamage + (enhanceLevel + snipeBonus) * weapon.MinEnhanceBonus;
+    public int GetMaxDamage() => weapon.MaxDamage + (enhanceLevel + snipeBonus) * weapon.MaxEnhanceBonus;
 
     public int GetDamage() => Random.Range(GetMinDamage(), GetMaxDamage() + 1);
 
-    public string GetTooltipStats()
+    public override string GetToolTipStats()
     {
-        string duraStr = string.Join(", ", currentDurabilities);
-        return $"{weapon.Name}\n" +
-               $"----------\n" +
+        int count = currentDurabilities.Count;
+        string enhanceStr = enhanceLevel > 0 ? $" <color=yellow>+{enhanceLevel}</color>" : "";
+        string countStr = count > 0 ? $" ×{count}" : "";
+        string duraStr = count > 0 ? string.Join(" / ", currentDurabilities) : "-";
+
+        return $"{weapon.Name}{enhanceStr}{countStr}\n" +
+               $"─────────────\n" +
                $"{weapon.Description}\n" +
-               $"착용 힘: {weapon.CanUseStrength}\n" +
-               $"데미지: {GetMinDamage()}~{GetMaxDamage()}\n" +
-               $"내구도: ({duraStr})";
+               $"\n" +
+               $"데미지   {GetMinDamage()}~{GetMaxDamage()}\n" +
+               $"힘 요구   {weapon.CanUseStrength}\n" +
+               $"내구도   {duraStr}";
     }
 
     public void Throw(Vector2Int targetCell)
