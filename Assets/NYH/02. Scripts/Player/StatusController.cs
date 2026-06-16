@@ -101,6 +101,7 @@ public class StatusController : MonoBehaviour
 
         _statuses.Add(new ActiveStatus(request.StatusType, duration, power, tickInterval));
         RaiseStatusChanged();
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.StatusApplied);
     }
 
     /// <summary>

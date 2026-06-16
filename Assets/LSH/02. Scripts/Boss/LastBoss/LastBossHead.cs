@@ -298,6 +298,7 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
     private async UniTask HeadLaserSweepPattern()
     {
         if (player == null || player.IsDead) return;
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.LastBoss_HeadLaser);
 
         // 1. 좌측 혹은 우측 중 하나를 결정해 보스를 해당 끝으로 빠르게 이동
         bool moveToLeft = Random.value < 0.5f;
@@ -442,6 +443,7 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
     private async UniTask HeadLavaPattern()
     {
         if (player == null || player.IsDead) return;
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.LastBoss_Meteor);
 
         for (int i = 0; i < 5; i++)
         {

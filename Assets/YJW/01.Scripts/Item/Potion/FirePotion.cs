@@ -13,6 +13,7 @@ public class FirePotion : ThrowablePotion
 
     public override void Throw(Vector2Int targetPos)
     {
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.PotionThrow);
         Vector3 playerPos = GameManager.Instance.player.transform.position;
         GameObject projectile = ObjectPool.Instance.Get(PoolType.FirePotion);
         projectile.transform.position = playerPos;
@@ -20,6 +21,7 @@ public class FirePotion : ThrowablePotion
         // 착지했을 때 base.Throw 호출하도록 투사체에 전달
         projectile.GetComponent<Projectile>().Launch(targetPos, () =>
         {
+            GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.PotionImpactFire);
             base.Throw(targetPos);                                       // 3x3 효과 적용
             RequestFireTerrain(targetPos);                               // 기존 함정 지형 시스템에 불 장판 판정을 알려 화상 상태이상을 재사용
             ObjectPool.Instance.Return(PoolType.FirePotion, projectile); // 착지 후 반납

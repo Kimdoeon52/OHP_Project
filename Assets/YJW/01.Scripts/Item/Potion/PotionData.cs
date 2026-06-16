@@ -27,31 +27,43 @@ public class PotionData : ItemBase
             Debug.LogWarning("PotionData: NYHPlayerStats가 씬에 없어 포션 효과를 적용하지 못했습니다.");
             return;
         }
+
+        bool used = false;
         switch(potionType)
         {
             case PotionType.HP: 
                 if(GridPlayerHealth.Instance.CurrentHp >= GridPlayerHealth.Instance.MaxHp) return;
                 HealPlayer(value); //체력 증가 수정
+                used = true;
                 break;
             case PotionType.strength:
                 AddNYHStat(NYHStatType.Strength);
+                used = true;
                 break;
             case PotionType.sight:
                 // 맵 시야 밝힘
+                used = true;
                 break;
             case PotionType.experience:
                 AddPlayerExp(value); 
+                used = true;
                 break;
             case PotionType.moveSpeed:
                 AddNYHStat(NYHStatType.MoveSpeed);
+                used = true;
                 break;
             case PotionType.levitation:
                 ApplyPlayerStatus(StatusType.Float, value);
+                used = true;
                 break;
             case PotionType.purify:
                 PurifyPlayer();
+                used = true;
                 break;
         }
+
+        if (used)
+            GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.PotionDrink);
     }
 
     public override ItemInstance CreateInstance()

@@ -210,6 +210,7 @@ namespace PrototypeRT
 
             // 조건 검사는 이 컨트롤러에서 먼저 하고, 실제 상태 변경은 YJW Scroll의 Use(ItemInstance)에 위임합니다.
             _activeItem.ItemData.Use(target.ItemInstance);
+            RequestScrollAudio(_scrollKind);
 
             // 장착 중인 장비는 강화/감정/정화로 ItemInstance 내부 값만 바뀝니다.
             // 장착/해제 이벤트가 발생하지 않으므로 장비 컨트롤러에 직접 알려 스탯 UI를 즉시 갱신합니다.
@@ -368,6 +369,20 @@ namespace PrototypeRT
                 InventoryScrollTargetKind.Purify => purifyCursor,
                 _ => null
             };
+        }
+
+        private static void RequestScrollAudio(InventoryScrollTargetKind kind)
+        {
+            AudioEventId eventId = kind switch
+            {
+                InventoryScrollTargetKind.Analyze => AudioEventId.ScrollAnalyze,
+                InventoryScrollTargetKind.Reinforce => AudioEventId.ScrollReinforce,
+                InventoryScrollTargetKind.Purify => AudioEventId.ScrollPurify,
+                _ => AudioEventId.ScrollUsed
+            };
+
+            GameEvents.OnAudioEventRequested?.Invoke(eventId);
+            GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.ScrollUsed);
         }
 
         /// <summary>

@@ -200,6 +200,10 @@ public class BossBase : EnemyNormalBASE
         currentHp -= amount;
         int finalDamage = Mathf.Max(0, beforeHp - currentHp);
         PublishBossCombatText(finalDamage);
+        if (finalDamage > 0)
+        {
+            GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.BossHit);
+        }
         Debug.Log($"<color=red>[보스 데미지]</color> 보스가 {amount}만큼 데미지를 받음. 현재 HP: {currentHp}");
         if (hpBar != null) hpBar.UpdateBar();
 
@@ -258,6 +262,7 @@ public class BossBase : EnemyNormalBASE
         isBossAttacking = true; //보스가 공격 중임을 나타냄
         BossAction bossAction = BossPatternPer();
         await UniTask.Delay(patternDelay, cancellationToken: cancelToken.Token); //패턴 선택 후 딜레이
+        RequestBossPatternSfx(bossAction);
         switch(bossAction)
         {
             case BossAction.Pattern1:
@@ -280,6 +285,7 @@ public class BossBase : EnemyNormalBASE
         isBossAttacking = true; //보스가 공격 중임을 나타냄
         BossAction bossAction = BossPatternPer();
         await UniTask.Delay(patternDelay, cancellationToken: cancelToken.Token); //패턴 선택 후 행동 시작까지의 딜레이
+        RequestBossPatternSfx(bossAction);
         switch (bossAction)
         {
             case BossAction.Pattern1:
@@ -296,6 +302,10 @@ public class BossBase : EnemyNormalBASE
                 break;
         }
     }
+    protected virtual void RequestBossPatternSfx(BossAction bossAction)
+    {
+    }
+
     protected virtual BossAction BossPatternPer() //보스 패턴 확률 계산
     {
         int totalWeight = 0;

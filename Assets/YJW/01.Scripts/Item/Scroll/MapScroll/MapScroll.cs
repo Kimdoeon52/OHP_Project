@@ -20,5 +20,8 @@ public class MapScroll : ItemBase
 		// 플레이어 주변은 현재 시야로 다시 밝힘.
 		Vector2Int playerPos = GridSystem.Instance.WorldToGrid(GameManager.Instance.player.transform.position);
 		VisionSystem.Instance.UpdateVision(playerPos);
+
+		GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.ScrollMapReveal);
+		GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.ScrollUsed);
 	}
 }

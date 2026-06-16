@@ -663,6 +663,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         isBossAttacking = true;
         BossAction bossAction = BossPatternPer();
         await UniTask.Delay(patternDelay, cancellationToken: cancelToken.Token);
+        RequestBossPatternSfx(bossAction);
         switch (bossAction)
         {
             case BossAction.Pattern1:
@@ -674,6 +675,22 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             case BossAction.Pattern3:
                 Phase2Pattern1().Forget();
                 break;
+        }
+    }
+
+    protected override void RequestBossPatternSfx(BossAction bossAction)
+    {
+        AudioEventId eventId = bossAction switch
+        {
+            BossAction.Pattern1 => AudioEventId.BossB_Pattern1,
+            BossAction.Pattern2 => AudioEventId.BossB_Pattern2,
+            BossAction.Pattern3 => AudioEventId.BossB_Pattern3,
+            _ => AudioEventId.None
+        };
+
+        if (eventId != AudioEventId.None)
+        {
+            GameEvents.OnAudioEventRequested?.Invoke(eventId);
         }
     }
 

@@ -471,6 +471,8 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
     {
         if (player == null || player.IsDead) return;
 
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.LastBoss_HandSlam);
+
         Vector2Int targetCenter = player.GridPosition;
 
         // 3x3 cells centered on player
@@ -548,6 +550,8 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
     private async UniTask ExecuteOpenHandMode()
     {
         if (!hasMapBounds) CacheMapBounds();
+
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.LastBoss_Sweep);
 
         int baseTargetY = _gridPos.y;
 
@@ -627,6 +631,8 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
     private async UniTask ExecuteScratchMode()
     {
         if (!hasMapBounds) CacheMapBounds();
+
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.LastBoss_Scratch);
 
         int baseTargetX = _gridPos.x;
 
@@ -757,6 +763,8 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
 
         if (finalDamage > 0)
         {
+            GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.BossHit);
+
             GameEvents.OnCombatTextRequested?.Invoke(new CombatTextRequest(
                 transform.position,
                 finalDamage.ToString(),

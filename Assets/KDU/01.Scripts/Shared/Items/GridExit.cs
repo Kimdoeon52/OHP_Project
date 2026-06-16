@@ -61,6 +61,7 @@ public class GridExit : MonoBehaviour
         if (_player.GridPosition == GridPosition)
         {
             _triggered = true;
+            GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.PortalEnter);
             GameEvents.OnLevelComplete?.Invoke();
             TimeSystem.Instance.StopTimer();
         }

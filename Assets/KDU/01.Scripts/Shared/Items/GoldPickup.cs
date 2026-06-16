@@ -76,6 +76,7 @@ public class GoldPickup : MonoBehaviour
         if (amount > 0) 
             GameEvents.OnGoldDropped?.Invoke(GridPosition, amount);
 
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.GoldPicked);
         Destroy(gameObject);
     }
 

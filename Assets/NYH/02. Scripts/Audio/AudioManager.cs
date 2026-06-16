@@ -73,6 +73,9 @@ public class AudioManager : MonoBehaviour
     [Tooltip("SFX가 동시에 너무 많이 나면 Source를 임시로 늘릴지 정합니다. 꺼두면 가장 오래된 Source를 재사용합니다.")]
     [SerializeField] private bool expandSfxPoolWhenFull = true;
 
+    [Tooltip("AudioEventId별 효과음 Cue 테이블입니다. 새 사운드는 이 테이블에 추가합니다.")]
+    [SerializeField] private AudioCueTable audioCueTable;
+
     [Header("Game Event SFX")]
     [Tooltip("플레이어가 피해를 입었을 때 재생할 효과음입니다.")]
     [SerializeField] private AudioCue playerDamagedCue;
@@ -252,6 +255,12 @@ public class AudioManager : MonoBehaviour
         PlayBgm(clip, true, defaultBgmFadeSeconds);
     }
 
+    public void PlayMainMenuBgm() => PlayOptionalTableBgm(musicTable != null ? musicTable.MainMenuBgm : null);
+    public void PlaySafeRoomBgm() => PlayOptionalTableBgm(musicTable != null ? musicTable.SafeRoomBgm : null);
+    public void PlayShopOrRestBgm() => PlayOptionalTableBgm(musicTable != null ? musicTable.ShopOrRestBgm : null);
+    public void PlayPlayerDeathBgm() => PlayOptionalTableBgm(musicTable != null ? musicTable.PlayerDeathBgm : null);
+    public void PlayGameClearBgm() => PlayOptionalTableBgm(musicTable != null ? musicTable.GameClearBgm : null);
+
     public void StopBgm()
     {
         if (_bgmFadeCoroutine != null)
@@ -285,6 +294,20 @@ public class AudioManager : MonoBehaviour
         PlaySfxInternal(cue.PickClip(), cue.VolumeScale, cue.PickPitch());
     }
 
+    public void PlaySfx(AudioEventId eventId)
+    {
+        if (eventId == AudioEventId.None)
+            return;
+
+        if (audioCueTable != null && audioCueTable.TryGetCue(eventId, out AudioCue cue))
+        {
+            PlaySfx(cue);
+            return;
+        }
+
+        PlaySfx(GetLegacyCue(eventId));
+    }
+
     private void PlayBgmImmediately(AudioClip clip, bool loop)
     {
         _activeBgmSource.Stop();
@@ -295,6 +318,14 @@ public class AudioManager : MonoBehaviour
 
         _inactiveBgmSource.Stop();
         _inactiveBgmSource.volume = 0f;
+    }
+
+    private void PlayOptionalTableBgm(AudioClip clip)
+    {
+        if (clip == null)
+            return;
+
+        PlayBgm(clip, true, defaultBgmFadeSeconds);
     }
 
     private IEnumerator CrossFadeBgmCoroutine(AudioClip nextClip, bool loop, float duration)
@@ -452,6 +483,8 @@ public class AudioManager : MonoBehaviour
         GameEvents.OnItemPurchased += OnItemPurchased;
         GameEvents.OnSecretDiscovered += OnSecretDiscovered;
         GameEvents.OnBossDefeated += OnBossDefeated;
+        GameEvents.OnPlayerDied += OnPlayerDied;
+        GameEvents.OnAudioEventRequested += PlaySfx;
     }
 
     private void UnsubscribeGameEvents()
@@ -464,16 +497,36 @@ public class AudioManager : MonoBehaviour
         GameEvents.OnItemPurchased -= OnItemPurchased;
         GameEvents.OnSecretDiscovered -= OnSecretDiscovered;
         GameEvents.OnBossDefeated -= OnBossDefeated;
+        GameEvents.OnPlayerDied -= OnPlayerDied;
+        GameEvents.OnAudioEventRequested -= PlaySfx;
     }
 
-    private void OnPlayerDamaged(int damage) => PlaySfx(playerDamagedCue);
-    private void OnEnemyKilled(Vector2Int position, float timeBonus) => PlaySfx(enemyKilledCue);
+    private void OnPlayerDamaged(int damage) => PlaySfx(AudioEventId.PlayerDamaged);
+    private void OnEnemyKilled(Vector2Int position, float timeBonus) => PlaySfx(AudioEventId.MonsterKilled);
     private void OnTrapTriggered(Vector2Int position) => PlaySfx(trapTriggeredCue);
-    private void OnChestOpened(Vector2Int position) => PlaySfx(chestOpenedCue);
-    private void OnKeyAcquired(KeyType keyType) => PlaySfx(keyAcquiredCue);
+    private void OnChestOpened(Vector2Int position) => PlaySfx(AudioEventId.ChestOpened);
+    private void OnKeyAcquired(KeyType keyType) => PlaySfx(AudioEventId.KeyPicked);
     private void OnItemPurchased(ItemBase item) => PlaySfx(itemPurchasedCue);
     private void OnSecretDiscovered(Vector2Int position) => PlaySfx(secretDiscoveredCue);
-    private void OnBossDefeated() => PlaySfx(bossDefeatedCue);
+    private void OnBossDefeated() => PlaySfx(AudioEventId.BossDefeated);
+    private void OnPlayerDied()
+    {
+        PlaySfx(AudioEventId.PlayerDied);
+        PlayPlayerDeathBgm();
+    }
+
+    private AudioCue GetLegacyCue(AudioEventId eventId)
+    {
+        return eventId switch
+        {
+            AudioEventId.PlayerDamaged => playerDamagedCue,
+            AudioEventId.MonsterKilled => enemyKilledCue,
+            AudioEventId.ChestOpened => chestOpenedCue,
+            AudioEventId.KeyPicked => keyAcquiredCue,
+            AudioEventId.BossDefeated => bossDefeatedCue,
+            _ => null
+        };
+    }
 
     private void InitializeSlider(Slider slider, string prefsKey, string mixerParameter)
     {

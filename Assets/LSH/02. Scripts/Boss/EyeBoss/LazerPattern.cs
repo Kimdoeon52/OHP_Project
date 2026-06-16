@@ -213,9 +213,23 @@ public class LazerPattern : MonoBehaviour
         return LazerAction.Pattern1;
     }
 
+    private static void RequestLazerPatternAudio(LazerAction action)
+    {
+        AudioEventId eventId = action switch
+        {
+            LazerAction.Pattern1 => AudioEventId.BossA_Pattern1,
+            LazerAction.Pattern2 => AudioEventId.BossA_Pattern2,
+            LazerAction.Pattern3 => AudioEventId.BossA_Pattern3,
+            _ => AudioEventId.None
+        };
+
+        GameEvents.OnAudioEventRequested?.Invoke(eventId);
+    }
+
     private async UniTask DoOneAttack(int hpPhase)
     {
         LazerAction action = RollLazerAction();
+        RequestLazerPatternAudio(action);
 
         switch (hpPhase)
         {

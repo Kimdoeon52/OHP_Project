@@ -203,9 +203,9 @@ namespace PrototypeRT
             if (!CanUseQuickSlot())
                 return false;
 
-            // PotionData이면서 IThrowable이 아닌 것만 즉시 사용합니다.
-            // FirePotion/IcePotion 같은 투척 포션은 선택만 하고, 기존처럼 좌클릭 타일 지정으로 던집니다.
-            if (item.ItemData is not PotionData || item.ItemData is IThrowable)
+            // 먹는 포션/횃불/생명파편처럼 타겟 지정이 필요 없는 소비 아이템만 숫자키로 즉시 사용합니다.
+            // FirePotion/IcePotion 같은 투척 아이템은 선택만 하고, 기존처럼 좌클릭 타일 지정으로 던집니다.
+            if (!IsInstantQuickSlotConsumable(item.ItemData))
                 return false;
 
             item.ItemData.Use();
@@ -236,7 +236,7 @@ namespace PrototypeRT
             if (IsEquipment(item.ItemData))
                 return false;
 
-            if (item.ItemData is PotionData)
+            if (IsInstantQuickSlotConsumable(item.ItemData))
             {
                 item.ItemData.Use();
                 return ConsumeUsedQuickSlotItem(item);
@@ -300,6 +300,14 @@ namespace PrototypeRT
         private static bool IsEquipment(ItemBase itemData)
         {
             return itemData != null && (itemData.ItemType == ItemType.Equipment || itemData.Slot != EquipmentSlot.None);
+        }
+
+        private static bool IsInstantQuickSlotConsumable(ItemBase itemData)
+        {
+            if (itemData == null || itemData is IThrowable)
+                return false;
+
+            return itemData is PotionData || itemData is TorchData || itemData is FragmentsOfLife;
         }
 
         /// <summary>

@@ -180,6 +180,7 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
 
         PotionCount--;
         RaiseHealthChanged();
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.PotionDrink);
 
         // 즉시 +50% MaxHp
         Heal(Mathf.RoundToInt(MaxHp * 0.5f));

@@ -446,8 +446,11 @@ namespace PrototypeRT
                 return false;
 
             // 장비는 강화/저주/감정 같은 개별 상태가 있으므로 합치지 않습니다.
-            // 현재는 포션과 스크롤만 안전하게 스택 대상으로 봅니다.
-            return itemData is PotionData || itemData.ItemType == ItemType.Scroll;
+            // 소비형 기타 아이템은 개별 강화/저주 상태가 없으므로 포션처럼 같은 SO끼리 합칩니다.
+            return itemData is PotionData
+                || itemData.ItemType == ItemType.Scroll
+                || itemData is TorchData
+                || itemData is FragmentsOfLife;
         }
 
         private void ResolveUseControllers()
@@ -621,6 +624,7 @@ namespace PrototypeRT
             }
 
             placedItem?.SetRaycastTarget(true);
+            RequestMoveAudio(placedItem);
             _selectedItem = null;
             if (_overlapItem != null)
             {
@@ -643,6 +647,25 @@ namespace PrototypeRT
             }
 
             RaiseInventoryChanged();
+        }
+
+        private static void RequestMoveAudio(InventoryItem item)
+        {
+            if (item == null || item.ItemData == null)
+                return;
+
+            AudioEventId eventId = AudioEventId.None;
+            ItemBase itemData = item.ItemData;
+
+            if (itemData is PotionData)
+                eventId = AudioEventId.MovePotion;
+            else if (itemData.ItemType == ItemType.Scroll)
+                eventId = AudioEventId.MoveScroll;
+            else if (itemData.ItemType == ItemType.Equipment || itemData.Slot != EquipmentSlot.None || itemData is ThrowableWeapon)
+                eventId = AudioEventId.MoveEquipment;
+
+            if (eventId != AudioEventId.None)
+                GameEvents.OnAudioEventRequested?.Invoke(eventId);
         }
 
         private void TryDropSelectedItemToGround()

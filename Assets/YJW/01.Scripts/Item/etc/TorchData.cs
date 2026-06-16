@@ -21,7 +21,7 @@ public class TorchData : ItemBase
 
     public override ItemInstance CreateInstance()
     {
-        return new ItemInstance { data = this };
+        return new TorchInstance { data = this, count = 1 };
     }
 
     public override string GetToolTipStats()

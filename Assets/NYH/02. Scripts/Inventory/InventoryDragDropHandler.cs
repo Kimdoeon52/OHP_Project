@@ -186,6 +186,7 @@ namespace PrototypeRT
             }
 
             placedItem?.SetRaycastTarget(true);
+            RequestMoveAudio(placedItem);
             _selectedItem = null;
             if (_overlapItem != null)
             {
@@ -203,6 +204,25 @@ namespace PrototypeRT
             }
 
             _controller.RaiseInventoryChanged();
+        }
+
+        private static void RequestMoveAudio(InventoryItem item)
+        {
+            if (item == null || item.ItemData == null)
+                return;
+
+            AudioEventId eventId = AudioEventId.None;
+            ItemBase itemData = item.ItemData;
+
+            if (itemData is PotionData)
+                eventId = AudioEventId.MovePotion;
+            else if (itemData.ItemType == ItemType.Scroll)
+                eventId = AudioEventId.MoveScroll;
+            else if (itemData.ItemType == ItemType.Equipment || itemData.Slot != EquipmentSlot.None || itemData is ThrowableWeapon)
+                eventId = AudioEventId.MoveEquipment;
+
+            if (eventId != AudioEventId.None)
+                GameEvents.OnAudioEventRequested?.Invoke(eventId);
         }
 
         /// <summary>

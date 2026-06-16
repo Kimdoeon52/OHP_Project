@@ -44,6 +44,9 @@ public static class GameEvents
     public static Action OnLevelComplete;             // 레벨업
     public static Action OnBossDefeated;              // 보스 처치 — 맵 출구 개방 등이 구독
 
+    // 오디오
+    public static Action<AudioEventId> OnAudioEventRequested;
+
     public static void ClearAllEvents()
     {
         OnTimeChanged = null;               // 타이머
@@ -70,6 +73,7 @@ public static class GameEvents
         OnPlayerDied = null;                // 플레이어 사망
         OnLevelComplete = null;             // 레벨업
         OnBossDefeated = null;              // 보스 처치
+        OnAudioEventRequested = null;        // 오디오 이벤트
         CombatTextCriticalContext.Clear();  // 전투 텍스트 초기화
     }
 }

@@ -193,7 +193,26 @@ namespace PrototypeRT
         public bool CanAcceptItem(InventoryItem item)
         {
             if (item == null || item.ItemData == null) return false;
-            return !acceptOnlyOneByOneItems || (item.ItemData.Width == 1 && item.ItemData.Height == 1);
+            if (!acceptOnlyOneByOneItems)
+                return true;
+
+            if (item.ItemData.Width != 1 || item.ItemData.Height != 1)
+                return false;
+
+            return CanAcceptQuickSlotItem(item);
+        }
+
+        private static bool CanAcceptQuickSlotItem(InventoryItem item)
+        {
+            ItemBase itemData = item.ItemData;
+            if (itemData == null)
+                return false;
+
+            // 퀵슬롯은 소비/투척용 슬롯입니다. 1x1이어도 착용 장비가 들어가면 사용 키와 장착 흐름이 섞입니다.
+            if (itemData is ThrowableWeapon && item.ItemInstance is ThrowableWeaponInstance)
+                return true;
+
+            return itemData.ItemType != ItemType.Equipment && itemData.Slot == EquipmentSlot.None;
         }
 
         public Vector2Int? FindSpaceForItem(InventoryItem item)

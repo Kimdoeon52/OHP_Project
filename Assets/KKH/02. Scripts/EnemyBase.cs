@@ -201,6 +201,9 @@ public abstract class EnemyBase : EntityBase, IDamageable
         int finalDamage = ApplyDefense(amount);
         CurrentHp -= finalDamage;
 
+        if (finalDamage > 0)
+            GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.MonsterHit);
+
         // 살아있으면 Hit 트리거 실행 (흔들림 / 피격 연출)
         if (_animator != null && CurrentHp > 0)
         {

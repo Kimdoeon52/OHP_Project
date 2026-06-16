@@ -7,6 +7,22 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "MusicTable", menuName = "60s Dungeon/Audio/Music Table")]
 public class MusicTable : ScriptableObject
 {
+    [Header("공통 BGM")]
+    [Tooltip("메인 메뉴에서 사용할 BGM입니다.")]
+    [SerializeField] private AudioClip mainMenuBgm;
+
+    [Tooltip("Safe Room에서 별도 분위기를 줄 때 사용할 BGM입니다. 비워두면 현재 층 BGM을 유지합니다.")]
+    [SerializeField] private AudioClip safeRoomBgm;
+
+    [Tooltip("상점/휴식 공간에서 사용할 BGM입니다. 비워두면 현재 층 BGM을 유지합니다.")]
+    [SerializeField] private AudioClip shopOrRestBgm;
+
+    [Tooltip("플레이어 사망 화면에서 사용할 BGM입니다.")]
+    [SerializeField] private AudioClip playerDeathBgm;
+
+    [Tooltip("게임 클리어 화면에서 사용할 BGM입니다.")]
+    [SerializeField] private AudioClip gameClearBgm;
+
     [Header("일반 층 BGM")]
     [Tooltip("1~5층 일반층에서 사용할 BGM입니다. 단, 5층이 보스층이면 bossDepth5Bgm이 우선됩니다.")]
     [SerializeField] private AudioClip area1Bgm;
@@ -26,6 +42,12 @@ public class MusicTable : ScriptableObject
 
     [Tooltip("15층 보스 전용 BGM입니다. 비워두면 Area3 BGM을 대신 사용합니다.")]
     [SerializeField] private AudioClip bossDepth15Bgm;
+
+    public AudioClip MainMenuBgm => mainMenuBgm;
+    public AudioClip SafeRoomBgm => safeRoomBgm;
+    public AudioClip ShopOrRestBgm => shopOrRestBgm;
+    public AudioClip PlayerDeathBgm => playerDeathBgm;
+    public AudioClip GameClearBgm => gameClearBgm;
 
     public AudioClip GetBgmForDepth(int depth, bool isBoss)
     {

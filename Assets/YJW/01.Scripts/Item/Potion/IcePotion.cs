@@ -13,6 +13,7 @@ public class IcePotion : ThrowablePotion
 
 	public override void Throw(Vector2Int targetPos)
 	{
+		GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.PotionThrow);
 		Vector3 playerPos = GameManager.Instance.player.transform.position;
 		GameObject projectile = ObjectPool.Instance.Get(PoolType.IcePotion);
 		projectile.transform.position = playerPos;
@@ -20,6 +21,7 @@ public class IcePotion : ThrowablePotion
 		// 착지했을 때 base.Throw 호출하도록 투사체에 전달
 		projectile.GetComponent<Projectile>().Launch(targetPos, () =>
 		{
+			GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.PotionImpactIce);
 			base.Throw(targetPos);                                       // 3x3 효과 적용
 			RequestIceTerrain(targetPos);
 			ObjectPool.Instance.Return(PoolType.IcePotion, projectile); // 착지 후 반납

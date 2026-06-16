@@ -20,7 +20,7 @@ public class FragmentsOfLife : ItemBase
 
     public override ItemInstance CreateInstance()
     {
-        return new ItemInstance { data = this };
+        return new FragmentOfLifeInstance { data = this, count = 1 };
     }
 
     public override string GetToolTipStats()
