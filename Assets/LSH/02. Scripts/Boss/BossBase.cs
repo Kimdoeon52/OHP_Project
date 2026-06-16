@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using DG.Tweening;
 
 public enum BossAction
 {
@@ -19,6 +20,11 @@ public class ActionCases
 }
 public class BossBase : EnemyNormalBASE
 {
+    // 피격 이펙트 관련 필드
+    protected SpriteRenderer[] _spriteRenderers;
+    protected Dictionary<SpriteRenderer, Color> _originalColors = new Dictionary<SpriteRenderer, Color>();
+    protected List<Tween> _activeTweens = new List<Tween>();
+
     //[Header("보스 데이터")]
     //[SerializeField] protected int maxHp;
     //[SerializeField] protected int currentHp;
@@ -150,6 +156,15 @@ public class BossBase : EnemyNormalBASE
             cancelToken = null;
         }
         ClearAllWarnings();
+
+        if (_activeTweens != null)
+        {
+            foreach (var t in _activeTweens)
+            {
+                if (t != null && t.IsActive()) t.Kill();
+            }
+            _activeTweens.Clear();
+        }
     }
     protected async UniTask WaitBossCoolTime()
     {
@@ -203,6 +218,7 @@ public class BossBase : EnemyNormalBASE
         if (finalDamage > 0)
         {
             GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.BossHit);
+            PlayHitEffect();
         }
         Debug.Log($"<color=red>[보스 데미지]</color> 보스가 {amount}만큼 데미지를 받음. 현재 HP: {currentHp}");
         if (hpBar != null) hpBar.UpdateBar();
@@ -211,6 +227,41 @@ public class BossBase : EnemyNormalBASE
         {
             isDying = true;
             OnDeath().Forget();
+        }
+    }
+
+    public void PlayHitEffect()
+    {
+        // 자식 오브젝트를 포함하여 모든 SpriteRenderer 캐싱 및 최초 색상 저장
+        if (_spriteRenderers == null)
+        {
+            _spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+            foreach (var sr in _spriteRenderers)
+            {
+                if (sr != null && !_originalColors.ContainsKey(sr))
+                {
+                    _originalColors[sr] = sr.color;
+                }
+            }
+        }
+
+        // 진행 중이던 기존 트윈 중단
+        foreach (var t in _activeTweens)
+        {
+            if (t != null && t.IsActive()) t.Kill();
+        }
+        _activeTweens.Clear();
+
+        // 빨간색으로 변경 후 0.1초 동안 원래 색상으로 복구
+        foreach (var sr in _spriteRenderers)
+        {
+            if (sr == null) continue;
+            if (_originalColors.TryGetValue(sr, out Color originColor))
+            {
+                sr.color = Color.red;
+                Tween t = sr.DOColor(originColor, 0.1f).SetEase(Ease.OutQuad);
+                _activeTweens.Add(t);
+            }
         }
     }
 

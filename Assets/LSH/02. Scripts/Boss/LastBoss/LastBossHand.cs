@@ -771,6 +771,8 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
                 finalDamage,
                 CombatTextType.Damage
             ));
+
+            PlayHitEffect();
         }
 
         if (hpBar != null)

@@ -22,11 +22,10 @@ public class LastBoss : BossBase
     [SerializeField] private HandHpBar sharedHandHpBar;
 
     [Header("머리 페이즈 설정")]
-    [SerializeField] private GameObject headPrefab;
+    [SerializeField] private LastBossHead spawnedHead; // 씬에 사전 배치된 머리 오브젝트 참조
     [SerializeField] private int headMaxHp = 200;
     [SerializeField] private int headSpawnYOffset = 1; // 머리 소환 Y 오프셋 (기본 1: 기존 대비 1칸 위로 소환)
     
-    private LastBossHead spawnedHead;
     private bool isHeadPhaseStarted = false;
 
 
@@ -37,6 +36,10 @@ public class LastBoss : BossBase
 
     private void Start()
     {
+        if (spawnedHead != null)
+        {
+            spawnedHead.gameObject.SetActive(false);
+        }
         CacheMapBounds();
         SpawnAndInitializeHands();
     }
@@ -187,13 +190,48 @@ public class LastBoss : BossBase
 
     public void OnHandDamaged(int amount)
     {
-        // 손 페이즈 동안에는 보스 본체 체력바를 갱신하지 않고 비주얼을 감춘 상태로 둡니다.
+        // 어떤 손이든 체력이 50% 이하가 되면 2페이즈 시작
+        CheckHandHpForPhase2();
+    }
+
+    private void CheckHandHpForPhase2()
+    {
+        if (isHeadPhaseStarted || isDying) return;
+
+        bool shouldTrigger = false;
+        if (leftHand != null && !leftHand.IsDead)
+        {
+            if ((float)leftHand.CurrentHp / leftHand.MaxHp <= 0.5f)
+            {
+                shouldTrigger = true;
+            }
+        }
+        if (rightHand != null && !rightHand.IsDead)
+        {
+            if ((float)rightHand.CurrentHp / rightHand.MaxHp <= 0.5f)
+            {
+                shouldTrigger = true;
+            }
+        }
+
+        if (shouldTrigger)
+        {
+            StartHeadPhase().Forget();
+        }
     }
 
     public void OnHandDefeated(LastBossHand hand)
     {
         if (hand == leftHand) leftHand = null;
         if (hand == rightHand) rightHand = null;
+
+        //어떤 손이든 하나 제거되면 머리에 운석 낙하 신호 보냄
+        if (spawnedHead != null && spawnedHead.gameObject.activeSelf)
+        {
+            spawnedHead.ActivateMeteorRain();
+        }
+
+        if (isHeadPhaseStarted) return;
 
         if (leftHand == null && rightHand == null)
         {
@@ -216,9 +254,33 @@ public class LastBoss : BossBase
         if (isHeadPhaseStarted || isDying) return;
         isHeadPhaseStarted = true;
 
-        Debug.Log("<color=red>[하데스]</color> 양 손 파괴 완료. 본체 페이즈로 전환합니다. 연출 시작!");
+        Debug.Log("<color=red>[하데스]</color> 본체 페이즈로 전환합니다. 연출 시작!");
 
-        // 1. DOTween으로 아래로 2만큼 내려가는 연출 (부드럽게 이동)
+        // SpriteRenderer 알파를 0으로 천천히 내리기 (1.5초)
+        // 단, 손(LastBossHand)에 속한 SpriteRenderer는 투명해지지 않도록 제외합니다.
+        var srs = GetComponentsInChildren<SpriteRenderer>();
+        foreach (var sr in srs)
+        {
+            if (sr != null)
+            {
+                if (sr.GetComponentInParent<LastBossHand>() != null)
+                    continue;
+
+                sr.DOFade(0f, 1.5f).SetEase(Ease.InOutSine);
+            }
+        }
+
+        // 손들이 본체 부모(transform)를 따라 아래로 내려가지 않도록 부모 관계 해제
+        if (leftHand != null)
+        {
+            leftHand.transform.SetParent(null);
+        }
+        if (rightHand != null)
+        {
+            rightHand.transform.SetParent(null);
+        }
+
+        // 1. DOTween으로 아래로 10만큼 내려가는 연출 (부드럽게 이동)
         await transform.DOMoveY(transform.position.y - 10f, 1.5f)
             .SetEase(Ease.InOutSine)
             .AsyncWaitForCompletion();
@@ -269,22 +331,14 @@ public class LastBoss : BossBase
         int topY = maxY + headSpawnYOffset;
         Vector2Int headGridPos = new Vector2Int(centerX - 2, topY);
 
-        if (headPrefab != null)
+        if (spawnedHead != null)
         {
-            GameObject headObj = Instantiate(headPrefab);
-            spawnedHead = headObj.GetComponent<LastBossHead>();
-            if (spawnedHead != null)
-            {
-                spawnedHead.Init(this, headGridPos, headMaxHp, warningTilemap, warningTile);
-            }
-            else
-            {
-                Debug.LogError("<color=red>[하데스]</color> headPrefab에 LastBossHead 컴포넌트가 존재하지 않습니다!");
-            }
+            spawnedHead.gameObject.SetActive(true);
+            spawnedHead.Init(this, headGridPos, headMaxHp, warningTilemap, warningTile);
         }
         else
         {
-            Debug.LogError("<color=red>[하데스]</color> headPrefab이 할당되지 않았습니다!");
+            Debug.LogError("<color=red>[하데스]</color> spawnedHead가 인스펙터에 할당되지 않았습니다!");
         }
 
         // 3. 체력 및 HP바 설정
