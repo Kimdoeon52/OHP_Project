@@ -309,14 +309,24 @@ public abstract class EnemyBase : EntityBase, IDamageable
 
     private void SpawnItemDrop(ItemBase item)
     {
-        if (dropItemPickupPrefab == null)
+        var groundItemController = FindFirstObjectByType<PrototypeRT.GroundItemController>();
+        if(groundItemController != null)
         {
-            Debug.LogWarning($"{name}: dropItemPickupPrefab 미할당 — '{item.name}' 드롭 실패. 적 프리팹에 ItemPickUp 을 연결하세요.");
-            return;
+            ItemInstance itemInst = item.CreateInstance();
+            groundItemController.DropItem(Instance, 1, GridPosition);
         }
-        ItemPickup pickup = Instantiate(dropItemPickupPrefab, WorldOf(GridPosition), Quaternion.identity);
-        pickup.itemSO = item;            // ItemPickup.Start 가 이 SO 로 인스턴스를 구성.
-        pickup.Initialize(GridPosition);
+        else 
+        {
+            if(dropItemPickupPrefab == null)
+            {
+                Debug.LogWarning($"{name}: {item.name} 드롭 실패. Item_Pickup을 연결해주세요.");
+                return;
+            }
+            ItemPickup pickup = Instantiate(dropItemPickupPrefab, WorldOf(GridPosition), Quaternion.identity);
+            pickup.Initialize(GridPosition, item);
+            pickup.itemSO = item;
+            pickup.Initialize(GridPosition);
+        }
     }
 
     private static Vector3 WorldOf(Vector2Int cell)

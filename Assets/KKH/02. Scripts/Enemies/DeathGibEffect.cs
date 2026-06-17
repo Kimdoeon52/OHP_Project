@@ -36,7 +36,10 @@ public class DeathGibEffect : MonoBehaviour
     private void SpawnGibParticle()
     {
         GameObject gib = new GameObject("GibParticle");
-        gib.transform.position = transform.position;
+        // 몸체 곳곳에서 떨어지도록 약간의 가로/세로 랜덤 오프셋 부여
+        float offsetX = Random.Range(-0.25f, 0.25f);
+        float offsetY = Random.Range(-0.2f, 0.3f);
+        gib.transform.position = transform.position + new Vector3(offsetX, offsetY, 0f);
         gib.transform.parent = transform;
 
         SpriteRenderer sr = gib.AddComponent<SpriteRenderer>();
@@ -78,13 +81,11 @@ public class DeathGibEffect : MonoBehaviour
             sr.sprite = CreateFallbackSprite(color, size);
         }
 
-        // 360도 전방향으로 튕겨나갈 힘과 각도 설정
-        float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-        float force = Random.Range(minForce, maxForce);
-        Vector3 velocity = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * force;
-        
-        // 포물선 궤적을 예쁘게 만들기 위해 Y축 상방 힘 추가 보정
-        velocity.y += Random.Range(1.5f, 3.5f);
+        // 폭발하듯 사방으로 퍼지는 대신, 아래로 툭툭 떨어지는 느낌(후두둑)을 위해
+        // 좌우 퍼짐은 좁게 설정하고 상방 힘을 아주 약하게 부여하여 아래로 쏟아지도록 합니다.
+        float vx = Random.Range(-1.0f, 1.0f);
+        float vy = Random.Range(-0.5f, 1.2f);
+        Vector3 velocity = new Vector3(vx, vy, 0f);
 
         float rotationSpeed = Random.Range(-400f, 400f);
 

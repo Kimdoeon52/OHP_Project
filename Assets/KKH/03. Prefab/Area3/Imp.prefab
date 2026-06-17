@@ -124,7 +124,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 019858c7b559e374b9e209db518bb29b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  data: {fileID: 0}
+  data: {fileID: 11400000, guid: a0150d33e3f97ea44b55bc93c83d19f1, type: 2}
   warningPrefab: {fileID: 2305967036810482513, guid: 82098026c316a014fbde25ca2d763954, type: 3}
   goldPickupPrefab: {fileID: 0}
   dropItemPickupPrefab: {fileID: 0}

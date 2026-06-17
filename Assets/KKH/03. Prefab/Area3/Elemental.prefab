@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 887310522617231317}
   - component: {fileID: 5283645571031608231}
   - component: {fileID: 7129081551135586170}
+  - component: {fileID: 1145409384759349833}
   m_Layer: 0
   m_Name: Elemental
   m_TagString: Enemy
@@ -157,3 +158,23 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 2.494407, y: 2.7716227}
   m_EdgeRadius: 0
+--- !u!114 &1145409384759349833
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 540938475934983323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e05cd3f06acd543a8d51436fadea49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: {fileID: 11400000, guid: a0150d33e3f97ea44b55bc93c83d19f4, type: 2}
+  warningPrefab: {fileID: 2305967036810482513, guid: 82098026c316a014fbde25ca2d763954, type: 3}
+  goldPickupPrefab: {fileID: 0}
+  dropItemPickupPrefab: {fileID: 0}
+  deathTriggerName: Die
+  deathDestroyDelay: 0.6
+  moveSpeed: 0
+  isDetected: 0

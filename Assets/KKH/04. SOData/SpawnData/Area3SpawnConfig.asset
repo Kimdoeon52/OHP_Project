@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98741bb7b094adc42a67e84857459b53, type: 3}
+  m_Name: Area3SpawnConfig
+  m_EditorClassIdentifier: 
+  minDepth: 11
+  maxDepth: 15
+  specificDepths: []
+  spawnTable: {fileID: 11400000, guid: c5e883651d7e2e62e288229a46b3660a, type: 2}
+  prefabMappings:
+  - enemyData: {fileID: 11400000, guid: a0150d33e3f97ea44b55bc93c83d19f1, type: 2}
+    prefab: {fileID: 540295784307779793, guid: d8643272f109f69499651e925cefc6c5, type: 3}
+  - enemyData: {fileID: 11400000, guid: a0150d33e3f97ea44b55bc93c83d19f2, type: 2}
+    prefab: {fileID: 7054112347333603948, guid: 2d4f812ddbbb3ab4aba0dee5b917111b, type: 3}
+  - enemyData: {fileID: 11400000, guid: a0150d33e3f97ea44b55bc93c83d19f3, type: 2}
+    prefab: {fileID: 7747407186858766538, guid: a4f3651d73d042146ad8f8625bb7639a, type: 3}
+  - enemyData: {fileID: 11400000, guid: a0150d33e3f97ea44b55bc93c83d19f4, type: 2}
+    prefab: {fileID: 540938475934983323, guid: 7d068042548beac46a0c07a03f34c8b9, type: 3}

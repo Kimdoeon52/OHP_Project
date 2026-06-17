@@ -15,37 +15,73 @@ MonoBehaviour:
   tiers:
   - pool:
     - enemyData: {fileID: 11400000, guid: a85df64c22ca3354b801f9ea7f29a30e, type: 2}
-      weight: 5
+      weight: 6
       requiresLineOfSight: 0
-    minCount: 1
-    maxCount: 2
-  - pool:
-    - enemyData: {fileID: 11400000, guid: 05d1952df38b1e145b38ea15e288eef2, type: 2}
-      weight: 2
-      requiresLineOfSight: 1
-    minCount: 1
-    maxCount: 2
-  - pool:
     - enemyData: {fileID: 11400000, guid: ea6de85e83c02e84dbf10415f2ac24e6, type: 2}
-      weight: 5
+      weight: 4
       requiresLineOfSight: 0
     minCount: 1
     maxCount: 2
   - pool:
+    - enemyData: {fileID: 11400000, guid: a85df64c22ca3354b801f9ea7f29a30e, type: 2}
+      weight: 4
+      requiresLineOfSight: 0
+    - enemyData: {fileID: 11400000, guid: ea6de85e83c02e84dbf10415f2ac24e6, type: 2}
+      weight: 3
+      requiresLineOfSight: 0
+    - enemyData: {fileID: 11400000, guid: 05d1952df38b1e145b38ea15e288eef2, type: 2}
+      weight: 3
+      requiresLineOfSight: 1
     - enemyData: {fileID: 11400000, guid: 03c2425c363054244988316f46ad1945, type: 2}
       weight: 2
       requiresLineOfSight: 0
     minCount: 1
     maxCount: 2
   - pool:
+    - enemyData: {fileID: 11400000, guid: ea6de85e83c02e84dbf10415f2ac24e6, type: 2}
+      weight: 4
+      requiresLineOfSight: 0
+    - enemyData: {fileID: 11400000, guid: 05d1952df38b1e145b38ea15e288eef2, type: 2}
+      weight: 3
+      requiresLineOfSight: 1
+    - enemyData: {fileID: 11400000, guid: 03c2425c363054244988316f46ad1945, type: 2}
+      weight: 3
+      requiresLineOfSight: 0
+    - enemyData: {fileID: 11400000, guid: 50df1ac1d3ce8e44fb8a6245bb4bdc8b, type: 2}
+      weight: 2
+      requiresLineOfSight: 0
+    minCount: 1
+    maxCount: 3
+  - pool:
+    - enemyData: {fileID: 11400000, guid: ea6de85e83c02e84dbf10415f2ac24e6, type: 2}
+      weight: 3
+      requiresLineOfSight: 0
+    - enemyData: {fileID: 11400000, guid: 05d1952df38b1e145b38ea15e288eef2, type: 2}
+      weight: 2
+      requiresLineOfSight: 1
+    - enemyData: {fileID: 11400000, guid: 03c2425c363054244988316f46ad1945, type: 2}
+      weight: 2
+      requiresLineOfSight: 0
+    - enemyData: {fileID: 11400000, guid: 50df1ac1d3ce8e44fb8a6245bb4bdc8b, type: 2}
+      weight: 2
+      requiresLineOfSight: 0
+    minCount: 2
+    maxCount: 3
+  - pool:
+    - enemyData: {fileID: 11400000, guid: 05d1952df38b1e145b38ea15e288eef2, type: 2}
+      weight: 3
+      requiresLineOfSight: 1
     - enemyData: {fileID: 11400000, guid: 50df1ac1d3ce8e44fb8a6245bb4bdc8b, type: 2}
       weight: 3
       requiresLineOfSight: 0
-    minCount: 1
-    maxCount: 2
+    - enemyData: {fileID: 11400000, guid: 03c2425c363054244988316f46ad1945, type: 2}
+      weight: 2
+      requiresLineOfSight: 0
+    minCount: 2
+    maxCount: 4
   - pool:
     - enemyData: {fileID: 11400000, guid: 7b4ab74f61d87ef4388ebdbe33a145f4, type: 2}
-      weight: 1
-      requiresLineOfSight: 0
-    minCount: 1
-    maxCount: 2
+      weight: 3
+      requiresLineOfSight: 1
+    minCount: 2
+    maxCount: 4

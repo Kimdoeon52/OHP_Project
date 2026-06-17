@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7747407186858766536}
   - component: {fileID: 7747407186858766539}
   - component: {fileID: 8614615182492562847}
+  - component: {fileID: 1148614615182492562}
   m_Layer: 0
   m_Name: PinkTroll
   m_TagString: Enemy
@@ -157,3 +158,23 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.77882326, y: 0.6563237}
   m_EdgeRadius: 0
+--- !u!114 &1148614615182492562
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7747407186858766538}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3371f4d5475ab704eb66588e660e2cd3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: {fileID: 11400000, guid: a0150d33e3f97ea44b55bc93c83d19f3, type: 2}
+  warningPrefab: {fileID: 2305967036810482513, guid: 82098026c316a014fbde25ca2d763954, type: 3}
+  goldPickupPrefab: {fileID: 0}
+  dropItemPickupPrefab: {fileID: 0}
+  deathTriggerName: Die
+  deathDestroyDelay: 0.6
+  moveSpeed: 0
+  isDetected: 0
