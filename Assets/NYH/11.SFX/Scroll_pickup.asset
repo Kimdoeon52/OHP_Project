@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Scroll_pickup
   m_EditorClassIdentifier: 
   clips:
-  - {fileID: 8300000, guid: 31caedeee55cd764ab84aac401a3200d, type: 3}
+  - {fileID: 8300000, guid: e45f38889716fe146ad4dc368ccd56d6, type: 3}
   volumeScale: 1
   pitchMin: 1
-  pitchMax: 1
+  pitchMax: 3
