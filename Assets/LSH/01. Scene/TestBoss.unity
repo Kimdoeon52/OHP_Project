@@ -1385,6 +1385,11 @@ MonoBehaviour:
   animeEffect: {fileID: 209386061519010049, guid: 4fc6cd1849a7b9c4bb77de9f8f1ca4a2, type: 3}
   bossName: {fileID: 4501841638095913877, guid: a1651bf27e1ccad44ac33c5ff56674ad, type: 3}
   effectParent: {fileID: 535393248}
+  cutsceneHandImage: {fileID: 1334575313}
+  handStartPosY: 1200
+  handTargetPosY: 300
+  handMoveDuration: 1
+  handWaitDuration: 0.5
 --- !u!1 &535393244
 GameObject:
   m_ObjectHideFlags: 0
@@ -2711,7 +2716,7 @@ GameObject:
   - component: {fileID: 1334575315}
   - component: {fileID: 1334575314}
   m_Layer: 5
-  m_Name: RawImage
+  m_Name: LastBossHand
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2733,7 +2738,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -12, y: 1220}
+  m_AnchoredPosition: {x: -12, y: 1200}
   m_SizeDelta: {x: 1200, y: 1200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1334575314

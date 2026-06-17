@@ -1,4 +1,4 @@
-﻿using TMPro;
+using TMPro;
 using UnityEngine;
 
 public class DebugUI : MonoBehaviour
@@ -20,7 +20,16 @@ public class DebugUI : MonoBehaviour
     private void Update()
     {
         if (timeText != null && TimeSystem.Instance != null)
-            timeText.text = $"TIME {TimeSystem.Instance.TimeRemaining:0.0}s";
+        {
+            if (float.IsInfinity(TimeSystem.Instance.TimeRemaining))
+            {
+                timeText.text = "TIME ∞";
+            }
+            else
+            {
+                timeText.text = $"TIME {TimeSystem.Instance.TimeRemaining:0.0}s";
+            }
+        }
 
         if (_player == null) return;
 

@@ -140,9 +140,26 @@ public class BossBase : EnemyNormalBASE
         //    TimeSystem에 SetTime이 없어 AddTime(목표 - 현재)로 보정 (실험용 — 추후 SetTime 도입 검토).
         if (TimeSystem.Instance != null)
         {
-            TimeSystem.Instance.AddTime(bossFightTimeLimit - TimeSystem.Instance.TimeRemaining);
-            TimeSystem.Instance.StartTimer();
-            Debug.Log($"<color=cyan>[보스전]</color> 제한 시간 {bossFightTimeLimit}초로 고정, 타이머 시작.");
+            int currentDepth = 5;
+            if (RunState.Instance != null)
+            {
+                currentDepth = RunState.Instance.CurrentDepth;
+            }
+            else if (MapGenerator.Instance != null)
+            {
+                currentDepth = MapGenerator.Instance.CurrentDepth;
+            }
+
+            if (currentDepth != 15)
+            {
+                TimeSystem.Instance.AddTime(bossFightTimeLimit - TimeSystem.Instance.TimeRemaining);
+                TimeSystem.Instance.StartTimer();
+                Debug.Log($"<color=cyan>[보스전]</color> 제한 시간 {bossFightTimeLimit}초로 고정, 타이머 시작.");
+            }
+            else
+            {
+                Debug.Log($"<color=cyan>[보스전]</color> 15층 보스전 진입: 타이머 재설정을 건너뛰고 무한 상태를 유지합니다.");
+            }
         }
  
         WaitBossCoolTime().Forget();

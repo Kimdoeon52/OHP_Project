@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class TimeSystem : Singleton<TimeSystem>
 {
@@ -59,5 +59,13 @@ public class TimeSystem : Singleton<TimeSystem>
     {
         TimeRemaining += seconds;
         GameEvents.OnTimeChanged?.Invoke(TimeRemaining);
+    }
+
+    // 시간을 무한으로 설정
+    public void SetInfinite()
+    {
+        TimeRemaining = float.PositiveInfinity;
+        GameEvents.OnTimeChanged?.Invoke(TimeRemaining);
+        Debug.Log("[TimeSystem] 시간이 무한으로 설정되었습니다.");
     }
 }

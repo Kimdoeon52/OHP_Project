@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class DialogManager : MonoBehaviour
 {
@@ -15,6 +16,13 @@ public class DialogManager : MonoBehaviour
     [SerializeField] GameObject bossName;
     [Header("연출 프리팹 생성 부모 (비우면 자기 자신)")]
     [SerializeField] Transform effectParent;
+
+    [Header("15층 보스 연출용 손 이미지 (RectTransform)")]
+    [SerializeField] private RectTransform cutsceneHandImage;
+    [SerializeField] private float handStartPosY = 1000f;
+    [SerializeField] private float handTargetPosY = 0f;
+    [SerializeField] private float handMoveDuration = 1.0f;
+    [SerializeField] private float handWaitDuration = 0.5f;
 
     private string[] activeDialogText;
     private int index = 0;  
@@ -183,6 +191,49 @@ public class DialogManager : MonoBehaviour
         // 연출 정리
         ClearSpawnedEffects();
 
+        // 15층 보스 특수 연출 (Hades 손 등장 및 시간 무한 설정)
+        int currentDepth = 5;
+        if (RunState.Instance != null)
+        {
+            currentDepth = RunState.Instance.CurrentDepth;
+        }
+        else if (MapGenerator.Instance != null)
+        {
+            currentDepth = MapGenerator.Instance.CurrentDepth;
+        }
+
+        if (currentDepth == 15 && cutsceneHandImage != null)
+        {
+            Debug.Log("[DialogManager] 15층 전용 보스 컷씬 연출 시작");
+            cutsceneHandImage.gameObject.SetActive(true);
+            cutsceneHandImage.anchoredPosition = new Vector2(cutsceneHandImage.anchoredPosition.x, handStartPosY);
+
+            // 손 이미지가 아래로 부드럽게 이동
+            await cutsceneHandImage.DOAnchorPosY(handTargetPosY, handMoveDuration)
+                .SetEase(Ease.OutQuad)
+                .AsyncWaitForCompletion();
+
+            // 멈춘 후 대기
+            await UniTask.Delay((int)(handWaitDuration * 1000), delayType: DelayType.Realtime);
+
+            // 시간을 무한으로 설정
+            if (TimeSystem.Instance != null)
+            {
+                TimeSystem.Instance.SetInfinite();
+            }
+
+            // 추가 인지 지연
+            await UniTask.Delay(500, delayType: DelayType.Realtime);
+
+            // 다시 올라감
+            await cutsceneHandImage.DOAnchorPosY(handStartPosY, handMoveDuration)
+                .SetEase(Ease.InQuad)
+                .AsyncWaitForCompletion();
+
+            cutsceneHandImage.gameObject.SetActive(false);
+            Debug.Log("[DialogManager] 15층 전용 보스 컷씬 연출 완료");
+        }
+
         OnDialogComplete?.Invoke();
         OnDialogComplete = null;
         
@@ -218,6 +269,7 @@ public class DialogManager : MonoBehaviour
         dialog.gameObject.SetActive(false);
         if (animeEffect != null) animeEffect.SetActive(false);
         if (bossName != null) bossName.SetActive(false);
+        if (cutsceneHandImage != null) cutsceneHandImage.gameObject.SetActive(false);
     }
 
     public void OnEnable()
