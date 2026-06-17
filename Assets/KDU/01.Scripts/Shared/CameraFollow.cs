@@ -236,16 +236,23 @@ public class CameraFollow : MonoBehaviour
 
     private void UpdateDragPan()
     {
-        if (Input.GetMouseButtonDown(0))
+        // 버튼이 실제 눌려있을 때만 팬 — up 이벤트를 놓쳐도 따라다니지 않게 매 프레임 게이트.
+        if (!Input.GetMouseButton(0))
         {
-            _dragging = true;
-            _lastMouseScreen = Input.mousePosition;
+            _dragging = false;
             return;
         }
-        if (Input.GetMouseButtonUp(0)) _dragging = false;
-        if (!_dragging) return;
 
         Vector3 cur = Input.mousePosition;
+
+        // 누른 첫 프레임은 기준점만 잡고 이동 없음.
+        if (!_dragging)
+        {
+            _dragging = true;
+            _lastMouseScreen = cur;
+            return;
+        }
+
         Vector3 delta = cur - _lastMouseScreen;
         _lastMouseScreen = cur;
 

@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
 // 튜토리얼 진행용 스크립트
@@ -17,6 +18,7 @@ public class TutorialController : MonoBehaviour
         SecretDiscovered,  // 앞: F 탐색으로 숨겨진 문 발견
         ChestOpened,       // 상자 개방
         ReachExit,         // 포탈 도달
+        MapScrollPickedUp, // 바닥의 지도 스크롤 줍기 (끝에 추가 — serialized 인덱스 보존)
     }
 
     [Serializable]
@@ -68,6 +70,7 @@ public class TutorialController : MonoBehaviour
     private bool _chestOpened;
     private bool _exitReached;
     private bool _secretDiscovered;
+    private bool _mapScrollUsed;
 
     private Step Current => (_index >= 0 && _index < steps.Count) ? steps[_index] : null;
 
@@ -78,6 +81,7 @@ public class TutorialController : MonoBehaviour
         GameEvents.OnChestOpened += OnChestOpened;
         GameEvents.OnSecretDiscovered += OnSecretDiscovered;
         GameEvents.OnLevelComplete += OnExitReached;
+        GameEvents.OnAudioEventRequested += OnAudioEvent;
     }
 
     private void OnDisable()
@@ -87,6 +91,7 @@ public class TutorialController : MonoBehaviour
         GameEvents.OnChestOpened -= OnChestOpened;
         GameEvents.OnSecretDiscovered -= OnSecretDiscovered;
         GameEvents.OnLevelComplete -= OnExitReached;
+        GameEvents.OnAudioEventRequested -= OnAudioEvent;
     }
 
     private void Start()
@@ -100,8 +105,9 @@ public class TutorialController : MonoBehaviour
         if (inventoryToggle == null) 
             inventoryToggle = FindFirstObjectByType<PrototypeRT.InventoryPanelToggle>();
 
+        // 비활성 상태로 시작한 입력 컴포넌트도 찾아 둬야 lockPlayerInput 로 다시 켤 수 있음.
         if (playerInput == null)
-            playerInput = FindFirstObjectByType<GridPlayerInput>();
+            playerInput = FindFirstObjectByType<GridPlayerInput>(FindObjectsInactive.Include);
 
         if (cameraFollow == null) cameraFollow = CameraFollow.Instance;
 
@@ -177,7 +183,7 @@ public class TutorialController : MonoBehaviour
 
     private void Update()
     {
-        if (_finished || Current == null) 
+        if (_finished || Current == null)
             return;
 
         if (Current.closeInventory && inventoryToggle != null && inventoryToggle.IsOpen)
@@ -206,8 +212,13 @@ public class TutorialController : MonoBehaviour
         switch (s.condition)
         {
             case Condition.PressAdvanceKey:
-            case Condition.MapScrollUsed:    // 맵 스크롤 사용시 호출
                 return Input.anyKeyDown;
+
+            case Condition.MapScrollPickedUp:    // 인벤토리에 지도 스크롤이 들어오면 완료
+                return HasMapScrollInInventory();
+
+            case Condition.MapScrollUsed:    // 지도 스크롤 사용(맵 공개) 감지
+                return _mapScrollUsed;
             case Condition.InventoryOpened:
                 return inventoryToggle != null && inventoryToggle.IsOpen;
 
@@ -234,14 +245,31 @@ public class TutorialController : MonoBehaviour
         }
     }
 
-    private bool PlayerInRegion(Collider2D region)
+    // 인벤토리에 지도 스크롤 보유 여부
+    private bool HasMapScrollInInventory()
     {
-        if (region == null || player == null) 
+        if (inventory == null)
+            inventory = FindFirstObjectByType<PrototypeRT.InventoryController>();
+
+        if (inventory == null)
             return false;
 
-        Vector3 world = GridSystem.Instance != null ? GridSystem.Instance.GridToWorld(player.GridPosition) : new Vector3(player.GridPosition.x, player.GridPosition.y, 0f);
+        foreach (var entry in inventory.Items)
+            if (entry != null && entry.ItemData is MapScroll)
+                return true;
 
-        return region.OverlapPoint(world);
+        return false;
+    }
+
+    private bool PlayerInRegion(Collider2D region)
+    {
+        if (region == null || player == null)
+            return false;
+
+        // 논리 셀 중심 + 플레이어 실제 위치 둘 다 검사 — 경계 셀/이동 보간 중에도 머무는 걸 인식.
+        Vector3 cellWorld = GridSystem.Instance != null ? GridSystem.Instance.GridToWorld(player.GridPosition) : new Vector3(player.GridPosition.x, player.GridPosition.y, 0f);
+
+        return region.OverlapPoint(cellWorld) || region.OverlapPoint(player.transform.position);
     }
 
     private void AdvanceToNext()
@@ -267,6 +295,10 @@ public class TutorialController : MonoBehaviour
             inventoryToggle.SetOpen(false);
 
         SetPlayerInputLocked(Current.lockPlayerInput);
+
+        // 클릭으로 선택된 UI가 키보드(이동) 입력을 가로채지 않게 선택 해제.
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(null);
 
         if (Current.highlight != null) 
             Current.highlight.SetActive(true);
@@ -298,6 +330,7 @@ public class TutorialController : MonoBehaviour
         _chestOpened = false;
         _exitReached = false;
         _secretDiscovered = false;
+        _mapScrollUsed = false;
     }
 
     // 튜토리얼 스킵
@@ -320,7 +353,7 @@ public class TutorialController : MonoBehaviour
         // 인벤 초기화
         ClearInventory();
         KeyInventory.Instance?.ClearAll();
-        SceneManager.LoadScene(1); // 다음 씬
+        SceneManager.LoadScene(0); // 다음 씬
     }
 
     private void ClearInventory()
@@ -334,6 +367,13 @@ public class TutorialController : MonoBehaviour
     }
 
     
+    // 지도 스크롤 사용 시 맵 공개 신호(ScrollMapReveal)로 감지
+    private void OnAudioEvent(AudioEventId id)
+    {
+        if (id == AudioEventId.ScrollMapReveal)
+            _mapScrollUsed = true;
+    }
+
     private void OnEnemyKilled(Vector2Int pos, float timeBonus) => _kills++;
     private void OnKeyAcquired(KeyType type) => _keyAcquired = true;
     private void OnChestOpened(Vector2Int cell) => _chestOpened = true;

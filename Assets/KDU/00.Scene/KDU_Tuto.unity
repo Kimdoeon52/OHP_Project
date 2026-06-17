@@ -10261,7 +10261,7 @@ MonoBehaviour:
   hintUI: {fileID: 1501662793}
   player: {fileID: 1958427976}
   inventoryToggle: {fileID: 0}
-  playerInput: {fileID: 0}
+  playerInput: {fileID: 1958427983}
   steps:
   - hint: "60\uCD08. \uB358\uC804\uC5D0\uC11C \uB124\uAC8C \uC8FC\uC5B4\uC9C4 \uC2DC\uAC04\uC740
       \uADF8\uAC8C \uC804\uBD80\uB2E4.\n\u2026\uD558\uC9C0\uB9CC \uC5EC\uAE30 \uC138\uC774\uD504\uB8F8\uC5D0\uC120
@@ -10275,7 +10275,18 @@ MonoBehaviour:
     openDoors: []
     highlight: {fileID: 0}
     closeInventory: 0
-    lockPlayerInput: 1
+    lockPlayerInput: 0
+  - hint: "\uBC29 \uC548\uC5D0 \uC788\uB294 \uC9C0\uB3C4 \uC2A4\uD06C\uB864\uB85C
+      \uC774\uB3D9\uD574\n\uC2A4\uD398\uC774\uC2A4 \uBC14\uB97C \uB20C\uB7EC \uD68D\uB4DD\uD574\uB77C"
+    condition: 9
+    region: {fileID: 0}
+    killCount: 0
+    freeLook: 0
+    compactHint: 1
+    openDoors: []
+    highlight: {fileID: 0}
+    closeInventory: 0
+    lockPlayerInput: 0
   - hint: "Tab \uB97C \uB20C\uB7EC \uC778\uBCA4\uD1A0\uB9AC\uB97C \uC5F4\uC5B4\uB77C.
       \uAC00\uC9C4 \uC544\uC774\uD15C\uC744 \uD655\uC778\uD558\uACE0 \uC4F8 \uC218
       \uC788\uB2E4."
@@ -10283,18 +10294,18 @@ MonoBehaviour:
     region: {fileID: 0}
     killCount: 0
     freeLook: 0
-    compactHint: 0
+    compactHint: 1
     openDoors: []
     highlight: {fileID: 0}
     closeInventory: 0
     lockPlayerInput: 0
   - hint: "\uC9C0\uB3C4 \uC2A4\uD06C\uB864\uC744 \uD3BC\uCE58\uBA74 \uB358\uC804\uC758
-      \uAD6C\uC870\uAC00 \uB4DC\uB7EC\uB09C\uB2E4. \uC0AC\uC6A9\uD574 \uBCF4\uC790.\n[
-      \uC784\uC2DC: \uC544\uBB34 \uD0A4\uB098 \uB20C\uB7EC ]"
+      \uAD6C\uC870\uAC00 \uB4DC\uB7EC\uB09C\uB2E4. \uC0AC\uC6A9\uD574 \uBCF4\uC790.
+      \n[ \uC544\uC774\uD15C \uB354\uBE14 \uD074\uB9AD ]"
     condition: 1
     region: {fileID: 0}
     killCount: 0
-    freeLook: 1
+    freeLook: 0
     compactHint: 1
     openDoors: []
     highlight: {fileID: 0}
@@ -10304,10 +10315,10 @@ MonoBehaviour:
       \uC54A\uB294\uB2E4\n\uD720\uB85C \uD655\uB300/\uCD95\uC18C, \uB4DC\uB798\uADF8\uB85C
       \uB9F5\uC744 \uC0B4\uD53C\uBA70 \uB3D9\uC120\uC744 \uBBF8\uB9AC \uC9DC\uB77C.\n[\uC2A4\uD398\uC774\uC2A4\uBC14\uB97C
       \uB20C\uB7EC \uB2E4\uC74C\uC73C\uB85C \uC9C4\uD589]"
-    condition: 0
+    condition: 2
     region: {fileID: 0}
     killCount: 0
-    freeLook: 0
+    freeLook: 1
     compactHint: 1
     openDoors: []
     highlight: {fileID: 0}
@@ -20317,6 +20328,75 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1313973798}
   m_CullTransparentMesh: 1
+--- !u!1001 &1336622043
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3144045374493979777, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
+      propertyPath: itemSO
+      value: 
+      objectReference: {fileID: 11400000, guid: 1efeec532b4dda745ba1e717c064b061, type: 2}
+    - target: {fileID: 3144045374493979777, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
+      propertyPath: enhanceLevel
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4792168810918137755, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
+      propertyPath: m_Name
+      value: ItemPickUp
+      objectReference: {fileID: 0}
+    - target: {fileID: 6831513954515639074, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -12.479801
+      objectReference: {fileID: 0}
+    - target: {fileID: 6831513954515639074, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 8.540709
+      objectReference: {fileID: 0}
+    - target: {fileID: 6831513954515639074, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6831513954515639074, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6831513954515639074, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6831513954515639074, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6831513954515639074, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6831513954515639074, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6831513954515639074, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6831513954515639074, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7128189075459139171, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -519052415876542791, guid: 23e366c7800de214690b189c3f6b92d3, type: 3}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
 --- !u!1 &1340723643
 GameObject:
   m_ObjectHideFlags: 0
@@ -65751,7 +65831,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  strength: 1
+  strength: 10
   moveSpeed: 1
   attackSpeed: 1
   accuracy: 0
@@ -68332,3 +68412,4 @@ SceneRoots:
   - {fileID: 1419415627}
   - {fileID: 356735909}
   - {fileID: 893309755}
+  - {fileID: 1336622043}
