@@ -24,6 +24,9 @@ public class DialogManager : MonoBehaviour
     [SerializeField] private float handMoveDuration = 1.0f;
     [SerializeField] private float handWaitDuration = 0.5f;
 
+    [Header("Boss Audio Timing")]
+    [SerializeField, Min(0f)] private float titleSfxToBossBgmDelaySeconds = 3f;
+
     private string[] activeDialogText;
     private int index = 0;  
     private bool isDialogActive = false;
@@ -33,6 +36,7 @@ public class DialogManager : MonoBehaviour
     private GameObject spawnedBossName;
     private AudioSource audioSource;
     private AudioClip activeBgm;
+    private AudioClip activeIntroSfx;
 
     public System.Action OnDialogComplete;
 
@@ -95,6 +99,7 @@ public class DialogManager : MonoBehaviour
         {
             activeDialogText = data.dialogueLines;
             activeBgm = data.BossBgm;
+            activeIntroSfx = data.BossTitleSfx;
             Debug.Log($"[DialogManager] StartDialog: 대화 데이터 주입됨 (BGM: {activeBgm?.name}). 대사 개수 = {activeDialogText?.Length}");
             
             // 데이터에 기입된 새로운 프리팹 연출 스폰
@@ -126,6 +131,8 @@ public class DialogManager : MonoBehaviour
         else
         {
             activeDialogText = dialogText;
+            activeBgm = null;
+            activeIntroSfx = null;
             Debug.LogWarning("[DialogManager] 주입된 대화 데이터가 없어 기본 대화(dialogText)를 사용합니다.");
         }
 
@@ -305,12 +312,6 @@ public class DialogManager : MonoBehaviour
     {
         Debug.Log("[DialogManager] Effect 연출 애니메이션 시작");
         
-        if (audioSource != null && activeBgm != null)
-        {
-            audioSource.clip = activeBgm;
-            audioSource.Play();
-            Debug.Log($"[DialogManager] BGM 재생 시작: {activeBgm.name}");
-        }
         
         if (spawnedAnimeEffect != null) spawnedAnimeEffect.SetActive(true);
         else if (animeEffect != null) animeEffect.SetActive(true);
@@ -321,9 +322,50 @@ public class DialogManager : MonoBehaviour
         if (spawnedBossName != null) spawnedBossName.SetActive(true);
         else if (bossName != null) bossName.SetActive(true);
 
+        PlayIntroSfx();
+        if (titleSfxToBossBgmDelaySeconds > 0f)
+            await UniTask.Delay((int)(titleSfxToBossBgmDelaySeconds * 1000f), delayType: DelayType.Realtime);
+
+        PlayBossBgm();
+
         await UniTask.Delay(2000, delayType: DelayType.Realtime);
         
         Debug.Log("[DialogManager] Effect 연출 애니메이션 완료");
+    }
+
+    private void PlayIntroSfx()
+    {
+        if (activeIntroSfx == null)
+            return;
+
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySfx(activeIntroSfx);
+            return;
+        }
+
+        if (audioSource != null)
+            audioSource.PlayOneShot(activeIntroSfx);
+    }
+
+    private void PlayBossBgm()
+    {
+        if (activeBgm == null)
+            return;
+
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayBgm(activeBgm, true);
+            Debug.Log($"[DialogManager] BGM start via AudioManager: {activeBgm.name}");
+            return;
+        }
+
+        if (audioSource != null)
+        {
+            audioSource.clip = activeBgm;
+            audioSource.Play();
+            Debug.Log($"[DialogManager] BGM start local: {activeBgm.name}");
+        }
     }
 
     public void StopBgm()

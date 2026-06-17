@@ -583,6 +583,7 @@ namespace PrototypeRT
             // 드래그 중인 아이템은 Canvas 최상단으로 올려 다른 슬롯/아이템 뒤에 가려지지 않게 합니다.
             _dragRect.SetParent(canvasTransform, true);
             BringDraggedItemToFront();
+            RequestMoveAudio(_selectedItem);
         }
 
         /// <summary>
@@ -624,7 +625,6 @@ namespace PrototypeRT
             }
 
             placedItem?.SetRaycastTarget(true);
-            RequestMoveAudio(placedItem);
             _selectedItem = null;
             if (_overlapItem != null)
             {
@@ -638,6 +638,7 @@ namespace PrototypeRT
                 _dragRect = _selectedItem.GetComponent<RectTransform>();
                 _dragRect.SetParent(canvasTransform, true);
                 BringDraggedItemToFront();
+                RequestMoveAudio(_selectedItem);
             }
             else
             {
@@ -651,21 +652,7 @@ namespace PrototypeRT
 
         private static void RequestMoveAudio(InventoryItem item)
         {
-            if (item == null || item.ItemData == null)
-                return;
-
-            AudioEventId eventId = AudioEventId.None;
-            ItemBase itemData = item.ItemData;
-
-            if (itemData is PotionData)
-                eventId = AudioEventId.MovePotion;
-            else if (itemData.ItemType == ItemType.Scroll)
-                eventId = AudioEventId.MoveScroll;
-            else if (itemData.ItemType == ItemType.Equipment || itemData.Slot != EquipmentSlot.None || itemData is ThrowableWeapon)
-                eventId = AudioEventId.MoveEquipment;
-
-            if (eventId != AudioEventId.None)
-                GameEvents.OnAudioEventRequested?.Invoke(eventId);
+            InventoryMoveAudio.RequestMoveAudio(item);
         }
 
         private void TryDropSelectedItemToGround()

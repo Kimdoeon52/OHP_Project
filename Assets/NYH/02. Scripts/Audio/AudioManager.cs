@@ -255,6 +255,24 @@ public class AudioManager : MonoBehaviour
         PlayBgm(clip, true, defaultBgmFadeSeconds);
     }
 
+    public void PlayBossPreludeBgmForDepth(int depth)
+    {
+        if (musicTable == null)
+        {
+            Debug.LogWarning("AudioManager: MusicTable이 없어 보스 전투 전 BGM을 재생할 수 없습니다.");
+            return;
+        }
+
+        AudioClip clip = musicTable.GetBossPreludeBgm(depth);
+        if (clip == null)
+        {
+            StopBgm();
+            return;
+        }
+
+        PlayBgm(clip, true, defaultBgmFadeSeconds);
+    }
+
     public void PlayMainMenuBgm() => PlayOptionalTableBgm(musicTable != null ? musicTable.MainMenuBgm : null);
     public void PlaySafeRoomBgm() => PlayOptionalTableBgm(musicTable != null ? musicTable.SafeRoomBgm : null);
     public void PlayShopOrRestBgm() => PlayOptionalTableBgm(musicTable != null ? musicTable.ShopOrRestBgm : null);
@@ -508,7 +526,11 @@ public class AudioManager : MonoBehaviour
     private void OnKeyAcquired(KeyType keyType) => PlaySfx(AudioEventId.KeyPicked);
     private void OnItemPurchased(ItemBase item) => PlaySfx(itemPurchasedCue);
     private void OnSecretDiscovered(Vector2Int position) => PlaySfx(secretDiscoveredCue);
-    private void OnBossDefeated() => PlaySfx(AudioEventId.BossDefeated);
+    private void OnBossDefeated()
+    {
+        PlaySfx(AudioEventId.BossDefeated);
+        StopBgm();
+    }
     private void OnPlayerDied()
     {
         PlaySfx(AudioEventId.PlayerDied);

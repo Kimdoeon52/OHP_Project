@@ -113,9 +113,11 @@ public class FloorTransitionController : MonoBehaviour
 
         // 맵 생성이 성공한 뒤에 BGM을 바꿉니다.
         // 실패한 층에서 음악만 먼저 바뀌면 화면/게임 상태와 소리가 서로 다른 층을 가리키는 문제가 생길 수 있습니다.
-        AudioManager.Instance?.PlayBgmForDepth(
-            runState.CurrentDepth,
-            mapGenerator.IsBossDepth(runState.CurrentDepth));
+        // 보스 BGM은 DialogManager가 보스 이름 연출 이후 DialogData에서 재생하므로, 층 입장 때는 전투 전 대기 BGM을 재생합니다.
+        if (mapGenerator.IsBossDepth(runState.CurrentDepth))
+            AudioManager.Instance?.PlayBossPreludeBgmForDepth(runState.CurrentDepth);
+        else
+            AudioManager.Instance?.PlayBgmForDepth(runState.CurrentDepth, false);
 
         // 안개 생성 
         FogRenderer fogRenderer = FindFirstObjectByType<FogRenderer>();

@@ -229,6 +229,7 @@ namespace PrototypeRT
                 bool success = callback();
                 if (success)
                 {
+                    ItemPickupAudio.RequestPickupAudio(pickup.item);
                     _pickupCallbacks.Remove(pickup);
                     list.Remove(pickup);
                     _registeredPickups.Remove(pickup);
@@ -246,6 +247,7 @@ namespace PrototypeRT
             if (!inventoryController.TryAddItem(pickup.item, amount))
                 return false;
 
+            ItemPickupAudio.RequestPickupAudio(pickup.item);
             list.Remove(pickup);
             _registeredPickups.Remove(pickup);
             RemoveListIfEmpty(cell, list);

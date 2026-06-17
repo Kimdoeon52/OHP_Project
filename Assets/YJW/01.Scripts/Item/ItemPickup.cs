@@ -101,7 +101,7 @@ public class ItemPickup : MonoBehaviour
         // 인벤토리가 가득 차면 false — 바닥에 남겨둔다.
         if (!_inventory.TryAddItem(item)) return;
 
-        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.ItemPicked);
+        ItemPickupAudio.RequestPickupAudio(item);
         _collected = true;
         Destroy(gameObject);
     }

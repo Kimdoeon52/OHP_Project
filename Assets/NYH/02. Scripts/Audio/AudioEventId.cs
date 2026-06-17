@@ -45,5 +45,9 @@ public enum AudioEventId
     LastBoss_HeadLaser,
     LastBoss_Meteor,
 
-    DaggerThrow
+    DaggerThrow,
+
+    ScrollPicked,
+    EquipmentPicked,
+    PlayerAttack
 }

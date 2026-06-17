@@ -10,11 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d00ed8f2f68771f43aa8baca3fab6a21, type: 3}
-  m_Name: MusicTable
+  m_Name: 2_MusicTable
   m_EditorClassIdentifier: 
+  mainMenuBgm: {fileID: 8300000, guid: 387251ed1d3801e4991037eba23a0fd0, type: 3}
+  safeRoomBgm: {fileID: 0}
+  shopOrRestBgm: {fileID: 0}
+  playerDeathBgm: {fileID: 0}
+  gameClearBgm: {fileID: 0}
   area1Bgm: {fileID: 8300000, guid: 9ac4463913e9bf64f8dca5f7de96a100, type: 3}
   area2Bgm: {fileID: 8300000, guid: fc53b64fd9af90a4397002402fbc65da, type: 3}
   area3Bgm: {fileID: 8300000, guid: 1664a2e1a1d023847bec7f2976ae4f41, type: 3}
+  bossPreludeDepth5Bgm: {fileID: 0}
+  bossPreludeDepth10Bgm: {fileID: 0}
+  bossPreludeDepth15Bgm: {fileID: 0}
   bossDepth5Bgm: {fileID: 8300000, guid: 9df3825bbe2db1540b5a5ff785bb8020, type: 3}
   bossDepth10Bgm: {fileID: 8300000, guid: e9bf2a55b15fb354aaaf15601fafe9fe, type: 3}
   bossDepth15Bgm: {fileID: 8300000, guid: b16032d5b2eda8445806e22a3613f65b, type: 3}

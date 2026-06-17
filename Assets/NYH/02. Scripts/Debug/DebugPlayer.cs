@@ -46,6 +46,10 @@ public class DebugPlayer : MonoBehaviour
     [Tooltip("Add Exp 실행 시 추가할 경험치량입니다.")]
     [SerializeField, Min(1)] private int expAmount = 10;
 
+    [Header("Time Debug")]
+    [Tooltip("Add Time 실행 시 남은 시간에 더할 초 단위 값입니다.")]
+    [SerializeField, Min(0.1f)] private float debugTimeAmount = 10f;
+
     [Header("상태이상 디버그")]
     [Tooltip("Apply Status 실행 시 적용할 상태이상 종류입니다.")]
     [SerializeField] private StatusType statusType = StatusType.Poison;
@@ -76,6 +80,8 @@ public class DebugPlayer : MonoBehaviour
     [SerializeField] private KeyCode damageMonsterKey = KeyCode.Alpha0;
     [Tooltip("PlayerLevelSystem에 expAmount만큼 경험치를 추가하는 키입니다.")]
     [SerializeField] private KeyCode addExpKey = KeyCode.Alpha4;
+    [Tooltip("TimeSystem에 debugTimeAmount만큼 남은 시간을 추가하는 키입니다.")]
+    [SerializeField] private KeyCode addTimeKey = KeyCode.F8;
     [Tooltip("itemToAdd를 인벤토리에 추가하는 키입니다.")]
     [SerializeField] private KeyCode addItemKey = KeyCode.Alpha5;
     [Tooltip("itemToEquip를 장비 슬롯에 장착해보는 키입니다.")]
@@ -115,6 +121,9 @@ public class DebugPlayer : MonoBehaviour
 
         if (Input.GetKeyDown(addExpKey))
             AddExp();
+
+        if (Input.GetKeyDown(addTimeKey))
+            AddTime();
 
         if (Input.GetKeyDown(addItemKey))
             AddDebugItem();
@@ -339,8 +348,17 @@ public class DebugPlayer : MonoBehaviour
     }
 
     /// <summary>
-    /// PlayerLevelSystem에 경험치를 직접 넣어 경험치 저장, 레벨업, 스탯뷰 갱신을 확인합니다.
+    /// 타이머 검증 중 바로 시간을 보충할 수 있도록 TimeSystem의 공개 API만 사용합니다.
     /// </summary>
+    [ContextMenu("Debug/Add Time")]
+    public void AddTime()
+    {
+        if (!TryGetTimeSystem(out TimeSystem timeSystem)) return;
+
+        timeSystem.AddTime(debugTimeAmount);
+        Debug.Log($"[DebugPlayer] Time added: {debugTimeAmount:0.##}s, remaining {timeSystem.TimeRemaining:0.##}s");
+    }
+
     [ContextMenu("Debug/Add Exp")]
     public void AddExp()
     {
@@ -432,6 +450,16 @@ public class DebugPlayer : MonoBehaviour
         if (targetLevel != null) return true;
 
         Debug.LogWarning("[DebugPlayer] PlayerLevelSystem을 찾지 못했습니다.");
+        return false;
+    }
+
+    private bool TryGetTimeSystem(out TimeSystem timeSystem)
+    {
+        timeSystem = TimeSystem.Instance != null ? TimeSystem.Instance : FindAnyObjectByType<TimeSystem>();
+
+        if (timeSystem != null) return true;
+
+        Debug.LogWarning("[DebugPlayer] TimeSystem을 찾지 못해 시간을 추가할 수 없습니다.");
         return false;
     }
 

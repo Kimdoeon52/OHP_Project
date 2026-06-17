@@ -246,6 +246,7 @@ public class GridPlayerAnimationController : MonoBehaviour
     {
         if (_isDead) return;
 
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.PlayerAttack);
         UpdateHorizontalFacing(direction);
         ResetTriggerIfConfigured(hurtTriggerName);
         ApplyAttackAnimationSpeed();
