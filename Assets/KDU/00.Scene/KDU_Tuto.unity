@@ -6051,11 +6051,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93daaf8a018e7d24a98e155905dd47ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  loadingSceneName: Loding
+  loadingSceneName: Loading
   newGameSceneName: NYH_Grid
   continueSceneName: NYH_Grid
   challengeSceneName: NYH_Grid
   mainMenuSceneName: NYH_MainScene
+  tutorialSceneName: KDU_Tuto
   continueButton: {fileID: 0}
   continueSaveKey: HasContinueSave
 --- !u!4 &356735909
@@ -7587,7 +7588,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 500505597}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 356735908}
+        m_TargetAssemblyTypeName: MoveScene, Assembly-CSharp
+        m_MethodName: QuitGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &500505597
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9089,7 +9102,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 356735908}
         m_TargetAssemblyTypeName: MoveScene, Assembly-CSharp
         m_MethodName: StartMainMenu
         m_Mode: 1
@@ -25110,9 +25123,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 693348421}
-        m_TargetAssemblyTypeName: TutorialController, Assembly-CSharp
-        m_MethodName: Skip
+      - m_Target: {fileID: 356735908}
+        m_TargetAssemblyTypeName: MoveScene, Assembly-CSharp
+        m_MethodName: StartMainMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
