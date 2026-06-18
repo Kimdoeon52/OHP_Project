@@ -147,7 +147,7 @@ public class DialogManager : MonoBehaviour
         // 3. 켜지자마자 첫 번째 대사가 바로 표시되도록 설정
         if (activeDialogText != null && activeDialogText.Length > 0)
         {
-            dialog.text = activeDialogText[0];
+            dialog.text = ResolveLine(activeDialogText[0]);
             index = 1; // 0번 대사가 표시되었으므로 다음 대사는 index = 1
             Debug.Log($"[DialogManager] 첫 번째 대사 출력 완료: \"{dialog.text}\" (다음 index = {index})");
         }
@@ -169,7 +169,7 @@ public class DialogManager : MonoBehaviour
         {
             if (activeDialogText != null && index < activeDialogText.Length)
             {
-                dialog.text = activeDialogText[index];
+                dialog.text = ResolveLine(activeDialogText[index]);
                 Debug.Log($"[DialogManager] 다음 대사 출력: \"{dialog.text}\" (index={index})");
                 index++;
             }
@@ -248,6 +248,12 @@ public class DialogManager : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    // dialogueLines 항목을 LocalizationManager 키로 보고 텍스트 조회 (매니저 없으면 원본 그대로)
+    private string ResolveLine(string raw)
+    {
+        return LocalizationManager.Instance != null ? LocalizationManager.Instance.Get(raw) : raw;
+    }
+
     private void ClearSpawnedEffects()
     {
         if (spawnedAnimeEffect != null)
@@ -283,6 +289,9 @@ public class DialogManager : MonoBehaviour
     {
         EnsureCorrectParenting();
 
+        if (LocalizationManager.Instance != null)
+            LocalizationManager.Instance.OnLanguageChanged += RefreshCurrentLine;
+
         // StartDialog를 거치지 않고 직접 활성화되었을 때의 폴백 처리
         if (activeDialogText == null)
         {
@@ -293,7 +302,7 @@ public class DialogManager : MonoBehaviour
 
             if (activeDialogText != null && activeDialogText.Length > 0)
             {
-                dialog.text = activeDialogText[0];
+                dialog.text = ResolveLine(activeDialogText[0]);
                 index = 1;
             }
             else
@@ -305,7 +314,19 @@ public class DialogManager : MonoBehaviour
 
     private void OnDisable()
     {
+        if (LocalizationManager.Instance != null)
+            LocalizationManager.Instance.OnLanguageChanged -= RefreshCurrentLine;
+
         activeDialogText = null;
+    }
+
+    // 언어 변경 시 현재 표시 중인 대사 다시 그리기
+    private void RefreshCurrentLine()
+    {
+        if (!isDialogActive || activeDialogText == null || index <= 0 || index > activeDialogText.Length)
+            return;
+
+        dialog.text = ResolveLine(activeDialogText[index - 1]);
     }
 
     private async UniTask Effect()//연출 애니메이션
