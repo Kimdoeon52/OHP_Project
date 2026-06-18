@@ -43,6 +43,16 @@ public class Wallet : Singleton<Wallet>
         int finalAmount = Mathf.Max(0, Mathf.RoundToInt(amount * multiplier));
         Balance += finalAmount;
         GameEvents.OnGoldChanged?.Invoke(Balance);
+
+        // 탐욕 특성 배율까지 적용된 실제 획득량을 보여줘야 HUD 증가량과 플로팅 텍스트가 어긋나지 않는다.
+        Vector3 worldPosition = GridSystem.Instance != null
+            ? GridSystem.Instance.GridToWorld(pos)
+            : new Vector3(pos.x, pos.y, 0f);
+        GameEvents.OnCombatTextRequested?.Invoke(new CombatTextRequest(
+            worldPosition,
+            $"+{finalAmount}G",
+            finalAmount,
+            CombatTextType.Gold));
     }
 
     // 잔액 충분하면 골드 차감

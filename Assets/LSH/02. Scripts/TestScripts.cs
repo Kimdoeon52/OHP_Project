@@ -198,6 +198,9 @@ public class TestScripts : MonoBehaviour
 
         if (dialogManager != null)
         {
+            if (activeBossObject != null)
+                activeBossObject.SetActive(false);
+
             dialogManager.OnDialogComplete = () =>
             {
                 if (activeBossObject != null)

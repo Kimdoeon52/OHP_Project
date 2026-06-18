@@ -11,6 +11,9 @@ public class CombatFloatingTextSpawner : MonoBehaviour
     [Tooltip("전투 숫자 프리팹입니다. TMP_Text와 CombatFloatingTextView가 있으면 그대로 사용합니다. 비워두면 기본 월드 텍스트를 런타임 생성합니다.")]
     [SerializeField] private CombatFloatingTextView floatingTextPrefab;
 
+    [Tooltip("프리팹을 쓰지 않고 런타임 텍스트를 만들 때 적용할 TMP 폰트입니다. 프리팹 텍스트에 이미 폰트가 있으면 덮어쓰지 않습니다.")]
+    [SerializeField] private TMP_FontAsset fallbackFontAsset;
+
     [Header("Position")]
     [Tooltip("대상 Transform 위치에서 머리 위로 올릴 월드 오프셋입니다. 숫자가 너무 낮거나 높으면 이 값을 조정하세요.")]
     [SerializeField] private Vector3 spawnOffset = new Vector3(0f, 0.9f, 0f);
@@ -30,6 +33,9 @@ public class CombatFloatingTextSpawner : MonoBehaviour
 
     [Tooltip("회복 숫자 색상입니다.")]
     [SerializeField] private Color healColor = Color.green;
+
+    [Tooltip("골드 획득 텍스트 색상입니다.")]
+    [SerializeField] private Color goldColor = new Color(1f, 0.84f, 0.1f);
 
     [Tooltip("일반 데미지, 회복, 빗나감 텍스트 크기입니다.")]
     [SerializeField, Min(1f)] private float normalFontSize = 3f;
@@ -85,7 +91,11 @@ public class CombatFloatingTextSpawner : MonoBehaviour
     {
         // 1. 디자이너가 인스펙터에 프리팹을 지정해 두었다면, 해당 프리팹을 월드에 복제하여 반환합니다.
         if (floatingTextPrefab != null)
-            return Instantiate(floatingTextPrefab, position, Quaternion.identity);
+        {
+            CombatFloatingTextView prefabView = Instantiate(floatingTextPrefab, position, Quaternion.identity);
+            prefabView.ApplyFontIfMissing(fallbackFontAsset);
+            return prefabView;
+        }
 
         // TODO(UI): 데미지 숫자 프리팹/폰트/위치 변경 지점입니다.
         // 나중에 폰트, 외곽선, 그림자, 애니메이션을 꾸미려면 TMP 프리팹을 만들고 floatingTextPrefab에 연결하세요.
@@ -100,9 +110,12 @@ public class CombatFloatingTextSpawner : MonoBehaviour
         text.alignment = TextAlignmentOptions.Center;
         text.sortingOrder = 100; // 게임 내 다른 스프라이트나 오브젝트보다 무조건 앞쪽에 보이도록 설정
         text.textWrappingMode = TextWrappingModes.NoWrap; // 한 줄로만 쭉 나오게 강제
+        text.font = fallbackFontAsset;
 
         // 애니메이션 연출을 담당할 CombatFloatingTextView를 붙여서 반환합니다.
-        return root.AddComponent<CombatFloatingTextView>();
+        CombatFloatingTextView view = root.AddComponent<CombatFloatingTextView>();
+        view.ApplyFontIfMissing(fallbackFontAsset);
+        return view;
     }
 
     /// <summary>
@@ -126,6 +139,7 @@ public class CombatFloatingTextSpawner : MonoBehaviour
             CombatTextType.CriticalDamage => criticalDamageColor,
             CombatTextType.Miss => missColor,
             CombatTextType.Heal => healColor,
+            CombatTextType.Gold => goldColor,
             _ => damageColor // 일반 데미지 및 기타
         };
     }

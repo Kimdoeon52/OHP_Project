@@ -59,6 +59,22 @@ public class CombatFloatingTextView : MonoBehaviour
         _startColor = color; // 페이드 아웃 연출을 시작할 때의 원본 색상을 기록합니다.
     }
 
+    public void ApplyFontIfMissing(TMP_FontAsset fallbackFont)
+    {
+        if (fallbackFont == null)
+            return;
+
+        if (text == null)
+            text = GetComponentInChildren<TMP_Text>(true);
+
+        if (text == null || text.font != null)
+            return;
+
+        // 런타임 생성 텍스트는 TMP 기본 폰트가 비어 있을 수 있어 스포너의 기본 폰트를 주입한다.
+        // 프리팹에서 이미 폰트를 정한 경우에는 디자이너 설정을 보존한다.
+        text.font = fallbackFont;
+    }
+
     private void LateUpdate()
     {
         // 카메라를 바라보는 설정(faceCamera)이 켜져 있다면 월드상의 텍스트 회전을 메인 카메라 방향과 일치시킵니다. (빌보드 효과)

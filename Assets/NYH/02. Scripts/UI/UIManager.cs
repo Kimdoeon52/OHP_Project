@@ -137,6 +137,12 @@ namespace PrototypeRT
             {
                 if (!IsWindowActive())
                 {
+                    // 보스 인트로/사망 연출/키 입력 캡처처럼 게임 입력을 막는 연출 중에는
+                    // ESC가 시스템창 열기로 새어 나가지 않게 한다.
+                    // 이미 창이 열린 상태의 ESC 닫기는 아래 CloseTopUI 흐름에서 계속 허용한다.
+                    if (KeyBindingManager.ShouldBlockGameplayInput)
+                        return;
+
                     OpenSystemWindow();
                     return;
                 }
@@ -175,6 +181,12 @@ namespace PrototypeRT
 
         public void OpenSystemWindow()
         {
+            // 외부 버튼이나 코드가 직접 호출해도 입력 차단 중에는 새 시스템창을 열지 않는다.
+            // 단, 이미 창이 열려 있는 경우에는 내부 탭 전환/정리 흐름을 막지 않기 위해
+            // IsWindowActive()가 false일 때만 차단한다.
+            if (!IsWindowActive() && KeyBindingManager.ShouldBlockGameplayInput)
+                return;
+
             // 게임 진행 중 ESC키 또는 메인 시스템 버튼으로 들어올 때는 전체 창을 먼저 켠 뒤 시스템 탭을 바로 보여줍니다.
             // _lastWindowActive를 같이 맞춰두지 않으면 LateUpdate의 창 활성 변화 감지가 기본 인벤토리 탭으로 덮어쓸 수 있습니다.
             if (windowRoot != null && !windowRoot.activeSelf)
@@ -189,6 +201,12 @@ namespace PrototypeRT
 
         public void ToggleSystemWindow()
         {
+            // 메인 UI의 시스템 버튼도 ESC와 같은 정책을 따른다.
+            // 보스 인트로 같은 컷신 중에는 새 UI를 열 수 없고,
+            // 이미 열린 시스템창을 닫는 동작은 아래 기존 토글 로직으로 처리한다.
+            if (!IsWindowActive() && KeyBindingManager.ShouldBlockGameplayInput)
+                return;
+
             // 이미 시스템 탭이 열린 상태에서 시스템 버튼을 다시 누르면 창을 닫습니다.
             // 다른 탭이 열려 있거나 창이 닫혀 있으면 시스템 탭으로 전환합니다.
             if (IsWindowActive() && _currentMainTab == MainTab.System && _topModalPanel == null)

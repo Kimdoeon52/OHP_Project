@@ -5,6 +5,8 @@ using DG.Tweening;
 
 public class DialogManager : MonoBehaviour
 {
+    private const string InputBlockSource = "BossIntroDialog";
+
     [Header("검은 배경")]
     [SerializeField] Image dialogBackground;
     [Header("기본 텍스트 입력 (폴백용)")]
@@ -89,6 +91,7 @@ public class DialogManager : MonoBehaviour
     public void StartDialog(DialogData data)
     {
         EnsureCorrectParenting();
+        SetBossIntroInputBlock(true);
 
         // 기존에 스폰된 이펙트 잔재 정리
         ClearSpawnedEffects();
@@ -243,6 +246,7 @@ public class DialogManager : MonoBehaviour
 
         OnDialogComplete?.Invoke();
         OnDialogComplete = null;
+        SetBossIntroInputBlock(false);
         
         // 대화 종료 후 오브젝트 비활성화
         gameObject.SetActive(false);
@@ -318,6 +322,12 @@ public class DialogManager : MonoBehaviour
             LocalizationManager.Instance.OnLanguageChanged -= RefreshCurrentLine;
 
         activeDialogText = null;
+        SetBossIntroInputBlock(false);
+    }
+
+    private void OnDestroy()
+    {
+        SetBossIntroInputBlock(false);
     }
 
     // 언어 변경 시 현재 표시 중인 대사 다시 그리기
@@ -397,5 +407,10 @@ public class DialogManager : MonoBehaviour
             audioSource.clip = null;
             Debug.Log("[DialogManager] BGM 정지");
         }
+    }
+
+    private void SetBossIntroInputBlock(bool active)
+    {
+        PrototypeRT.KeyBindingManager.SetUiInputBlock(InputBlockSource, active);
     }
 }
