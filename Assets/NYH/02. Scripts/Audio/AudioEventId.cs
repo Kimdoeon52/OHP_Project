@@ -51,5 +51,9 @@
     ScrollPicked,
     EquipmentPicked,
     PlayerAttack,
-    GameOverVoice
+    GameOverVoice,
+
+    PlayerStep,
+    PlayerStepHazard,
+    DoorOpened
 }

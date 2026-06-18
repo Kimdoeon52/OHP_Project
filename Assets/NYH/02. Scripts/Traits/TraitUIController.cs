@@ -19,7 +19,7 @@ public class TraitUIController : MonoBehaviour
         [Tooltip("오른쪽 특성 아이콘의 Button 컴포넌트입니다. 클릭하면 상세 패널이 이 특성으로 바뀝니다.")]
         public Button button;
 
-        [Tooltip("오른쪽 특성 아이콘의 Image 컴포넌트입니다. TraitData.icon이 비어 있으면 상세 아이콘 fallback으로 사용합니다.")]
+        [Tooltip("오른쪽 특성 아이콘의 Image 컴포넌트입니다. 상세 패널 아이콘도 이 이미지를 우선 사용합니다.")]
         public Image iconImage;
     }
 
@@ -163,9 +163,10 @@ public class TraitUIController : MonoBehaviour
             return;
 
         int level = traitController.GetTraitLevel(_selectedTraitId);
-        // TraitData에 아이콘이 없으면 오른쪽 버튼에 이미 꽂힌 아이콘을 상세 패널에 재사용한다.
-        // 이렇게 두면 1차 UI 연결 때 아이콘을 두 군데 모두 수동 연결하지 않아도 된다.
-        Sprite icon = data.icon != null ? data.icon : FindButtonIcon(_selectedTraitId);
+        // 버튼에 연결한 아이콘을 상세 패널의 기준으로 쓴다.
+        // TraitData.icon이 잘못 연결되어 있어도 실제 UI 버튼과 상세 아이콘이 서로 어긋나지 않게 하기 위해서다.
+        Sprite buttonIcon = FindButtonIcon(_selectedTraitId);
+        Sprite icon = buttonIcon != null ? buttonIcon : data.icon;
 
         if (selectedTraitIcon != null)
         {

@@ -151,12 +151,25 @@ public class GridDoor : MonoBehaviour
     public void SetState(DoorState state)
     {
         if (State == state) return;
+        DoorState previousState = State;
+
         State = state;
         if (state != DoorState.Opening) _openingProgress = 0f;
         ApplyState();
+
+        PlayDoorOpenedSfx(previousState, state);
+
         // 문 열리면 시야 갱신
         if (IsOpen && VisionSystem.Instance != null && _player != null)
             VisionSystem.Instance.UpdateVision(_player.GridPosition);
+    }
+
+    private void PlayDoorOpenedSfx(DoorState previousState, DoorState currentState)
+    {
+        if (previousState == DoorState.Open || currentState != DoorState.Open)
+            return;
+
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.DoorOpened);
     }
 
     private void ApplyState()

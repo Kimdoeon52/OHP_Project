@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
@@ -65,6 +66,13 @@ public class AudioManager : MonoBehaviour
 
     [Tooltip("BGM이 바뀔 때 서로 교차 페이드되는 시간입니다.")]
     [SerializeField, Min(0f)] private float defaultBgmFadeSeconds = 0.75f;
+
+    [Header("Scene BGM")]
+    [Tooltip("이 씬들로 진입하면 MusicTable의 MainMenuBgm을 재생합니다.")]
+    [SerializeField] private string[] mainMenuSceneNames = { "NYH_MainScene", "MainMeun" };
+
+    [Tooltip("메인 메뉴 씬 로드 완료 시 메뉴 BGM으로 자동 전환할지 정합니다.")]
+    [SerializeField] private bool playMainMenuBgmOnSceneLoaded = true;
 
     [Header("SFX Playback")]
     [Tooltip("동시에 재생 가능한 기본 SFX Source 개수입니다. 짧은 효과음이 겹쳐도 앞 소리가 끊기지 않도록 풀을 둡니다.")]
@@ -140,12 +148,14 @@ public class AudioManager : MonoBehaviour
 
     private void OnEnable()
     {
+        SceneManager.sceneLoaded += OnSceneLoaded;
         SubscribeSliders();
         SubscribeGameEvents();
     }
 
     private void OnDisable()
     {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
         UnsubscribeSliders();
         UnsubscribeGameEvents();
     }
@@ -326,6 +336,28 @@ public class AudioManager : MonoBehaviour
         }
 
         PlaySfx(GetLegacyCue(eventId));
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (!playMainMenuBgmOnSceneLoaded || !IsMainMenuScene(scene.name))
+            return;
+
+        PlayMainMenuBgm();
+    }
+
+    private bool IsMainMenuScene(string sceneName)
+    {
+        if (string.IsNullOrWhiteSpace(sceneName) || mainMenuSceneNames == null)
+            return false;
+
+        for (int i = 0; i < mainMenuSceneNames.Length; i++)
+        {
+            if (string.Equals(mainMenuSceneNames[i], sceneName, System.StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
     }
 
     private void PlayBgmImmediately(AudioClip clip, bool loop)

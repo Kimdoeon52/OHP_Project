@@ -208,6 +208,7 @@ public class GridPlayerMovement : MonoBehaviour
 
         OnMoveSpeedChanged?.Invoke(GetAnimationSpeedMultiplier());
         OnMoveSucceeded?.Invoke(direction);
+        PlayStepSfx(target);
 
         float elapsed = 0f;
         while (elapsed < CurrentMoveDuration)
@@ -244,6 +245,15 @@ public class GridPlayerMovement : MonoBehaviour
             TurnManager.Instance.OnPlayerActionCompleted(totalCost, skipEnemyTurnDelay);
         else
             TurnManager.Instance.OnPlayerActionCompletedWithoutEnemyTurns(totalCost);
+    }
+
+    private void PlayStepSfx(Vector2Int target)
+    {
+        AudioEventId eventId = HazardTerrainEffect.IsHazardCell(target)
+            ? AudioEventId.PlayerStepHazard
+            : AudioEventId.PlayerStep;
+
+        GameEvents.OnAudioEventRequested?.Invoke(eventId);
     }
 
     private float GetMoveDuration()

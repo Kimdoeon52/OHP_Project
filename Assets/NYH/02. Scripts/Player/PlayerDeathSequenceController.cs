@@ -41,11 +41,13 @@ public class PlayerDeathSequenceController : MonoBehaviour
     private void OnEnable()
     {
         GameEvents.OnPlayerDied += OnPlayerDied;
+        GameEvents.OnTimeUp += OnTimeUp;
     }
 
     private void OnDisable()
     {
         GameEvents.OnPlayerDied -= OnPlayerDied;
+        GameEvents.OnTimeUp -= OnTimeUp;
         KeyBindingManager.SetUiInputBlock(InputBlockSource, false);
     }
 
@@ -60,6 +62,14 @@ public class PlayerDeathSequenceController : MonoBehaviour
     }
 
     private void OnPlayerDied()
+    {
+        if (_isPlaying)
+            return;
+
+        _sequenceRoutine = StartCoroutine(PlaySequence());
+    }
+
+    private void OnTimeUp()
     {
         if (_isPlaying)
             return;
