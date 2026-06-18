@@ -10,13 +10,11 @@ public class PrototypeGameFlow : MonoBehaviour
 
     private void OnEnable()
     {
-        GameEvents.OnPlayerDied += OnGameEnd;
         GameEvents.OnTimeUp += OnGameEnd;
     }
 
     private void OnDisable()
     {
-        GameEvents.OnPlayerDied -= OnGameEnd;
         GameEvents.OnTimeUp -= OnGameEnd;
     }
 
