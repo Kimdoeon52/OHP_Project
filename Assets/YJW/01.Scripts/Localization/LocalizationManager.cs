@@ -125,12 +125,12 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
         }},
         //------------------------------------------ 보스 1 대사
         { "msg_보스1대사1", new Dictionary<Language, string> {
-            { Language.Korean, "등 뒤를 서늘하게 만들던 시선이, 마침내 코앞까지 다가왔다." },
-            { Language.English, "The gaze that once chilled your spine has finally crept within reach." }
+            { Language.Korean, "등 뒤를 서늘하게 만들던 시선이,\r\n마침내 코앞까지 다가왔다." },
+            { Language.English, "The gaze that once chilled\r\nyour spine has finally\r\ncrept within reach." }
         }},
         { "msg_보스1대사2", new Dictionary<Language, string> {
-            { Language.Korean, "그 깊은 어둠이, 단 하나의 눈동자가 되어 모습을 드러낸다." },
-            { Language.English, "From the depths of that darkness, a single eye emerges." }
+            { Language.Korean, "그 깊은 어둠이,\r\n단 하나의 눈동자가 되어 모습을 드러낸다." },
+            { Language.English, "From the depths of that darkness,\r\na single eye emerges." }
         }},
         { "msg_보스1대사3", new Dictionary<Language, string> {
             { Language.Korean, "그것의 이름은……" },
@@ -138,16 +138,16 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
         }},
         //------------------------------------------ 보스 2 대사
         { "msg_보스2대사1", new Dictionary<Language, string> {
-            { Language.Korean, "뼈가 부딪히는 소리가 던전에 울려퍼진다." },
-            { Language.English, "The clatter of bones echoes through the dungeon." }
+            { Language.Korean, "뼈가 부딪히는 소리가\r\n던전에 울려퍼진다." },
+            { Language.English, "The clatter of bones\r\nechoes through the dungeon." }
         }},
         { "msg_보스2대사2", new Dictionary<Language, string> {
-            { Language.Korean, "그를 마주한 이들은 모두 이곳에서 끝을 맞이한다." },
-            { Language.English, "All who have faced him meet their end here." }
+            { Language.Korean, "그를 마주한 이들은\r\n모두 이곳에서 끝을 맞이한다." },
+            { Language.English, "All who have faced him\r\nmeet their end here." }
         }},
         { "msg_보스2대사3", new Dictionary<Language, string> {
-            { Language.Korean, "수많은 생명을 앗아간 대검의 칼끝은.." },
-            { Language.English, "The tip of a greatsword that has claimed countless lives.." }
+            { Language.Korean, "수많은 생명을 앗아간\r\n대검의 칼끝은.." },
+            { Language.English, "The tip of a greatsword\r\nthat has claimed countless lives.." }
         }},
         { "msg_보스2대사4", new Dictionary<Language, string> {
             { Language.Korean, "지금 당신을 향해 있다." },
@@ -156,7 +156,7 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
         //------------------------------------------ 보스 3 대사
         { "msg_보스3대사1", new Dictionary<Language, string> {
             { Language.Korean, "저주의 근원이 모습을 드러낸다." },
-            { Language.English, "The source of the curse reveals itself." }
+            { Language.English, "The source of the curse\r\nreveals itself." }
         }},
         { "msg_보스3대사2", new Dictionary<Language, string> {
             { Language.Korean, "죽음의 종착역에 드디어 도착했다." },
@@ -164,7 +164,7 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
         }},
         { "msg_보스3대사3", new Dictionary<Language, string> {
             { Language.Korean, "드디어 당신의 여정의 끝이 보인다." },
-            { Language.English, "At last, the end of your journey comes into sight." }
+            { Language.English, "At last, the end of your journey\r\ncomes into sight." }
         }},
     };
 
