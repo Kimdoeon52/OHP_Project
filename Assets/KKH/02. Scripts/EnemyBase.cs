@@ -310,20 +310,19 @@ public abstract class EnemyBase : EntityBase, IDamageable
     private void SpawnItemDrop(ItemBase item)
     {
         var groundItemController = FindFirstObjectByType<PrototypeRT.GroundItemController>();
-        if(groundItemController != null)
+        if (groundItemController != null)
         {
             ItemInstance itemInst = item.CreateInstance();
-            groundItemController.DropItem(Instance, 1, GridPosition);
+            groundItemController.DropItem(itemInst, 1, GridPosition);
         }
         else 
         {
-            if(dropItemPickupPrefab == null)
+            if (dropItemPickupPrefab == null)
             {
                 Debug.LogWarning($"{name}: {item.name} 드롭 실패. Item_Pickup을 연결해주세요.");
                 return;
             }
             ItemPickup pickup = Instantiate(dropItemPickupPrefab, WorldOf(GridPosition), Quaternion.identity);
-            pickup.Initialize(GridPosition, item);
             pickup.itemSO = item;
             pickup.Initialize(GridPosition);
         }
