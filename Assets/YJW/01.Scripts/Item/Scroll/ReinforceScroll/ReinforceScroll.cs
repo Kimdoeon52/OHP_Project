@@ -11,5 +11,9 @@ public class ReinforceScroll : ItemBase
             return;
 
 		equip.enhanceLevel++; // 강화 처리
+
+		if (equip is ThrowableWeaponInstance throwable)
+			for (int i = 0; i < throwable.currentDurabilities.Count; i++)
+				throwable.currentDurabilities[i] = throwable.weapon.Durability;
     }
 }

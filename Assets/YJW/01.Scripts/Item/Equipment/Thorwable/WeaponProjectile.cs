@@ -95,7 +95,8 @@ public class WeaponProjectile : MonoBehaviour
         isFlying = false;
         hasTarget = false;
 
-        GroundItemController groundController = FindFirstObjectByType<GroundItemController>();
+        // 내구도 1짜리는 던지면 그대로 깨지므로 바닥에 줍기용으로 남기지 않음
+        GroundItemController groundController = thrownDurability > 1 ? FindFirstObjectByType<GroundItemController>() : null;
         if (groundController != null && GridSystem.Instance != null && weaponInstance != null && weaponInstance.weapon != null)
         {
             Vector2Int cell = GridSystem.Instance.WorldToGrid(transform.position);
