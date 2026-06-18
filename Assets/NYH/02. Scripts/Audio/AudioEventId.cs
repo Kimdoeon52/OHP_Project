@@ -50,5 +50,6 @@
 
     ScrollPicked,
     EquipmentPicked,
-    PlayerAttack
+    PlayerAttack,
+    GameOverVoice
 }

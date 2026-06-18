@@ -21,6 +21,12 @@ public class CameraFollow : MonoBehaviour
 
     private Vector3 _velocity;
     private bool _planningMode;
+    private bool _deathFocusMode;
+    private Transform _deathFocusTarget;
+    private float _deathFocusStartSize;
+    private float _deathFocusTargetSize;
+    private float _deathFocusDuration;
+    private float _deathFocusElapsed;
     private HashSet<Vector2Int> _safeCells;
     private Vector2 _planningPan;
     private float _defaultSize;
@@ -77,6 +83,34 @@ public class CameraFollow : MonoBehaviour
             StopCoroutine(_shakeCoroutine);
         }
         _shakeCoroutine = StartCoroutine(ShakeCoroutine(duration, strength));
+    }
+
+    public void BeginDeathFocus(Transform focusTarget, float targetSize, float duration)
+    {
+        if (focusTarget == null)
+            return;
+
+        _deathFocusTarget = focusTarget;
+        _deathFocusTargetSize = Mathf.Max(0.1f, targetSize);
+        _deathFocusDuration = Mathf.Max(0.01f, duration);
+        _deathFocusElapsed = 0f;
+        _deathFocusMode = true;
+        DisablePlanning();
+
+        if (planningCamera == null)
+            planningCamera = GetComponent<Camera>();
+
+        _deathFocusStartSize = planningCamera != null ? planningCamera.orthographicSize : _deathFocusTargetSize;
+    }
+
+    public void EndDeathFocus(bool restoreDefaultZoom)
+    {
+        _deathFocusMode = false;
+        _deathFocusTarget = null;
+        _deathFocusElapsed = 0f;
+
+        if (restoreDefaultZoom && planningCamera != null)
+            planningCamera.orthographicSize = _defaultSize;
     }
 
     private System.Collections.IEnumerator ShakeCoroutine(float duration, float strength)
@@ -265,6 +299,12 @@ public class CameraFollow : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (_deathFocusMode && _deathFocusTarget != null)
+        {
+            UpdateDeathFocus();
+            return;
+        }
+
         if (target == null) return;
 
         Vector3 desired = target.position + offset + new Vector3(_planningPan.x, _planningPan.y, 0f) + _shakeOffset;
@@ -291,5 +331,22 @@ public class CameraFollow : MonoBehaviour
         if (target == null) return;
         transform.position = target.position + offset + new Vector3(_planningPan.x, _planningPan.y, 0f) + _shakeOffset;
         _velocity = Vector3.zero;
+    }
+
+    private void UpdateDeathFocus()
+    {
+        Vector3 desired = _deathFocusTarget.position + offset + _shakeOffset;
+
+        if (smoothing <= 0f)
+            transform.position = desired;
+        else
+            transform.position = Vector3.SmoothDamp(transform.position, desired, ref _velocity, smoothing);
+
+        if (planningCamera == null)
+            return;
+
+        _deathFocusElapsed += Time.unscaledDeltaTime;
+        float t = Mathf.Clamp01(_deathFocusElapsed / _deathFocusDuration);
+        planningCamera.orthographicSize = Mathf.Lerp(_deathFocusStartSize, _deathFocusTargetSize, t);
     }
 }
