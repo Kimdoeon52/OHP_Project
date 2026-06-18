@@ -1,4 +1,4 @@
-public enum AudioEventId
+﻿public enum AudioEventId
 {
     None = 0,
 
@@ -14,6 +14,7 @@ public enum AudioEventId
     KeyPicked,
     ChestOpened,
 
+    PotionPicked,
     PotionDrink,
     PotionThrow,
     PotionImpactFire,

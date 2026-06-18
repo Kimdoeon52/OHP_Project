@@ -64,7 +64,7 @@ public class PlayerLevelSystem : MonoBehaviour
     public int RequiredExp => IsMaxLevel ? 0 : CalculateRequiredExp(level);
     public int MaxLevel => maxLevel;
     public bool IsMaxLevel => level >= maxLevel;
-    public string ExpDisplayText => IsMaxLevel ? "MAX" : $"{currentExp}/{RequiredExp}";
+    public string ExpDisplayText => IsMaxLevel ? "MAX" : $"{currentExp} / {RequiredExp}";
 
     /// <summary>
     /// 씬에서 전역 접근할 레벨 시스템 인스턴스를 등록한다.

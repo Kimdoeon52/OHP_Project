@@ -98,7 +98,7 @@ namespace PrototypeRT
                 return;
 
             if (Input.GetKeyDown(closeKey))
-                CloseLastOpenedLayer();
+                CloseSystemWindow();
         }
 
         private void OnDestroy()

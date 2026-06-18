@@ -119,6 +119,7 @@ public class NYHEquipmentSlotView : MonoBehaviour, IPointerClickHandler
             return;
 
         // 장착 해제한 아이템은 원래 그리드 좌표가 없으므로 빈 인벤토리 칸을 찾을 때까지 손에 들게 둡니다.
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.EquipmentPicked);
         inventoryController.HoldItem(itemView, null, 0, 0);
         Refresh();
     }

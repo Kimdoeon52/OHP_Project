@@ -20,6 +20,9 @@ namespace PrototypeRT
         {
             if (item == null)
                 return AudioEventId.None;
+            
+            if(IsPotion(item))
+                return AudioEventId.PotionPicked;
 
             if (IsScroll(item))
                 return AudioEventId.ScrollPicked;
@@ -45,6 +48,11 @@ namespace PrototypeRT
                 || category == ItemCategory.MeleeWeapon
                 || category == ItemCategory.ThrowWeapon
                 || category == ItemCategory.Ring;
+        }
+
+        private static bool IsPotion(ItemBase item)
+        {
+            return item is PotionData || ItemCategories.Of(item) == ItemCategory.Potion;
         }
     }
 }

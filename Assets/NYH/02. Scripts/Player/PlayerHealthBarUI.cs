@@ -1,51 +1,133 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 플레이어 체력 값을 UI Image의 fillAmount로 반영하는 HP 바 전용 스크립트입니다.
-/// GridPlayerHealth.OnHealthChanged 이벤트를 구독해서 체력이 바뀔 때마다 자동으로 갱신합니다.
+/// 플레이어 HP/EXP 값을 UI Image fillAmount와 텍스트에 반영하는 바 전용 컴포넌트입니다.
 /// </summary>
 public class PlayerHealthBarUI : MonoBehaviour
 {
-    [Header("체력 참조")]
-    [Tooltip("HP 바가 바라볼 플레이어 체력 컴포넌트입니다. 비워두면 씬에서 GridPlayerHealth를 자동으로 찾습니다.")]
+    [Header("Value Sources")]
+    [Tooltip("기존 씬 직렬화 연결을 유지하기 위해 필드명 helth를 그대로 둡니다.")]
     [SerializeField] private GridPlayerHealth helth;
 
-    [Header("UI 참조")]
-    [Tooltip("현재 체력 비율을 fillAmount로 표시할 Image입니다. Image Type은 Filled로 설정해야 합니다.")]
+    [Tooltip("EXP 바가 참조할 플레이어 레벨/경험치 컴포넌트입니다. 비워두면 씬에서 자동으로 찾습니다.")]
+    [SerializeField] private PlayerLevelSystem playerLevel;
+
+    [Header("Fill Images")]
+    [Tooltip("현재 체력 비율을 표시할 Filled Image입니다.")]
     [SerializeField] private Image fillImage;
+
+    [Tooltip("현재 경험치 비율을 표시할 Filled Image입니다.")]
+    [SerializeField] private Image expFillImage;
+
+    [Header("Value Texts")]
+    [Tooltip("체력을 '현재 / 최대' 형식으로 표시할 텍스트입니다.")]
+    [SerializeField] private TMP_Text healthText;
+
+    [Tooltip("경험치를 '현재 / 최대' 형식으로 표시할 텍스트입니다.")]
+    [SerializeField] private TMP_Text expText;
 
     private void Awake()
     {
-        if (helth == null)
-            helth = FindFirstObjectByType<GridPlayerHealth>();
+        ResolveReferences();
+        ConfigureFillImage(fillImage);
+        ConfigureFillImage(expFillImage);
     }
 
     private void OnEnable()
     {
-        if (helth == null) return;
+        ResolveReferences();
 
-        helth.OnHealthChanged += Refresh;
+        if (helth != null)
+            helth.OnHealthChanged += Refresh;
+
+        if (playerLevel != null)
+        {
+            playerLevel.OnExpChanged += OnExpChanged;
+            playerLevel.OnLevelChanged += Refresh;
+        }
+
         Refresh();
     }
 
     private void OnDisable()
     {
-        if (helth == null) return;
+        if (helth != null)
+            helth.OnHealthChanged -= Refresh;
 
-        helth.OnHealthChanged -= Refresh;
+        if (playerLevel != null)
+        {
+            playerLevel.OnExpChanged -= OnExpChanged;
+            playerLevel.OnLevelChanged -= Refresh;
+        }
     }
 
-    /// <summary>
-    /// 현재 HP / 최대 HP 비율을 계산해서 UI Image에 전달합니다.
-    /// MaxHp가 0 이하인 비정상 상태에서는 0으로 표시해 UI 오류를 막습니다.
-    /// </summary>
+    private void ResolveReferences()
+    {
+        if (helth == null)
+            helth = FindFirstObjectByType<GridPlayerHealth>();
+
+        if (playerLevel == null)
+            playerLevel = FindFirstObjectByType<PlayerLevelSystem>();
+    }
+
     private void Refresh()
     {
-        if (fillImage == null || helth == null) return;
+        RefreshHealth();
+        RefreshExp();
+    }
 
-        fillImage.fillAmount = helth.MaxHp > 0
-            ? (float)helth.CurrentHp / helth.MaxHp
-            : 0f;
+    private void RefreshHealth()
+    {
+        if (helth == null) return;
+
+        int maxHp = Mathf.Max(0, helth.MaxHp);
+        int currentHp = Mathf.Clamp(helth.CurrentHp, 0, maxHp);
+
+        if (fillImage != null)
+        {
+            ConfigureFillImage(fillImage);
+            fillImage.fillAmount = maxHp > 0
+                ? (float)currentHp / maxHp
+                : 0f;
+        }
+
+        if (healthText != null)
+            healthText.text = $"{currentHp} / {maxHp}";
+    }
+
+    private void RefreshExp()
+    {
+        if (playerLevel == null) return;
+
+        int requiredExp = Mathf.Max(0, playerLevel.RequiredExp);
+        int currentExp = Mathf.Max(0, playerLevel.CurrentExp);
+
+        if (expFillImage != null)
+        {
+            ConfigureFillImage(expFillImage);
+            expFillImage.fillAmount = requiredExp > 0
+                ? Mathf.Clamp01((float)currentExp / requiredExp)
+                : 1f;
+        }
+
+        if (expText != null)
+            expText.text = requiredExp > 0 ? $"{currentExp} / {requiredExp}" : "MAX";
+    }
+
+    private void OnExpChanged(int amount)
+    {
+        Refresh();
+    }
+
+    private static void ConfigureFillImage(Image image)
+    {
+        if (image == null) return;
+
+        // fillAmount가 실제 막대 길이에 반영되려면 Image가 Filled 타입이어야 합니다.
+        image.type = Image.Type.Filled;
+        image.fillMethod = Image.FillMethod.Horizontal;
+        image.fillOrigin = (int)Image.OriginHorizontal.Left;
     }
 }

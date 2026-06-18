@@ -124,9 +124,10 @@ public class AudioManager : MonoBehaviour
         ResolveBgmSources();
         ResolveSfxPool();
 
-        InitializeSlider(masterVolumeSlider, MasterPrefsKey, MasterMixerParameter);
-        InitializeSlider(bgmVolumeSlider, BgmPrefsKey, BgmMixerParameter);
-        InitializeSlider(sfxVolumeSlider, SfxPrefsKey, SfxMixerParameter);
+        ApplySavedMixerVolumes();
+        InitializeSlider(masterVolumeSlider, MasterPrefsKey);
+        InitializeSlider(bgmVolumeSlider, BgmPrefsKey);
+        InitializeSlider(sfxVolumeSlider, SfxPrefsKey);
 
         _isInitialized = true;
     }
@@ -178,9 +179,10 @@ public class AudioManager : MonoBehaviour
         bgmVolumeSlider = bgmSlider;
         sfxVolumeSlider = sfxSlider;
 
-        InitializeSlider(masterVolumeSlider, MasterPrefsKey, MasterMixerParameter);
-        InitializeSlider(bgmVolumeSlider, BgmPrefsKey, BgmMixerParameter);
-        InitializeSlider(sfxVolumeSlider, SfxPrefsKey, SfxMixerParameter);
+        ApplySavedMixerVolumes();
+        InitializeSlider(masterVolumeSlider, MasterPrefsKey);
+        InitializeSlider(bgmVolumeSlider, BgmPrefsKey);
+        InitializeSlider(sfxVolumeSlider, SfxPrefsKey);
 
         SubscribeSliders();
     }
@@ -550,7 +552,20 @@ public class AudioManager : MonoBehaviour
         };
     }
 
-    private void InitializeSlider(Slider slider, string prefsKey, string mixerParameter)
+    private void ApplySavedMixerVolumes()
+    {
+        ApplySavedMixerVolume(MasterPrefsKey, MasterMixerParameter);
+        ApplySavedMixerVolume(BgmPrefsKey, BgmMixerParameter);
+        ApplySavedMixerVolume(SfxPrefsKey, SfxMixerParameter);
+    }
+
+    private void ApplySavedMixerVolume(string prefsKey, string mixerParameter)
+    {
+        float savedVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(prefsKey, DefaultVolume));
+        ApplyMixerVolume(mixerParameter, savedVolume);
+    }
+
+    private void InitializeSlider(Slider slider, string prefsKey)
     {
         float savedVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(prefsKey, DefaultVolume));
 
@@ -562,8 +577,6 @@ public class AudioManager : MonoBehaviour
             // 초기화 중 onValueChanged가 다시 저장을 때리면 Inspector 기본값과 저장값 적용 순서가 꼬일 수 있습니다.
             slider.SetValueWithoutNotify(savedVolume);
         }
-
-        ApplyMixerVolume(mixerParameter, savedVolume);
     }
 
     private void SetVolume(string prefsKey, string mixerParameter, float volume)

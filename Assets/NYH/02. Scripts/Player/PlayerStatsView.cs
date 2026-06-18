@@ -180,7 +180,7 @@ public class PlayerStatsView : MonoBehaviour
             return;
         }
 
-        string health = playerHealth != null ? $"{playerHealth.CurrentHp}/{playerHealth.MaxHp}" : "-";
+        string health = playerHealth != null ? $"{playerHealth.CurrentHp} / {playerHealth.MaxHp}" : "-";
         string strength = playerStats != null ? playerStats.Strength.ToString() : "-";
         string moveSpeed = playerStats != null ? playerStats.MoveSpeed.ToString() : "-";
         string attackSpeed = playerStats != null ? playerStats.AttackSpeed.ToString() : "-";
