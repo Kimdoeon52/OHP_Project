@@ -160,6 +160,25 @@ public class NYHPlayerStats : MonoBehaviour
     }
 
     /// <summary>
+    /// 세이브 로드 시 베이스 스탯을 절대값으로 한 번에 복원합니다.
+    /// AddStat의 누적/회복 부수효과를 피하기 위해 필드를 직접 세팅하고, 마지막에 변경 이벤트만 발생시킵니다.
+    /// 현재 체력 복원은 GridPlayerHealth가 별도로 처리하므로 여기서 Health 회복 이벤트는 보내지 않습니다.
+    /// </summary>
+    public void SetStats(int maxHealth, int strength, int moveSpeed, int attackSpeed, int accuracy, int defense, int evasion, int hunger)
+    {
+        this.maxHealth = Mathf.Max(1, maxHealth);
+        this.strength = Mathf.Max(0, strength);
+        this.moveSpeed = Mathf.Max(0, moveSpeed);
+        this.attackSpeed = Mathf.Max(0, attackSpeed);
+        this.accuracy = Mathf.Clamp(accuracy, 0, 100);
+        this.defense = Mathf.Max(0, defense);
+        this.evasion = Mathf.Clamp(evasion, 0, 100);
+        this.hunger = Mathf.Clamp(hunger, 0, 10);
+
+        OnStatsChanged?.Invoke();
+    }
+
+    /// <summary>
     /// 플레이어의 방어력(고정 감소)을 적용하여 실제로 깎일 최종 피해량을 산출해 반환합니다.
     /// 회피는 공격자의 정확도가 필요하므로 EnemyBase.TryHitPlayer()에서 먼저 판정합니다.
     /// </summary>

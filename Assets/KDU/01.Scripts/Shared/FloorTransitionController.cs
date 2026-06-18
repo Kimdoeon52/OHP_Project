@@ -23,16 +23,26 @@ public class FloorTransitionController : MonoBehaviour
 
     private bool _transitioning;
 
+    // 세이브가 있으면 로드해 둔 스냅샷. 초기 맵 빌드 후 ApplyState로 소비.
+    private RunSnapshot _pendingLoad;
+
     private void OnEnable()  => GameEvents.OnLevelComplete += OnLevelComplete;
     private void OnDisable() => GameEvents.OnLevelComplete -= OnLevelComplete;
 
     private void Start()
     {
-        if (!generateOnStart) 
+        if (!generateOnStart)
             return;
 
         if (!ValidateDeps())
             return;
+
+        // 세이브가 있으면 시드/층을 먼저 복원해 같은 맵을 빌드하게 함.
+        if (SaveManager.HasSave())
+        {
+            _pendingLoad = SaveManager.Load();
+            RunRestorer.ApplySeedDepth(_pendingLoad);
+        }
 
         _transitioning = true;
         StartCoroutine(InitialFloorCoroutine());
@@ -70,10 +80,13 @@ public class FloorTransitionController : MonoBehaviour
 
         yield return BuildFloorCoroutine();
 
-        if (blackHoldSeconds > 0f) 
+        // 새 층 진입 = 유일한 저장 시점. 이 층에서 줏은 건 아직 저장 안 됨.
+        SaveManager.Save();
+
+        if (blackHoldSeconds > 0f)
             yield return new WaitForSecondsRealtime(blackHoldSeconds);
 
-        if (fader != null) 
+        if (fader != null)
             yield return fader.FadeIn(fadeDuration);
 
         _transitioning = false;
@@ -82,12 +95,24 @@ public class FloorTransitionController : MonoBehaviour
     // 초기화 대기
     private IEnumerator InitialFloorCoroutine()
     {
-        for (int i = 0; i < startDelayFrames; i++) 
+        for (int i = 0; i < startDelayFrames; i++)
             yield return null;
 
         yield return BuildFloorCoroutine();
 
-        if (blackHoldSeconds > 0f) 
+        if (_pendingLoad != null)
+        {
+            // 로드 부팅 — 장비 초기화(Start) 이후이므로 여기서 플레이어/인벤/장비 복원.
+            RunRestorer.ApplyState(_pendingLoad);
+            _pendingLoad = null;
+        }
+        else
+        {
+            // 새 런 1층 진입도 저장 — 1층에서 나가면 1층부터 다시 시작.
+            SaveManager.Save();
+        }
+
+        if (blackHoldSeconds > 0f)
             yield return new WaitForSecondsRealtime(blackHoldSeconds);
 
         if (fader != null)
