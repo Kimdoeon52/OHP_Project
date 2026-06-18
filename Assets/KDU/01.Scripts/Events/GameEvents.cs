@@ -44,6 +44,7 @@ public static class GameEvents
     public static Action OnLevelComplete;             // 레벨업
     public static Action OnBossDefeated;              // 보스 처치 — 맵 출구 개방 등이 구독
     public static Action OnRunCleared;                // 최종층 클리어 — 승리/엔딩이 구독
+    public static Action<ScoreResult> OnScoreFinalized; // 런 종료 점수 확정 — 결산 UI가 구독
 
     // 오디오
     public static Action<AudioEventId> OnAudioEventRequested;
@@ -75,6 +76,7 @@ public static class GameEvents
         OnLevelComplete = null;             // 레벨업
         OnBossDefeated = null;              // 보스 처치
         OnRunCleared = null;                // 최종층 클리어
+        OnScoreFinalized = null;            // 점수 확정
         OnAudioEventRequested = null;        // 오디오 이벤트
         CombatTextCriticalContext.Clear();  // 전투 텍스트 초기화
     }

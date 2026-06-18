@@ -74,12 +74,27 @@ public static class SaveManager
 
         snap.seed = run.RunSeed;
         snap.depth = run.CurrentDepth;
+        snap.challenges = BuildChallenges();
 
         snap.player = BuildPlayerSnapshot();
         snap.inventory = BuildInventory();
         snap.equipped = BuildEquipped();
 
         return snap;
+    }
+
+    private static List<int> BuildChallenges()
+    {
+        var list = new List<int>();
+
+        ChallengeState cs = ChallengeState.Instance;
+        if (cs == null)
+            return list;
+
+        foreach (ChallengeType t in cs.Active)
+            list.Add((int)t);
+
+        return list;
     }
 
     private static PlayerSnapshot BuildPlayerSnapshot()

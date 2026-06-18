@@ -40,15 +40,48 @@ public class FloorTransitionController : MonoBehaviour
         if (!ValidateDeps())
             return;
 
-        // 세이브가 있으면 시드/층을 먼저 복원해 같은 맵을 빌드하게 함.
+        BeginRun();
+    }
+
+    // 런 시작 — 부팅 시 호출. 이어하기/새 게임을 세이브 유무로 분기.
+    public void BeginRun()
+    {
+        if (_transitioning)
+            return;
+
+        if (!ValidateDeps())
+            return;
+
         if (SaveManager.HasSave())
         {
+            // 이어하기 — 시드/층/챌린지를 먼저 복원해 같은 맵을 빌드.
             _pendingLoad = SaveManager.Load();
             RunRestorer.ApplySeedDepth(_pendingLoad);
+        }
+        else
+        {
+            // 새 게임 — 타이틀에서 고른 챌린지/시드를 적용 후 고정.
+            ApplyPendingChallenges();
         }
 
         _transitioning = true;
         StartCoroutine(InitialFloorCoroutine());
+    }
+
+    // 타이틀 씬에서 넘어온 챌린지 선택과 시드를 적용하고 고정한다.
+    private void ApplyPendingChallenges()
+    {
+        ChallengeState cs = ChallengeState.Instance;
+        if (cs != null)
+        {
+            cs.Configure(ChallengeSelection.PendingTypes);
+            cs.Lock();
+        }
+
+        if (ChallengeSelection.HasSeed)
+            runState.ResetRun(ChallengeSelection.Seed, 1);
+
+        ChallengeSelection.Clear();
     }
 
     private void OnLevelComplete()

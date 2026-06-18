@@ -9,6 +9,8 @@ public class RunSnapshot
     public int seed;                 // RunState.RunSeed
     public int depth;                // 진입 시점 층
 
+    public List<int> challenges = new List<int>();          // 활성 ChallengeType
+
     public PlayerSnapshot player = new PlayerSnapshot();
     public List<ItemDTO> inventory = new List<ItemDTO>();   // 가방 아이템
     public List<EquipDTO> equipped = new List<EquipDTO>();  // 장착 슬롯

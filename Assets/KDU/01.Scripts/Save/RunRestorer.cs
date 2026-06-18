@@ -5,13 +5,28 @@ using UnityEngine;
 // 스냅샷을 현재 씬에 적용. 시드/층은 맵 생성 전, 나머지는 장비 초기화 후 호출.
 public static class RunRestorer
 {
-    // 맵 생성보다 먼저 호출 — 저장된 시드/층으로 같은 맵을 만들게 함.
+    // 맵 생성보다 먼저 호출 — 저장된 시드/층/챌린지로 같은 맵을 만들게 함.
     public static void ApplySeedDepth(RunSnapshot snap)
     {
         if (snap == null)
             return;
 
         RunState.Instance?.ResetRun(snap.seed, snap.depth);
+
+        // 챌린지(보스강화/시야 등)는 맵 생성·효과에 영향 → 빌드 전에 복원·고정.
+        ChallengeState cs = ChallengeState.Instance;
+        if (cs != null)
+        {
+            var types = new List<ChallengeType>();
+            if (snap.challenges != null)
+            {
+                foreach (int v in snap.challenges)
+                    types.Add((ChallengeType)v);
+            }
+
+            cs.Configure(types);
+            cs.Lock();
+        }
     }
 
     // 장비 초기화(NYHEquipmentController.Start) 이후 호출 — 시작 장비를 저장본으로 교체.
