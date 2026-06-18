@@ -1,0 +1,34 @@
+using UnityEngine;
+
+// 지정한 층에서만 오브젝트를 활성화 (배경 타일맵 등)
+public class TilemapFloorGate : MonoBehaviour
+{
+    [Tooltip("이 층에서만 켤 대상 (비우면 자기 자신)")]
+    [SerializeField] private GameObject target;
+
+    [Tooltip("활성화할 층")]
+    [SerializeField] private int activeFloor = 15;
+
+    [Tooltip("RunState/MapGenerator 없을 때(테스트 씬) 무시하고 켬")]
+    [SerializeField] private bool showIfNoRun = true;
+
+    private void Start()
+    {
+        if (target == null)
+            target = gameObject;
+
+        target.SetActive(IsActiveFloor());
+    }
+
+    // 현재 층이 발동 층인지 — RunState 우선, 없으면 MapGenerator
+    private bool IsActiveFloor()
+    {
+        if (RunState.Instance != null)
+            return RunState.Instance.CurrentDepth == activeFloor;
+
+        if (MapGenerator.Instance != null)
+            return MapGenerator.Instance.CurrentDepth == activeFloor;
+
+        return showIfNoRun;
+    }
+}
