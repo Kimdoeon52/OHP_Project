@@ -69,6 +69,47 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "라이선스 전문 파일은 게임 설치 폴더 (_Data/StreamingAssets/License/) 내에 동봉되어 있습니다." },
             { Language.English, "The full license file is included in the game installation folder (_Data/StreamingAssets/License/)." }
         }},
+        //------------------------------------------ 세팅창 키 설정
+        { "msg_자동줍기", new Dictionary<Language, string> {
+            { Language.Korean, "자동 줍기" },
+            { Language.English, "Auto Pick Up" }
+        }},
+        { "msg_상단이동", new Dictionary<Language, string> {
+            { Language.Korean, "상단 이동" },
+            { Language.English, "Move Up" }
+        }},
+        { "msg_하단이동", new Dictionary<Language, string> {
+            { Language.Korean, "하단 이동" },
+            { Language.English, "Move Down" }
+        }},
+        { "msg_좌측이동", new Dictionary<Language, string> {
+            { Language.Korean, "좌측 이동" },
+            { Language.English, "Move Left" }
+        }},
+        { "msg_우측이동", new Dictionary<Language, string> {
+            { Language.Korean, "우측 이동" },
+            { Language.English, "Move Right" }
+        }},
+        { "msg_인벤토리", new Dictionary<Language, string> {
+            { Language.Korean, "인벤토리" },
+            { Language.English, "Inventory" }
+        }},
+        { "msg_조사", new Dictionary<Language, string> {
+            { Language.Korean, "조사" },
+            { Language.English, "Search" }
+        }},
+        { "msg_줍기", new Dictionary<Language, string> {
+            { Language.Korean, "줍기" },
+            { Language.English, "Pick Up" }
+        }},
+        { "msg_구매", new Dictionary<Language, string> {
+            { Language.Korean, "구매" },
+            { Language.English, "Perchase" }
+        }},
+        { "msg_퀵슬롯", new Dictionary<Language, string> {
+            { Language.Korean, "퀵슬롯" },
+            { Language.English, "Quick Slot" }
+        }},
         //------------------------------------------ 인게임 버튼
         { "bt_튜토리얼스킵", new Dictionary<Language, string> {
             { Language.Korean, "튜토리얼 스킵" },
