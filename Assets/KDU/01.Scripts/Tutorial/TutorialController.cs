@@ -24,7 +24,8 @@ public class TutorialController : MonoBehaviour
     [Serializable]
     public class Step
     {
-        [TextArea] public string hint; // 안내 텍스트
+        [TextArea] public string hint; // 안내 텍스트 (hintKey 비어있을 때 fallback)
+        public string hintKey; // LocalizationManager 키
         public Condition condition; // 완료 조건
         
         public Collider2D region; // 방 도착 체크용
@@ -82,6 +83,9 @@ public class TutorialController : MonoBehaviour
         GameEvents.OnSecretDiscovered += OnSecretDiscovered;
         GameEvents.OnLevelComplete += OnExitReached;
         GameEvents.OnAudioEventRequested += OnAudioEvent;
+
+        if (LocalizationManager.Instance != null)
+            LocalizationManager.Instance.OnLanguageChanged += OnLanguageChanged;
     }
 
     private void OnDisable()
@@ -92,6 +96,9 @@ public class TutorialController : MonoBehaviour
         GameEvents.OnSecretDiscovered -= OnSecretDiscovered;
         GameEvents.OnLevelComplete -= OnExitReached;
         GameEvents.OnAudioEventRequested -= OnAudioEvent;
+
+        if (LocalizationManager.Instance != null)
+            LocalizationManager.Instance.OnLanguageChanged -= OnLanguageChanged;
     }
 
     private void Start()
@@ -306,11 +313,38 @@ public class TutorialController : MonoBehaviour
         if (hintUI != null)
         {
             bool compact = Current.freeLook || Current.compactHint || (compactHintFromIndex >= 0 && _index >= compactHintFromIndex);
-            if (compact) 
-                hintUI.ShowPrompt(Current.hint);
-            else 
-                hintUI.ShowHint(Current.hint);
+            string text = GetCurrentHintText();
+            if (compact)
+                hintUI.ShowPrompt(text);
+            else
+                hintUI.ShowHint(text);
         }
+    }
+
+    // 현재 스텝 안내 텍스트 — hintKey 있으면 LocalizationManager 조회, 없으면 hint 그대로
+    private string GetCurrentHintText()
+    {
+        if (Current == null)
+            return string.Empty;
+
+        if (!string.IsNullOrEmpty(Current.hintKey) && LocalizationManager.Instance != null)
+            return LocalizationManager.Instance.Get(Current.hintKey);
+
+        return Current.hint;
+    }
+
+    // 언어 변경 시 현재 보여주고 있는 힌트 갱신
+    private void OnLanguageChanged()
+    {
+        if (_finished || Current == null || hintUI == null)
+            return;
+
+        string text = GetCurrentHintText();
+        bool compact = Current.freeLook || Current.compactHint || (compactHintFromIndex >= 0 && _index >= compactHintFromIndex);
+        if (compact)
+            hintUI.ShowPrompt(text);
+        else
+            hintUI.ShowHint(text);
     }
 
     // 플레이어 입력 차단
