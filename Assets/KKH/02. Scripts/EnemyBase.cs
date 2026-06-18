@@ -28,6 +28,14 @@ public abstract class EnemyBase : EntityBase, IDamageable
     [Tooltip("공격 예고 위치에 생성할 붉은 바닥 프리팹")]
     [SerializeField] protected GameObject warningPrefab;
 
+    [Header("피격 연출")]
+    [Tooltip("피격 당할 때 터질 파티클 프리팹 (예: GreenBlood_Hit_Effect)")]
+    [SerializeField] protected GameObject hitParticlePrefab;
+
+    [Header("사망 연출")]
+    [Tooltip("사망 시 터질 파티클 프리팹 (예: Death_Gib_Effect)")]
+    [SerializeField] protected GameObject deathEffectPrefab;
+
     [Header("보상 드롭")]
     [Tooltip("처치 시 떨어뜨릴 골드 픽업 프리팹 (Gold_Pickup). 플레이어가 주워야 지갑에 들어감.")]
     [SerializeField] private GoldPickup goldPickupPrefab;
@@ -202,7 +210,15 @@ public abstract class EnemyBase : EntityBase, IDamageable
         CurrentHp -= finalDamage;
 
         if (finalDamage > 0)
+        {
             GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.MonsterHit);
+
+            // 피격 파티클 시스템 스폰
+            if (hitParticlePrefab != null)
+            {
+                Instantiate(hitParticlePrefab, transform.position, Quaternion.identity);
+            }
+        }
 
         // 살아있으면 Hit 트리거 실행 (흔들림 / 피격 연출)
         if (_animator != null && CurrentHp > 0)
@@ -246,10 +262,11 @@ public abstract class EnemyBase : EntityBase, IDamageable
         _isDying = true;
         CurrentHp = 0;
 
-        // 사망 폭발 이펙트 동적 생성
-        GameObject gibEffectObj = new GameObject($"{name}_GibEffect");
-        gibEffectObj.transform.position = transform.position;
-        gibEffectObj.AddComponent<DeathGibEffect>();
+        // 사망 파티클 이펙트 생성
+        if (deathEffectPrefab != null)
+        {
+            Instantiate(deathEffectPrefab, transform.position, Quaternion.identity);
+        }
 
         StopAllCoroutines();
         ClearTelegraphs();
