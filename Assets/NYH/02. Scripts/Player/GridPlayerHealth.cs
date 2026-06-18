@@ -161,6 +161,25 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
     }
 
     /// <summary>
+    /// 세이브 로드 시 현재 체력을 절대값으로 복원합니다.
+    /// 최대 체력 기준으로 클램프하므로 스탯(MaxHealth) 복원 이후에 호출해야 합니다.
+    /// </summary>
+    public void SetCurrentHp(int hp)
+    {
+        CurrentHp = Mathf.Clamp(hp, 0, MaxHp);
+        RaiseHealthChanged();
+    }
+
+    /// <summary>
+    /// 세이브 로드 시 보유 포션 수를 절대값으로 복원합니다.
+    /// </summary>
+    public void SetPotionCount(int count)
+    {
+        PotionCount = Mathf.Max(0, count);
+        RaiseHealthChanged();
+    }
+
+    /// <summary>
     /// 포션 개수를 추가하고 HP UI가 포션 수를 다시 읽을 수 있도록 변경 이벤트를 보냅니다.
     /// </summary>
     public void AddPotion(int count = 1)

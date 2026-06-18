@@ -143,6 +143,19 @@ public class PlayerLevelSystem : MonoBehaviour
     }
 
     /// <summary>
+    /// 세이브 로드 시 레벨과 누적 경험치를 절대값으로 복원한다.
+    /// 레벨업 보너스(스탯 증가)는 다시 적용하지 않는다. 스탯은 NYHPlayerStats.SetStats가 별도로 복원하기 때문이다.
+    /// </summary>
+    public void SetLevelExp(int newLevel, int newExp)
+    {
+        level = Mathf.Clamp(newLevel, 1, maxLevel);
+        currentExp = IsMaxLevel ? 0 : Mathf.Max(0, newExp);
+
+        OnLevelChanged?.Invoke();
+        OnExpChanged?.Invoke(0);
+    }
+
+    /// <summary>
     /// 레벨을 1 올리고 레벨업 보너스를 NYHPlayerStats에 적용한다.
     /// 이 클래스는 성장 단계만 관리하고, 실제 능력치 저장은 NYHPlayerStats가 담당한다.
     /// </summary>
