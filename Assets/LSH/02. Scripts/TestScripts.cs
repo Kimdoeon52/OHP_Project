@@ -110,6 +110,11 @@ public class TestScripts : MonoBehaviour
                 Debug.Log("<color=yellow>[디버그]</color> F6 입력: 10층으로 즉시 이동합니다.");
                 TriggerDebugFloorTransition(10);
             }
+            if(Input.GetKeyDown(KeyCode.F7))
+            {
+                Debug.Log("<color=yellow>[디버그]</color> F7 입력: 15층으로 즉시 이동합니다.");
+                TriggerDebugFloorTransition(15);
+            }
         }
         // ────────────────────────────────────────────────────────
 
