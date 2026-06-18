@@ -72,12 +72,15 @@ public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
         GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.DaggerThrow);
     }
 
-    // WeaponProjectile이 플레이어에게 픽업될 때 호출
-    public void OnDaggerPickup(int durability)
+    // WeaponProjectile이 플레이어에게 픽업될 때 호출. 내구도가 남아 복구됐으면 true.
+    public bool OnDaggerPickup(int durability)
     {
         int remaining = durability - 1;
-        if (remaining > 0)
-            currentDurabilities.Add(remaining);
+        if (remaining <= 0)
+            return false;
+
+        currentDurabilities.Add(remaining);
+        return true;
     }
 
     private static int GetPlayerStrength()

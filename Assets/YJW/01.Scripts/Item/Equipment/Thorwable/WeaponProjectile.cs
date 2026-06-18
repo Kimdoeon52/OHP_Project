@@ -106,12 +106,28 @@ public class WeaponProjectile : MonoBehaviour
 
             groundController.DropItem(dummy, 1, cell, () =>
             {
-                capturedInstance.OnDaggerPickup(capturedDurability);
+                if (capturedInstance.OnDaggerPickup(capturedDurability))
+                    RestoreToInventoryIfDetached(capturedInstance);
+
                 return true;
             });
         }
 
         ReturnToPool();
+    }
+
+    // 다 던진 뒤 슬롯이 사라진 상태로 마지막 한 자루를 주운 경우, 인벤토리에 새 슬롯을 만들어 돌려줌
+    private static void RestoreToInventoryIfDetached(ThrowableWeaponInstance instance)
+    {
+        InventoryController inventory = FindFirstObjectByType<InventoryController>();
+        if (inventory == null)
+            return;
+
+        foreach (InventoryItem item in inventory.Items)
+            if (item.ItemInstance == instance)
+                return;
+
+        inventory.TryAddItem(instance);
     }
 
     private void ReturnToPool()
