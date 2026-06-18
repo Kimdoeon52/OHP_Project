@@ -9,6 +9,12 @@ public class GridExit : MonoBehaviour
 
     [SerializeField] private string areaParamName = "Area";
 
+    [Tooltip("최종 층 (출품 범위 15층). 이 층 출구는 승리 포탈")]
+    [SerializeField] private int finalDepth = 15;
+
+    [Tooltip("최종층 출구 전용 Area 값")]
+    [SerializeField] private int finalAreaValue = 4;
+
     private SpriteRenderer _renderer;
     private GridPlayer _player;
     private bool _triggered;
@@ -41,7 +47,7 @@ public class GridExit : MonoBehaviour
 
     private void ApplyAreaAnimation()
     {
-        if (MapGenerator.Instance == null || string.IsNullOrEmpty(areaParamName)) 
+        if (MapGenerator.Instance == null || string.IsNullOrEmpty(areaParamName))
             return;
 
         var animator = GetComponentInChildren<Animator>();
@@ -49,8 +55,12 @@ public class GridExit : MonoBehaviour
         if (animator == null)
             return;
 
-        int nextArea = MapGenerator.AreaFromDepth(MapGenerator.Instance.CurrentDepth + 1);
-        animator.SetInteger(areaParamName, nextArea);
+        // 최종층은 다음 영역이 없으므로 전용 Area 값으로 분기.
+        int area = MapGenerator.Instance.CurrentDepth >= finalDepth
+            ? finalAreaValue
+            : MapGenerator.AreaFromDepth(MapGenerator.Instance.CurrentDepth + 1);
+
+        animator.SetInteger(areaParamName, area);
     }
 
     private void Update()

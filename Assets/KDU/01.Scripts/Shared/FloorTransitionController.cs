@@ -21,6 +21,9 @@ public class FloorTransitionController : MonoBehaviour
     [SerializeField] private bool generateOnStart = true;
     [SerializeField] private int startDelayFrames = 1;
 
+    [Tooltip("최종 층 (출품 범위 15층). 이 층 Exit = 승리")]
+    [SerializeField] private int finalDepth = 15;
+
     private bool _transitioning;
 
     // 세이브가 있으면 로드해 둔 스냅샷. 초기 맵 빌드 후 ApplyState로 소비.
@@ -50,14 +53,28 @@ public class FloorTransitionController : MonoBehaviour
 
     private void OnLevelComplete()
     {
-        if (_transitioning) 
+        if (_transitioning)
             return;
 
-        if (!ValidateDeps()) 
+        if (!ValidateDeps())
             return;
+
+        // 최종층 Exit = 승리. 다음 층 없음.
+        if (runState.CurrentDepth >= finalDepth)
+        {
+            OnRunCleared();
+            return;
+        }
 
         _transitioning = true;
         StartCoroutine(TransitionCoroutine());
+    }
+
+    // 최종층 클리어 처리. 영구사망과 같이 런 종료이므로 세이브 삭제.
+    private void OnRunCleared()
+    {
+        SaveManager.Delete();
+        GameEvents.OnRunCleared?.Invoke();
     }
 
     private bool ValidateDeps()

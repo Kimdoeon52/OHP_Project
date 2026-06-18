@@ -41,6 +41,9 @@ public class MoveScene : MonoBehaviour
 
     public void StartNewGame()
     {
+        // 새 게임은 기존 저장을 폐기해 새 시드 1층부터 시작하게 한다.
+        SaveManager.Delete();
+
         // 새 게임은 로딩 씬을 거쳐 게임 메인 씬으로 이동한다.
         Debug.Log("StartNewGame button clicked.");
         LoadThroughLoadingScene(newGameSceneName);
@@ -122,7 +125,6 @@ public class MoveScene : MonoBehaviour
 
     private bool HasContinueSave()
     {
-        // TODO: 실제 저장 시스템이 생기면 PlayerPrefs 대신 SaveManager.HasSaveData() 같은 함수로 교체한다.
-        return PlayerPrefs.GetInt(continueSaveKey, 0) == 1;
+        return SaveManager.HasSave();
     }
 }
