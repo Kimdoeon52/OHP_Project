@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using PrototypeRT;
 
 // 마법 부여 제단 (Secret Enchant 방). 인접+상호작용키 → 무기/방어구 선택 팝업
 [RequireComponent(typeof(SpriteRenderer))]
