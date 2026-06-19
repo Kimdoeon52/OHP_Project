@@ -17,7 +17,7 @@ public class ShieldWeaponInstance : WeaponInstance
         return $"[{shieldWeapon.LocalizedName}] {(enhanceLevel > 0 ? $"<color=yellow>+{enhanceLevel}</color>" : "")}\n" +
                $"--------------------\n" +
                $"{shieldWeapon.LocalizedDescription}\n" +
-               $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}: {shieldWeapon.CanUseStrength}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}: {GetRequiredStrength()}\n" +
                $"{LocalizationManager.GetOrDefault("msg_T공격력", "Damage")}: {GetMinDamage()}~{GetMaxDamage()}" +
                $"{LocalizationManager.GetOrDefault("msg_T공격속도", "Attack Speed")}: {shieldWeapon.AttackSpeed}" +
                $"{LocalizationManager.GetOrDefault("msg_받은피해감소", "Block Reduction")}: {GetMinMinusDamage()}~{GetMaxMinusDamage()}" +

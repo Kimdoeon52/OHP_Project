@@ -14,6 +14,9 @@ public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
 
     public int GetDamage() => Random.Range(GetMinDamage(), GetMaxDamage() + 1);
 
+    // 강화 단계마다 착용 힘이 1씩 줄어들며, 0 밑으로는 내려가지 않는다.
+    public int GetRequiredStrength() => Mathf.Max(0, weapon.CanUseStrength - enhanceLevel);
+
     public override string GetToolTipStats()
     {
         int count = currentDurabilities.Count;
@@ -26,7 +29,7 @@ public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
                $"{weapon.LocalizedDescription}\n" +
                $"\n" +
                $"{LocalizationManager.GetOrDefault("msg_T공격력", "Damage")}   {GetMinDamage()}~{GetMaxDamage()}\n" +
-               $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}   {weapon.CanUseStrength}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}   {GetRequiredStrength()}\n" +
                $"{LocalizationManager.GetOrDefault("msg_내구도", "Durability")}   {duraStr}";
     }
 
@@ -37,7 +40,7 @@ public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
             Debug.Log("던질 무기가 없습니다!");
             return;
         }
-        if (GetPlayerStrength() < weapon.CanUseStrength)
+        if (GetPlayerStrength() < GetRequiredStrength())
         {
             Debug.Log("힘이 부족합니다!");
             return;

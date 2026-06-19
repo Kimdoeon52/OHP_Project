@@ -442,7 +442,7 @@ public class NYHEquipmentController : MonoBehaviour
             return false;
         }
 
-        if (!MeetsEquipRequirements(item.Data, profile))
+        if (!MeetsEquipRequirements(item.Data, profile, GetEnhanceLevel(item)))
             return false;
 
         // 타겟 슬롯에 이미 착용 중인 장비가 있을 경우 스왑을 위해 기존 장비 해제
@@ -528,7 +528,7 @@ public class NYHEquipmentController : MonoBehaviour
     /// <summary>
     /// 장착 시 플레이어의 힘(Strength)이나 레벨(Level)이 장비의 요구 조건을 충족하는지 검증합니다.
     /// </summary>
-    private bool MeetsEquipRequirements(ItemBase itemData, NYHEquipmentProfile profile)
+    private bool MeetsEquipRequirements(ItemBase itemData, NYHEquipmentProfile profile, int enhanceLevel = 0)
     {
         NYHPlayerStats stats = Stats;
         if (stats == null)
@@ -537,7 +537,7 @@ public class NYHEquipmentController : MonoBehaviour
             return false;
         }
 
-        int requiredStrength = GetRequiredStrength(itemData, profile);
+        int requiredStrength = GetRequiredStrength(itemData, profile, enhanceLevel);
         if (stats.Strength < requiredStrength)
         {
             Debug.LogWarning($"NYHEquipmentController: 힘이 부족합니다. 필요 힘 {requiredStrength}, 현재 힘 {stats.Strength}");
@@ -566,22 +566,23 @@ public class NYHEquipmentController : MonoBehaviour
 
     /// <summary>
     /// 프로필 또는 아이템 원본 데이터에서 요구 힘 수치를 가져옵니다.
+    /// 강화 단계마다 요구 힘이 1씩 줄어들며, 0 밑으로는 내려가지 않습니다.
     /// </summary>
-    private static int GetRequiredStrength(ItemBase itemData, NYHEquipmentProfile profile)
+    private static int GetRequiredStrength(ItemBase itemData, NYHEquipmentProfile profile, int enhanceLevel = 0)
     {
+        int baseRequiredStrength;
         if (profile != null && profile.RequiredStrength > 0)
-            return profile.RequiredStrength;
+            baseRequiredStrength = profile.RequiredStrength;
+        else if (itemData is ArmorData armor)
+            baseRequiredStrength = armor.CanUseStrength;
+        else if (itemData is CloseWeapon closeWeapon)
+            baseRequiredStrength = closeWeapon.CanUseStrength;
+        else if (itemData is ThrowableWeapon throwableWeapon)
+            baseRequiredStrength = throwableWeapon.CanUseStrength;
+        else
+            return 0;
 
-        if (itemData is ArmorData armor)
-            return armor.CanUseStrength;
-
-        if (itemData is CloseWeapon closeWeapon)
-            return closeWeapon.CanUseStrength;
-
-        if (itemData is ThrowableWeapon throwableWeapon)
-            return throwableWeapon.CanUseStrength;
-
-        return 0;
+        return Mathf.Max(0, baseRequiredStrength - enhanceLevel);
     }
 
     private void RebuildEquipmentStats(string logPrefix = null, NYHEquipmentItemInstance changedItem = null)
