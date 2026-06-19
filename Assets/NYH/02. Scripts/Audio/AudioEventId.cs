@@ -55,5 +55,8 @@
 
     PlayerStep,
     PlayerStepHazard,
-    DoorOpened
+    DoorOpened,
+
+    BossA_Spin,
+    BossA_LandImpact
 }

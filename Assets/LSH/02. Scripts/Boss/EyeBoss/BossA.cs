@@ -220,7 +220,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     {
         AudioEventId eventId = bossAction switch
         {
-            BossAction.Pattern1 => AudioEventId.BossA_Pattern1,
+            BossAction.Pattern1 => AudioEventId.None,
             BossAction.Pattern2 => AudioEventId.BossA_Pattern2,
             BossAction.Pattern3 => AudioEventId.BossA_Pattern3,
             _ => AudioEventId.None
@@ -340,6 +340,8 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             {
                 // 경고 표시 후 2초 대기
                 if (bossAnimation != null) bossAnimation.SetTrigger("Jump");
+                // 점프 찍기는 회전 준비음과 착지 충격음을 분리해서 재생한다.
+                GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.BossA_Spin);
                 await UniTask.Delay(2000, cancellationToken: cancelToken.Token);
 
                 if (cancelToken.IsCancellationRequested || isDying) break;
@@ -351,6 +353,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
                     .SetEase(Ease.OutQuad)
                     .AsyncWaitForCompletion();
                 gridPos = landingGridPos;
+                GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.BossA_LandImpact);
 
                 // 카메라 흔들림 트리거
                 if (CameraFollow.Instance != null)

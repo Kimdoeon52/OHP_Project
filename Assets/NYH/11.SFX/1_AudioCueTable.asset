@@ -65,9 +65,13 @@ MonoBehaviour:
     cue: {fileID: 11400000, guid: a3d389ad94a48734cb57a0bdd3e6f140, type: 2}
   - eventId: 45
     cue: {fileID: 11400000, guid: d1d9bfd39b6740b4aaf1ae8a22d920e8, type: 2}
-  - eventId: 27
-    cue: {fileID: 11400000, guid: df3bf3beb010eb64ba976e591e6a9782, type: 2}
   - eventId: 28
     cue: {fileID: 11400000, guid: df3bf3beb010eb64ba976e591e6a9782, type: 2}
   - eventId: 29
+    cue: {fileID: 11400000, guid: df3bf3beb010eb64ba976e591e6a9782, type: 2}
+  - eventId: 46
+    cue: {fileID: 11400000, guid: 9b16ebc3ee8a1ad49b4aabdf72c93c18, type: 2}
+  - eventId: 47
+    cue: {fileID: 11400000, guid: adbf62eeae1b7f142a5b1f02534be27a, type: 2}
+  - eventId: 30
     cue: {fileID: 11400000, guid: df3bf3beb010eb64ba976e591e6a9782, type: 2}
