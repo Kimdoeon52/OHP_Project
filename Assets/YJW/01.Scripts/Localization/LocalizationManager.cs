@@ -208,7 +208,19 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "넓은 시야\n시야 +1, 시야 +2" },
             { Language.English, "Wide Vision\nVision +1, Vision +2" }
         }},
-        //------------------------------------------ 인게임 버튼
+        { "msg_특성", new Dictionary<Language, string> {
+            { Language.Korean, "특성" },
+            { Language.English, "Trait" }
+        }},
+        { "msg_특성설명", new Dictionary<Language, string> {
+            { Language.Korean, "특성설명" },
+            { Language.English, "Trait Description" }
+        }},
+        { "msg_스킬포인트", new Dictionary<Language, string> {
+            { Language.Korean, "스킬포인트" },
+            { Language.English, "Skill Points" }
+        }},
+        //------------------------------------------ 인게임
         { "bt_튜토리얼스킵", new Dictionary<Language, string> {
             { Language.Korean, "튜토리얼 스킵" },
             { Language.English, "Skip Tutorial" }
