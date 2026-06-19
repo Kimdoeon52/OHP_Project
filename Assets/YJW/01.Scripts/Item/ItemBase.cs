@@ -49,7 +49,7 @@ public class ItemBase : ScriptableObject
     public virtual void Use() { }
     public virtual void Use(ItemInstance target) { }
     public virtual string GetToolTipStats() {
-        return $"{LocalizedName} \n + " +
+        return $"{LocalizedName} \n" +
                $"{LocalizedDescription}";
     }
 	public virtual ItemInstance CreateInstance(){ return new ItemInstance { data = this }; }
