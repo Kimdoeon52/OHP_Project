@@ -80,14 +80,29 @@ public class WeaponProjectile : MonoBehaviour
                 weaponInstance.curse?.OnAttack(ref damage);
 
                 EnemyBase enemy = damageable as EnemyBase;
+                int beforeHp = damageable.CurrentHp;
                 if (weaponInstance.weapon is IHitEffect hitEffect && enemy != null)
                     hitEffect.ApplyEffect(enemy, damage);
                 else
                     damageable.TakeDamage(damage);
+
+                int finalDamage = Mathf.Max(0, beforeHp - damageable.CurrentHp);
+                if (finalDamage > 0 && damageable is not BossBase)
+                    PublishDamageText(damageable, finalDamage);
             }
         }
 
         Land();
+    }
+
+    private static void PublishDamageText(IDamageable damageable, int damage)
+    {
+        if (damageable == null || damage <= 0)
+            return;
+
+        // BossBase는 내부에서 이미 데미지 텍스트를 띄우므로 일반 대상만 여기서 보강한다.
+        Vector3 worldPosition = damageable is Component component ? component.transform.position : Vector3.zero;
+        GameEvents.OnCombatTextRequested?.Invoke(new CombatTextRequest(worldPosition, damage.ToString(), damage, CombatTextType.Damage));
     }
 
     private void Land()
