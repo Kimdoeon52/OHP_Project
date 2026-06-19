@@ -8,6 +8,12 @@ public class MoveScene : MonoBehaviour
     // LoadingSceneController가 로딩 씬에서 이 값을 읽어 실제 게임 씬을 비동기로 불러온다.
     public static string PendingTargetSceneName { get; private set; }
 
+    // 외부(엔딩 등)에서 로딩 씬 경유 목표 씬을 지정할 때 사용
+    public static void SetPendingTarget(string sceneName)
+    {
+        PendingTargetSceneName = sceneName;
+    }
+
     [Header("Scene Flow")]
     [Tooltip("버튼을 누른 뒤 먼저 이동할 로딩 씬 이름입니다. Project Settings > Build Profiles/Build Settings에 등록된 씬 이름과 같아야 합니다.")]
     [SerializeField] private string loadingSceneName = "Loading";
