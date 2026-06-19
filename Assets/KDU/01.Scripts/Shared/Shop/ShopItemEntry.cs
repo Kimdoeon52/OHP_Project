@@ -25,15 +25,14 @@ public class ShopItemEntry
     // 층 인덱스 등장확률
     public float Chance(int floorIndex)
     {
-        return InRange(appearChance, floorIndex) ? appearChance[floorIndex] : 0f;
+        return Clamped(appearChance, floorIndex, out float v) ? v : 0f;
     }
 
     // 층 인덱스 개수 (범위면 rng)
     public int Count(int floorIndex, DungeonRandom rng)
     {
-        if (!InRange(countRange, floorIndex))
+        if (!Clamped(countRange, floorIndex, out Vector2Int r))
             return 0;
-        Vector2Int r = countRange[floorIndex];
         if (r.y <= r.x)
             return Mathf.Max(0, r.x);
         return rng.Range(r.x, r.y + 1);
@@ -42,7 +41,7 @@ public class ShopItemEntry
     // 층 인덱스 가격
     public int Price(int floorIndex)
     {
-        return InRange(price, floorIndex) ? price[floorIndex] : 0;
+        return Clamped(price, floorIndex, out int v) ? v : 0;
     }
 
     // 상품 1개 결정
@@ -53,8 +52,13 @@ public class ShopItemEntry
         return item;
     }
 
-    private static bool InRange<T>(T[] arr, int idx)
+    // 길이 모자라면 마지막 원소로 클램프 (데이터 길이 불일치 안전망)
+    private static bool Clamped<T>(T[] arr, int idx, out T value)
     {
-        return arr != null && idx >= 0 && idx < arr.Length;
+        value = default;
+        if (arr == null || arr.Length == 0 || idx < 0)
+            return false;
+        value = arr[Mathf.Min(idx, arr.Length - 1)];
+        return true;
     }
 }

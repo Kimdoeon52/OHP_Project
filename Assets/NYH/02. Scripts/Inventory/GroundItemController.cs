@@ -64,6 +64,7 @@ namespace PrototypeRT
             GameEvents.OnVisionUpdated += OnVisionUpdated;
             GameEvents.OnPlayerActionCompleted += OnPlayerActionCompleted;
             GameEvents.OnEnemyKilled += OnEnemyKilled;
+            GameEvents.OnFloorReset += OnFloorReset;
         }
 
         private void Start()
@@ -81,6 +82,7 @@ namespace PrototypeRT
             GameEvents.OnVisionUpdated -= OnVisionUpdated;
             GameEvents.OnPlayerActionCompleted -= OnPlayerActionCompleted;
             GameEvents.OnEnemyKilled -= OnEnemyKilled;
+            GameEvents.OnFloorReset -= OnFloorReset;
             UnsubscribeMovement();
             _itemsByCell.Clear();
             _registeredPickups.Clear();
@@ -303,6 +305,31 @@ namespace PrototypeRT
         private void OnEnemyKilled(Vector2Int pos, float timeBonus)
         {
             ScanAndRegisterPickups();
+        }
+
+        /// <summary>
+        /// 새 층 생성 직전(GameEvents.OnFloorReset) 호출. 이전 층 바닥에 남은 아이템을 전부 파괴합니다.
+        /// 스포너가 만든 아이템은 각 스포너 Clear가 처리하지만, 버린/상자·몬스터 드롭은 여기서만 정리됩니다.
+        /// </summary>
+        private void OnFloorReset()
+        {
+            ItemPickup[] pickups = FindObjectsByType<ItemPickup>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < pickups.Length; i++)
+            {
+                if (pickups[i] != null)
+                    Destroy(pickups[i].gameObject);
+            }
+
+            GoldPickup[] golds = FindObjectsByType<GoldPickup>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < golds.Length; i++)
+            {
+                if (golds[i] != null)
+                    Destroy(golds[i].gameObject);
+            }
+
+            _itemsByCell.Clear();
+            _registeredPickups.Clear();
+            _pickupCallbacks.Clear();
         }
 
         /// <summary>

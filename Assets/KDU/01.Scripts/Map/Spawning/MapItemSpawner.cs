@@ -47,6 +47,9 @@ public class MapItemSpawner : MonoBehaviour
     [SerializeField, Min(1)] private int potionRoomMin = 2;
     [SerializeField, Min(1)] private int potionRoomMax = 2;
 
+    [Header("Secret 방 — 마법 부여 방")]
+    [SerializeField] private EnchantAltar enchantAltarPrefab;
+
     [Header("스페셜 방 — 골드 방")]
     [SerializeField, Min(1)] private int goldRoomPileMin = 3;
     [SerializeField, Min(1)] private int goldRoomPileMax = 5;
@@ -65,11 +68,11 @@ public class MapItemSpawner : MonoBehaviour
         SpawnGuaranteed(rooms, rng);
         SpawnRandom(rooms, rng);
         SpawnGold(rooms, rng);
-        SpawnSubtypeRooms(rooms, rng);
+        SpawnSubtypeRooms(rooms, depth, rng);
     }
 
 
-    private void SpawnSubtypeRooms(List<RoomData> rooms, DungeonRandom rng)
+    private void SpawnSubtypeRooms(List<RoomData> rooms, int depth, DungeonRandom rng)
     {
         foreach (var room in rooms)
         {
@@ -79,7 +82,25 @@ public class MapItemSpawner : MonoBehaviour
                 SpawnItemsInRoom(room, ItemCategory.Potion, potionRoomExcludeIds, potionRoomMin, potionRoomMax, rng);
             else if (room.type == RoomType.Secret && room.secretKind == SecretRoomKind.Gold)
                 SpawnGoldPilesInRoom(room, rng);
+            else if (room.type == RoomType.Secret && room.secretKind == SecretRoomKind.Enchant)
+                SpawnEnchantAltar(room, depth, rng);
         }
+    }
+
+    // 마법 부여 제단 1개 배치
+    private void SpawnEnchantAltar(RoomData room, int depth, DungeonRandom rng)
+    {
+        if (enchantAltarPrefab == null)
+            return;
+
+        var cells = SpawnCells.Candidates(room);
+        if (cells.Count == 0)
+            return;
+
+        Vector2Int cell = SpawnCells.PopRandom(cells, rng);
+        EnchantAltar altar = Instantiate(enchantAltarPrefab);
+        altar.Initialize(cell, depth);
+        _spawned.Add(altar.gameObject);
     }
 
     // 아이템을 min ~ max개 배치
