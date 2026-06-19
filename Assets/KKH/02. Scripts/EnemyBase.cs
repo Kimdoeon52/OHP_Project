@@ -185,7 +185,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// 이 적이 현재 VisionSystem 시야 내에 있으면 SpriteRenderer 활성화,
     /// 아니면 비활성화. 소속 텔레그래프도 동기화.
     /// </summary>
-    protected void UpdateVisibility()
+    protected virtual void UpdateVisibility()
     {
         bool visible = VisionSystem.Instance != null && VisionSystem.Instance.IsVisible(GridPosition);
 
@@ -453,6 +453,8 @@ public abstract class EnemyBase : EntityBase, IDamageable
     {
         var next = GridPosition + dir;
 
+        if (IsSafeRoomCell(next)) return false;                   // 세이프룸 침범 방지
+
         if (!GridSystem.Instance.IsWalkable(next)) return false;  // 벽
         if (next == Player.GridPosition) return false;            // 플레이어 위치
                                                                   //  if (TurnManager.Instance.GetEntityAt(next) != null) return false; // 타 엔티티
@@ -607,6 +609,9 @@ public abstract class EnemyBase : EntityBase, IDamageable
     {
         if (IsDead || Player == null) return;
 
+        // 시간 정지 중(Safe Room 대기 등)에는 행동하지 않음
+        if (TimeSystem.Instance == null || !TimeSystem.Instance.IsRunning) return;
+
         // 플레이어 행동 비용만큼 AP 충전
         _moveActionPoints += Time.deltaTime;
         _attackActionPoints += Time.deltaTime;
@@ -717,6 +722,25 @@ public abstract class EnemyBase : EntityBase, IDamageable
     }
 
     // ══════════════ 내부 판정 유틸리티 ══════════════
+
+    /// <summary>
+    /// 지정 격자가 세이프룸 영역(Safe Room)인지 판정합니다.
+    /// </summary>
+    protected bool IsSafeRoomCell(Vector2Int cell)
+    {
+        if (MapGenerator.Instance == null || MapGenerator.Instance.CurrentRooms == null)
+            return false;
+
+        for (int i = 0; i < MapGenerator.Instance.CurrentRooms.Count; i++)
+        {
+            var room = MapGenerator.Instance.CurrentRooms[i];
+            if (room.type == RoomType.Safe)
+            {
+                return room.floorCells.Contains(cell);
+            }
+        }
+        return false;
+    }
 
     /// <summary>
     /// 플레이어와 상하좌우 1칸 인접 여부 판정 (맨해튼 거리 == 1).
