@@ -214,10 +214,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
             GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.MonsterHit);
 
             // 피격 파티클 시스템 스폰
-            if (hitParticlePrefab != null)
-            {
-                Instantiate(hitParticlePrefab, transform.position, Quaternion.identity);
-            }
+            GameEvents.OnPlayVFX?.Invoke(transform.position, VFXType.MonsterHit);
         }
 
         // 살아있으면 Hit 트리거 실행 (흔들림 / 피격 연출)
@@ -263,10 +260,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
         CurrentHp = 0;
 
         // 사망 파티클 이펙트 생성
-        if (deathEffectPrefab != null)
-        {
-            Instantiate(deathEffectPrefab, transform.position, Quaternion.identity);
-        }
+        GameEvents.OnPlayVFX?.Invoke(transform.position, VFXType.MonsterDeath);
 
         StopAllCoroutines();
         ClearTelegraphs();
