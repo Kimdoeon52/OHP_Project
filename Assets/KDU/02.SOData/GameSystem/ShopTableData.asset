@@ -21,6 +21,8 @@ MonoBehaviour:
     - 100
     countRange:
     - {x: 1, y: 1}
+    - {x: 1, y: 1}
+    - {x: 1, y: 1}
     price: 320000006400000096000000
     enhanceLevel: 0
   - item: {fileID: 11400000, guid: 08c5050595ee80c48aa3c372eb3b993e, type: 2}
@@ -31,6 +33,8 @@ MonoBehaviour:
     - 100
     countRange:
     - {x: 1, y: 1}
+    - {x: 1, y: 1}
+    - {x: 1, y: 1}
     price: 320000006400000096000000
     enhanceLevel: 0
   - item: {fileID: 11400000, guid: c05dbb8970dbc19489f55418cf8a49fa, type: 2}
@@ -40,6 +44,8 @@ MonoBehaviour:
     - 100
     - 100
     countRange:
+    - {x: 1, y: 1}
+    - {x: 1, y: 1}
     - {x: 1, y: 1}
     price: 320000006400000096000000
     enhanceLevel: 0
@@ -53,6 +59,8 @@ MonoBehaviour:
     - 0
     countRange:
     - {x: 1, y: 1}
+    - {x: 1, y: 1}
+    - {x: 1, y: 1}
     price: 320000000000000000000000
     enhanceLevel: 0
   - item: {fileID: 11400000, guid: e6dfe69788e81a44e96f249557671b12, type: 2}
@@ -64,6 +72,8 @@ MonoBehaviour:
     - 100
     - 0
     countRange:
+    - {x: 1, y: 1}
+    - {x: 1, y: 1}
     - {x: 1, y: 1}
     price: 000000006400000000000000
     enhanceLevel: 0
@@ -77,6 +87,8 @@ MonoBehaviour:
     - 100
     countRange:
     - {x: 1, y: 1}
+    - {x: 1, y: 1}
+    - {x: 1, y: 1}
     price: 0000000000000000c8000000
     enhanceLevel: 0
   - item: {fileID: 11400000, guid: f3c09012cf906e541a56fb28c238034e, type: 2}
@@ -86,6 +98,8 @@ MonoBehaviour:
     - 0
     - 0
     countRange:
+    - {x: 1, y: 1}
+    - {x: 1, y: 1}
     - {x: 1, y: 1}
     price: 640000000000000000000000
     enhanceLevel: 0
@@ -97,6 +111,8 @@ MonoBehaviour:
     - 0
     countRange:
     - {x: 1, y: 1}
+    - {x: 1, y: 1}
+    - {x: 1, y: 1}
     price: 000000009600000000000000
     enhanceLevel: 0
   - item: {fileID: 11400000, guid: 2ed3874c5c5e380418e7bc27ffe264f9, type: 2}
@@ -106,6 +122,8 @@ MonoBehaviour:
     - 0
     - 100
     countRange:
+    - {x: 1, y: 1}
+    - {x: 1, y: 1}
     - {x: 1, y: 1}
     price: 00000000000000002c010000
     enhanceLevel: 0

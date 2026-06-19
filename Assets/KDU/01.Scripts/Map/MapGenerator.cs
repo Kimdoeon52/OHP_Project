@@ -134,6 +134,9 @@ public class MapGenerator : Singleton<MapGenerator>
         if (shopSpawner != null)
             shopSpawner.Clear();
 
+        // 이전 층의 바닥 아이템(버린/상자·몬스터 드롭) 정리 — 신규 스폰 전에 발화
+        GameEvents.OnFloorReset?.Invoke();
+
         // 이전 층의 Feeling 효과 리셋
         if (VisionSystem.Instance != null)
             VisionSystem.Instance.VisionRadiusDelta = 0;
@@ -154,6 +157,9 @@ public class MapGenerator : Singleton<MapGenerator>
 
             CurrentRooms = bossRooms;
             CurrentFeeling = null;
+
+            // 보스 프리팹의 hazard 타일은 시각만 복사됨 — 게임플레이용 HazardCells도 채움
+            PopulateHazardCellsFromTilemap();
 
             _pendingBossExitCell = bossExitCell;
 
@@ -331,6 +337,19 @@ public class MapGenerator : Singleton<MapGenerator>
             }
         }
         return best;
+    }
+
+    // 보스층: 복사된 hazard 타일맵에서 게임플레이용 HazardCells 채움
+    private void PopulateHazardCellsFromTilemap()
+    {
+        if (tilemaps == null || tilemaps.hazard == null)
+            return;
+
+        foreach (var pos in tilemaps.hazard.cellBounds.allPositionsWithin)
+        {
+            if (tilemaps.hazard.HasTile(pos))
+                HazardCells.Add(new Vector2Int(pos.x, pos.y));
+        }
     }
 
     // 출구 주변 hazard 없게 정리

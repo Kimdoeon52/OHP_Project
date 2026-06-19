@@ -40,6 +40,7 @@ public static class GameEvents
     public static Action<IReadOnlyCollection<Vector2Int>, IReadOnlyCollection<Vector2Int>> OnVisionUpdated; // visible, explored
 
     // 게임 상태
+    public static Action OnFloorReset;                // 새 층 생성 직전 — 바닥 아이템 정리 등이 구독
     public static Action OnPlayerDied;                // 플레이어 사망
     public static Action OnLevelComplete;             // 레벨업
     public static Action OnBossDefeated;              // 보스 처치 — 맵 출구 개방 등이 구독
@@ -48,6 +49,9 @@ public static class GameEvents
 
     // 오디오
     public static Action<AudioEventId> OnAudioEventRequested;
+
+    // Vfx
+    public static System.Action<UnityEngine.Vector3, VFXType> OnPlayVFX;
 
     public static void ClearAllEvents()
     {
@@ -72,6 +76,7 @@ public static class GameEvents
         OnSecretDiscovered = null;          // 숨겨진 요소 발견
         OnStatusEffectApplied = null;       // 상태이상 적용
         OnVisionUpdated = null;             // 시야 업데이트
+        OnFloorReset = null;                // 새 층 생성 직전
         OnPlayerDied = null;                // 플레이어 사망
         OnLevelComplete = null;             // 레벨업
         OnBossDefeated = null;              // 보스 처치
