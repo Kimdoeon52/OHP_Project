@@ -7,7 +7,7 @@ public class GoldHud : MonoBehaviour
     [Tooltip("골드 표시 텍스트")]
     [SerializeField] private TMP_Text goldText;
     [Tooltip("접두사")]
-    [SerializeField] private string prefix = "골드 ";
+    [SerializeField] private string prefix = " G";
 
     private void OnEnable()
     {
@@ -25,6 +25,6 @@ public class GoldHud : MonoBehaviour
     private void Refresh(int balance)
     {
         if (goldText != null)
-            goldText.text = prefix + balance;
+            goldText.text = balance + prefix;
     }
 }

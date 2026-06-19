@@ -213,15 +213,21 @@ public class LazerPattern : MonoBehaviour
         return LazerAction.Pattern1;
     }
 
-    private static void RequestLazerPatternAudio(LazerAction action)
+    private static AudioEventId GetLazerPatternAudioEventId(LazerAction action)
     {
-        AudioEventId eventId = action switch
+        return action switch
         {
             LazerAction.Pattern1 => AudioEventId.BossA_Pattern1,
             LazerAction.Pattern2 => AudioEventId.BossA_Pattern2,
             LazerAction.Pattern3 => AudioEventId.BossA_Pattern3,
             _ => AudioEventId.None
         };
+    }
+
+    private static void RequestLazerPatternAudio(AudioEventId eventId)
+    {
+        if (eventId == AudioEventId.None)
+            return;
 
         GameEvents.OnAudioEventRequested?.Invoke(eventId);
     }
@@ -229,7 +235,7 @@ public class LazerPattern : MonoBehaviour
     private async UniTask DoOneAttack(int hpPhase)
     {
         LazerAction action = RollLazerAction();
-        RequestLazerPatternAudio(action);
+        AudioEventId audioEventId = GetLazerPatternAudioEventId(action);
 
         switch (hpPhase)
         {
@@ -237,15 +243,15 @@ public class LazerPattern : MonoBehaviour
                 switch (action)
                 {
                     case LazerAction.Pattern1:
-                        await FireRandomAxisLasers(Vector2Int.right, Random.Range(2, 4));
+                        await FireRandomAxisLasers(Vector2Int.right, Random.Range(2, 4), audioEventId);
                         break;
                     case LazerAction.Pattern2:
-                        await FireRandomAxisLasers(Vector2Int.up, Random.Range(2, 4));
+                        await FireRandomAxisLasers(Vector2Int.up, Random.Range(2, 4), audioEventId);
                         break;
                     default:
                         // Pattern3이 뽑혔을 때도 가로/세로 중 무작위 분기
                         var axis = (Random.Range(0, 2) == 0) ? Vector2Int.right : Vector2Int.up;
-                        await FireRandomAxisLasers(axis, Random.Range(2, 4));
+                        await FireRandomAxisLasers(axis, Random.Range(2, 4), audioEventId);
                         break;
                 }
                 break;
@@ -254,20 +260,20 @@ public class LazerPattern : MonoBehaviour
                 switch (action)
                 {
                     case LazerAction.Pattern1:
-                        await SweepCrossLasers();
+                        await SweepCrossLasers(audioEventId);
                         break;
                     case LazerAction.Pattern2:
-                        await FireOddEvenLasersPattern();
+                        await FireOddEvenLasersPattern(audioEventId);
                         break;
                     case LazerAction.Pattern3:
-                        await ShrinkingSquarePattern();
+                        await ShrinkingSquarePattern(audioEventId);
                         break;
                 }
                 break;
         }
     }
 
-    private async UniTask SweepCrossLasers()
+    private async UniTask SweepCrossLasers(AudioEventId audioEventId)
     {
         if (!_hasMapBounds) return;
 
@@ -282,19 +288,19 @@ public class LazerPattern : MonoBehaviour
             if (i < xLength)
             {
                 int xCoord = _mapBounds.xMin + i;
-                FireAxisLaserAt(Vector2Int.up, xCoord).Forget();
+                FireAxisLaserAt(Vector2Int.up, xCoord, audioEventId).Forget();
             }
             if (i < yLength)
             {
                 int yCoord = _mapBounds.yMin + i;
-                FireAxisLaserAt(Vector2Int.right, yCoord).Forget();
+                FireAxisLaserAt(Vector2Int.right, yCoord, audioEventId).Forget();
             }
 
             await UniTask.Delay(sweepStepMs, cancellationToken: _cts.Token);
         }
     }
 
-    private async UniTask FireOddEvenLasersPattern()
+    private async UniTask FireOddEvenLasersPattern(AudioEventId audioEventId)
     {
         if (!_hasMapBounds) return;
 
@@ -314,21 +320,21 @@ public class LazerPattern : MonoBehaviour
             if (_cts.IsCancellationRequested || !IsBossAlive()) break;
 
             // 1. Odd columns
-            await FireAxisLasersAtCoords(Vector2Int.up, oddCoords);
+            await FireAxisLasersAtCoords(Vector2Int.up, oddCoords, audioEventId);
 
             if (_cts.IsCancellationRequested || !IsBossAlive()) break;
 
             // 2. Even columns
-            await FireAxisLasersAtCoords(Vector2Int.up, evenCoords);
+            await FireAxisLasersAtCoords(Vector2Int.up, evenCoords, audioEventId);
         }
     }
 
-    private async UniTask FireAxisLasersAtCoords(Vector2Int axis, List<int> coords)
+    private async UniTask FireAxisLasersAtCoords(Vector2Int axis, List<int> coords, AudioEventId audioEventId)
     {
         List<UniTask> tasks = new List<UniTask>();
         foreach (int coord in coords)
         {
-            tasks.Add(FireAxisLaserAt(axis, coord));
+            tasks.Add(FireAxisLaserAt(axis, coord, audioEventId));
         }
         if (tasks.Count > 0)
         {
@@ -336,7 +342,7 @@ public class LazerPattern : MonoBehaviour
         }
     }
 
-    private async UniTask ShrinkingSquarePattern()
+    private async UniTask ShrinkingSquarePattern(AudioEventId audioEventId)
     {
         if (!_hasMapBounds) return;
 
@@ -371,11 +377,11 @@ public class LazerPattern : MonoBehaviour
 
             foreach (int x in xCoords)
             {
-                allLaserTasks.Add(FireAxisLaserAt(Vector2Int.up, x));
+                allLaserTasks.Add(FireAxisLaserAt(Vector2Int.up, x, audioEventId));
             }
             foreach (int y in yCoords)
             {
-                allLaserTasks.Add(FireAxisLaserAt(Vector2Int.right, y));
+                allLaserTasks.Add(FireAxisLaserAt(Vector2Int.right, y, audioEventId));
             }
 
             d++;
@@ -388,10 +394,10 @@ public class LazerPattern : MonoBehaviour
         }
     }
 
-    private async UniTask FireRandomAxisLasers(Vector2Int axis, int count)
+    private async UniTask FireRandomAxisLasers(Vector2Int axis, int count, AudioEventId audioEventId)
     {
         var tasks = new List<UniTask>();
-        for (int i = 0; i < count; i++) tasks.Add(FireRandomAxisLaser(axis));
+        for (int i = 0; i < count; i++) tasks.Add(FireRandomAxisLaser(axis, audioEventId));
         await UniTask.WhenAll(tasks);
     }
 
@@ -518,16 +524,16 @@ public class LazerPattern : MonoBehaviour
 
     //=============================== 레이저 발사 (시각 + 타일 경고 + 격자 데미지) ==========================================
 
-    private UniTask FireRandomAxisLaser(Vector2Int axis)
+    private UniTask FireRandomAxisLaser(Vector2Int axis, AudioEventId audioEventId)
     {
         if (!_hasMapBounds) return UniTask.CompletedTask;
         int coord = (axis == Vector2Int.right)
             ? Random.Range(_mapBounds.yMin, _mapBounds.yMax)
             : Random.Range(_mapBounds.xMin, _mapBounds.xMax);
-        return FireAxisLaserAt(axis, coord);
+        return FireAxisLaserAt(axis, coord, audioEventId);
     }
 
-    private UniTask FireAxisLaserAt(Vector2Int axis, int coord)
+    private UniTask FireAxisLaserAt(Vector2Int axis, int coord, AudioEventId audioEventId)
     {
         if (!_hasMapBounds) return UniTask.CompletedTask;
         Vector2Int startCell, endCell;
@@ -541,12 +547,12 @@ public class LazerPattern : MonoBehaviour
             startCell = new Vector2Int(coord, _mapBounds.yMin);
             endCell   = new Vector2Int(coord, _mapBounds.yMax - 1);
         }
-        return FireLaserBetween(startCell, endCell, axis, 0, laserVisualScale, laserDamage, _cts.Token);
+        return FireLaserBetween(startCell, endCell, axis, 0, laserVisualScale, laserDamage, _cts.Token, audioEventId);
     }
 
     // 두 격자 셀 사이 레이저 공용 구현: 경고 레이저 + 눈 prefab → 레이저 시각 + 격자 데미지 → 정리.
     private async UniTask FireLaserBetween(Vector2Int startCell, Vector2Int endCell, Vector2Int axis,
-                                           int width, float visualScaleY, int damage, CancellationToken token)
+                                           int width, float visualScaleY, int damage, CancellationToken token, AudioEventId audioEventId)
     {
         var cells = CellsAlongLine(startCell, endCell, axis, width);
 
@@ -587,6 +593,9 @@ public class LazerPattern : MonoBehaviour
             if (eye != null) { Destroy(eye); eye = null; }
 
             // 레이저 시각 spawn
+            // 패턴 시작음이 아니라 실제 레이저가 발사되는 순간마다 소리를 낸다.
+            RequestLazerPatternAudio(audioEventId);
+
             Vector3 startPtReal = GridSystem.Instance.GridToWorld(startCell);
             Vector3 endPtReal   = GridSystem.Instance.GridToWorld(endCell);
             Quaternion qReal = Quaternion.Euler(0, 0, Mathf.Atan2(axis.y, axis.x) * Mathf.Rad2Deg);
