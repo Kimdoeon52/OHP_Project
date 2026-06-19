@@ -9,6 +9,9 @@ public class ArmorInstance : EquipmentInstance
 
     public int GetDefense() => Random.Range(GetMinDefense(), GetMaxDefense() + 1);
 
+    // 강화 단계마다 착용 힘이 1씩 줄어들며, 0 밑으로는 내려가지 않는다.
+    public int GetRequiredStrength() => Mathf.Max(0, Armor.CanUseStrength - enhanceLevel);
+
     public void OnHit() => curse?.OnHit();
 
     public override string GetToolTipStats()
@@ -19,7 +22,7 @@ public class ArmorInstance : EquipmentInstance
         return $"[{Armor.LocalizedName}] {(enhanceLevel > 0 ? $"<color=yellow>+{enhanceLevel}</color>" : "")}\n" +
                $"--------------------\n" +
                $"{Armor.LocalizedDescription}\n" +
-               $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}: {Armor.CanUseStrength}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}: {GetRequiredStrength()}\n" +
                $"{LocalizationManager.GetOrDefault("msg_피해감소", "Damage Reduction")}: {GetMinDefense()}~{GetMaxDefense()}" +
                $"{(curse != null ? $"\n{curse.LocalizedName}: {curse.LocalizedDescription}" : "")}" +
                $"{(magic != null ? $"\n{magic.LocalizedName}: {magic.LocalizedDescription}" : "")}";
