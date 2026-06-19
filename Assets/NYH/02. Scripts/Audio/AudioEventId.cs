@@ -58,5 +58,11 @@
     DoorOpened,
 
     BossA_Spin,
-    BossA_LandImpact
+    BossA_LandImpact,
+
+    BossB_Teleport,
+    BossB_Shockwave,
+    BossB_CrystalSpawn,
+    BossB_CrystalImpact,
+    BossB_Swing
 }

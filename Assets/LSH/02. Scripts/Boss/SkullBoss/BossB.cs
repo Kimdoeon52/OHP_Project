@@ -36,6 +36,10 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     [Header("Phase 2 강화 패턴 설정")]
     [SerializeField] private int phase2ShockwaveRadius = 6;
 
+    [Header("BossB SFX")]
+    [Tooltip("충격파/크리스탈처럼 여러 칸에서 동시에 발생하는 효과음이 과도하게 겹치지 않도록 묶음당 1회만 통과시키는 최소 간격입니다.")]
+    [SerializeField, Min(0f)] private float burstSfxCooldownSeconds = 0.05f;
+
 
 
     [Header("패턴 1히트 판정")]
@@ -47,6 +51,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     [SerializeField] private Vector2Int bossSize = new Vector2Int(1, 1); // 보스가 차지하는 크기 (1,1)
 
     private Vector2Int gridPos;
+    private readonly Dictionary<AudioEventId, float> _nextBurstSfxTimeByEvent = new Dictionary<AudioEventId, float>();
     private SpriteRenderer bossSprite;                // Phase 2 색 변경용
 
     #region 플레이어 이동공격 대상 등록 프록시
@@ -86,6 +91,27 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
     public void OnTurnUpdate()
     {
+    }
+
+    private void PlayBossBSfx(AudioEventId eventId)
+    {
+        if (eventId == AudioEventId.None)
+            return;
+
+        GameEvents.OnAudioEventRequested?.Invoke(eventId);
+    }
+
+    private void PlayBossBBurstSfx(AudioEventId eventId)
+    {
+        if (eventId == AudioEventId.None)
+            return;
+
+        float now = Time.unscaledTime;
+        if (_nextBurstSfxTimeByEvent.TryGetValue(eventId, out float nextTime) && now < nextTime)
+            return;
+
+        _nextBurstSfxTimeByEvent[eventId] = now + burstSfxCooldownSeconds;
+        GameEvents.OnAudioEventRequested?.Invoke(eventId);
     }
 
     private void RegisterBossGridTarget()
@@ -208,6 +234,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     private async UniTask<Vector2Int> TeleportToPlayerAsync(int disappearMs = 1000, int appearMs = 500)
     {
         bossAnimation.SetTrigger("Teleport");
+        PlayBossBSfx(AudioEventId.BossB_Teleport);
         await UniTask.Delay(GetScaledDelay(disappearMs), cancellationToken: cancelToken.Token);
 
         var dir = TeleportBesidePlayer();
@@ -223,6 +250,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     private async UniTask TeleportToCenterAsync(int disappearMs = 1000, int appearMs = 500)
     {
         bossAnimation.SetTrigger("Teleport");
+        PlayBossBSfx(AudioEventId.BossB_Teleport);
         await UniTask.Delay(GetScaledDelay(disappearMs), cancellationToken: cancelToken.Token);
 
         Vector2Int centerCell = gridPos;
@@ -425,9 +453,11 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             try
             {
                 await UniTask.Delay(stepDelayMs, cancellationToken: cancelToken.Token);
+                PlayBossBBurstSfx(AudioEventId.BossB_Shockwave);
 
                 if (crystalPrefab != null)
                 {
+                    PlayBossBBurstSfx(AudioEventId.BossB_CrystalSpawn);
                     // 각 경고표시 칸마다 개별적으로 이펙트 생성 및 스케일 축소 (충격파 이미지 -> 크리스탈 교체)
                     foreach (var cell in ringCells)
                     {
@@ -494,6 +524,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         {
             bossAnimation.SetTrigger("Attack1");
             await UniTask.Delay(GetScaledDelay(800), cancellationToken: cancelToken.Token);
+            PlayBossBSfx(AudioEventId.BossB_Swing);
             
             GameObject effect = SpawnAttackEffectFacingBoss(attack1Effect, transform.position);
             if (effect != null)
@@ -560,6 +591,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
             if (crystalPrefab != null)
             {
+                PlayBossBBurstSfx(AudioEventId.BossB_CrystalSpawn);
                 foreach (var cell in cells)
                 {
                     var worldPos = GridSystem.Instance.GridToWorld(cell);
@@ -586,6 +618,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
                 {
                     CameraFollow.Instance.Shake(crystalShakeDuration, crystalShakeStrength);
                 }
+                PlayBossBBurstSfx(AudioEventId.BossB_CrystalImpact);
             }
 
             // 시각적 경고를 먼저 해제
@@ -682,9 +715,9 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     {
         AudioEventId eventId = bossAction switch
         {
-            BossAction.Pattern1 => AudioEventId.BossB_Pattern1,
-            BossAction.Pattern2 => AudioEventId.BossB_Pattern2,
-            BossAction.Pattern3 => AudioEventId.BossB_Pattern3,
+            BossAction.Pattern1 => AudioEventId.None,
+            BossAction.Pattern2 => AudioEventId.None,
+            BossAction.Pattern3 => AudioEventId.None,
             _ => AudioEventId.None
         };
 

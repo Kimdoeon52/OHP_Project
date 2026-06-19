@@ -76,11 +76,20 @@ public class LazerPattern : MonoBehaviour
     [SerializeField] private Color phase3LaserColor = Color.red;
     [SerializeField] private int phase3LaserDamage = 50;
 
+    [Header("Laser SFX")]
+    [Tooltip("동시에 여러 줄 레이저가 발사될 때 SFX가 과도하게 겹치지 않도록 묶음당 1회만 통과시키는 최소 간격입니다.")]
+    [SerializeField, Min(0f)] private float laserSfxBurstCooldownSeconds = 0.05f;
+
+    [Tooltip("동시에 여러 줄 레이저가 발사될 때 한 묶음 안에서 허용할 최대 SFX 개수입니다. 너무 작으면 빔 소리가 빈약하고, 너무 크면 겹쳐서 뭉개질 수 있습니다.")]
+    [SerializeField, Min(1)] private int laserSfxMaxVoicesPerBurst = 3;
+
     // ─── 내부 상태 ───────────────────────────────────────────────────
     private RectInt _mapBounds;
     private bool _hasMapBounds;
     private CancellationTokenSource _cts;
     private bool _phase3LaserStarted;
+    private float _laserSfxBurstWindowEndTime;
+    private int _laserSfxBurstVoiceCount;
 
     //=============================== 초기화 / 정리 ==========================================
     private void OnEnable()
@@ -224,11 +233,22 @@ public class LazerPattern : MonoBehaviour
         };
     }
 
-    private static void RequestLazerPatternAudio(AudioEventId eventId)
+    private void RequestLazerPatternAudio(AudioEventId eventId)
     {
         if (eventId == AudioEventId.None)
             return;
 
+        float now = Time.unscaledTime;
+        if (now >= _laserSfxBurstWindowEndTime)
+        {
+            _laserSfxBurstWindowEndTime = now + laserSfxBurstCooldownSeconds;
+            _laserSfxBurstVoiceCount = 0;
+        }
+
+        if (_laserSfxBurstVoiceCount >= laserSfxMaxVoicesPerBurst)
+            return;
+
+        _laserSfxBurstVoiceCount++;
         GameEvents.OnAudioEventRequested?.Invoke(eventId);
     }
 
