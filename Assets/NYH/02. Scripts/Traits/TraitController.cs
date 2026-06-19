@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,7 +15,7 @@ public class TraitController : MonoBehaviour
     private const int MaxTraitLevel = 2;
 
     [Header("특성 데이터")]
-    [Tooltip("GDD 기준 9개 특성 데이터입니다. 비워두면 기본 이름/설명이 자동 생성되고, 아이콘은 UI 버튼 이미지로 대체됩니다.")]
+    [Tooltip("GDD 기준 9개 특성 데이터입니다. 비워두면 id/tier가 자동 생성되고, 아이콘은 UI 버튼 이미지로 대체됩니다. 이름/설명은 LocalizationManager가 담당합니다.")]
     [SerializeField] private TraitData[] traitData;
 
     // 런타임 상태는 Dictionary로 관리한다.
@@ -31,6 +31,29 @@ public class TraitController : MonoBehaviour
     public event Action<TraitTier, int> OnTraitPointChanged;
 
     public IReadOnlyList<TraitData> Traits => traitData;
+
+    // 특성 이름+레벨별 효과 설명은 LocalizationManager의 "플레이어 특성" 항목에서 한 줄로 합쳐 관리한다.
+    private static readonly Dictionary<TraitId, string> LocalizationKeysById = new()
+    {
+        { TraitId.Appraisal, "msg_감정" },
+        { TraitId.Healthy_Body, "msg_건강한몸" },
+        { TraitId.Survivalist, "msg_비상식량" },
+        { TraitId.Physical, "msg_운동" },
+        { TraitId.Greed, "msg_탐욕" },
+        { TraitId.Lightfoot, "msg_조심스러운발걸음" },
+        { TraitId.Trinket, "msg_액세서리중독" },
+        { TraitId.HeavyBlow, "msg_강타" },
+        { TraitId.EagleEye, "msg_넓은시야" }
+    };
+
+    // 특성 이름과 레벨별 효과가 합쳐진 표시용 텍스트를 반환한다 (1번째 줄: 이름, 이후 줄: 설명).
+    public string GetTraitDisplayText(TraitId id)
+    {
+        if (LocalizationManager.Instance == null || !LocalizationKeysById.TryGetValue(id, out string key))
+            return string.Empty;
+
+        return LocalizationManager.Instance.Get(key);
+    }
 
     /// <summary>
     /// 씬 안에서 사용할 특성 컨트롤러를 찾습니다.
@@ -285,27 +308,24 @@ public class TraitController : MonoBehaviour
     {
         return new[]
         {
-            Create(TraitId.Appraisal, TraitTier.Tier1, "Appraisal", "장착 무기 감정 속도 2배,\n갑옷 1.5배", "무기 즉시 감정,\n갑옷 1.5배"),
-            Create(TraitId.Healthy_Body, TraitTier.Tier1, "Healthy_Body", "배고픔/보통 상태 체력 회복 1.25배", "배고픔/보통 상태 체력 회복 1.5배"),
-            Create(TraitId.Survivalist, TraitTier.Tier1, "Survivalist", "다음 층부터 보스층 제외 2개 층에서\n소형 비상식량 등장", "추가 1개 층에서 더 등장"),
-            Create(TraitId.Physical, TraitTier.Tier2, "Physical", "힘 +1", "힘 +2"),
-            Create(TraitId.Greed, TraitTier.Tier2, "Greed", "골드 획득량 1.25배", "골드 획득량 1.5배"),
-            Create(TraitId.Lightfoot, TraitTier.Tier2, "Lightfoot", "주변 탐색 확률 1.5배", "주변 탐색 확률 2배"),
-            Create(TraitId.Trinket, TraitTier.Tier3, "Trinket", "반지 효율 1.25배", "반지 효율 1.5배"),
-            Create(TraitId.HeavyBlow, TraitTier.Tier3, "HeavyBlow", "기본 공격 데미지 +1", "기본 공격 데미지 +1~2"),
-            Create(TraitId.EagleEye, TraitTier.Tier3, "Eagle Eye", "시야 +1", "시야 +2")
+            Create(TraitId.Appraisal, TraitTier.Tier1),
+            Create(TraitId.Healthy_Body, TraitTier.Tier1),
+            Create(TraitId.Survivalist, TraitTier.Tier1),
+            Create(TraitId.Physical, TraitTier.Tier2),
+            Create(TraitId.Greed, TraitTier.Tier2),
+            Create(TraitId.Lightfoot, TraitTier.Tier2),
+            Create(TraitId.Trinket, TraitTier.Tier3),
+            Create(TraitId.HeavyBlow, TraitTier.Tier3),
+            Create(TraitId.EagleEye, TraitTier.Tier3)
         };
     }
 
-    private static TraitData Create(TraitId id, TraitTier tier, string displayName, string level1Description, string level2Description)
+    private static TraitData Create(TraitId id, TraitTier tier)
     {
         return new TraitData
         {
             id = id,
-            tier = tier,
-            displayName = displayName,
-            level1Description = level1Description,
-            level2Description = level2Description
+            tier = tier
         };
     }
 }

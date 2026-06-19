@@ -24,7 +24,7 @@ public class PlayerStatsView : MonoBehaviour
     [SerializeField] private TMP_Text summaryText;
 
     [Header("개별 텍스트")]
-    [Tooltip("체력을 표시할 Text입니다. 예: 체력 80/100")]
+    [Tooltip("체력 수치만 표시할 Text입니다. 라벨은 별도 LocalizedText가 담당합니다. 예: 80/100")]
     [SerializeField] private TMP_Text healthText;
 
     [Tooltip("힘 수치를 표시할 Text입니다.")]
@@ -45,11 +45,11 @@ public class PlayerStatsView : MonoBehaviour
     [Tooltip("방어력 수치를 표시할 Text입니다.")]
     [SerializeField] private TMP_Text defenseText;
 
-    [Tooltip("회피율을 표시할 Text입니다. 예: 회피 10%")]
+    [Tooltip("회피율 수치만 표시할 Text입니다. 예: 10%")]
     [SerializeField] private TMP_Text evasionText;
     [Tooltip("공격력을 표시할 Text입니다.")]
     [SerializeField] private TMP_Text attackText;
-    [Tooltip("명중률을 표시할 Text입니다. 예: 명중률 85%")]
+    [Tooltip("명중률 수치만 표시할 Text입니다. 예: 85%")]
     [SerializeField] private TMP_Text accuracyText;
 
     /// <summary>
@@ -194,16 +194,16 @@ public class PlayerStatsView : MonoBehaviour
             : "-";
 
 
-        SetText(healthText, $"체력 {health}");
-        SetText(strengthText, $"힘 {strength}");
-        SetText(moveSpeedText, $"이동 속도 {moveSpeed}");
-        SetText(attackSpeedText, $"공격 속도 {attackSpeed}");
-        SetText(levelText, $"레벨 {level}");
-        SetText(defenseText, $"방어력 {defense}");
-        SetText(evasionText, $"회피 {evasion}");
-        SetText(expText, $"EXP {exp}");
-        SetText(attackText, $"공격력 {attack}");
-        SetText(accuracyText, $"명중률 {accuracy}");
+        SetText(healthText, health);
+        SetText(strengthText, strength);
+        SetText(moveSpeedText, moveSpeed);
+        SetText(attackSpeedText, attackSpeed);
+        SetText(levelText, level);
+        SetText(defenseText, defense);
+        SetText(evasionText, evasion);
+        SetText(expText, exp);
+        SetText(attackText, attack);
+        SetText(accuracyText, accuracy);
 
         SetText(summaryText,
             $"명중률 {accuracy}\n" +

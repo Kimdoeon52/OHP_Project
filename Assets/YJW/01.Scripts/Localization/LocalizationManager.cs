@@ -34,6 +34,10 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "게임 종료" },
             { Language.English, "Quit" }
         }},
+        { "msg_게임종료", new Dictionary<Language, string> {
+            { Language.Korean, "게임을 종료 \r\n하시겠습니까?" },
+            { Language.English, "Are you sure you\r\nwant to quit?" }
+        }},
         //------------------------------------------ 세팅창 왼쪽 탭
         { "msg_시스템", new Dictionary<Language, string> {
             { Language.Korean, "시스템" },
@@ -50,6 +54,14 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
         { "bt_저작권", new Dictionary<Language, string> {
             { Language.Korean, "저작권" },
             { Language.English, "License" }
+        }},
+        { "bt_메인화면", new Dictionary<Language, string> {
+            { Language.Korean, "메인화면" },
+            { Language.English, "Main Menu" }
+        }},
+        { "msg_메인화면", new Dictionary<Language, string> {
+            { Language.Korean, "메인 화면으로 돌아 \r\n가시겠습니까?" },
+            { Language.English, "Are you sure you want to\nreturn to the main menu?" }
         }},
         //------------------------------------------ 세팅창 오디오 설정
         { "msg_전체볼륨", new Dictionary<Language, string> {
@@ -110,10 +122,100 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "퀵슬롯" },
             { Language.English, "Quick Slot" }
         }},
+        //------------------------------------------ 장비칸 & 스탯
+        { "msg_장비칸스탯", new Dictionary<Language, string> {
+            { Language.Korean, "장비칸 & 스탯" },
+            { Language.English, "Equipment & Stats" }
+        }},
+        { "msg_레벨", new Dictionary<Language, string> {
+            { Language.Korean, "레벨" },
+            { Language.English, "LV" }
+        }},
+        { "msg_경험치", new Dictionary<Language, string> {
+            { Language.Korean, "경험치" },
+            { Language.English, "Experience" }
+        }},
+        { "msg_체력", new Dictionary<Language, string> {
+            { Language.Korean, "체력" },
+            { Language.English, "HP" }
+        }},
+        { "msg_공격력", new Dictionary<Language, string> {
+            { Language.Korean, "공격력" },
+            { Language.English, "Damage" }
+        }},
+        { "msg_공격속도", new Dictionary<Language, string> {
+            { Language.Korean, "공격 속도" },
+            { Language.English, "Attack Speed" }
+        }},
+        { "msg_방어력", new Dictionary<Language, string> {
+            { Language.Korean, "방어력" },
+            { Language.English, "Defense" }
+        }},
+        { "msg_명중률", new Dictionary<Language, string> {
+            { Language.Korean, "명중률" },
+            { Language.English, "Accuracy" }
+        }},
+        { "msg_이동속도", new Dictionary<Language, string> {
+            { Language.Korean, "이동 속도" },
+            { Language.English, "Move Speed" }
+        }},
+        { "msg_회피", new Dictionary<Language, string> {
+            { Language.Korean, "회피" },
+            { Language.English, "Evasion" }
+        }},
+        { "msg_힘", new Dictionary<Language, string> {
+            { Language.Korean, "힘" },
+            { Language.English, "STR" }
+        }},
+        { "msg_허기", new Dictionary<Language, string> {
+            { Language.Korean, "허기" },
+            { Language.English, "Hunger" }
+        }},
+        //------------------------------------------ 플레이어 특성
+        { "msg_감정", new Dictionary<Language, string> {
+            { Language.Korean, "감정\n장착 무기 감정 속도 2배,\n갑옷 1.5배, 무기 즉시 감정,\n갑옷 1.5배" },
+            { Language.English, "Appraisal\nEquipped weapon identify speed ×2,\nArmor ×1.5, Weapon instant identify,\nArmor ×1.5" }
+        }},
+        { "msg_건강한몸", new Dictionary<Language, string> {
+            { Language.Korean, "건강한 몸\n배고픔/보통 상태 체력 회복 1.25배, 배고픔/보통 상태 체력 회복 1.5배" },
+            { Language.English, "Healthy Body\nHP regen ×1.25 while Hungry/Normal, HP regen ×1.5 while Hungry/Normal" }
+        }},
+        { "msg_비상식량", new Dictionary<Language, string> {
+            { Language.Korean, "비상 식량\n다음 층부터 보스층 제외 2개 층에서\n소형 비상식량 등장, 추가 1개 층에서 더 등장" },
+            { Language.English, "Survivalist\nSmall emergency rations spawn on 2 non-boss floors starting next floor,\n+1 additional floor" }
+        }},
+        { "msg_운동", new Dictionary<Language, string> {
+            { Language.Korean, "운동\n힘 +1, 힘 +2" },
+            { Language.English, "Physical\nSTR +1, STR +2" }
+        }},
+        { "msg_탐욕", new Dictionary<Language, string> {
+            { Language.Korean, "탐욕\n골드 획득량 1.25배, 골드 획득량 1.5배" },
+            { Language.English, "Greed\nGold gain ×1.25, Gold gain ×1.5" }
+        }},
+        { "msg_조심스러운발걸음", new Dictionary<Language, string> {
+            { Language.Korean, "조심스러운 발걸음\n주변 탐색 확률 1.5배, 주변 탐색 확률 2배" },
+            { Language.English, "Careful Steps\nSearch chance ×1.5, Search chance ×2" }
+        }},
+        { "msg_액세서리중독", new Dictionary<Language, string> {
+            { Language.Korean, "액세서리 중독\n반지 효율 1.25배, 반지 효율 1.5배" },
+            { Language.English, "Ring Addiction\nRing efficiency ×1.25, Ring efficiency ×1.5" }
+        }},
+        { "msg_강타", new Dictionary<Language, string> {
+            { Language.Korean, "강타\n기본 공격 데미지 +1, 기본 공격 데미지 +1~2" },
+            { Language.English, "Smash\nBase attack damage +1, Base attack damage +1~2" }
+        }},
+        { "msg_넓은시야", new Dictionary<Language, string> {
+            { Language.Korean, "넓은 시야\n시야 +1, 시야 +2" },
+            { Language.English, "Wide Vision\nVision +1, Vision +2" }
+        }},
         //------------------------------------------ 인게임 버튼
         { "bt_튜토리얼스킵", new Dictionary<Language, string> {
             { Language.Korean, "튜토리얼 스킵" },
             { Language.English, "Skip Tutorial" }
+        }},
+        { "bt_취소", new Dictionary<Language, string> {
+            { Language.Korean, "취소" },
+            { Language.English, "Cancel" }
         }},
         //------------------------------------------ 튜토리얼 대사
         { "msg_튜토리얼대사1", new Dictionary<Language, string> {

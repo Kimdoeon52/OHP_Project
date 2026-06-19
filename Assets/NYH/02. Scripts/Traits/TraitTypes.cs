@@ -12,7 +12,7 @@ public enum TraitTier
 
 /// <summary>
 /// 특성을 코드에서 구분하기 위한 고정 ID입니다.
-/// 화면에 보이는 이름은 TraitData.displayName이 담당하므로, 여기 enum 이름은 저장/효과 연결 안정성을 우선합니다.
+/// 화면에 보이는 이름/설명은 LocalizationManager가 담당하므로, 여기 enum 이름은 저장/효과 연결 안정성을 우선합니다.
 /// </summary>
 public enum TraitId
 {
@@ -49,12 +49,5 @@ public class TraitData
     [Tooltip("상세 패널에 표시할 아이콘입니다. 비워두면 TraitUIController가 오른쪽 버튼 아이콘을 대신 사용합니다.")]
     public Sprite icon;
 
-    [Tooltip("상세 패널에 표시할 특성 이름입니다. 예: Appraisal, Physical, HeavyBlow")]
-    public string displayName;
-
-    [Tooltip("특성을 1레벨까지 올렸을 때 보여줄 설명입니다. 줄바꿈은 \\n 또는 TextArea에서 직접 입력하면 됩니다.")]
-    [TextArea(2, 4)] public string level1Description;
-
-    [Tooltip("특성을 2레벨까지 올렸을 때 보여줄 설명입니다. 최대 레벨 설명이므로 최종 효과 기준으로 작성합니다.")]
-    [TextArea(2, 4)] public string level2Description;
+    // 이름/설명 텍스트는 LocalizationManager의 키로 조회한다 (TraitController.GetTraitDisplayText 참고).
 }

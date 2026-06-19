@@ -37,7 +37,7 @@ public class TraitUIController : MonoBehaviour
     [Tooltip("왼쪽 상세 영역에 표시되는 특성 이름 텍스트입니다.")]
     [SerializeField] private TMP_Text selectedTraitNameText;
 
-    [Tooltip("왼쪽 설명칸 텍스트입니다. 현재 효과와 강화 시 효과를 함께 표시합니다.")]
+    [Tooltip("왼쪽 설명칸 텍스트입니다. 1/2레벨 효과를 합친 로컬라이즈 텍스트를 표시합니다.")]
     [SerializeField] private TMP_Text selectedTraitDescriptionText;
 
     [Tooltip("하단 스킬 포인트 숫자 텍스트입니다. 선택한 특성의 티어 포인트만 표시합니다.")]
@@ -84,6 +84,9 @@ public class TraitUIController : MonoBehaviour
         if (traitController != null)
             traitController.OnTraitChanged += Refresh;
 
+        if (LocalizationManager.Instance != null)
+            LocalizationManager.Instance.OnLanguageChanged += Refresh;
+
         // 패널을 처음 열었을 때 아무것도 선택되지 않은 빈 화면이 나오지 않도록 첫 번째 특성을 자동 선택한다.
         SelectInitialTrait();
         Refresh();
@@ -94,6 +97,9 @@ public class TraitUIController : MonoBehaviour
         // 비활성화 때 이벤트 구독을 풀어야 패널을 여러 번 열고 닫아도 Refresh가 중복 호출되지 않는다.
         if (traitController != null)
             traitController.OnTraitChanged -= Refresh;
+
+        if (LocalizationManager.Instance != null)
+            LocalizationManager.Instance.OnLanguageChanged -= Refresh;
     }
 
     public void SelectTrait(TraitId traitId)
@@ -174,11 +180,13 @@ public class TraitUIController : MonoBehaviour
             selectedTraitIcon.enabled = icon != null;
         }
 
+        SplitDisplayText(traitController.GetTraitDisplayText(_selectedTraitId), out string name, out string description);
+
         if (selectedTraitNameText != null)
-            selectedTraitNameText.text = data.displayName;
+            selectedTraitNameText.text = name;
 
         if (selectedTraitDescriptionText != null)
-            selectedTraitDescriptionText.text = BuildDescription(data, level);
+            selectedTraitDescriptionText.text = description;
 
         if (skillPointText != null)
             skillPointText.text = traitController.GetPoint(data.tier).ToString();
@@ -214,25 +222,26 @@ public class TraitUIController : MonoBehaviour
         upgradeButton.interactable = canUpgrade;
     }
 
-    private string BuildDescription(TraitData data, int level)
+    private void SplitDisplayText(string fullText, out string name, out string description)
     {
-        // 0레벨에서는 현재 효과가 없고, 다음 강화 효과를 보여준다.
-        // 1레벨부터는 현재 효과와 다음 효과를 함께 보여줘서 포인트 소비 전 비교할 수 있게 한다.
-        string current = level switch
+        // LocalizationManager 텍스트는 "이름\n레벨1 효과, 레벨2 효과" 형태로 합쳐져 있어 첫 줄만 이름으로 떼어낸다.
+        if (string.IsNullOrEmpty(fullText))
         {
-            0 => "미습득",
-            1 => data.level1Description,
-            _ => data.level2Description
-        };
+            name = string.Empty;
+            description = string.Empty;
+            return;
+        }
 
-        string next = level switch
+        int newlineIndex = fullText.IndexOf('\n');
+        if (newlineIndex < 0)
         {
-            0 => data.level1Description,
-            1 => data.level2Description,
-            _ => "최대 레벨입니다."
-        };
+            name = fullText;
+            description = string.Empty;
+            return;
+        }
 
-        return $"{data.displayName}\n\n현재\n{current}\n\n강화시\n{next}";
+        name = fullText.Substring(0, newlineIndex);
+        description = fullText.Substring(newlineIndex + 1);
     }
 
     private Sprite FindButtonIcon(TraitId traitId)
