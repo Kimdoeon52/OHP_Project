@@ -16,12 +16,12 @@ public class ShieldWeapon : CloseWeapon
 
     public override string GetToolTipStats()
     {
-        return $"[{Name}]  <color=red>미감정</color>\n" +
+        return $"[{LocalizedName}]  <color=red>{LocalizationManager.GetOrDefault("msg_미감정", "Unidentified")}</color>\n" +
                $"--------------------\n" +
-               $"{Description}\n" +
-               $"착용 힘: {CanUseStrength}\n" +
-               $"데미지: {MinDamage}~{MaxDamage}" +
-               $"공격속도: {AttackSpeed}" +
-               $"받은 피해 감소: {minMinusDamage}~{maxMinusDamage}";
+               $"{LocalizedDescription}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}: {CanUseStrength}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_T공격력", "Damage")}: {MinDamage}~{MaxDamage}" +
+               $"{LocalizationManager.GetOrDefault("msg_T공격속도", "Attack Speed")}: {AttackSpeed}" +
+               $"{LocalizationManager.GetOrDefault("msg_받은피해감소", "Block Reduction")}: {minMinusDamage}~{maxMinusDamage}";
     }
 }

@@ -15,13 +15,13 @@ public class WeaponInstance : EquipmentInstance
         if (!isAnalyzed)
             return Weapon.GetToolTipStats();
 
-        return $"[{Weapon.Name}] {(enhanceLevel > 0 ? $"<color=yellow>+{enhanceLevel}</color>" : "")}\n" +
+        return $"[{Weapon.LocalizedName}] {(enhanceLevel > 0 ? $"<color=yellow>+{enhanceLevel}</color>" : "")}\n" +
                $"--------------------\n" +
-               $"{Weapon.Description}\n" +
-               $"착용 힘: {Weapon.CanUseStrength}\n" +
-               $"데미지: {GetMinDamage()}~{GetMaxDamage()}" + 
-               $"공격속도: {Weapon.AttackSpeed}" +
-               $"{(curse != null ? $"\n{curse.CurseName}: {curse.Description}" : "")}" +
-               $"{(magic != null ? $"\n{magic.MagicName}: {magic.Description}" : "")}";
+               $"{Weapon.LocalizedDescription}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}: {Weapon.CanUseStrength}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_T공격력", "Damage")}: {GetMinDamage()}~{GetMaxDamage()}" +
+               $"{LocalizationManager.GetOrDefault("msg_T공격속도", "Attack Speed")}: {Weapon.AttackSpeed}" +
+               $"{(curse != null ? $"\n{curse.LocalizedName}: {curse.LocalizedDescription}" : "")}" +
+               $"{(magic != null ? $"\n{magic.LocalizedName}: {magic.LocalizedDescription}" : "")}";
     }
 }

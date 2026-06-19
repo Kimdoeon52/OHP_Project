@@ -26,9 +26,9 @@ public class TorchData : ItemBase
 
     public override string GetToolTipStats()
     {
-        return $"[{Name}]\n" +
+        return $"[{LocalizedName}]\n" +
                $"--------------------\n" +
-               $"{Description}\n" +
-               $"시야 +{visionBonus} / {duration}초";
+               $"{LocalizedDescription}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_시야", "Vision")} +{visionBonus} / {duration}{LocalizationManager.GetOrDefault("msg_초", "s")}";
     }
 }

@@ -34,6 +34,9 @@ public class ItemBase : ScriptableObject
     public int Id => id;
     public string Name { get => itemName; set => itemName = value; }
     public string Description { get => description; set => description = value; }
+    // 툴팁용 이름/설명은 LocalizationManager의 item_name_<id>/item_desc_<id> 키로 조회한다.
+    public string LocalizedName => LocalizationManager.GetOrDefault($"item_name_{id}", itemName);
+    public string LocalizedDescription => LocalizationManager.GetOrDefault($"item_desc_{id}", description);
     public Sprite Icon { get => icon; set => icon = value; }
     public ItemType ItemType { get => itemType; set => itemType = value; }
     public EquipmentSlot Slot => slot;
@@ -45,9 +48,9 @@ public class ItemBase : ScriptableObject
 
     public virtual void Use() { }
     public virtual void Use(ItemInstance target) { }
-    public virtual string GetToolTipStats() { 
-        return $"{itemName} \n + " +
-               $"{Description}"; 
+    public virtual string GetToolTipStats() {
+        return $"{LocalizedName} \n + " +
+               $"{LocalizedDescription}";
     }
 	public virtual ItemInstance CreateInstance(){ return new ItemInstance { data = this }; }
 }

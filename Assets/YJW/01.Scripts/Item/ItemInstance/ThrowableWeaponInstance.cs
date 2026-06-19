@@ -21,13 +21,13 @@ public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
         string countStr = count > 0 ? $" ×{count}" : "";
         string duraStr = count > 0 ? string.Join(" / ", currentDurabilities) : "-";
 
-        return $"{weapon.Name}{enhanceStr}{countStr}\n" +
+        return $"{weapon.LocalizedName}{enhanceStr}{countStr}\n" +
                $"─────────────\n" +
-               $"{weapon.Description}\n" +
+               $"{weapon.LocalizedDescription}\n" +
                $"\n" +
-               $"데미지   {GetMinDamage()}~{GetMaxDamage()}\n" +
-               $"힘 요구   {weapon.CanUseStrength}\n" +
-               $"내구도   {duraStr}";
+               $"{LocalizationManager.GetOrDefault("msg_T공격력", "Damage")}   {GetMinDamage()}~{GetMaxDamage()}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}   {weapon.CanUseStrength}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_내구도", "Durability")}   {duraStr}";
     }
 
     public void Throw(Vector2Int targetCell)

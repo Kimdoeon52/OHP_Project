@@ -22,6 +22,9 @@ public class MagicData : ScriptableObject
 	public string MagicName => magicName;
 	public string Description => description;
 	public MagicType Type => magicType;
+	// 마법 이름/설명은 MagicType 1:1 매핑이라 enum 이름을 그대로 키로 쓴다.
+	public string LocalizedName => LocalizationManager.GetOrDefault($"item_name_magic_{magicType}", magicName);
+	public string LocalizedDescription => LocalizationManager.GetOrDefault($"item_desc_magic_{magicType}", description);
 
 	private bool _focusGuaranteed = false;
     private float _chaseEndTime = -1f;

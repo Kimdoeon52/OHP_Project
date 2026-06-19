@@ -21,6 +21,7 @@ public class RingData : ItemBase
 	public int CanUseStrength => canUseStrength;
     public int Value => value;
 	public string EffectDescription => effectDescription;
+	public string LocalizedEffect => LocalizationManager.GetOrDefault($"item_effect_{Id}", effectDescription);
 
 	private void OnEquip()
     {
@@ -54,10 +55,10 @@ public class RingData : ItemBase
 
     public override string GetToolTipStats()
     {
-        return $"[{Name}]  <color=red>미감정</color>\n" +
+        return $"[{LocalizedName}]  <color=red>{LocalizationManager.GetOrDefault("msg_미감정", "Unidentified")}</color>\n" +
                $"--------------------\n" +
-               $"{Description}\n" +
-               $"착용 힘: {CanUseStrength}\n" +
-               $"효과: {EffectDescription} +{value}";
+               $"{LocalizedDescription}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}: {CanUseStrength}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_효과", "Effect")}: {LocalizedEffect} +{value}";
     }
 }

@@ -16,12 +16,12 @@ public class ArmorInstance : EquipmentInstance
         if (!isAnalyzed)
             return Armor.GetToolTipStats();
 
-        return $"[{Armor.Name}] {(enhanceLevel > 0 ? $"<color=yellow>+{enhanceLevel}</color>" : "")}\n" +
+        return $"[{Armor.LocalizedName}] {(enhanceLevel > 0 ? $"<color=yellow>+{enhanceLevel}</color>" : "")}\n" +
                $"--------------------\n" +
-               $"{Armor.Description}\n" +
-               $"착용 힘: {Armor.CanUseStrength}\n" +
-               $"피해 감소: {GetMinDefense()}~{GetMaxDefense()}" +
-               $"{(curse != null ? $"\n{curse.CurseName}: {curse.Description}" : "")}" +
-               $"{(magic != null ? $"\n{magic.MagicName}: {magic.Description}" : "")}";
+               $"{Armor.LocalizedDescription}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}: {Armor.CanUseStrength}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_피해감소", "Damage Reduction")}: {GetMinDefense()}~{GetMaxDefense()}" +
+               $"{(curse != null ? $"\n{curse.LocalizedName}: {curse.LocalizedDescription}" : "")}" +
+               $"{(magic != null ? $"\n{magic.LocalizedName}: {magic.LocalizedDescription}" : "")}";
     }
 }

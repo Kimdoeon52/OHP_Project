@@ -25,9 +25,9 @@ public class FragmentsOfLife : ItemBase
 
     public override string GetToolTipStats()
     {
-        return $"[{Name}]\n" +
+        return $"[{LocalizedName}]\n" +
                $"--------------------\n" +
-               $"{Description}\n" +
-               $"효과: 최대 체력의 1/20 회복";
+               $"{LocalizedDescription}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_생명파편효과", "Effect: Heals 1/20 of Max HP")}";
     }
 }

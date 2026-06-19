@@ -62,11 +62,11 @@ public class RingInstance : EquipmentInstance
         if (!isAnalyzed)
             return Ring.GetToolTipStats();
 
-        return $"[{Ring.Name}] {(enhanceLevel > 0 ? $"<color=yellow>+{enhanceLevel}</color>" : "")}\n" +
+        return $"[{Ring.LocalizedName}] {(enhanceLevel > 0 ? $"<color=yellow>+{enhanceLevel}</color>" : "")}\n" +
                $"--------------------\n" +
-               $"{Ring.Description}\n" +
-               $"착용 힘: {Ring.CanUseStrength}\n" +
-               $"효과: {Ring.EffectDescription} {(Ring.Value >= 0 ? "+" : "")}{Ring.Value}";
+               $"{Ring.LocalizedDescription}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}: {Ring.CanUseStrength}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_효과", "Effect")}: {Ring.LocalizedEffect} {(Ring.Value >= 0 ? "+" : "")}{Ring.Value}";
     }
 
 }

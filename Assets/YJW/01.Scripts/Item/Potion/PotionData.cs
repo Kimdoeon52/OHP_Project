@@ -73,25 +73,14 @@ public class PotionData : ItemBase
 
     public override string GetToolTipStats()
     {
-        string effect = potionType switch
-        {
-            PotionType.HP         => $"체력 +{value}",
-            PotionType.strength   => $"힘 +{value}",
-            PotionType.sight      => "시야 전체 공개",
-            PotionType.experience => $"경험치 +{value}",
-            PotionType.fire       => "착탄 범위 화염 피해",
-            PotionType.ice        => "착탄 범위 빙결 피해",
-            PotionType.moveSpeed  => $"이동속도 +{value}",
-            PotionType.levitation => $"부유 {value}초 / Hazard 지형 무시",
-            PotionType.purify     => $"독·둔화 즉시 해제 / {value}초간 면역",
-            _                     => Description
-        };
+        string template = LocalizationManager.GetOrDefault($"item_potionEffect_{potionType}", LocalizedDescription);
+        string effect = string.Format(template, value);
 
-        return $"[{Name}]\n" +
+        return $"[{LocalizedName}]\n" +
                $"─────────────\n" +
-               $"{Description}\n" +
+               $"{LocalizedDescription}\n" +
                $"\n" +
-               $"효과   {effect}";
+               $"{LocalizationManager.GetOrDefault("msg_효과", "Effect")}   {effect}";
     }
 
     private void AddNYHStat(NYHStatType type)

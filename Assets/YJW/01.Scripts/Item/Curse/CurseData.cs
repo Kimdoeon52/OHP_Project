@@ -30,6 +30,9 @@ public class CurseData : ScriptableObject
     public string Description => description;
     public CurseType Type => curseType;
     public EquipmentSlot TargetSlot => targetSlot;
+    // 저주 이름/설명은 CurseType 1:1 매핑이라 enum 이름을 그대로 키로 쓴다.
+    public string LocalizedName => LocalizationManager.GetOrDefault($"item_name_curse_{curseType}", curseName);
+    public string LocalizedDescription => LocalizationManager.GetOrDefault($"item_desc_curse_{curseType}", description);
 
     // 장착 시 호출 (둔화 저주)
     public void OnEquip()

@@ -24,11 +24,11 @@ public class CloseWeapon : ItemBase
 
     public override string GetToolTipStats()
     {
-        return $"[{Name}]  <color=red>미감정</color>\n" +
+        return $"[{LocalizedName}]  <color=red>{LocalizationManager.GetOrDefault("msg_미감정", "Unidentified")}</color>\n" +
                $"--------------------\n" +
-               $"{Description}\n" +
-               $"착용 힘: {CanUseStrength}\n" +
-               $"데미지: {MinDamage}~{MaxDamage}" +
-               $"공격속도: {AttackSpeed}";
+               $"{LocalizedDescription}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}: {CanUseStrength}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_T공격력", "Damage")}: {MinDamage}~{MaxDamage}" +
+               $"{LocalizationManager.GetOrDefault("msg_T공격속도", "Attack Speed")}: {AttackSpeed}";
     }
 }

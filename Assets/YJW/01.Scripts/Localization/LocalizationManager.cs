@@ -321,7 +321,543 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "드디어 당신의 여정의 끝이 보인다." },
             { Language.English, "At last, the end of your journey\r\ncomes into sight." }
         }},
+        //------------------------------------------ 툴팁
+        { "msg_착용힘", new Dictionary<Language, string> {
+            { Language.Korean, "착용 힘" },
+            { Language.English, "STR Required" }
+        }},
+        { "msg_T공격력", new Dictionary<Language, string> {
+            { Language.Korean, "공격력" },
+            { Language.English, "Damage" }
+        }},
+        { "msg_피해감소", new Dictionary<Language, string> {
+            { Language.Korean, "피해 감소" },
+            { Language.English, "Damage Reduction" }
+        }},
+        { "msg_T공격속도", new Dictionary<Language, string> {
+            { Language.Korean, "공격속도" },
+            { Language.English, "Attack Speed" }
+        }},
+        { "msg_효과", new Dictionary<Language, string> {
+            { Language.Korean, "효과" },
+            { Language.English, "Effect" }
+        }},
+        { "msg_미감정", new Dictionary<Language, string> {
+            { Language.Korean, "미감정" },
+            { Language.English, "Unidentified" }
+        }},
+        { "msg_받은피해감소", new Dictionary<Language, string> {
+            { Language.Korean, "받은 피해 감소" },
+            { Language.English, "Block Reduction" }
+        }},
+        { "msg_내구도", new Dictionary<Language, string> {
+            { Language.Korean, "내구도" },
+            { Language.English, "Durability" }
+        }},
+        { "msg_시야", new Dictionary<Language, string> {
+            { Language.Korean, "시야" },
+            { Language.English, "Vision" }
+        }},
+        { "msg_초", new Dictionary<Language, string> {
+            { Language.Korean, "초" },
+            { Language.English, "s" }
+        }},
+        { "msg_생명파편효과", new Dictionary<Language, string> {
+            { Language.Korean, "효과: 최대 체력의 1/20 회복" },
+            { Language.English, "Effect: Heals 1/20 of Max HP" }
+        }},
+        //------------------------------------------ 아이템 - 포션
+        { "item_name_2001", new Dictionary<Language, string> {
+            { Language.Korean, "회복 포션" },
+            { Language.English, "Healing Potion" }
+        }},
+        { "item_desc_2001", new Dictionary<Language, string> {
+            { Language.Korean, "생명이 돌아온다. 죽기 전에 마셔라." },
+            { Language.English, "Life flows back into you. Drink it before you die." }
+        }},
+        { "item_name_2002", new Dictionary<Language, string> {
+            { Language.Korean, "화염 포션" },
+            { Language.English, "Fire Potion" }
+        }},
+        { "item_desc_2002", new Dictionary<Language, string> {
+            { Language.Korean, "던지는 순간, 불길이 사방으로 번진다. 적도 나도 예외는 없다." },
+            { Language.English, "The moment it's thrown, flames spread in every direction. Neither friend nor foe is spared." }
+        }},
+        { "item_name_2003", new Dictionary<Language, string> {
+            { Language.Korean, "힘 포션" },
+            { Language.English, "Strength Potion" }
+        }},
+        { "item_desc_2003", new Dictionary<Language, string> {
+            { Language.Korean, "근육이 팽창하고 한계가 밀려난다. 더 무거운 것도 들어 올릴 수 있다." },
+            { Language.English, "Your muscles swell and your limits push outward. You can lift even heavier things." }
+        }},
+        { "item_name_2004", new Dictionary<Language, string> {
+            { Language.Korean, "서리 포션" },
+            { Language.English, "Frost Potion" }
+        }},
+        { "item_desc_2004", new Dictionary<Language, string> {
+            { Language.Korean, "냉기가 주변을 감싼다. 얼어붙은 자는 도망치지 못한다." },
+            { Language.English, "Cold wraps around the area. Those who freeze cannot flee." }
+        }},
+        { "item_name_2006", new Dictionary<Language, string> {
+            { Language.Korean, "신속 포션" },
+            { Language.English, "Haste Potion" }
+        }},
+        { "item_desc_2006", new Dictionary<Language, string> {
+            { Language.Korean, "발이 땅에 닿기도 전에 다음 발이 나간다. 10초간 바람처럼 달려라." },
+            { Language.English, "Your next step lands before the last one touches the ground. Run like the wind for 10 seconds." }
+        }},
+        { "item_name_2007", new Dictionary<Language, string> {
+            { Language.Korean, "부유 포션" },
+            { Language.English, "Levitation Potion" }
+        }},
+        { "item_desc_2007", new Dictionary<Language, string> {
+            { Language.Korean, "잠시 땅을 잊어라. 위험 지형도 발끝 아래 스쳐 지나간다." },
+            { Language.English, "Forget the ground for a while. Even hazardous terrain slips harmlessly beneath your feet." }
+        }},
+        { "item_name_2008", new Dictionary<Language, string> {
+            { Language.Korean, "정화 포션" },
+            { Language.English, "Purify Potion" }
+        }},
+        { "item_desc_2008", new Dictionary<Language, string> {
+            { Language.Korean, "독과 둔화가 몸 밖으로 빠져나간다. 10초간, 다시는 걸리지 않는다." },
+            { Language.English, "Poison and slow are flushed from your body. For 10 seconds, you won't be afflicted again." }
+        }},
+        //------------------------------------------ 아이템 - 포션 효과
+        { "item_potionEffect_HP", new Dictionary<Language, string> {
+            { Language.Korean, "체력 +{0}" },
+            { Language.English, "HP +{0}" }
+        }},
+        { "item_potionEffect_strength", new Dictionary<Language, string> {
+            { Language.Korean, "힘 +{0}" },
+            { Language.English, "STR +{0}" }
+        }},
+        { "item_potionEffect_sight", new Dictionary<Language, string> {
+            { Language.Korean, "시야 전체 공개" },
+            { Language.English, "Reveals the entire map" }
+        }},
+        { "item_potionEffect_experience", new Dictionary<Language, string> {
+            { Language.Korean, "경험치 +{0}" },
+            { Language.English, "EXP +{0}" }
+        }},
+        { "item_potionEffect_fire", new Dictionary<Language, string> {
+            { Language.Korean, "착탄 범위 화염 피해" },
+            { Language.English, "Fire damage in blast radius" }
+        }},
+        { "item_potionEffect_ice", new Dictionary<Language, string> {
+            { Language.Korean, "착탄 범위 빙결 피해" },
+            { Language.English, "Frost damage in blast radius" }
+        }},
+        { "item_potionEffect_moveSpeed", new Dictionary<Language, string> {
+            { Language.Korean, "이동속도 +{0}" },
+            { Language.English, "Move Speed +{0}" }
+        }},
+        { "item_potionEffect_levitation", new Dictionary<Language, string> {
+            { Language.Korean, "부유 {0}초 / Hazard 지형 무시" },
+            { Language.English, "Levitate {0}s / Ignores Hazard terrain" }
+        }},
+        { "item_potionEffect_purify", new Dictionary<Language, string> {
+            { Language.Korean, "독·둔화 즉시 해제 / {0}초간 면역" },
+            { Language.English, "Cures Poison & Slow instantly / {0}s Immunity" }
+        }},
+        //------------------------------------------ 아이템 - 스크롤
+        { "item_name_1001", new Dictionary<Language, string> {
+            { Language.Korean, "지도 스크롤" },
+            { Language.English, "Map Scroll" }
+        }},
+        { "item_desc_1001", new Dictionary<Language, string> {
+            { Language.Korean, "어둠 속 지형이 눈앞에 펼쳐진다. 함정도 피할 수 없다." },
+            { Language.English, "The terrain hidden in darkness unfolds before your eyes. Not even traps can hide." }
+        }},
+        { "item_name_1002", new Dictionary<Language, string> {
+            { Language.Korean, "강화 스크롤" },
+            { Language.English, "Reinforce Scroll" }
+        }},
+        { "item_desc_1002", new Dictionary<Language, string> {
+            { Language.Korean, "어둠의 기운이 씻겨 나간다. 저주 받은 장비를 다시 내 것으로." },
+            { Language.English, "The dark energy is washed away. Reclaim your cursed gear as your own." }
+        }},
+        { "item_name_1003", new Dictionary<Language, string> {
+            { Language.Korean, "감정 스크롤" },
+            { Language.English, "Appraise Scroll" }
+        }},
+        { "item_desc_1003", new Dictionary<Language, string> {
+            { Language.Korean, "봉인된 비밀을 드러낸다. 이 장비가 축복인지, 저주인지 알게 될 것이다." },
+            { Language.English, "It reveals a sealed secret. You'll learn whether this gear is a blessing or a curse." }
+        }},
+        { "item_name_1004", new Dictionary<Language, string> {
+            { Language.Korean, "정화 스크롤" },
+            { Language.English, "Purify Scroll" }
+        }},
+        { "item_desc_1004", new Dictionary<Language, string> {
+            { Language.Korean, "고대의 문자가 무기에 깃든다. 날은 더 예리해지고, 갑옷은 더 단단해진다." },
+            { Language.English, "Ancient script settles into the gear. The blade grows sharper, the armor grows tougher." }
+        }},
+        //------------------------------------------ 아이템 - 근접무기
+        { "item_name_5001", new Dictionary<Language, string> {
+            { Language.Korean, "소검" },
+            { Language.English, "Short Sword" }
+        }},
+        { "item_desc_5001", new Dictionary<Language, string> {
+            { Language.Korean, "모든 전사의 첫 번째 동반자. 가볍고 믿을 수 있다." },
+            { Language.English, "Every warrior's first companion. Light and dependable." }
+        }},
+        { "item_name_5002", new Dictionary<Language, string> {
+            { Language.Korean, "방패" },
+            { Language.English, "Shield" }
+        }},
+        { "item_desc_5002", new Dictionary<Language, string> {
+            { Language.Korean, "막는 것이 곧 공격이다. 강화될수록 차감되는 피해가 늘어난다." },
+            { Language.English, "To block is to strike back. The more it's enhanced, the more damage it cancels out." }
+        }},
+        { "item_name_5003", new Dictionary<Language, string> {
+            { Language.Korean, "검" },
+            { Language.English, "Sword" }
+        }},
+        { "item_desc_5003", new Dictionary<Language, string> {
+            { Language.Korean, "균형 잡힌 날. 힘과 속도, 어느 쪽도 포기하지 않았다." },
+            { Language.English, "A well-balanced blade. It sacrifices neither power nor speed." }
+        }},
+        { "item_name_5004", new Dictionary<Language, string> {
+            { Language.Korean, "쌍검" },
+            { Language.English, "Twin Swords" }
+        }},
+        { "item_desc_5004", new Dictionary<Language, string> {
+            { Language.Korean, "두 손으로 두 배를 베어낸다. 빠른 공격이 적의 반격을 허용하지 않는다." },
+            { Language.English, "Two blades cut twice as deep. Fast strikes leave no room for retaliation." }
+        }},
+        { "item_name_5005", new Dictionary<Language, string> {
+            { Language.Korean, "장검" },
+            { Language.English, "Longsword" }
+        }},
+        { "item_desc_5005", new Dictionary<Language, string> {
+            { Language.Korean, "긴 날이 주는 위압감. 강한 힘을 가진 자만이 다룰 수 있다." },
+            { Language.English, "The long blade commands respect. Only the truly strong can wield it." }
+        }},
+        { "item_name_5006", new Dictionary<Language, string> {
+            { Language.Korean, "특대 방패" },
+            { Language.English, "Tower Shield" }
+        }},
+        { "item_desc_5006", new Dictionary<Language, string> {
+            { Language.Korean, "거대한 강철 벽. 강화할수록 막을 수 없는 공격이 없어진다." },
+            { Language.English, "A massive wall of steel. The more it's enhanced, the fewer attacks can get through." }
+        }},
+        { "item_name_5007", new Dictionary<Language, string> {
+            { Language.Korean, "특대검" },
+            { Language.English, "Greatsword" }
+        }},
+        { "item_desc_5007", new Dictionary<Language, string> {
+            { Language.Korean, "한 번의 일격으로 승부를 낸다. 손에 쥔 순간, 적이 작아 보인다." },
+            { Language.English, "One strike decides everything. The moment you grip it, your enemies look small." }
+        }},
+        { "item_name_5008", new Dictionary<Language, string> {
+            { Language.Korean, "시미터" },
+            { Language.English, "Scimitar" }
+        }},
+        { "item_desc_5008", new Dictionary<Language, string> {
+            { Language.Korean, "굽은 날이 살을 훑고 지나간다. 날렵함과 파괴력을 동시에 갖췄다." },
+            { Language.English, "The curved blade sweeps through flesh. Agile and devastating in equal measure." }
+        }},
+        //------------------------------------------ 아이템 - 투척무기
+        { "item_name_3001", new Dictionary<Language, string> {
+            { Language.Korean, "투척용 칼" },
+            { Language.English, "Throwing Knife" }
+        }},
+        { "item_desc_3001", new Dictionary<Language, string> {
+            { Language.Korean, "가볍고 빠르다. 거리를 두고 싸우는 가장 기본적인 선택." },
+            { Language.English, "Light and quick. The most basic choice for fighting at range." }
+        }},
+        { "item_name_3002", new Dictionary<Language, string> {
+            { Language.Korean, "수리검" },
+            { Language.English, "Shuriken" }
+        }},
+        { "item_desc_3002", new Dictionary<Language, string> {
+            { Language.Korean, "바람을 가르듯 날아간다. 누구보다 빠르게 손을 떠난다." },
+            { Language.English, "It cuts through the wind. Nothing leaves your hand faster." }
+        }},
+        { "item_name_3003", new Dictionary<Language, string> {
+            { Language.Korean, "작살" },
+            { Language.English, "Harpoon" }
+        }},
+        { "item_desc_3003", new Dictionary<Language, string> {
+            { Language.Korean, "묵직하게 꽂힌다. 한 번의 투척으로 깊은 상처를 남긴다." },
+            { Language.English, "It lands with brutal weight, leaving a deep wound with a single throw." }
+        }},
+        { "item_name_3004", new Dictionary<Language, string> {
+            { Language.Korean, "올가미" },
+            { Language.English, "Snare" }
+        }},
+        { "item_desc_3004", new Dictionary<Language, string> {
+            { Language.Korean, "발목을 잡아라. 2초간 적의 속도를 반으로 끊어낸다." },
+            { Language.English, "Catch them by the ankle. Halves the enemy's speed for 2 seconds." }
+        }},
+        { "item_name_3005", new Dictionary<Language, string> {
+            { Language.Korean, "쿠나이" },
+            { Language.English, "Kunai" }
+        }},
+        { "item_desc_3005", new Dictionary<Language, string> {
+            { Language.Korean, "눈치채기 전에 꽂힌다. 인식하지 못한 적에게 치명적이다." },
+            { Language.English, "It lands before they notice. Lethal against an unaware enemy." }
+        }},
+        { "item_name_3006", new Dictionary<Language, string> {
+            { Language.Korean, "투척용 도끼" },
+            { Language.English, "Throwing Axe" }
+        }},
+        { "item_desc_3006", new Dictionary<Language, string> {
+            { Language.Korean, "날이 살을 파고든다. 3초간 흘러내리는 피가 멈추지 않는다." },
+            { Language.English, "The blade digs into flesh. The bleeding won't stop for 3 seconds." }
+        }},
+        { "item_name_3007", new Dictionary<Language, string> {
+            { Language.Korean, "투창" },
+            { Language.English, "Javelin" }
+        }},
+        { "item_desc_3007", new Dictionary<Language, string> {
+            { Language.Korean, "긴 사정거리와 강한 관통력. 믿음직한 마지막 수단." },
+            { Language.English, "Long range and brutal penetration. A reliable last resort." }
+        }},
+        //------------------------------------------ 아이템 - 반지
+        { "item_name_7001", new Dictionary<Language, string> {
+            { Language.Korean, "신속의 반지" },
+            { Language.English, "Ring of Haste" }
+        }},
+        { "item_desc_7001", new Dictionary<Language, string> {
+            { Language.Korean, "손가락에 바람이 깃든다. 한 걸음이 더 빨라진다." },
+            { Language.English, "Wind gathers around your finger. Every step comes faster." }
+        }},
+        { "item_effect_7001", new Dictionary<Language, string> {
+            { Language.Korean, "이동 속도" },
+            { Language.English, "Move Speed" }
+        }},
+        { "item_name_7002", new Dictionary<Language, string> {
+            { Language.Korean, "타격의 반지" },
+            { Language.English, "Ring of Striking" }
+        }},
+        { "item_desc_7002", new Dictionary<Language, string> {
+            { Language.Korean, "주먹이 가벼워진다. 공격이 더 빠르게 연속된다." },
+            { Language.English, "Your fists grow lighter. Attacks chain together faster." }
+        }},
+        { "item_effect_7002", new Dictionary<Language, string> {
+            { Language.Korean, "공격 속도" },
+            { Language.English, "Attack Speed" }
+        }},
+        { "item_name_7003", new Dictionary<Language, string> {
+            { Language.Korean, "힘의 반지" },
+            { Language.English, "Ring of Strength" }
+        }},
+        { "item_desc_7003", new Dictionary<Language, string> {
+            { Language.Korean, "낀 순간부터 더 무거운 것을 들 수 있다." },
+            { Language.English, "From the moment you wear it, you can lift heavier things." }
+        }},
+        { "item_effect_7003", new Dictionary<Language, string> {
+            { Language.Korean, "힘" },
+            { Language.English, "STR" }
+        }},
+        { "item_name_7004", new Dictionary<Language, string> {
+            { Language.Korean, "저격의 반지" },
+            { Language.English, "Ring of Sniping" }
+        }},
+        { "item_desc_7004", new Dictionary<Language, string> {
+            { Language.Korean, "투척 무기가 더 날카롭게, 더 깊이 꽂힌다." },
+            { Language.English, "Throwing weapons land sharper, and dig in deeper." }
+        }},
+        { "item_effect_7004", new Dictionary<Language, string> {
+            { Language.Korean, "투척 무기 강화" },
+            { Language.English, "Throwable Enhance" }
+        }},
+        { "item_name_7005", new Dictionary<Language, string> {
+            { Language.Korean, "회피의 반지" },
+            { Language.English, "Ring of Evasion" }
+        }},
+        { "item_desc_7005", new Dictionary<Language, string> {
+            { Language.Korean, "투척 무기가 더 날카롭게, 더 깊이 꽂힌다." },
+            { Language.English, "Throwing weapons land sharper, and dig in deeper." }
+        }},
+        { "item_effect_7005", new Dictionary<Language, string> {
+            { Language.Korean, "회피" },
+            { Language.English, "Evasion" }
+        }},
+        { "item_name_7006", new Dictionary<Language, string> {
+            { Language.Korean, "정확성의 반지" },
+            { Language.English, "Ring of Accuracy" }
+        }},
+        { "item_desc_7006", new Dictionary<Language, string> {
+            { Language.Korean, "투척 무기가 더 날카롭게, 더 깊이 꽂힌다." },
+            { Language.English, "Throwing weapons land sharper, and dig in deeper." }
+        }},
+        { "item_effect_7006", new Dictionary<Language, string> {
+            { Language.Korean, "정확도" },
+            { Language.English, "Accuracy" }
+        }},
+        //------------------------------------------ 아이템 - 갑옷
+        { "item_name_4001", new Dictionary<Language, string> {
+            { Language.Korean, "천 갑옷" },
+            { Language.English, "Cloth Armor" }
+        }},
+        { "item_desc_4001", new Dictionary<Language, string> {
+            { Language.Korean, "촘촘히 엮인 쇠사슬이 날카로운 것들을 막아낸다." },
+            { Language.English, "Tightly woven chain links turn aside anything sharp." }
+        }},
+        { "item_name_4002", new Dictionary<Language, string> {
+            { Language.Korean, "가죽 갑옷" },
+            { Language.English, "Leather Armor" }
+        }},
+        { "item_desc_4002", new Dictionary<Language, string> {
+            { Language.Korean, "유연하고 가볍다. 방어와 기동성 사이의 첫 번째 타협." },
+            { Language.English, "Flexible and light — the first compromise between defense and mobility." }
+        }},
+        { "item_name_4003", new Dictionary<Language, string> {
+            { Language.Korean, "사슬 갑옷" },
+            { Language.English, "Chainmail" }
+        }},
+        { "item_desc_4003", new Dictionary<Language, string> {
+            { Language.Korean, "보잘것없어 보여도 없는 것보다는 낫다. 모험의 시작." },
+            { Language.English, "It might look pathetic, but it's better than nothing. The start of an adventure." }
+        }},
+        { "item_name_4004", new Dictionary<Language, string> {
+            { Language.Korean, "황금 갑옷" },
+            { Language.English, "Gold Armor" }
+        }},
+        { "item_desc_4004", new Dictionary<Language, string> {
+            { Language.Korean, "빛나는 방어구. 두꺼운 금속이 어지간한 공격을 튕겨낸다." },
+            { Language.English, "A gleaming suit of armor. Its thick metal deflects all but the fiercest attacks." }
+        }},
+        //------------------------------------------ 아이템 - 저주
+        { "item_name_curse_Slow", new Dictionary<Language, string> {
+            { Language.Korean, "둔화저주" },
+            { Language.English, "Slow Curse" }
+        }},
+        { "item_desc_curse_Slow", new Dictionary<Language, string> {
+            { Language.Korean, "발이 무거워진다. 한 걸음마다 어둠이 잡아끄는 것 같다." },
+            { Language.English, "Your feet grow heavy. Every step feels like the dark is dragging you back." }
+        }},
+        { "item_name_curse_Bleed", new Dictionary<Language, string> {
+            { Language.Korean, "출혈저주" },
+            { Language.English, "Bleed Curse" }
+        }},
+        { "item_desc_curse_Bleed", new Dictionary<Language, string> {
+            { Language.Korean, "맞을 때마다 피가 흐를 수 있다. 상처는 쉽게 아물지 않는다." },
+            { Language.English, "Every hit may draw blood. The wounds don't close easily." }
+        }},
+        { "item_name_curse_Displace", new Dictionary<Language, string> {
+            { Language.Korean, "변위저주" },
+            { Language.English, "Displace Curse" }
+        }},
+        { "item_desc_curse_Displace", new Dictionary<Language, string> {
+            { Language.Korean, "공격 받는 순간 어디로 튕길지 알 수 없다. 최악의 순간에 배신한다." },
+            { Language.English, "The moment you're struck, you can't tell where you'll be flung. It betrays you at the worst possible moment." }
+        }},
+        { "item_name_curse_Alert", new Dictionary<Language, string> {
+            { Language.Korean, "경보저주" },
+            { Language.English, "Alert Curse" }
+        }},
+        { "item_desc_curse_Alert", new Dictionary<Language, string> {
+            { Language.Korean, "칼을 휘두를 때마다 적들이 고개를 돌릴 수 있다." },
+            { Language.English, "Every swing of your blade may turn enemies' heads your way." }
+        }},
+        { "item_name_curse_Drain", new Dictionary<Language, string> {
+            { Language.Korean, "착취저주" },
+            { Language.English, "Drain Curse" }
+        }},
+        { "item_desc_curse_Drain", new Dictionary<Language, string> {
+            { Language.Korean, "칼날이 주인의 피도 탐낸다." },
+            { Language.English, "The blade hungers for its wielder's blood too." }
+        }},
+        { "item_name_curse_Polarize", new Dictionary<Language, string> {
+            { Language.Korean, "양극화저주" },
+            { Language.English, "Polarize Curse" }
+        }},
+        { "item_desc_curse_Polarize", new Dictionary<Language, string> {
+            { Language.Korean, "완벽하게 베거나, 아무것도 하지 못하거나. 운에 모든 것을 맡겨라." },
+            { Language.English, "Either it cuts perfectly, or it does nothing at all. Leave everything to chance." }
+        }},
+        //------------------------------------------ 아이템 - 마법
+        { "item_name_magic_EmptyStep", new Dictionary<Language, string> {
+            { Language.Korean, "공허 발걸음" },
+            { Language.English, "Empty Step" }
+        }},
+        { "item_desc_magic_EmptyStep", new Dictionary<Language, string> {
+            { Language.Korean, "위험 지형이 길을 막지 못한다. 허공을 걷듯 지나쳐라." },
+            { Language.English, "Hazardous terrain can no longer bar your path. Walk through it as if it weren't there." }
+        }},
+        { "item_name_magic_LastSprint", new Dictionary<Language, string> {
+            { Language.Korean, "마지막 질주" },
+            { Language.English, "Last Sprint" }
+        }},
+        { "item_desc_magic_LastSprint", new Dictionary<Language, string> {
+            { Language.Korean, "10초가 남았을 때, 공포가 아닌 속도로 응답한다." },
+            { Language.English, "When 10 seconds remain, you answer with speed, not fear." }
+        }},
+        { "item_name_magic_SecondOfGreed", new Dictionary<Language, string> {
+            { Language.Korean, "탐욕의 초침" },
+            { Language.English, "Second of Greed" }
+        }},
+        { "item_desc_magic_SecondOfGreed", new Dictionary<Language, string> {
+            { Language.Korean, "손이 빨라진다. 상자도, 아이템도 순식간에 집어 든다." },
+            { Language.English, "Your hands quicken. Chests and items alike are snatched up in an instant." }
+        }},
+        { "item_name_magic_BloodClock", new Dictionary<Language, string> {
+            { Language.Korean, "혈시계" },
+            { Language.English, "Blood Clock" }
+        }},
+        { "item_desc_magic_BloodClock", new Dictionary<Language, string> {
+            { Language.Korean, "피해를 입을 때마다 간혹 시간이 되돌아온다." },
+            { Language.English, "Each time you take damage, time occasionally rewinds." }
+        }},
+        { "item_name_magic_DrainLife", new Dictionary<Language, string> {
+            { Language.Korean, "흡혈" },
+            { Language.English, "Drain Life" }
+        }},
+        { "item_desc_magic_DrainLife", new Dictionary<Language, string> {
+            { Language.Korean, "적을 베면 피가 내게로 돌아온다." },
+            { Language.English, "Cutting down an enemy returns their blood to you." }
+        }},
+        { "item_name_magic_Execution", new Dictionary<Language, string> {
+            { Language.Korean, "처형" },
+            { Language.English, "Execution" }
+        }},
+        { "item_desc_magic_Execution", new Dictionary<Language, string> {
+            { Language.Korean, "막바지에 몰린 적은 살려두지 않는다. 한 번에 끝낸다." },
+            { Language.English, "An enemy on the brink is shown no mercy. It ends in a single blow." }
+        }},
+        { "item_name_magic_Focus", new Dictionary<Language, string> {
+            { Language.Korean, "집중" },
+            { Language.English, "Focus" }
+        }},
+        { "item_desc_magic_Focus", new Dictionary<Language, string> {
+            { Language.Korean, "빗나간 공격은 다음 번의 확실한 명중을 약속한다." },
+            { Language.English, "A missed attack guarantees the next strike will land true." }
+        }},
+        { "item_name_magic_Chase", new Dictionary<Language, string> {
+            { Language.Korean, "추격" },
+            { Language.English, "Chase" }
+        }},
+        { "item_desc_magic_Chase", new Dictionary<Language, string> {
+            { Language.Korean, "적이 쓰러진 자리에서 다음 목표를 향해 달려라. 3초간 빨라진다." },
+            { Language.English, "From where an enemy falls, dash toward your next target. You move faster for 3 seconds." }
+        }},
+        //------------------------------------------ 아이템 - 기타
+        { "item_name_6001", new Dictionary<Language, string> {
+            { Language.Korean, "횃불" },
+            { Language.English, "Torch" }
+        }},
+        { "item_desc_6001", new Dictionary<Language, string> {
+            { Language.Korean, "어둠을 밀어낸다. 30초 동안 더 먼 곳까지 볼 수 있다." },
+            { Language.English, "It pushes back the dark. For 30 seconds, you can see much farther." }
+        }},
+        { "item_name_6002", new Dictionary<Language, string> {
+            { Language.Korean, "생명 파편" },
+            { Language.English, "Fragment of Life" }
+        }},
+        { "item_desc_6002", new Dictionary<Language, string> {
+            { Language.Korean, "하수인들이 품고 있던 시간 조각. 상처를 조금씩 회복시킨다." },
+            { Language.English, "A shard of time the minions once carried. It slowly mends your wounds." }
+        }},
     };
+
+    public static string GetOrDefault(string key, string fallback)
+    {
+        return Instance != null ? Instance.Get(key) : fallback;
+    }
 
     public string Get(string key)
     {

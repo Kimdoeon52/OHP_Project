@@ -14,14 +14,14 @@ public class ShieldWeaponInstance : WeaponInstance
         if (!isAnalyzed)
             return shieldWeapon.GetToolTipStats();
 
-        return $"[{shieldWeapon.Name}] {(enhanceLevel > 0 ? $"<color=yellow>+{enhanceLevel}</color>" : "")}\n" +
+        return $"[{shieldWeapon.LocalizedName}] {(enhanceLevel > 0 ? $"<color=yellow>+{enhanceLevel}</color>" : "")}\n" +
                $"--------------------\n" +
-               $"{shieldWeapon.Description}\n" +
-               $"착용 힘: {shieldWeapon.CanUseStrength}\n" +
-               $"데미지: {GetMinDamage()}~{GetMaxDamage()}" +
-               $"공격속도: {shieldWeapon.AttackSpeed}" +
-               $"받은 피해 감소: {GetMinMinusDamage()}~{GetMaxMinusDamage()}" +
-               $"{(curse != null ? $"\n{curse.CurseName}: {curse.Description}" : "")}" +
-               $"{(magic != null ? $"\n{magic.MagicName}: {magic.Description}" : "")}";
+               $"{shieldWeapon.LocalizedDescription}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}: {shieldWeapon.CanUseStrength}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_T공격력", "Damage")}: {GetMinDamage()}~{GetMaxDamage()}" +
+               $"{LocalizationManager.GetOrDefault("msg_T공격속도", "Attack Speed")}: {shieldWeapon.AttackSpeed}" +
+               $"{LocalizationManager.GetOrDefault("msg_받은피해감소", "Block Reduction")}: {GetMinMinusDamage()}~{GetMaxMinusDamage()}" +
+               $"{(curse != null ? $"\n{curse.LocalizedName}: {curse.LocalizedDescription}" : "")}" +
+               $"{(magic != null ? $"\n{magic.LocalizedName}: {magic.LocalizedDescription}" : "")}";
     }
 }

@@ -22,10 +22,10 @@ public class ArmorData : ItemBase
 
     public override string GetToolTipStats()
     {
-        return $"[{Name}]  <color=red>미감정</color>\n" +
+        return $"[{LocalizedName}]  <color=red>{LocalizationManager.GetOrDefault("msg_미감정", "Unidentified")}</color>\n" +
                $"--------------------\n" +
-               $"{Description}\n" +
-               $"착용 힘: {CanUseStrength}\n" +
-               $"피해 감소: {MinDefense}~{MaxDefense}";
+               $"{LocalizedDescription}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}: {CanUseStrength}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_피해감소", "Damage Reduction")}: {MinDefense}~{MaxDefense}";
     }
 }
