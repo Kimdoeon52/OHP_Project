@@ -38,12 +38,12 @@ public class VFXManager : MonoBehaviour
 
     private void OnEnable()
     {
-        // GameEvents.OnPlayVFX += PlayVFX;
+        GameEvents.OnPlayVFX += PlayVFX;
     }
 
     private void OnDisable()
     {
-        // GameEvents.OnPlayVFX -= PlayVFX;
+        GameEvents.OnPlayVFX -= PlayVFX;
     }
 
     private void InitializePools()
