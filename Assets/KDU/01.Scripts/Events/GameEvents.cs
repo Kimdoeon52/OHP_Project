@@ -50,6 +50,9 @@ public static class GameEvents
     // 오디오
     public static Action<AudioEventId> OnAudioEventRequested;
 
+    // Vfx
+    public static System.Action<UnityEngine.Vector3, VFXType> OnPlayVFX;
+
     public static void ClearAllEvents()
     {
         OnTimeChanged = null;               // 타이머
