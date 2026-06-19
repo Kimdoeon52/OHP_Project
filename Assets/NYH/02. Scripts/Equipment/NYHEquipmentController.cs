@@ -175,6 +175,8 @@ public class NYHEquipmentController : MonoBehaviour
             return;
         }
 
+        MarkStartingEquipmentIdentified(sourceInstance);
+
         InventoryItem itemView = CreateStartingEquipmentView(sourceInstance);
         if (itemView == null)
         {
@@ -186,7 +188,7 @@ public class NYHEquipmentController : MonoBehaviour
 
         // 방어구/무기 계산은 강화 단계와 저주 같은 런타임 값을 SourceInstance에서 읽는다.
         // 또한 장비 해제는 InventoryItem 뷰를 손에 드는 방식이라, 시작 장비도 숨겨진 뷰를 함께 등록해야 한다.
-        if (!TryEquipInternal(new NYHEquipmentItemInstance(itemData, sourceInstance), itemView, key, out InventoryItem replacedItem))
+        if (!TryEquipInternal(new NYHEquipmentItemInstance(itemData, sourceInstance, isIdentified: true), itemView, key, out InventoryItem replacedItem))
         {
             if (itemView != null)
                 Destroy(itemView.gameObject);
@@ -199,6 +201,15 @@ public class NYHEquipmentController : MonoBehaviour
 
         if (replacedItem != null)
             replacedItem.gameObject.SetActive(false);
+    }
+
+    private static void MarkStartingEquipmentIdentified(ItemInstance sourceInstance)
+    {
+        if (sourceInstance is not EquipmentInstance equipmentInstance)
+            return;
+
+        // 시작 장비는 플레이어가 이미 알고 있는 기본 장비라 미감정 표시 없이 장착한다.
+        equipmentInstance.isAnalyzed = true;
     }
 
     private InventoryItem CreateStartingEquipmentView(ItemInstance sourceInstance)
