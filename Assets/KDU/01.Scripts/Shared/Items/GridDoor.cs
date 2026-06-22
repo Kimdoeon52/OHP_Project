@@ -65,11 +65,7 @@ public class GridDoor : MonoBehaviour
     // SafeExit 전용
     private Vector2Int _safeOutsideCell;
     private bool _safeOutsideCellSet;
-    private bool _safeHasExited;
     private bool _safePermLocked;
-
-    // Safe방에서 문만 열고 다시 들어올때 대비용
-    private Vector2Int InsideCell => GridPosition * 2 - _safeOutsideCell;
 
     private void Awake()
     {
@@ -237,25 +233,17 @@ public class GridDoor : MonoBehaviour
             return;
         }
 
-        // 잠기기 전엔 일반 문처럼 자동 개폐.
-        if (autoOpenWhenAdjacent)
-            SetState(adjacent ? DoorState.Open : DoorState.Closed);
-
-        // 바깥 셀 도달
-        if (_safeOutsideCellSet)
-        {
-            if (_player.GridPosition == _safeOutsideCell)
-                _safeHasExited = true;
-            else if (_player.GridPosition == InsideCell)
-                _safeHasExited = false;
-        }
-
-        // 진짜 나갔는지 체크
-        if (_safeHasExited && !adjacent)
+        // 바깥 셀에 도달하는 즉시 잠금 — 걸침 창 제거(적 진입/재진입 차단)
+        if (_safeOutsideCellSet && _player.GridPosition == _safeOutsideCell)
         {
             _safePermLocked = true;
             SetState(DoorState.Closed);
+            return;
         }
+
+        // 잠기기 전엔 일반 문처럼 자동 개폐.
+        if (autoOpenWhenAdjacent)
+            SetState(adjacent ? DoorState.Open : DoorState.Closed);
     }
 
     // 자동 발견

@@ -409,8 +409,8 @@ public abstract class EnemyBase : EntityBase, IDamageable
     {
         if (IsDead) return;
 
-        // 이번 턴에 경보가 켜졌다면 플레이어 위치 기억
-        if(GameManager.Instance != null && GameManager.Instance.isAlerted)
+        // 이번 턴에 경보가 켜졌다면 플레이어 위치 기억 (세이프룸 안이면 무시)
+        if(GameManager.Instance != null && GameManager.Instance.isAlerted && !SafeRoomTimerGate.PlayerInSafeRoom)
         {
             _alarmTarget = Player.GridPosition;
         }
@@ -757,6 +757,10 @@ public abstract class EnemyBase : EntityBase, IDamageable
     /// </summary>
     protected float SquaredDistanceToPlayer()
     {
+        // 세이프룸 안 플레이어는 감지 불가 — 모든 적 시야 판정이 이 값을 쓰므로 한 곳에서 차단
+        if (SafeRoomTimerGate.PlayerInSafeRoom)
+            return float.MaxValue;
+
         var diff = Player.GridPosition - GridPosition;
         return diff.x * diff.x + diff.y * diff.y;
     }
