@@ -30,7 +30,11 @@ public class EnchantPopup : MonoBehaviour
             armorButton.onClick.AddListener(OnArmor);
         if (cancelButton != null)
             cancelButton.onClick.AddListener(Close);
-        if (panel != null)
+
+        // 패널이 이 스크립트의 GameObject 자신이면 여기서 끄지 않는다.
+        // (자기 자신이 비활성이면 Awake가 첫 Open 때 실행돼, 방금 연 패널을 도로 닫는 재진입 버그 발생)
+        // 자기 자신일 때는 에디터에서 비활성으로 시작시키고, 숨김은 Close()만 담당.
+        if (panel != null && panel != gameObject)
             panel.SetActive(false);
     }
 

@@ -91,16 +91,46 @@ public class MapItemSpawner : MonoBehaviour
     private void SpawnEnchantAltar(RoomData room, int depth, DungeonRandom rng)
     {
         if (enchantAltarPrefab == null)
+        {
+            Debug.LogWarning("[MapItemSpawner] Enchant 방인데 enchantAltarPrefab 미연결 — 방 빔");
             return;
+        }
 
         var cells = SpawnCells.Candidates(room);
         if (cells.Count == 0)
+        {
+            Debug.LogWarning("[MapItemSpawner] Enchant 방 배치 가능 셀 없음 — 방 빔");
             return;
+        }
 
-        Vector2Int cell = SpawnCells.PopRandom(cells, rng);
+        // 방 중앙에 가장 가까운 후보 셀 선택 (쏠림 방지)
+        Vector2Int cell = NearestToCenter(room, cells);
         EnchantAltar altar = Instantiate(enchantAltarPrefab);
         altar.Initialize(cell, depth);
         _spawned.Add(altar.gameObject);
+    }
+
+    // 방 floorCells 중심에 가장 가까운 후보 셀
+    private static Vector2Int NearestToCenter(RoomData room, List<Vector2Int> cells)
+    {
+        Vector2 center = Vector2.zero;
+        var src = (room.floorCells != null && room.floorCells.Count > 0) ? room.floorCells : cells;
+        foreach (var c in src)
+            center += c;
+        center /= src.Count;
+
+        Vector2Int best = cells[0];
+        float bestDist = float.MaxValue;
+        foreach (var c in cells)
+        {
+            float d = ((Vector2)c - center).sqrMagnitude;
+            if (d < bestDist)
+            {
+                bestDist = d;
+                best = c;
+            }
+        }
+        return best;
     }
 
     // 아이템을 min ~ max개 배치

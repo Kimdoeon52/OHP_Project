@@ -40,6 +40,10 @@ public class ChestSpawner : MonoBehaviour
                 RoomType.Secret => SecretContent(room.secretKind),
                 _ => null,
             };
+            // 상자가 나와야 하는 종류인데 content 미연결이면 방이 빔 — 경고
+            if (content == null && IsChestRoom(room))
+                Debug.LogWarning($"[ChestSpawner] 상자 방인데 content 미연결 — 방 빔 (type={room.type} special={room.specialKind} secret={room.secretKind})");
+
             if (content != null) PlaceContent(rooms, room, content, rng);
         }
 
@@ -62,6 +66,18 @@ public class ChestSpawner : MonoBehaviour
         SecretRoomKind.EquipChest => secretEquipChest,
         _ => null, // 나머지는 null 처리
     };
+
+    // 상자 스포너가 책임지는 방인지 (content 미연결 경고 대상 판별)
+    private static bool IsChestRoom(RoomData room)
+    {
+        if (room.type == RoomType.Special)
+            return room.specialKind == SpecialRoomKind.RandomChest
+                || room.specialKind == SpecialRoomKind.RingChest
+                || room.specialKind == SpecialRoomKind.GoldChest;
+        if (room.type == RoomType.Secret)
+            return room.secretKind == SecretRoomKind.EquipChest;
+        return false;
+    }
 
     private void SpawnRandomChests(List<RoomData> rooms, DungeonRandom rng)
     {

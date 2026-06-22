@@ -23,6 +23,7 @@ public class EnchantAltar : MonoBehaviour
     private GridPlayer _player;
     private EnchantPopup _popup;
     private bool _used;
+    private bool _wasAdjacent;
 
     private void Awake()
     {
@@ -68,32 +69,50 @@ public class EnchantAltar : MonoBehaviour
             GridPosition = GridSystem.Instance.WorldToGrid(transform.position);
 
         _player = FindFirstObjectByType<GridPlayer>();
-        _popup = FindFirstObjectByType<EnchantPopup>();
+        _popup = FindFirstObjectByType<EnchantPopup>(FindObjectsInactive.Include);
         UpdateVisibility();
     }
 
     private void Update()
     {
-        if (_used || _player == null || _player.IsDead)
+        if (_used)
+            return;
+        if (_player == null)
+        {
+            _player = FindFirstObjectByType<GridPlayer>();
+            if (_player == null)
+                return;
+        }
+        if (_player.IsDead)
             return;
 
-        int dist = Mathf.Abs(_player.GridPosition.x - GridPosition.x) + Mathf.Abs(_player.GridPosition.y - GridPosition.y);
-        if (dist > 1)
+        // 체비셰프 거리 — 대각선 포함 8방향(둘러싼 3x3)이면 인접
+        int dx = Mathf.Abs(_player.GridPosition.x - GridPosition.x);
+        int dy = Mathf.Abs(_player.GridPosition.y - GridPosition.y);
+        bool adjacent = Mathf.Max(dx, dy) <= 1;
+
+        // 떠나면 다시 접근 시 재오픈 가능하게 리셋
+        if (!adjacent)
+        {
+            _wasAdjacent = false;
             return;
-        if (KeyBindingManager.ShouldBlockGameplayInput)
+        }
+
+        // 접근당 1회만 — 취소 후 그 자리서 재오픈 루프 방지
+        if (_wasAdjacent)
             return;
         if (_popup != null && _popup.IsOpen)
             return;
-        if (!Input.GetKeyDown(KeyBindingManager.GetKey(KeyBindingAction.Buy)))
-            return;
 
         if (_popup == null)
-            _popup = FindFirstObjectByType<EnchantPopup>();
+            _popup = FindFirstObjectByType<EnchantPopup>(FindObjectsInactive.Include);
         if (_popup == null)
         {
             Debug.LogWarning("[EnchantAltar] EnchantPopup 씬에 없음 — 팝업 배선 필요");
             return;
         }
+
+        _wasAdjacent = true;
         _popup.Open(this);
     }
 

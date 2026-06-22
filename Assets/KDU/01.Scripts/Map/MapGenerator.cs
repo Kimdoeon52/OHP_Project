@@ -283,11 +283,13 @@ public class MapGenerator : Singleton<MapGenerator>
             {
                 var kind = (SpecialRoomKind)rng.Range(0, System.Enum.GetValues(typeof(SpecialRoomKind)).Length);
                 rooms.Add(new RoomData { type = RoomType.Special, sizeCategory = SizeCategory.Normal, specialKind = kind });
+                Debug.Log($"[RoomRoll] depth={depth} SPECIAL kind={kind}");
             }
             if (rng.Chance(secretChance))
             {
                 var kind = (SecretRoomKind)rng.Range(0, System.Enum.GetValues(typeof(SecretRoomKind)).Length);
                 rooms.Add(new RoomData { type = RoomType.Secret, sizeCategory = SizeCategory.Normal, secretKind = kind });
+                Debug.Log($"[RoomRoll] depth={depth} SECRET kind={kind}");
             }
         }
 
