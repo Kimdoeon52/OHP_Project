@@ -20,6 +20,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/KDU/00.Scene/KDU_2.unity
     guid: b268e95ae00cbdb40b26a6000acded9c
+  - enabled: 1
+    path: Assets/KDU/00.Scene/KDU_Ending.unity
+    guid: 431edaf77eb192e489f015d05bbb2c6a
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
