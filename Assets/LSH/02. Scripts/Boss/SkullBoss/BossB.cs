@@ -196,10 +196,20 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             bossAnimation.SetTrigger("Dead");
         }
 
-        // 3초 대기 후 소멸
+        // 2초 대기 후 파티클 생성
         try
         {
-            await UniTask.Delay(3000, cancellationToken: token);
+            await UniTask.Delay(2000, cancellationToken: token);
+        }
+        catch (System.OperationCanceledException) { }
+
+        // 제작된 사망 파티클 스폰
+        SpawnDeathParticle();
+
+        // 파티클 생성 후 1초 더 대기하고 보스 제거
+        try
+        {
+            await UniTask.Delay(1000, cancellationToken: token);
         }
         catch (System.OperationCanceledException) { }
 

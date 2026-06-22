@@ -49,6 +49,9 @@ public class BossBase : EnemyNormalBASE
     [SerializeField] protected TileBase warningTile;   //예고 칸에 칠할 타일
     [SerializeField] protected Sprite warningSprite;    //(경고 스프라이트 생략용 등)
 
+    [Header("사망 연출 공통 설정")]
+    [SerializeField] protected GameObject deathParticlePrefab; // 사망 시 재생할 파티클 프리팹
+
     protected bool isBossAttacking; //보스가 공격 중인지 여부를 나타내는 변수
     protected Animator bossAnimation; //보스 애니메이션을 제어하기 위한
     protected CancellationTokenSource cancelToken;
@@ -586,5 +589,15 @@ public class BossBase : EnemyNormalBASE
             }
         }
         return true;
+    }
+
+    protected void SpawnDeathParticle()
+    {
+        if (deathParticlePrefab != null)
+        {
+            GameObject go = Instantiate(deathParticlePrefab, transform.position, Quaternion.identity);
+            // 파티클 자동 제거 예약 (예: 5초 후 자동 삭제)
+            Destroy(go, 5f);
+        }
     }
 }
