@@ -49,6 +49,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     #region 플레이어 이동공격 대상 등록 프록시
     public override Vector2Int BossSize => bossSize;
     public override Vector2Int GridPosition => gridPos;
+    private Vector3 BossPivotOffset => new Vector3((bossSize.x - 1) * 0.5f + 0.5f, (bossSize.y - 1) * 0.5f + 0.5f, 0f);
     public int CurrentHp => currentHp;
     public int MaxHp => maxHp;
     public bool IsDead => currentHp <= 0;
@@ -122,7 +123,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         CacheMapBounds();
 
         if (GridSystem.Instance != null)
-            gridPos = GridSystem.Instance.WorldToGrid(transform.position - new Vector3(0.5f, 0.5f, 0f));
+            gridPos = GridSystem.Instance.WorldToGrid(transform.position - BossPivotOffset);
 
         RegisterBossGridTarget();
         RegisterBossGridTargetNextFrameAsync().Forget();
@@ -250,7 +251,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
                 var next = gridPos + d;
                 if (IsAreaInAttackFloor(next, bossSize))
                 {
-                    var targetWorld = GridSystem.Instance.GridToWorld(next) + new Vector3(0.5f, 0.5f, 0f);
+                    var targetWorld = GridSystem.Instance.GridToWorld(next) + BossPivotOffset;
                     await transform.DOMove(targetWorld, wanderMoveDuration)
                         .SetEase(Ease.InOutSine)
                         .AsyncWaitForCompletion();
@@ -347,7 +348,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
                 if (cancelToken.IsCancellationRequested || isDying) break;
 
                 // 2) 점프 이동
-                var targetWorld = GridSystem.Instance.GridToWorld(landingGridPos) + new Vector3(0.5f, 0.5f, 0f);
+                var targetWorld = GridSystem.Instance.GridToWorld(landingGridPos) + BossPivotOffset;
                 
                 await transform.DOJump(targetWorld, jumpPower: 2f, numJumps: 1, duration: 0.6f)
                     .SetEase(Ease.OutQuad)
