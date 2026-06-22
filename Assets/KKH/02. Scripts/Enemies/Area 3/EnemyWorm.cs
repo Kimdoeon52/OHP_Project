@@ -94,8 +94,10 @@ public class EnemyWorm : EnemyBase
 
     protected override void UpdateVisibility()
     {
-        // 땅속(Underground)에 있는 동안에는 강제로 보이지 않게 처리
-        if (_isUnderground)
+        // 땅속(Underground)에 있거나, 정지한 격자가 벽 타일(이동 불가 타일)인 경우 비주얼을 숨겨 땅속에 파묻힌 연출을 유지합니다.
+        bool isInWall = GridSystem.Instance != null && !GridSystem.Instance.IsWalkable(GridPosition);
+
+        if (_isUnderground || isInWall)
         {
             if (SpriteRenderer != null) SpriteRenderer.enabled = false;
         }

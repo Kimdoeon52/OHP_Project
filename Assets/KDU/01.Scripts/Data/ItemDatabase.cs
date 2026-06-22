@@ -10,6 +10,7 @@ public class ItemDatabase : ScriptableObject
 
     [Tooltip("전 저주 SO")]
     [SerializeField] private List<CurseData> curses = new List<CurseData>();
+    public List<CurseData> Curses => curses;
 
     [Tooltip("전 마법 SO")]
     [SerializeField] private List<MagicData> magics = new List<MagicData>();

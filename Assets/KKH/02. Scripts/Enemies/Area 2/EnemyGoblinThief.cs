@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using PrototypeRT;
@@ -112,16 +112,29 @@ public class EnemyGoblinThief : EnemyBase
         if (_hasStolenItem && _stolenItem != null)
         {
             var invController = FindFirstObjectByType<InventoryController>();
+            bool itemRecovered = false;
+
             if (invController != null)
             {
                 bool added = invController.TryAddItem(_stolenItem);
                 if (added)
                 {
                     Debug.Log($"[GoblinThief] {name} 처치 → {_stolenItem.data.Name} 회수 성공.");
+                    itemRecovered = true;
+                }
+            }
+
+            if (!itemRecovered)
+            {
+                var groundItemController = FindFirstObjectByType<GroundItemController>();
+                if (groundItemController != null)
+                {
+                    groundItemController.DropItem(_stolenItem, 1, GridPosition);
+                    Debug.Log($"[GoblinThief] {name} 처치했으나 인벤토리 가득 차 회수 실패 → {_stolenItem.data.Name} 바닥에 드롭.");
                 }
                 else
                 {
-                    Debug.LogWarning($"[GoblinThief] {name} 처치했으나 인벤토리 가득 참 → {_stolenItem.data.Name} 회수 실패.");
+                    Debug.LogError($"[GoblinThief] {name} 처치 후 GroundItemController가 없어 {_stolenItem.data.Name} 영구 분실!");
                 }
             }
         }

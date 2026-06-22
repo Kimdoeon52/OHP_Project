@@ -117,6 +117,24 @@ namespace KKH.Editor
                         }
                     }
 
+                    // 3) EnemyBase를 찾아서 fragmentsOfLifeItem 필드 자동 연결
+                    EnemyBase enemyComponent = prefabRoot.GetComponent<EnemyBase>();
+                    if (enemyComponent != null)
+                    {
+                        ItemBase lifeShard = AssetDatabase.LoadAssetAtPath<ItemBase>("Assets/YJW/03.ItemDatas/etc/FragmentsOfLife.asset");
+                        if (lifeShard != null)
+                        {
+                            SerializedObject serializedEnemy = new SerializedObject(enemyComponent);
+                            SerializedProperty prop = serializedEnemy.FindProperty("fragmentsOfLifeItem");
+                            if (prop != null && prop.objectReferenceValue != lifeShard)
+                            {
+                                prop.objectReferenceValue = lifeShard;
+                                serializedEnemy.ApplyModifiedProperties();
+                                isModified = true;
+                            }
+                        }
+                    }
+
                     if (isModified)
                     {
                         // 변경 내용 저장

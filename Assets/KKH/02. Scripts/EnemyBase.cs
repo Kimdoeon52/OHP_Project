@@ -42,6 +42,10 @@ public abstract class EnemyBase : EntityBase, IDamageable
     [Tooltip("처치 시 떨어뜨릴 아이템 픽업 프리팹 (ItemPickUp). EnemyData.itemDrops 에 든 아이템(체력 포션 등) 스폰용.")]
     [SerializeField] private ItemPickup dropItemPickupPrefab;
 
+    [Header("생명 파편 (확정 드롭)")]
+    [Tooltip("사망 시 100% 확률로 무조건 떨어뜨릴 생명 파편 아이템")]
+    [SerializeField] protected ItemBase fragmentsOfLifeItem;
+
     [Header("애니메이션 관련 설정")]
     [Tooltip("Animator에서 사망 트리거 파라미터 이름. 기본값 \"Die\".")]
     [SerializeField] private string deathTriggerName = "Die";
@@ -305,6 +309,12 @@ public abstract class EnemyBase : EntityBase, IDamageable
                     SpawnItemDrop(drop.item);
             }
         }
+
+        // 생명 파편 무조건(100% 확률) 드롭
+        if (fragmentsOfLifeItem != null)
+        {
+            SpawnItemDrop(fragmentsOfLifeItem);
+        }
     }
 
     private void SpawnGoldDrop(int amount)
@@ -321,9 +331,27 @@ public abstract class EnemyBase : EntityBase, IDamageable
     private void SpawnItemDrop(ItemBase item)
     {
         var groundItemController = FindFirstObjectByType<PrototypeRT.GroundItemController>();
+        ItemInstance itemInst = item.CreateInstance();
+
+        // 장비 아이템의 경우 강화도 및 저주 롤링 적용
+        if (itemInst is EquipmentInstance equipInst)
+        {
+            DungeonRandom rng = MapGenerator.Instance != null ? MapGenerator.Instance.Rng : new DungeonRandom();
+            if (rng.Seed == 0 && MapGenerator.Instance == null)
+            {
+                rng.Init(Random.Range(1, 100000));
+            }
+
+            // 등장 강화도 확률 롤링 (0~3강)
+            equipInst.enhanceLevel = ItemRoll.Enhance(rng);
+            // 장비 슬롯 매칭 저주 롤링
+            equipInst.curse = RollCurseForEquipment(equipInst, rng);
+            // 기본 미감정
+            equipInst.isAnalyzed = false;
+        }
+
         if (groundItemController != null)
         {
-            ItemInstance itemInst = item.CreateInstance();
             groundItemController.DropItem(itemInst, 1, GridPosition);
         }
         else 
@@ -334,9 +362,35 @@ public abstract class EnemyBase : EntityBase, IDamageable
                 return;
             }
             ItemPickup pickup = Instantiate(dropItemPickupPrefab, WorldOf(GridPosition), Quaternion.identity);
+            pickup.item = itemInst; // 장비 롤링 상태를 보존하기 위해 인스턴스 직접 주입
             pickup.itemSO = item;
             pickup.Initialize(GridPosition);
         }
+    }
+
+    private CurseData RollCurseForEquipment(EquipmentInstance equipInst, DungeonRandom rng)
+    {
+        // 50% 확률로 저주 없음
+        if (rng.Value() > 0.5f) return null;
+
+        var database = ItemDatabase.Instance;
+        if (database == null) return null;
+
+        EquipmentSlot slot = equipInst.data.Slot;
+
+        // 전체 저주 목록 중에서 이 장비의 슬롯과 일치하는 저주 필터링
+        List<CurseData> matchedCurses = new List<CurseData>();
+        foreach (var curse in database.Curses)
+        {
+            if (curse != null && curse.TargetSlot == slot)
+            {
+                matchedCurses.Add(curse);
+            }
+        }
+
+        if (matchedCurses.Count == 0) return null;
+
+        return rng.Pick(matchedCurses);
     }
 
     private static Vector3 WorldOf(Vector2Int cell)
@@ -418,9 +472,13 @@ public abstract class EnemyBase : EntityBase, IDamageable
         if (IsDead) return;
 
         // 이번 턴에 경보가 켜졌다면 플레이어 위치 기억 (세이프룸 안이면 무시)
+        // 실시간 무한 동기화가 아닌, 마지막으로 감지된 최초 1회(또는 플레이어가 시야 밖으로 사라진 시점의 위치)로 설정하여 맵 끝까지 쫓아오는 버그를 차단합니다.
         if(GameManager.Instance != null && GameManager.Instance.isAlerted && !SafeRoomTimerGate.PlayerInSafeRoom)
         {
-            _alarmTarget = Player.GridPosition;
+            if (_alarmTarget == null)
+            {
+                _alarmTarget = Player.GridPosition;
+            }
         }
 
         // 시야 안에 플레이어가 있고 

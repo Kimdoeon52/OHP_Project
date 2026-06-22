@@ -569,6 +569,7 @@ MonoBehaviour:
   deathEffectPrefab: {fileID: 0}
   goldPickupPrefab: {fileID: 0}
   dropItemPickupPrefab: {fileID: 0}
+  fragmentsOfLifeItem: {fileID: 11400000, guid: 65d0b9fecefb8ae47a582817a20344ed, type: 2}
   deathTriggerName: Die
   deathDestroyDelay: 0.6
   moveSpeed: 1
@@ -607,7 +608,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.015615225, y: 0.26545954}
+  m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -617,7 +618,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.5009344, y: 1.0949376}
+  m_Size: {x: 3, y: 3}
   m_EdgeRadius: 0
 --- !u!1 &7295542899790249618
 GameObject:

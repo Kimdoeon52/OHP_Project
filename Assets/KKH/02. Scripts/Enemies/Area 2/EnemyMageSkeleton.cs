@@ -35,23 +35,7 @@ public class EnemyMageSkeleton : EnemyBase
     /// </summary>
     private bool _shieldRaised = false;
 
-    /// <summary>
-    /// 턴 시작 override.
-    /// 방패 소유(data.hasShield) 시 50% 확률로 _shieldRaised = true 설정 후 부모 OnTurnUpdate 실행.
-    /// </summary>
-    public override void OnTurnUpdate()
-    {
-        if (data != null && data.hasShield && !IsDead)
-        {
-            if (Random.value <= 0.5f)
-            {
-                _shieldRaised = true;
-            }
-        }
 
-        // AP 충전 → ExecutePendingAttack → PerformMovement → CheckAttackTelegraph 순 실행
-        base.OnTurnUpdate();
-    }
 
     /// <summary>
     /// 피해 처리 override.
@@ -124,6 +108,16 @@ public class EnemyMageSkeleton : EnemyBase
     /// </summary>
     protected override void PerformMovement()
     {
+        // 실시간 행동 개시 시점에 50% 확률로 뼈 방패(Shield) 충전
+        if (data != null && data.hasShield && !IsDead)
+        {
+            if (Random.value <= 0.5f)
+            {
+                _shieldRaised = true;
+                Debug.Log($"{name} 행동 개시: 뼈 방패 활성화됨.");
+            }
+        }
+
         // 마법 예약 중이거나 직선 시야 확보 상태면 이동하지 않음
         if (_pendingAttackLine != null || ComputeLineToPlayer() != null)
         {

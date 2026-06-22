@@ -52,8 +52,10 @@ public class EnemyImp : EnemyBase
             {
                 if (GridSystem.Instance.IsWalkable(cell))
                 {
-                    // TODO: TrapTerrainController 또는 Hazard 지형 생성기 연동하여 1초 유지되는 화염 생성
-                    // TrapTerrainController.SpawnTemporaryHazard(cell, HazardType.Fire, 1f);
+                    // 1초(즉 1턴) 동안 유지되는 화염 장판 생성 요청
+                    GameEvents.OnTrapTerrainRequested?.Invoke(
+                        new TrapTerrainRequest(cell, 0, 1, TrapTerrainType.Fire, null)
+                    );
                 }
             }
         }

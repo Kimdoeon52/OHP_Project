@@ -34,10 +34,17 @@ public class EnemyBat : EnemyBase
 
         if (SquaredDistanceToPlayer() <= data.visionRange * data.visionRange)
         {
-            // 실시간으로 최대 1칸씩 논리 이동 시도
-            if (TryStepLogical())
+            // 최대 2칸 고속 이동이므로 2번 루프
+            for (int i = 0; i < 2; i++)
             {
-                _movePath.Add(GridPosition);
+                if (TryStepLogical())
+                {
+                    _movePath.Add(GridPosition);
+                }
+                else
+                {
+                    break;
+                }
             }
         }
 
