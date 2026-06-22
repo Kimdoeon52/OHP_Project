@@ -39,6 +39,10 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     [SerializeField] private int laserDamage = 1;
     [SerializeField] private float laserVisualThickness = 3.5f; // 레이저 이미지의 시각적 두께 (히트 판정은 2칸 고정)
 
+    [Header("레이저 사운드")]
+    [Tooltip("레이저가 실제로 생성되는 순간 재생할 효과음입니다. 준비음과 발사음을 분리해 앞 소리에 묻히는 문제를 줄입니다.")]
+    [SerializeField] private AudioEventId laserFireSfxEventId = AudioEventId.BossA_LaserFire;
+
     [SerializeField] private Vector2Int bossSize = new Vector2Int(2, 2); // 보스가 차지하는 크기 (2,2)
 
     // ─── 내부 상태 ───────────────────────────────────────────────────
@@ -222,7 +226,9 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         AudioEventId eventId = bossAction switch
         {
             BossAction.Pattern1 => AudioEventId.None,
-            BossAction.Pattern2 => AudioEventId.BossA_Pattern2,
+            // 레이저 발사음은 ExecuteCrossLaserPattern에서 실제 발사 순간에 따로 재생한다.
+            // 여기서 같은 빔 사운드를 미리 재생하면 회전/착지음과 겹쳐 발사 타이밍이 묻힌다.
+            BossAction.Pattern2 => AudioEventId.None,
             BossAction.Pattern3 => AudioEventId.BossA_Pattern3,
             _ => AudioEventId.None
         };
@@ -449,6 +455,10 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
             if (laserPrefab != null && hasMapBounds)
             {
+                // 준비음과 별개로 실제 레이저가 화면에 나오는 순간 발사음을 재생한다.
+                // AudioManager는 SFX 풀의 빈 AudioSource를 사용하므로 기존 준비음을 강제로 끊지 않는다.
+                RequestLaserFireSfx();
+
                 // 세로 레이저 (두께 2칸, 시각적 두께 laserVisualThickness)
                 Vector3 vStart = GridSystem.Instance.GridToWorld(new Vector2Int(gridPos.x, mapBounds.yMin));
                 Vector3 vEnd = GridSystem.Instance.GridToWorld(new Vector2Int(gridPos.x + 1, mapBounds.yMax - 1));
@@ -481,6 +491,14 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             foreach (var l in lasers) if (l != null) Destroy(l);
             if (bossAnimation != null) bossAnimation.SetTrigger("Attack2Fin");
         }
+    }
+
+    private void RequestLaserFireSfx()
+    {
+        if (laserFireSfxEventId == AudioEventId.None)
+            return;
+
+        GameEvents.OnAudioEventRequested?.Invoke(laserFireSfxEventId);
     }
 
     private List<Vector2Int> GetCrossCells()

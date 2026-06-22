@@ -64,5 +64,7 @@
     BossB_Shockwave,
     BossB_CrystalSpawn,
     BossB_CrystalImpact,
-    BossB_Swing
+    BossB_Swing,
+
+    BossA_LaserFire
 }

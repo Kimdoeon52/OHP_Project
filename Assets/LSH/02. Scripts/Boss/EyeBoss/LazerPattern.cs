@@ -77,6 +77,9 @@ public class LazerPattern : MonoBehaviour
     [SerializeField] private int phase3LaserDamage = 50;
 
     [Header("Laser SFX")]
+    [Tooltip("레이저가 실제로 발사되는 순간 재생할 효과음입니다. AudioManager의 중요 SFX 전용 풀을 타도록 BossA_LaserFire를 기본값으로 둡니다.")]
+    [SerializeField] private AudioEventId laserFireSfxEventId = AudioEventId.BossA_LaserFire;
+
     [Tooltip("동시에 여러 줄 레이저가 발사될 때 SFX가 과도하게 겹치지 않도록 묶음당 1회만 통과시키는 최소 간격입니다.")]
     [SerializeField, Min(0f)] private float laserSfxBurstCooldownSeconds = 0.05f;
 
@@ -222,15 +225,11 @@ public class LazerPattern : MonoBehaviour
         return LazerAction.Pattern1;
     }
 
-    private static AudioEventId GetLazerPatternAudioEventId(LazerAction action)
+    private AudioEventId GetLazerPatternAudioEventId(LazerAction action)
     {
-        return action switch
-        {
-            LazerAction.Pattern1 => AudioEventId.BossA_Pattern1,
-            LazerAction.Pattern2 => AudioEventId.BossA_Pattern2,
-            LazerAction.Pattern3 => AudioEventId.BossA_Pattern3,
-            _ => AudioEventId.None
-        };
+        // 패턴 종류 사운드가 아니라 실제 레이저 발사음으로 통일한다.
+        // 그래야 좁혀오는 패턴도 AudioManager의 중요 SFX 전용 풀을 타서 다른 보스음에 묻히지 않는다.
+        return laserFireSfxEventId;
     }
 
     private void RequestLazerPatternAudio(AudioEventId eventId)

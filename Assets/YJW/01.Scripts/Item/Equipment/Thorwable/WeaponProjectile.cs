@@ -70,29 +70,44 @@ public class WeaponProjectile : MonoBehaviour
             return;
         }
 
-        if (other.CompareTag("Enemy"))
+        if (TryGetDamageableTarget(other, out IDamageable damageable))
         {
-            IDamageable damageable = other.GetComponent<IDamageable>();
-            if (damageable != null)
-            {
-                int damage = weaponInstance.GetDamage();
-                Debug.Log($"{other.name}한테 투척무기 맞힘");
-                weaponInstance.curse?.OnAttack(ref damage);
+            int damage = weaponInstance.GetDamage();
+            Debug.Log($"{other.name}한테 투척무기 맞힘");
+            weaponInstance.curse?.OnAttack(ref damage);
 
-                EnemyBase enemy = damageable as EnemyBase;
-                int beforeHp = damageable.CurrentHp;
-                if (weaponInstance.weapon is IHitEffect hitEffect && enemy != null)
-                    hitEffect.ApplyEffect(enemy, damage);
-                else
-                    damageable.TakeDamage(damage);
+            EnemyBase enemy = damageable as EnemyBase;
+            int beforeHp = damageable.CurrentHp;
+            if (weaponInstance.weapon is IHitEffect hitEffect && enemy != null)
+                hitEffect.ApplyEffect(enemy, damage);
+            else
+                damageable.TakeDamage(damage);
 
-                int finalDamage = Mathf.Max(0, beforeHp - damageable.CurrentHp);
-                if (finalDamage > 0 && damageable is not BossBase)
-                    PublishDamageText(damageable, finalDamage);
-            }
+            int finalDamage = Mathf.Max(0, beforeHp - damageable.CurrentHp);
+            if (finalDamage > 0 && damageable is not BossBase)
+                PublishDamageText(damageable, finalDamage);
         }
 
         Land();
+    }
+
+    private static bool TryGetDamageableTarget(Collider2D hitCollider, out IDamageable damageable)
+    {
+        damageable = null;
+
+        if (hitCollider == null)
+            return false;
+
+        // 몬스터 콜라이더가 자식 오브젝트에 붙어 있으면 GetComponent만으로는 IDamageable을 찾지 못한다.
+        damageable = hitCollider.GetComponent<IDamageable>();
+        if (damageable == null)
+            damageable = hitCollider.GetComponentInParent<IDamageable>();
+
+        if (damageable == null)
+            return false;
+
+        // 투척무기는 적/보스 피격만 처리한다. 플레이어 등 다른 IDamageable과 충돌해 오작동하지 않게 막는다.
+        return damageable is EnemyBase || damageable is BossBase;
     }
 
     private static void PublishDamageText(IDamageable damageable, int damage)

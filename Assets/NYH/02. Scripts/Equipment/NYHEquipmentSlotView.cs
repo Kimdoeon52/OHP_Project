@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class NYHEquipmentSlotView : MonoBehaviour, IPointerClickHandler
+public class NYHEquipmentSlotView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("슬롯 설정")]
     [Tooltip("이 UI 슬롯이 받을 장비 슬롯 종류입니다.")]
@@ -28,6 +28,8 @@ public class NYHEquipmentSlotView : MonoBehaviour, IPointerClickHandler
     public EquipmentSlot Slot => slot;
     public int SlotIndex => slotIndex;
 
+    private bool _isPointerOver;
+
     private void Awake()
     {
         ResolveReferences();
@@ -43,6 +45,7 @@ public class NYHEquipmentSlotView : MonoBehaviour, IPointerClickHandler
         {
             controller.OnInventoryItemEquipped += OnEquipmentChanged;
             controller.OnInventoryItemUnequipped += OnEquipmentChanged;
+            controller.OnInventoryItemStateChanged += OnEquipmentChanged;
         }
 
         Refresh();
@@ -50,10 +53,13 @@ public class NYHEquipmentSlotView : MonoBehaviour, IPointerClickHandler
 
     private void OnDisable()
     {
+        HideTooltip();
+
         if (controller != null)
         {
             controller.OnInventoryItemEquipped -= OnEquipmentChanged;
             controller.OnInventoryItemUnequipped -= OnEquipmentChanged;
+            controller.OnInventoryItemStateChanged -= OnEquipmentChanged;
         }
     }
 
@@ -76,6 +82,18 @@ public class NYHEquipmentSlotView : MonoBehaviour, IPointerClickHandler
         }
 
         TryEquipHeldItem();
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        _isPointerOver = true;
+        ShowTooltip();
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        _isPointerOver = false;
+        HideTooltip();
     }
 
     private void TryEquipHeldItem()
@@ -144,6 +162,56 @@ public class NYHEquipmentSlotView : MonoBehaviour, IPointerClickHandler
             return;
 
         Refresh();
+
+        if (_isPointerOver)
+            ShowTooltip();
+    }
+
+    private void ShowTooltip()
+    {
+        if (ToolTipController.Instance == null)
+            return;
+
+        string tooltipText = GetEquippedTooltipText();
+        if (string.IsNullOrWhiteSpace(tooltipText))
+        {
+            ToolTipController.Instance.Hide();
+            return;
+        }
+
+        ToolTipController.Instance.Show(tooltipText);
+    }
+
+    private void HideTooltip()
+    {
+        if (ToolTipController.Instance == null)
+            return;
+
+        ToolTipController.Instance.Hide();
+    }
+
+    private string GetEquippedTooltipText()
+    {
+        ResolveReferences();
+
+        if (controller == null)
+            return null;
+
+        // 인벤토리에서 장착된 장비는 원본 ItemInstance가 상태(강화/저주/감정)를 가장 정확히 들고 있다.
+        if (controller.TryGetEquippedInventoryItem(slot, slotIndex, out InventoryItem itemView)
+            && itemView != null
+            && itemView.ItemInstance != null)
+        {
+            return itemView.ItemInstance.GetToolTipStats();
+        }
+
+        if (!controller.TryGetEquipped(slot, slotIndex, out NYHEquipmentItemInstance equipped) || equipped == null)
+            return null;
+
+        if (equipped.SourceInstance != null)
+            return equipped.SourceInstance.GetToolTipStats();
+
+        return equipped.Data != null ? equipped.Data.GetToolTipStats() : null;
     }
 
     private void ResolveReferences()

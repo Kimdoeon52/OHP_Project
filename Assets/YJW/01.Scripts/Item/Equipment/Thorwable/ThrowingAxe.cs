@@ -18,9 +18,26 @@ public class ThrowingAxe : ThrowableWeapon, IHitEffect
     {
         for (int i = 0; i < duration; i++)
         {
-            int bleedingDamage = Random.Range(minBleedingDamage, maxBleedingDamage + 1);
-            enemy.TakeDamage(bleedingDamage);
             await UniTask.Delay(1000);
+
+            if (enemy == null || enemy.IsDead)
+                return;
+
+            int bleedingDamage = Random.Range(minBleedingDamage, maxBleedingDamage + 1);
+            int beforeHp = enemy.CurrentHp;
+            enemy.TakeDamage(bleedingDamage);
+            int finalDamage = Mathf.Max(0, beforeHp - enemy.CurrentHp);
+            PublishBleedingDamageText(enemy, finalDamage);
         }
+    }
+
+    private static void PublishBleedingDamageText(EnemyBase enemy, int damage)
+    {
+        if (enemy == null || damage <= 0)
+            return;
+
+        // 출혈은 EnemyBase.TakeDamage를 직접 호출하므로, 투척 투사체 쪽 보강만으로는 숫자가 뜨지 않는다.
+        GameEvents.OnCombatTextRequested?.Invoke(
+            new CombatTextRequest(enemy.transform.position, damage.ToString(), damage, CombatTextType.Damage));
     }
 }

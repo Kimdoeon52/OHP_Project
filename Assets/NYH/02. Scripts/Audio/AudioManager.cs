@@ -84,6 +84,12 @@ public class AudioManager : MonoBehaviour
     [Tooltip("AudioEventId별 효과음 Cue 테이블입니다. 새 사운드는 이 테이블에 추가합니다.")]
     [SerializeField] private AudioCueTable audioCueTable;
 
+    [Tooltip("레이저처럼 타이밍이 중요한 SFX가 다른 효과음에 밀리지 않도록 사용할 AudioSource 우선순위입니다. Unity는 숫자가 낮을수록 우선 재생합니다.")]
+    [SerializeField, Range(0, 256)] private int criticalSfxPriority = 32;
+
+    [Tooltip("중요 SFX 전용 Source 개수입니다. 연속 레이저처럼 짧은 간격으로 같은 소리가 반복될 때 앞 소리의 꼬리와 다음 소리를 분리합니다.")]
+    [SerializeField, Min(1)] private int criticalSfxPoolSize = 3;
+
     [Header("Game Event SFX")]
     [Tooltip("플레이어가 피해를 입었을 때 재생할 효과음입니다.")]
     [SerializeField] private AudioCue playerDamagedCue;
@@ -111,6 +117,8 @@ public class AudioManager : MonoBehaviour
 
     private readonly List<AudioSource> _sfxSources = new List<AudioSource>();
 
+    private readonly List<AudioSource> _criticalSfxSources = new List<AudioSource>();
+    private int _nextCriticalSfxSourceIndex;
     private AudioSource _activeBgmSource;
     private AudioSource _inactiveBgmSource;
     private Coroutine _bgmFadeCoroutine;
@@ -331,7 +339,11 @@ public class AudioManager : MonoBehaviour
 
         if (audioCueTable != null && audioCueTable.TryGetCue(eventId, out AudioCue cue))
         {
-            PlaySfx(cue);
+            if (IsCriticalSfxEvent(eventId))
+                PlayCriticalSfx(cue);
+            else
+                PlaySfx(cue);
+
             return;
         }
 
@@ -429,6 +441,30 @@ public class AudioManager : MonoBehaviour
         source.PlayOneShot(clip, Mathf.Clamp01(volumeScale));
     }
 
+    private void PlayCriticalSfx(AudioCue cue)
+    {
+        if (cue == null)
+            return;
+
+        AudioClip clip = cue.PickClip();
+        if (clip == null)
+            return;
+
+        AudioSource source = GetCriticalSfxSource();
+        if (source == null)
+            return;
+
+        // 중요한 발사음은 일반 SFX 풀과 분리하고, 전용 풀을 순환해 연속 발사음의 꼬리가 다음 소리를 덮지 않게 한다.
+        source.Stop();
+        source.pitch = Mathf.Clamp(cue.PickPitch(), 0.1f, 3f);
+        source.PlayOneShot(clip, Mathf.Clamp01(cue.VolumeScale));
+    }
+
+    private static bool IsCriticalSfxEvent(AudioEventId eventId)
+    {
+        return eventId == AudioEventId.BossA_LaserFire;
+    }
+
     private AudioSource GetAvailableSfxSource()
     {
         for (int i = 0; i < _sfxSources.Count; i++)
@@ -441,6 +477,21 @@ public class AudioManager : MonoBehaviour
             return CreateSfxSource();
 
         return _sfxSources.Count > 0 ? _sfxSources[0] : null;
+    }
+
+    private AudioSource GetCriticalSfxSource()
+    {
+        ResolveCriticalSfxPool();
+
+        if (_criticalSfxSources.Count == 0)
+            return null;
+
+        _nextCriticalSfxSourceIndex %= _criticalSfxSources.Count;
+        AudioSource source = _criticalSfxSources[_nextCriticalSfxSourceIndex];
+        _nextCriticalSfxSourceIndex = (_nextCriticalSfxSourceIndex + 1) % _criticalSfxSources.Count;
+
+        ConfigureCriticalSfxSource(source);
+        return source;
     }
 
     private void ResolveBgmSources()
@@ -486,7 +537,21 @@ public class AudioManager : MonoBehaviour
             CreateSfxSource();
     }
 
-    private AudioSource CreateSfxSource()
+    private void ResolveCriticalSfxPool()
+    {
+        int targetCount = Mathf.Max(1, criticalSfxPoolSize);
+        while (_criticalSfxSources.Count < targetCount)
+        {
+            AudioSource source = CreateSfxSource(addToPool: false);
+            ConfigureCriticalSfxSource(source);
+            _criticalSfxSources.Add(source);
+        }
+
+        if (_nextCriticalSfxSourceIndex >= _criticalSfxSources.Count)
+            _nextCriticalSfxSourceIndex = 0;
+    }
+
+    private AudioSource CreateSfxSource(bool addToPool = true)
     {
         AudioSource source = gameObject.AddComponent<AudioSource>();
         source.playOnAwake = false;
@@ -497,8 +562,24 @@ public class AudioManager : MonoBehaviour
         if (sfxOutputGroup != null)
             source.outputAudioMixerGroup = sfxOutputGroup;
 
-        _sfxSources.Add(source);
+        if (addToPool)
+            _sfxSources.Add(source);
+
         return source;
+    }
+
+    private void ConfigureCriticalSfxSource(AudioSource source)
+    {
+        if (source == null)
+            return;
+
+        source.playOnAwake = false;
+        source.loop = false;
+        source.spatialBlend = 0f;
+        source.priority = criticalSfxPriority;
+
+        if (sfxOutputGroup != null)
+            source.outputAudioMixerGroup = sfxOutputGroup;
     }
 
     private void SubscribeSliders()
