@@ -568,7 +568,16 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     protected override async UniTask OnDeath()
     {
         bossAnimation.SetTrigger("Dead");
+        
+        // 2초 대기 후 파티클 생성
         await UniTask.Delay(2000);
+
+        // 제작된 사망 파티클 스폰
+        SpawnDeathParticle();
+
+        // 파티클 생성 후 1초 더 대기하고 보스 제거
+        await UniTask.Delay(1000);
+
         Destroy(gameObject);
         base.OnDeath().Forget();
     }
