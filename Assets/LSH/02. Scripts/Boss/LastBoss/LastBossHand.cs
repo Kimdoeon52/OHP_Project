@@ -823,7 +823,13 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
             _ownerBoss.OnHandDefeated(this);
         }
 
-        transform.DOScale(0f, 0.5f).SetEase(Ease.InBack).OnComplete(() =>
+        // 1) 사망 파티클 프리팹 스폰
+        SpawnDeathParticle();
+
+        // 2) 1.0초 동안 좌우 격렬하게 흔들리면서 크기가 0으로 작아진 뒤 제거
+        float duration = 1.0f;
+        transform.DOShakePosition(duration, new Vector3(0.4f, 0f, 0f), 30, 90f, false, true);
+        transform.DOScale(0f, duration).SetEase(Ease.InQuad).OnComplete(() =>
         {
             Destroy(gameObject);
         });
