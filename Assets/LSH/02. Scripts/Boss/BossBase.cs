@@ -49,15 +49,6 @@ public class BossBase : EnemyNormalBASE
     [SerializeField] protected TileBase warningTile;   //예고 칸에 칠할 타일
     [SerializeField] protected Sprite warningSprite;    //(경고 스프라이트 생략용 등)
 
-    [Header("사망 연출 공통 설정")]
-    [SerializeField] protected Sprite[] explosionSprites;  // 보스 공통 사망 폭발 파티클용 스프라이트 배열 (N개 무작위 적용)
-    [SerializeField] protected float explosionSpeedMin = 5.0f; // 분사 최소 속도
-    [SerializeField] protected float explosionSpeedMax = 9.5f; // 분사 최대 속도
-    [SerializeField] protected float explosionGravity = 1.2f;  // 중력 세기 (포물선 낙하 연출)
-    [SerializeField] protected int explosionParticleCount = 35; // 방출할 파티클 개수
-    [SerializeField] protected Color explosionMainColor = new Color(1f, 0.6f, 0f); // 그라데이션 메인 컬러 (기본: 주황)
-    [SerializeField] protected Color explosionSubColor = new Color(1f, 0.9f, 0.1f);  // 그라데이션 서브 컬러 (기본: 노랑)
-
     protected bool isBossAttacking; //보스가 공격 중인지 여부를 나타내는 변수
     protected Animator bossAnimation; //보스 애니메이션을 제어하기 위한
     protected CancellationTokenSource cancelToken;
@@ -595,104 +586,5 @@ public class BossBase : EnemyNormalBASE
             }
         }
         return true;
-    }
-
-    protected virtual void PlayDeathExplosionParticle()
-    {
-        // 펑! 하는 폭발 파티클용 빈 오브젝트 생성
-        GameObject particleObj = new GameObject("BossDeathExplosionParticle");
-        particleObj.transform.position = transform.position;
-
-        ParticleSystem ps = particleObj.AddComponent<ParticleSystem>();
-        
-        // 1. 메인 모듈 설정 (분수처럼 뿜어지는 설정)
-        var main = ps.main;
-        main.duration = 1.2f;
-        main.loop = false;
-        main.startSize = new ParticleSystem.MinMaxCurve(0.15f, 0.45f);
-        main.startSpeed = new ParticleSystem.MinMaxCurve(explosionSpeedMin, explosionSpeedMax); // 위로 세게 솟구침
-        main.startLifetime = new ParticleSystem.MinMaxCurve(0.6f, 1.2f);
-        main.gravityModifier = explosionGravity; // 포물선 낙하 연출 강화
-        main.stopAction = ParticleSystemStopAction.Destroy; // 재생 완료 시 오브젝트 자동 제거
-
-        // 2. 이미터 렌더러 설정 (스프라이트 적용 및 소팅 오더 설정)
-        var renderer = particleObj.GetComponent<ParticleSystemRenderer>();
-        if (renderer != null)
-        {
-            renderer.renderMode = ParticleSystemRenderMode.Billboard;
-            renderer.sortingLayerName = "Default"; 
-            renderer.sortingOrder = 15; // 보스 소멸 직후 잔해나 플레이어 위에 잘 렌더링되도록
-            
-            // 스프라이트 렌더링에 적합한 내장 메티리얼을 바인딩 (에디터 에러 방지)
-            Material defaultSpriteMat = Canvas.GetDefaultCanvasMaterial();
-            if (defaultSpriteMat != null)
-            {
-                renderer.material = defaultSpriteMat;
-            }
-        }
-
-        // 3. 텍스처 시트 애니메이션 모듈 (등록된 무작위 N개 스프라이트 매핑)
-        if (explosionSprites != null && explosionSprites.Length > 0)
-        {
-            var textureSheet = ps.textureSheetAnimation;
-            textureSheet.enabled = true;
-            textureSheet.mode = ParticleSystemAnimationMode.Sprites;
-            
-            foreach (var sprite in explosionSprites)
-            {
-                if (sprite != null)
-                {
-                    textureSheet.AddSprite(sprite);
-                }
-            }
-
-            // 입자가 스폰될 때 무작위 프레임(스프라이트)에서 시작하도록 설정
-            textureSheet.timeMode = ParticleSystemAnimationTimeMode.Lifetime;
-            textureSheet.startFrame = new ParticleSystem.MinMaxCurve(0f, explosionSprites.Length);
-            textureSheet.frameOverTime = new ParticleSystem.MinMaxCurve(0f, 0f); // 입자 수명 동안 이미지 고정
-        }
-
-        // 4. 에미션 모듈 (펑! 하고 한 번에 대량 방출)
-        var emission = ps.emission;
-        emission.rateOverTime = 0;
-        var burst = new ParticleSystem.Burst(0f, explosionParticleCount); // 펑 하고 N개 입자 동시 방출
-        emission.SetBursts(new[] { burst });
-
-        // 5. 형태 모듈 (위로 뿜어지는 분수 스타일 Cone 설정)
-        var shape = ps.shape;
-        shape.shapeType = ParticleSystemShapeType.Cone;
-        shape.angle = 25f; // 퍼짐 각도
-        shape.radius = 0.3f;
-        shape.rotation = new Vector3(-90f, 0f, 0f); // 위쪽(Y축 상단) 방향으로 분사 회전
-
-        // 6. 시간에 따른 크기 모듈 (점차 작아지며 소멸)
-        var sizeOverLifetime = ps.sizeOverLifetime;
-        sizeOverLifetime.enabled = true;
-        AnimationCurve sizeCurve = new AnimationCurve();
-        sizeCurve.AddKey(0f, 1f);
-        sizeCurve.AddKey(1f, 0f); 
-        sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f, sizeCurve);
-
-        // 7. 시간에 따른 색상 그라데이션 모듈 (주황->노랑->소멸 시 투명화)
-        var colorOverLifetime = ps.colorOverLifetime;
-        colorOverLifetime.enabled = true;
-        Gradient gradient = new Gradient();
-        gradient.SetKeys(
-            new GradientColorKey[] { 
-                new GradientColorKey(Color.white, 0.0f), 
-                new GradientColorKey(explosionMainColor, 0.25f), // 메인 컬러
-                new GradientColorKey(explosionSubColor, 0.55f),  // 서브 컬러
-                new GradientColorKey(Color.red, 1.0f) 
-            },
-            new GradientAlphaKey[] { 
-                new GradientAlphaKey(1.0f, 0.0f), 
-                new GradientAlphaKey(1.0f, 0.75f), 
-                new GradientAlphaKey(0.0f, 1.0f) // 소멸 시 페이드아웃 
-            }
-        );
-        colorOverLifetime.color = new ParticleSystem.MinMaxGradient(gradient);
-
-        // 재생 시작
-        ps.Play();
     }
 }

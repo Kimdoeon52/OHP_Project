@@ -203,9 +203,6 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
         }
         catch (System.OperationCanceledException) { }
 
-        // 최종 파괴 전 공통 사망 폭발 파티클 연출 재생
-        PlayDeathExplosionParticle();
-
         Destroy(gameObject); // 파괴
         base.OnDeath().Forget();
     }
