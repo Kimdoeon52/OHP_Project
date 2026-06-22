@@ -16,6 +16,7 @@ public class SpecialPattern : MonoBehaviour
     [SerializeField] private Color crystalTint = Color.red;
     [SerializeField] private float crystalScale = 1f;
     [SerializeField] private float crystalLifetimeSec = 1.5f;
+    [SerializeField] private int crystalHitDelayMs = 150; // 경고 해제 후 실제 데미지가 들어가는 딜레이(ms)
 
     [Header("가장자리 크리스탈 설정")]
     [SerializeField] private GameObject edgeCrystalPrefab; // 가장자리 벽 전용 크리스탈 프리팹 (비워둘 시 폴백용 crystalPrefab 사용)
@@ -230,6 +231,9 @@ public class SpecialPattern : MonoBehaviour
                 boss.ClearWarning(targetPos);
                 warningCleared = true;
             }
+
+            // 크리스탈 낙하 애니메이션 싱크를 위해 딜레이 추가
+            await UniTask.Delay(crystalHitDelayMs, cancellationToken: cts.Token);
 
             if (boss.Player != null && !boss.Player.IsDead && boss.Player.GridPosition == targetPos)
             {

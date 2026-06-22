@@ -28,6 +28,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     [SerializeField] private Color chasingCrystalTint = Color.white; // 기본 베이스 색상
     [SerializeField] private float crystalShakeDuration = 0.15f;    // 크리스탈 낙하 시 카메라 흔들림 시간
     [SerializeField] private float crystalShakeStrength = 0.25f;    // 크리스탈 낙하 시 카메라 흔들림 강도
+    [SerializeField] private int crystalHitDelayMs = 150;           // 경고 해제 후 실제 데미지가 들어가는 딜레이(ms)
     
     [Header("Phase 2 연출")]
     [SerializeField] private Color phase2Tint = new Color(1f, 0.45f, 0.45f, 1f); // 보스 스프라이트 붉은 틴트
@@ -201,6 +202,9 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             await UniTask.Delay(3000, cancellationToken: token);
         }
         catch (System.OperationCanceledException) { }
+
+        // 최종 파괴 전 공통 사망 폭발 파티클 연출 재생
+        PlayDeathExplosionParticle();
 
         Destroy(gameObject); // 파괴
         base.OnDeath().Forget();
@@ -486,6 +490,9 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
                 ClearWarning(ringCells);
                 warningCleared = true;
 
+                // 크리스탈 낙하 애니메이션 싱크를 위해 딜레이 추가
+                await UniTask.Delay(crystalHitDelayMs, cancellationToken: cancelToken.Token);
+
                 DamagePlayerIfInCells(ringCells, shockwaveDamage);
             }
             finally
@@ -624,6 +631,9 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             // 시각적 경고를 먼저 해제
             ClearWarning(cells);
             warningCleared = true;
+
+            // 크리스탈 낙하 애니메이션 싱크를 위해 딜레이 추가
+            await UniTask.Delay(crystalHitDelayMs, cancellationToken: cancelToken.Token);
 
             DamagePlayerIfInCells(cells, damage);
         }
