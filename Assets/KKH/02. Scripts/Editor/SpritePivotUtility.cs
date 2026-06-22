@@ -3,7 +3,7 @@ using UnityEditor;
 
 public class SpritePivotUtility : EditorWindow
 {
-    [MenuItem("Tools/Pivot Utility/Set Selected Sprite Pivots to Center (0.5, 0.5)")]
+    [MenuItem("Tools/Pivot Utility/Set Selected Sprite Pivots to Center (0.5, 0.3)")]
     public static void SetSelectedPivotsToCenter()
     {
         // 프로젝트 창에서 선택된 Texture2D 에셋들을 가져옵니다.
@@ -33,20 +33,22 @@ public class SpritePivotUtility : EditorWindow
             // Sprite Import Mode에 맞춰 처리
             if (importer.spriteImportMode == SpriteImportMode.Multiple)
             {
-                // Multiple 모드: 시트 내 모든 개별 슬라이스의 피벗을 Center로 변경
+                // Multiple 모드: 시트 내 모든 개별 슬라이스의 피벗을 (0.5, 0.3)으로 변경
                 var spritesheet = importer.spritesheet;
                 for (int i = 0; i < spritesheet.Length; i++)
                 {
-                    spritesheet[i].alignment = (int)SpriteAlignment.Center;
+                    spritesheet[i].alignment = (int)SpriteAlignment.Custom;
+                    spritesheet[i].pivot = new Vector2(0.5f, 0.3f);
                 }
                 importer.spritesheet = spritesheet;
             }
             else
             {
-                // Single 모드: 단일 스프라이트 피벗을 Center로 변경
+                // Single 모드: 단일 스프라이트 피벗을 (0.5, 0.3) 변경
                 TextureImporterSettings settings = new TextureImporterSettings();
                 importer.ReadTextureSettings(settings);
-                settings.spriteAlignment = (int)SpriteAlignment.Center;
+                settings.spriteAlignment = (int)SpriteAlignment.Custom;
+                settings.spritePivot = new Vector2(0.5f, 0.3f);
                 importer.SetTextureSettings(settings);
             }
 
@@ -57,6 +59,6 @@ public class SpritePivotUtility : EditorWindow
         }
 
         AssetDatabase.Refresh();
-        Debug.Log($"[SpritePivotUtility] 총 {count}개의 스프라이트 피벗을 Center(0.5, 0.5)로 변경했습니다.");
+        Debug.Log($"[SpritePivotUtility] 총 {count}개의 스프라이트 피벗을 (0.5, 0.3)로 변경했습니다.");
     }
 }
