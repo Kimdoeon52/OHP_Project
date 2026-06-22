@@ -358,6 +358,14 @@ public abstract class EnemyBase : EntityBase, IDamageable
             : new Vector3(cell.x, cell.y, 0);
         // 프리팹 스폰 후 관리 목록에 등록
         GameObject indicator = Instantiate(warningPrefab, worldPos, Quaternion.identity);
+
+        // TelegraphIndicator가 있다면 Show를 호출하여 내부 오프셋 반영 및 시야 업데이트
+        TelegraphIndicator ti = indicator.GetComponent<TelegraphIndicator>();
+        if (ti != null)
+        {
+            ti.Show(cell);
+        }
+
         _activeTelegraphs.Add(cell, indicator);
     }
 
@@ -677,6 +685,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
         }
 
         ClearTelegraphs();
+        _attackActionPoints = 0f; // 공격 행동 포인트 초기화 (쿨타임 보정)
         _isAttacking = false;
     }
 

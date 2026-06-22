@@ -3,6 +3,8 @@ using UnityEngine;
 [RequireComponent(typeof(SpriteRenderer))]
 public class TelegraphIndicator : MonoBehaviour
 {
+    [SerializeField] private Vector3 offset = Vector3.zero;
+
     private SpriteRenderer _renderer;
 
     public Vector2Int Cell { get; private set; }
@@ -15,7 +17,7 @@ public class TelegraphIndicator : MonoBehaviour
     public void Show(Vector2Int cell)
     {
         Cell = cell;
-        transform.position = GridSystem.Instance.GridToWorld(cell);
+        transform.position = GridSystem.Instance.GridToWorld(cell) + offset;
         RefreshVisibility();
     }
 

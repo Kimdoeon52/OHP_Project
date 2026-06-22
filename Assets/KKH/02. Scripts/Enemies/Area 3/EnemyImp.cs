@@ -19,13 +19,7 @@ public class EnemyImp : EnemyBase
             UpdateSpriteDirection(_pendingAttackCell.Value);
 
             _targetArea.Clear();
-            for (int x = -1; x <= 1; x++)
-            {
-                for (int y = -1; y <= 1; y++)
-                {
-                    _targetArea.Add(_pendingAttackCell.Value + new Vector2Int(x, y));
-                }
-            }
+            _targetArea.Add(_pendingAttackCell.Value);
 
             foreach (var cell in _targetArea)
             {
@@ -64,6 +58,7 @@ public class EnemyImp : EnemyBase
             }
         }
         ClearTelegraphs();
+        _attackActionPoints = 0f; // 공격 완료 후 공격 포인트 초기화 (쿨타임 보장)
         _isAttacking = false;
     }
 
