@@ -431,6 +431,51 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 1000, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &999000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 999000002}
+  - component: {fileID: 999000003}
+  m_Layer: 0
+  m_Name: LocalizationManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &999000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &999000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1cee671be49c86540a5cf7d6f919e121, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentLanguage: 0
 --- !u!1 &1151938867
 GameObject:
   m_ObjectHideFlags: 0
@@ -756,17 +801,11 @@ MonoBehaviour:
   endingLastTextUI: {fileID: 894111231}
   fadeDuration: 2
   dialogueLines:
-  - "\uD3C9\uBC94\uD55C \uD0D0\uD5D8\uAC00\uC758 \uC6B4\uBA85\uC744 \uC1A1\uB450\uB9AC\uC9F8
-    \uC0BC\uCF1C\uBC84\uB9B0 '\uD558\uB370\uC2A4\uC758 \uBAA8\uB798\uC2DC\uACC4'\n\uAC70\uC2A4\uB97C
-    \uC218 \uC5C6\uB294 \uC2DC\uAC04\uC758 \uC800\uC8FC\uAC00 \uADF8\uB97C \uB36E\uCCD0\uC628\uB2E4\n\uC601\uC6D0\uD788
-    \uAC07\uD600\uBC84\uB9B0 \uC2DC\uAC04\uC758 \uAC10\uC625 \uC18D\uC5D0\uC11C,\n\uC800\uC8FC\uB97C
-    \uD480\uAE30 \uC704\uD574 \uD0D0\uD5D8\uAC00\uB294 \uC5B4\uB460 \uC18D\uC73C\uB85C
-    \uBC1C\uC744 \uB0B4\uB51B\uB294\uB2E4"
+  - "msg_\uC624\uD504\uB2DD1"
   typingSpeed: 0.1
   exitDelay: 1
   exitDuration: 4
-  lastDialogueText: "\uD55C\uC815\uB41C \uC2DC\uAC04\uC18D\uC758 \uD0D0\uD5D8\uAC00
-    \uC774\uC57C\uAE30"
+  lastDialogueText: "msg_\uC624\uD504\uB2DD2"
   lastTextFadeDuration: 2
   nextSceneName: NYH_Grid
   onEndingFinished:
@@ -796,3 +835,4 @@ SceneRoots:
   - {fileID: 114527162}
   - {fileID: 1805279180}
   - {fileID: 1821096158}
+  - {fileID: 999000002}

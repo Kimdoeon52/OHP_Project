@@ -25,7 +25,7 @@ public class Ending : MonoBehaviour
     [SerializeField] private float fadeDuration = 2.0f;
 
     [Header("Dialogue Settings")]
-    [Tooltip("클릭할 때마다 한 줄씩 출력될 엔딩 대사들")]
+    [Tooltip("클릭할 때마다 한 줄씩 출력될 엔딩 대사들 — LocalizationManager 키를 입력합니다.")]
     [SerializeField] [TextArea(3, 10)] private string[] dialogueLines;
     
     [Tooltip("한 글자씩 출력되는 타이핑 속도 (0 이하로 설정 시 즉시 출력)")]
@@ -39,7 +39,7 @@ public class Ending : MonoBehaviour
     [SerializeField] private float exitDuration = 2.0f;
 
     [Header("Last Dialogue Settings")]
-    [Tooltip("모든 연출이 다 끝난 후 마지막에 나타날 텍스트 내용")]
+    [Tooltip("모든 연출이 다 끝난 후 마지막에 나타날 텍스트 — LocalizationManager 키를 입력합니다.")]
     [SerializeField] [TextArea(3, 10)] private string lastDialogueText = "THE END";
 
     [Tooltip("마지막 텍스트가 서서히 나타나는 시간(초)")]
@@ -192,7 +192,7 @@ public class Ending : MonoBehaviour
     {
         if (currentLineIndex >= dialogueLines.Length) return;
 
-        currentCompleteText = dialogueLines[currentLineIndex];
+        currentCompleteText = ResolveLine(dialogueLines[currentLineIndex]);
         currentLineIndex++;
 
         if (typingSpeed > 0f)
@@ -291,8 +291,8 @@ public class Ending : MonoBehaviour
 
         if (endingLastTextUI != null)
         {
-            endingLastTextUI.text = lastDialogueText;
-            
+            endingLastTextUI.text = ResolveLine(lastDialogueText);
+
             // 확실하게 투명도를 0으로 리셋 후 1로 페이드인 진행
             Color c = endingLastTextUI.color;
             c.a = 0f;
@@ -315,6 +315,12 @@ public class Ending : MonoBehaviour
         {
             Debug.LogWarning("[Ending] endingLastTextUI가 설정되지 않았습니다. 클릭 시 씬이 전환됩니다.");
         }
+    }
+
+    // dialogueLines/lastDialogueText 항목을 LocalizationManager 키로 보고 텍스트 조회 (매니저 없으면 원본 그대로)
+    private string ResolveLine(string raw)
+    {
+        return LocalizationManager.Instance != null ? LocalizationManager.Instance.Get(raw) : raw;
     }
 
     private void SetText(string text)

@@ -948,6 +948,24 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "인벤토리 가득" },
             { Language.English, "Inventory Full" }
         }},
+        //------------------------------------------- 오프닝
+        { "msg_오프닝1", new Dictionary<Language, string> {
+            { Language.Korean, "평범한 탐험가의 운명을 송두리째 삼켜버린 '하데스의 모래시계'\r\n거스를 수 없는 시간의 저주가 그를 덮쳐온다\r\n영원히 갇혀버린 시간의 감옥 속에서,\r\n저주를 풀기 위해 탐험가는 어둠 속으로 발을 내딛는다" },
+            { Language.English, "The Hourglass of Hades' swallowed the fate of an ordinary explorer whole.\r\nThe unstoppable curse of time crashes down upon him.\r\nTrapped forever within a prison of frozen time,\r\nthe explorer steps into the darkness to break the curse." }
+        }},
+        { "msg_오프닝2", new Dictionary<Language, string> {
+            { Language.Korean, "한정된 시간속의 탐험가 이야기" },
+            { Language.English, "A tale of an explorer against the clock." }
+        }},
+        //------------------------------------------- 엔딩
+        { "msg_엔딩", new Dictionary<Language, string> {
+            { Language.Korean, "하데스를 쓰러뜨리는데 성공했으나\r\n저주는 끝나지 않았다\r\n저주를 풀기 위한 그의 여정은\r\n앞으로도 계속 될 것이다" },
+            { Language.English, "The explorer succeeded in defeating Hades,\r\nbut the curse was not lifted.\r\nHis journey to break the curse\r\nwill continue on." }
+        }},
+        { "msg_엔딩계속", new Dictionary<Language, string> {
+            { Language.Korean, "TO BE CONTINUED" },
+            { Language.English, "TO BE CONTINUED" }
+        }},
     };
 
     public static string GetOrDefault(string key, string fallback)
