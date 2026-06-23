@@ -338,5 +338,9 @@ public class MapItemSpawner : MonoBehaviour
         pickup.curse = item.CanCurse ? ItemRoll.Curse(rng, cursePool) : null;
         pickup.Initialize(cell);
         _spawned.Add(pickup.gameObject);
+
+        // TEMP DEBUG — 저주 굴림 확인용. 확인 끝나면 지워주세요.
+        if (item.CanCurse)
+            Debug.Log($"[MapItemSpawner] {item.Name} @ {cell} canCurse=true curse={(pickup.curse != null ? pickup.curse.CurseName : "없음")} (seed={rng.Seed}, call={rng.CallCount})");
     }
 }
