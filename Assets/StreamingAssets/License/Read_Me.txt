@@ -307,8 +307,206 @@
   - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
   - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
 
-- [리터칭한 이미지 파일명 기재] (예: Character_Hero_Retouched)
-  - 저작권자: Base image created with Gemini (Retouched by 창작자/팀명)
+- FriePotionEffect
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- ChainArmor
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- ClothArmor
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- GoldArmor
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- LeatherArmor
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- ExperiencePotion
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- FastPotion
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- FirePotion
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- FlyPotion
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- HPPotion
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- IcePotion
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- MemoryPotion
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- OverloadPotion
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- PuriPotion
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- StrengthPotion
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- TimePotion
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- scroll
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- Harpoon
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- Javelin
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- Lasso
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- Shuriken
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- ThrowingAxe
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- ThrowingKnife
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- DoubleSword
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- LongSword
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- Seameter
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- Shield
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- ShortSword
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- Sword
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- VeryBigShield
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- VeryBigSword
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- FragmentOfLife
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- Torch
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- LongSword
+  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
   - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
   - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
   - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
