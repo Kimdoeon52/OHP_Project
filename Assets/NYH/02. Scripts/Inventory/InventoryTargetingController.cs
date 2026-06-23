@@ -65,10 +65,14 @@ namespace PrototypeRT
         // 타겟팅을 끝낸 클릭이 같은 프레임의 다른 UI 클릭 처리로 이어지지 않게 막는 프레임 기록입니다.
         private int _blockPointerInputFrame = -1;
 
+        // 주문서 대상 클릭은 MouseDown에서 처리되지만 장비 슬롯 OnPointerClick은 MouseUp에서 다시 들어올 수 있습니다.
+        // 마우스를 뗄 때까지 막아야 장착 아이템이 손에 들리거나 해제 사운드가 나는 일을 피할 수 있습니다.
+        private bool _blockPointerInputUntilLeftReleased;
+
         public bool IsTargeting => _mode != InventoryTargetingMode.None;
 
         // IsTargeting이 false가 된 직후에도, 해당 클릭 프레임 동안은 인벤/장비의 일반 클릭 처리를 막아야 합니다.
-        public bool BlocksPointerInput => IsTargeting || Time.frameCount == _blockPointerInputFrame;
+        public bool BlocksPointerInput => IsTargeting || Time.frameCount == _blockPointerInputFrame || _blockPointerInputUntilLeftReleased;
 
         /// <summary>
         /// InventoryController가 런타임에 자동 생성한 경우 참조를 주입합니다.
@@ -146,7 +150,7 @@ namespace PrototypeRT
             if (Input.GetMouseButtonDown(1))
             {
                 // 취소 클릭도 같은 프레임에 장비 해제/아이템 줍기로 이어지면 안 됩니다.
-                _blockPointerInputFrame = Time.frameCount;
+                BlockPointerInputForCurrentClick();
                 CancelTargeting();
                 return;
             }
@@ -156,12 +160,24 @@ namespace PrototypeRT
 
             // 대상 선택 클릭은 주문서 효과 처리 전용입니다.
             // 성공해서 타겟팅이 끝나도 이 프레임에는 장비/인벤 일반 클릭을 실행하지 않습니다.
-            _blockPointerInputFrame = Time.frameCount;
+            BlockPointerInputForCurrentClick();
 
             if (_mode == InventoryTargetingMode.ThrowPotion)
                 TryCompleteThrowPotion();
             else if (_mode == InventoryTargetingMode.TargetScroll)
                 TryCompleteScrollTarget();
+        }
+
+        private void LateUpdate()
+        {
+            if (!_blockPointerInputUntilLeftReleased)
+                return;
+
+            if (Input.GetMouseButton(0))
+                return;
+
+            _blockPointerInputFrame = Time.frameCount;
+            _blockPointerInputUntilLeftReleased = false;
         }
 
         /// <summary>
@@ -354,6 +370,12 @@ namespace PrototypeRT
             _scrollKind = InventoryScrollTargetKind.None;
             _activeItem = null;
             Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+        }
+
+        private void BlockPointerInputForCurrentClick()
+        {
+            _blockPointerInputFrame = Time.frameCount;
+            _blockPointerInputUntilLeftReleased = true;
         }
 
         /// <summary>
