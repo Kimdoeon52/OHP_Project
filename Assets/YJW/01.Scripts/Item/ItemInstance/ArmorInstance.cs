@@ -24,7 +24,7 @@ public class ArmorInstance : EquipmentInstance
                $"{Armor.LocalizedDescription}\n" +
                $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}: {GetRequiredStrength()}\n" +
                $"{LocalizationManager.GetOrDefault("msg_피해감소", "Damage Reduction")}: {GetMinDefense()}~{GetMaxDefense()}" +
-               $"{(curse != null ? $"\n{curse.LocalizedName}: {curse.LocalizedDescription}" : "")}" +
-               $"{(magic != null ? $"\n{magic.LocalizedName}: {magic.LocalizedDescription}" : "")}";
+               (curse != null ? $"\n<color=orange>{curse.LocalizedName}: {curse.LocalizedDescription}</color>" : "") +
+               (magic != null ? $"\n<color=cyan>{magic.LocalizedName}: {magic.LocalizedDescription}</color>" : "");
     }
 }
