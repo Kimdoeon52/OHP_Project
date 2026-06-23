@@ -50,6 +50,10 @@ public class DebugPlayer : MonoBehaviour
     [Tooltip("Add Time 실행 시 남은 시간에 더할 초 단위 값입니다.")]
     [SerializeField, Min(0.1f)] private float debugTimeAmount = 10f;
 
+    [Header("Accuracy Debug")]
+    [Tooltip("Decrease Accuracy 실행 시 낮출 명중률입니다. Miss 판정 확인용으로만 사용합니다.")]
+    [SerializeField, Min(1)] private int accuracyDebugAmount = 20;
+
     [Header("상태이상 디버그")]
     [Tooltip("Apply Status 실행 시 적용할 상태이상 종류입니다.")]
     [SerializeField] private StatusType statusType = StatusType.Poison;
@@ -92,6 +96,10 @@ public class DebugPlayer : MonoBehaviour
     [SerializeField] private KeyCode downgradeKey = KeyCode.Alpha8;
     [Tooltip("상태이상을 확인하는 키입니다..")]
     [SerializeField] private KeyCode effectKey = KeyCode.Alpha9;
+    [Tooltip("플레이어 명중률만 accuracyDebugAmount만큼 낮춰 Miss 판정을 확인하는 키입니다.")]
+    [SerializeField] private KeyCode decreaseAccuracyKey = KeyCode.F6;
+    [Tooltip("플레이어 명중률만 accuracyDebugAmount만큼 다시 올리는 키입니다.")]
+    [SerializeField] private KeyCode increaseAccuracyKey = KeyCode.F7;
 
     private void Awake()
     {
@@ -136,6 +144,12 @@ public class DebugPlayer : MonoBehaviour
             PlayerDowngrade();
         if(Input.GetKeyDown(effectKey))
             ApplyStatus();
+
+        if (Input.GetKeyDown(decreaseAccuracyKey))
+            DecreaseAccuracy();
+
+        if (Input.GetKeyDown(increaseAccuracyKey))
+            IncreaseAccuracy();
     
     }
 
@@ -242,6 +256,36 @@ public class DebugPlayer : MonoBehaviour
         stats.AddStat(NYHStatType.Evasion, -1);
 
         RefreshStatsUI();
+    }
+
+    /// <summary>
+    /// Miss 테스트를 위해 플레이어 명중률만 낮춥니다.
+    /// 다른 전투 스탯까지 바꾸면 원인 파악이 어려워서 Accuracy만 조정합니다.
+    /// </summary>
+    [ContextMenu("Debug/Decrease Accuracy")]
+    public void DecreaseAccuracy()
+    {
+        AdjustAccuracy(-accuracyDebugAmount);
+    }
+
+    /// <summary>
+    /// Decrease Accuracy로 낮춘 명중률을 되돌릴 때 사용합니다.
+    /// </summary>
+    [ContextMenu("Debug/Increase Accuracy")]
+    public void IncreaseAccuracy()
+    {
+        AdjustAccuracy(accuracyDebugAmount);
+    }
+
+    /// <summary>
+    /// 적 회피율이 낮은 상황에서도 Miss를 강제로 보기 위해 명중률을 0까지 내립니다.
+    /// </summary>
+    [ContextMenu("Debug/Set Accuracy To Zero")]
+    public void SetAccuracyToZero()
+    {
+        if (!TryGetPlayerStats(out NYHPlayerStats stats)) return;
+
+        AdjustAccuracy(-stats.Accuracy);
     }
 
 
@@ -502,6 +546,32 @@ public class DebugPlayer : MonoBehaviour
 
         Debug.LogWarning("[DebugPlayer] NYHEquipmentController를 찾지 못했습니다.");
         return false;
+    }
+
+    private bool TryGetPlayerStats(out NYHPlayerStats stats)
+    {
+        ResolveReferences();
+
+        stats = NYHPlayerStats.Instance;
+        if (stats == null && player != null)
+            stats = player.GetComponent<NYHPlayerStats>();
+
+        if (stats != null) return true;
+
+        Debug.LogWarning("[DebugPlayer] NYHPlayerStats를 찾지 못해 명중률을 조정할 수 없습니다.");
+        return false;
+    }
+
+    private void AdjustAccuracy(int amount)
+    {
+        if (!TryGetPlayerStats(out NYHPlayerStats stats)) return;
+
+        int before = stats.Accuracy;
+        stats.AddStat(NYHStatType.Accuracy, amount);
+        int after = stats.Accuracy;
+
+        Debug.Log($"[DebugPlayer] Accuracy changed: {before} -> {after} ({amount})");
+        RefreshStatsUI();
     }
 
     private bool TryGetMouseGridPosition(out Vector2Int gridPosition)
