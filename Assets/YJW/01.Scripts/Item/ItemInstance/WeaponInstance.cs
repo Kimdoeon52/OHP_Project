@@ -24,7 +24,7 @@ public class WeaponInstance : EquipmentInstance
                $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}: {GetRequiredStrength()}\n" +
                $"{LocalizationManager.GetOrDefault("msg_T공격력", "Damage")}: {GetMinDamage()}~{GetMaxDamage()}" +
                $"{LocalizationManager.GetOrDefault("msg_T공격속도", "Attack Speed")}: {Weapon.AttackSpeed}" +
-               $"{(curse != null ? $"\n{curse.LocalizedName}: {curse.LocalizedDescription}" : "")}" +
-               $"{(magic != null ? $"\n{magic.LocalizedName}: {magic.LocalizedDescription}" : "")}";
+               $"<color=orange>{(curse != null ? $"\n{curse.LocalizedName}: {curse.LocalizedDescription}" : "")}</color>" +
+               $"<color=cyan>{(magic != null ? $"\n{magic.LocalizedName}: {magic.LocalizedDescription}" : "")}</color>";
     }
 }
