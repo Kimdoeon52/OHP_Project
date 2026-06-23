@@ -25,6 +25,6 @@ public class WeaponInstance : EquipmentInstance
                $"{LocalizationManager.GetOrDefault("msg_T공격력", "Damage")}: {GetMinDamage()}~{GetMaxDamage()}" +
                $"{LocalizationManager.GetOrDefault("msg_T공격속도", "Attack Speed")}: {Weapon.AttackSpeed}" +
                (curse != null ? $"\n<color=orange>{curse.LocalizedName}: {curse.LocalizedDescription}</color>" : "") +
-               (magic != null ? $"\n<color=aqua>{magic.LocalizedName}: {magic.LocalizedDescription}</color>" : "");
+               (magic != null ? $"\n<color=#00ffff>{magic.LocalizedName}: {magic.LocalizedDescription}</color>" : "");
     }
 }
