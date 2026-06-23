@@ -624,7 +624,7 @@ BoxCollider2D:
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
+    pivot: {x: 0.5, y: 0.4}
     oldSize: {x: 4, y: 4}
     newSize: {x: 1.28, y: 1.28}
     adaptiveTilingThreshold: 0.5
@@ -656,9 +656,11 @@ MonoBehaviour:
   deathDestroyDelay: 0.6
   moveSpeed: 0
   isDetected: 0
-  burrowTriggerName: Burrow
+  burrowTriggerName: Walk
   emergeTriggerName: Emerge
   travelBoolName: Walk
+  burrowStateName: big worm 1 retreat
+  idleStateName: Idle
   burrowDuration: 0.15
   travelDuration: 0.25
   emergeDuration: 0.15

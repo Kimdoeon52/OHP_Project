@@ -744,6 +744,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
 
         ClearTelegraphs();
         _attackActionPoints = 0f; // 공격 행동 포인트 초기화 (쿨타임 보정)
+        _pendingAttackCell = null; // 예약된 공격 타겟 리셋
         _isAttacking = false;
     }
 

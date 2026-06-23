@@ -38,7 +38,7 @@ public class SpritePivotUtility : EditorWindow
                 for (int i = 0; i < spritesheet.Length; i++)
                 {
                     spritesheet[i].alignment = (int)SpriteAlignment.Custom;
-                    spritesheet[i].pivot = new Vector2(0.5f, 0.3f);
+                    spritesheet[i].pivot = new Vector2(0.5f, 0.4f);
                 }
                 importer.spritesheet = spritesheet;
             }
@@ -48,7 +48,7 @@ public class SpritePivotUtility : EditorWindow
                 TextureImporterSettings settings = new TextureImporterSettings();
                 importer.ReadTextureSettings(settings);
                 settings.spriteAlignment = (int)SpriteAlignment.Custom;
-                settings.spritePivot = new Vector2(0.5f, 0.3f);
+                settings.spritePivot = new Vector2(0.5f, 0.4f);
                 importer.SetTextureSettings(settings);
             }
 
