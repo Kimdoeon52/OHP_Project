@@ -145,6 +145,10 @@ public class FloorTransitionController : MonoBehaviour
     // 초기화 대기
     private IEnumerator InitialFloorCoroutine()
     {
+        // 빌드/스폰/카메라 스냅이 보이지 않게 부팅부터 검정 유지
+        if (fader != null)
+            fader.SetBlack();
+
         for (int i = 0; i < startDelayFrames; i++)
             yield return null;
 

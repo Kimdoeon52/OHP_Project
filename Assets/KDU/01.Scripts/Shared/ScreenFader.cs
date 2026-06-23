@@ -24,6 +24,15 @@ public class ScreenFader : Singleton<ScreenFader>
     public IEnumerator FadeOut(float duration = -1f) => Fade(1f, duration < 0f ? defaultDuration : duration);
     public IEnumerator FadeIn(float duration = -1f) => Fade(0f, duration < 0f ? defaultDuration : duration);
 
+    // 즉시 검은 화면 (페이드 없이)
+    public void SetBlack()
+    {
+        if (_group == null)
+            return;
+        _group.alpha = 1f;
+        _group.blocksRaycasts = true;
+    }
+
     private IEnumerator Fade(float target, float duration)
     {
         if (_group == null) 

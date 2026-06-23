@@ -18,11 +18,16 @@ public class RunState : Singleton<RunState>
         CurrentDepth = startDepth;
     }
 
-    public void AdvanceDepth() => CurrentDepth++;
+    public void AdvanceDepth()
+    {
+        CurrentDepth++;
+        GameEvents.OnDepthChanged?.Invoke(CurrentDepth);
+    }
 
     public void ResetRun(int seed, int depth = 1)
     {
         RunSeed = seed;
         CurrentDepth = depth;
+        GameEvents.OnDepthChanged?.Invoke(CurrentDepth);
     }
 }
