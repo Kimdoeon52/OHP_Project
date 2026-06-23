@@ -22,6 +22,6 @@ public class ShieldWeaponInstance : WeaponInstance
                $"{LocalizationManager.GetOrDefault("msg_T공격속도", "Attack Speed")}: {shieldWeapon.AttackSpeed}" +
                $"{LocalizationManager.GetOrDefault("msg_받은피해감소", "Block Reduction")}: {GetMinMinusDamage()}~{GetMaxMinusDamage()}" +
                (curse != null ? $"\n<color=orange>{curse.LocalizedName}: {curse.LocalizedDescription}</color>" : "") +
-               (magic != null ? $"\n<color=aqua>{magic.LocalizedName}: {magic.LocalizedDescription}</color>" : "");
+               (magic != null ? $"\n<color=#00ffff>{magic.LocalizedName}: {magic.LocalizedDescription}</color>" : "");
     }
 }
