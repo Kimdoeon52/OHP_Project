@@ -865,6 +865,43 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "갑옷\r\n마법부여" },
             { Language.English, "Armor\r\nEnchant" }
         }},
+        //------------------------------------------- 챌린지
+        { "msg_챌린지설명", new Dictionary<Language, string> {
+            { Language.Korean, "챌린지 설명" },
+            { Language.English, "Challenge Description" }
+        }},
+        { "msg_시드입력", new Dictionary<Language, string> {
+            { Language.Korean, "시드 입력" },
+            { Language.English, "Enter Seed" }
+        }},
+        { "msg_챌린지선택", new Dictionary<Language, string> {
+            { Language.Korean, "챌린지 선택" },
+            { Language.English, "Select Challenge" }
+        }},
+        { "msg_시간압박", new Dictionary<Language, string> {
+            { Language.Korean, "시간 압박" },
+            { Language.English, "Time Pressure" }
+        }},
+        { "msg_보스강화", new Dictionary<Language, string> {
+            { Language.Korean, "보스 강화" },
+            { Language.English, "Boss Buff" }
+        }},
+        { "msg_빈약한강화", new Dictionary<Language, string> {
+            { Language.Korean, "빈약한 강화" },
+            { Language.English, "Weak Upgrade" }
+        }},
+        { "msg_회복봉인", new Dictionary<Language, string> {
+            { Language.Korean, "회복 봉인" },
+            { Language.English, "Sealed Recovery" }
+        }},
+        { "msg_파편봉인", new Dictionary<Language, string> {
+            { Language.Korean, "파편 봉인" },
+            { Language.English, "Sealed Shards" }
+        }},
+        { "msg_시야제한", new Dictionary<Language, string> {
+            { Language.Korean, "시야 제한" },
+            { Language.English, "Limited Vision" }
+        }},
     };
 
     public static string GetOrDefault(string key, string fallback)
