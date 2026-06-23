@@ -38,6 +38,14 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "게임을 종료 \r\n하시겠습니까?" },
             { Language.English, "Are you sure you\r\nwant to quit?" }
         }},
+        { "bt_순위표", new Dictionary<Language, string> {
+            { Language.Korean, "순위표" },
+            { Language.English, "Ranking" }
+        }},
+        { "msg_일반순위표", new Dictionary<Language, string> {
+            { Language.Korean, "일반 순위표" },
+            { Language.English, "Normal Ranking" }
+        }},
         //------------------------------------------ 세팅창 왼쪽 탭
         { "msg_시스템", new Dictionary<Language, string> {
             { Language.Korean, "시스템" },
@@ -992,8 +1000,8 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.English, "Hungry?" }
         }},
         { "msg_상점대사7", new Dictionary<Language, string> {
-            { Language.Korean, "내가 얼마나 오랫동안 여기에 있었던거지" },
-            { Language.English, "How long have I been here?" }
+            { Language.Korean, "여기가 어디지?" },
+            { Language.English, "Where am I?" }
         }},
     };
 
