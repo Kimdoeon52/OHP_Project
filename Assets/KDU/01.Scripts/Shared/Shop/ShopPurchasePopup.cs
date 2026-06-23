@@ -48,10 +48,7 @@ public class ShopPurchasePopup : MonoBehaviour
             iconImage.sprite = so.Icon;
             iconImage.enabled = so.Icon != null;
         }
-        // 이름은 GetToolTipStats 안에 이미 포함 — nameText 미사용(중복 방지)
-        if (nameText != null)
-            nameText.gameObject.SetActive(false);
-        // SO 대신 감정완료 인스턴스 툴팁 사용 (미감정 표시 방지)
+        // SO 대신 감정완료 인스턴스 툴팁 사용 (미감정 표시 방지, 이름은 툴팁에 포함)
         SetText(infoText, stall.BuildInstance().GetToolTipStats());
         SetText(priceText, $"{stall.Price} {LocalizationManager.GetOrDefault("msg_골드", "Gold")}");
         SetText(messageText, "");
