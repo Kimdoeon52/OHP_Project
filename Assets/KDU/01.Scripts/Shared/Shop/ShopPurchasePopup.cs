@@ -13,7 +13,6 @@ public class ShopPurchasePopup : MonoBehaviour
 
     [Header("상품 표시")]
     [SerializeField] private Image iconImage;
-    [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text infoText;
     [SerializeField] private TMP_Text priceText;
     [SerializeField] private TMP_Text messageText;
@@ -49,8 +48,11 @@ public class ShopPurchasePopup : MonoBehaviour
             iconImage.sprite = so.Icon;
             iconImage.enabled = so.Icon != null;
         }
-        SetText(nameText, so.LocalizedName);
-        SetText(infoText, so.GetToolTipStats());
+        // 이름은 GetToolTipStats 안에 이미 포함 — nameText 미사용(중복 방지)
+        if (nameText != null)
+            nameText.gameObject.SetActive(false);
+        // SO 대신 감정완료 인스턴스 툴팁 사용 (미감정 표시 방지)
+        SetText(infoText, stall.BuildInstance().GetToolTipStats());
         SetText(priceText, $"{stall.Price} {LocalizationManager.GetOrDefault("msg_골드", "Gold")}");
         SetText(messageText, "");
 

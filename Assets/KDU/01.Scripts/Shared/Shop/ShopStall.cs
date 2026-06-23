@@ -98,7 +98,10 @@ public class ShopStall : MonoBehaviour
 
         ItemInstance inst = itemSO.CreateInstance();
         if (inst is EquipmentInstance equip)
+        {
             equip.enhanceLevel = enhanceLevel;
+            equip.isAnalyzed = true; // 상점 구매품은 감정 완료 상태
+        }
         else if (inst is PotionInstance potion && potion.count <= 0)
             potion.count = 1;
         else if (inst is ScrollInstance scroll && scroll.count <= 0)
