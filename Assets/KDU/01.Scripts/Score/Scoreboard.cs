@@ -2,11 +2,11 @@ using System;
 using System.IO;
 using UnityEngine;
 
-// 최고 점수 톱10 영구 저장. run.json과 분리 — 사망해도 유지.
+// 최고 점수 톱30 영구 저장. run.json과 분리 — 사망해도 유지.
 public static class Scoreboard
 {
     private const string FileName = "scores.json";
-    private const int Capacity = 10;
+    private const int Capacity = 30;
 
     private static string Path => System.IO.Path.Combine(Application.persistentDataPath, FileName);
 
@@ -28,7 +28,7 @@ public static class Scoreboard
         }
     }
 
-    // 결과 등록 → 정렬 → 톱10 유지 → 저장. 톱10 진입 순위(0-based) 반환, 미진입이면 -1.
+    // 결과 등록 → 정렬 → 톱30 유지 → 저장. 톱30 진입 순위(0-based) 반환, 미진입이면 -1.
     public static int Submit(ScoreResult result)
     {
         var entry = new ScoreEntry
