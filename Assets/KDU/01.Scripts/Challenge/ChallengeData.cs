@@ -13,11 +13,7 @@ public class ChallengeData : ScriptableObject
     [Tooltip("효과 설명")]
     [SerializeField, TextArea] private string description;
 
-    [Tooltip("아이콘")]
-    [SerializeField] private Sprite icon;
-
     public ChallengeType Type => type;
     public string DisplayName => displayName;
     public string Description => description;
-    public Sprite Icon => icon;
 }
