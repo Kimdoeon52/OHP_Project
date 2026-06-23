@@ -49,9 +49,9 @@ public class ShopPurchasePopup : MonoBehaviour
             iconImage.sprite = so.Icon;
             iconImage.enabled = so.Icon != null;
         }
-        SetText(nameText, so.Name);
+        SetText(nameText, so.LocalizedName);
         SetText(infoText, so.GetToolTipStats());
-        SetText(priceText, $"{stall.Price} 골드");
+        SetText(priceText, $"{stall.Price} {LocalizationManager.GetOrDefault("msg_골드", "Gold")}");
         SetText(messageText, "");
 
         if (panel != null)
@@ -74,13 +74,13 @@ public class ShopPurchasePopup : MonoBehaviour
         Wallet wallet = Wallet.Instance;
         if (wallet == null)
         {
-            SetText(messageText, "지갑 없음");
+            SetText(messageText, LocalizationManager.GetOrDefault("msg_지갑없음", "No Wallet"));
             return;
         }
 
         if (wallet.Balance < _stall.Price)
         {
-            SetText(messageText, "골드 부족");
+            SetText(messageText, LocalizationManager.GetOrDefault("msg_골드부족", "Not Enough Gold"));
             return;
         }
 
@@ -88,14 +88,14 @@ public class ShopPurchasePopup : MonoBehaviour
             _inventory = FindFirstObjectByType<InventoryController>();
         if (_inventory == null)
         {
-            SetText(messageText, "인벤토리 없음");
+            SetText(messageText, LocalizationManager.GetOrDefault("msg_인벤토리없음", "No Inventory"));
             return;
         }
 
         ItemInstance inst = _stall.BuildInstance();
         if (inst == null || !_inventory.TryAddItem(inst))
         {
-            SetText(messageText, "인벤토리 가득");
+            SetText(messageText, LocalizationManager.GetOrDefault("msg_인벤토리가득", "Inventory Full"));
             return;
         }
 

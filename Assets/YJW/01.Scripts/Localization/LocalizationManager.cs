@@ -902,6 +902,52 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "시야 제한" },
             { Language.English, "Limited Vision" }
         }},
+        //------------------------------------------- 챌린지 설명 (호버 패널)
+        { "challenge_desc_TimePressure", new Dictionary<Language, string> {
+            { Language.Korean, "모래시계가 더 빠르게 떨어진다. \n각 층의 제한시간이 60초에서 45초로 줄어든다." },
+            { Language.English, "The hourglass falls faster.\nEach floor's time limit drops from 60 to 45 seconds." }
+        }},
+        { "challenge_desc_BossBuff", new Dictionary<Language, string> {
+            { Language.Korean, "저승의 수호자들이 본래의 힘을 되찾았다. \n모든 보스의 능력치가 상승했다." },
+            { Language.English, "The guardians of the underworld have reclaimed their true power.\nAll boss stats are increased." }
+        }},
+        { "challenge_desc_ScarceUpgrade", new Dictionary<Language, string> {
+            { Language.Korean, "대장간의 불씨가 꺼져간다. \n영역당 등장하는 강화 주문서가 3개에서 2개로 줄어든다." },
+            { Language.English, "The forge's embers are dying out.\nReinforce Scrolls per area drop from 3 to 2." }
+        }},
+        { "challenge_desc_HealSeal", new Dictionary<Language, string> {
+            { Language.Korean, "이 땅의 약은 더 이상 듣지 않는다. \n회복 포션을 마셔도 체력이 회복되지 않는다." },
+            { Language.English, "Medicine no longer works in this land.\nDrinking a Healing Potion no longer restores HP." }
+        }},
+        { "challenge_desc_FragmentSeal", new Dictionary<Language, string> {
+            { Language.Korean, "생명 파편을 더 이상 획득할 수 없다." },
+            { Language.English, "You can no longer obtain Fragments of Life." }
+        }},
+        { "challenge_desc_VisionLimit", new Dictionary<Language, string> {
+            { Language.Korean, "저승의 어둠이 시야를 좁힌다. \n기본 시야가 2칸 감소한다." },
+            { Language.English, "The darkness of the underworld narrows your sight.\nBase vision is reduced by 2 tiles." }
+        }},
+        //------------------------------------------- 상점
+        { "msg_골드", new Dictionary<Language, string> {
+            { Language.Korean, "골드" },
+            { Language.English, "Gold" }
+        }},
+        { "msg_지갑없음", new Dictionary<Language, string> {
+            { Language.Korean, "지갑 없음" },
+            { Language.English, "No Wallet" }
+        }},
+        { "msg_골드부족", new Dictionary<Language, string> {
+            { Language.Korean, "골드 부족" },
+            { Language.English, "Not Enough Gold" }
+        }},
+        { "msg_인벤토리없음", new Dictionary<Language, string> {
+            { Language.Korean, "인벤토리 없음" },
+            { Language.English, "No Inventory" }
+        }},
+        { "msg_인벤토리가득", new Dictionary<Language, string> {
+            { Language.Korean, "인벤토리 가득" },
+            { Language.English, "Inventory Full" }
+        }},
     };
 
     public static string GetOrDefault(string key, string fallback)
