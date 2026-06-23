@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minDepth: 11
   maxDepth: 15
-  specificDepths: []
+  specificDepths: 
   spawnTable: {fileID: 11400000, guid: c5e883651d7e2e62e288229a46b3660a, type: 2}
   prefabMappings:
   - enemyData: {fileID: 11400000, guid: a0150d33e3f97ea44b55bc93c83d19f1, type: 2}
@@ -25,3 +25,5 @@ MonoBehaviour:
     prefab: {fileID: 7747407186858766538, guid: a4f3651d73d042146ad8f8625bb7639a, type: 3}
   - enemyData: {fileID: 11400000, guid: a0150d33e3f97ea44b55bc93c83d19f4, type: 2}
     prefab: {fileID: 540938475934983323, guid: 7d068042548beac46a0c07a03f34c8b9, type: 3}
+  - enemyData: {fileID: 11400000, guid: 51706c2dbd010a84abc2e176a383ddcc, type: 2}
+    prefab: {fileID: 5680865143522814841, guid: 40ade4f18f1bad44591d78e14465cba2, type: 3}
