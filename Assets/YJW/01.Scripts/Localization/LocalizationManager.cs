@@ -966,6 +966,35 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "TO BE CONTINUED" },
             { Language.English, "TO BE CONTINUED" }
         }},
+        //------------------------------------------- 상점 주인 대사
+        { "msg_상점대사1", new Dictionary<Language, string> {
+            { Language.Korean, "어서오시게" },
+            { Language.English, "Welcome" }
+        }},
+        { "msg_상점대사1", new Dictionary<Language, string> {
+            { Language.Korean, "원하는 물건을 구입하게" },
+            { Language.English, "Just buy something" }
+        }},
+        { "msg_상점대사1", new Dictionary<Language, string> {
+            { Language.Korean, "조심하게" },
+            { Language.English, "Be careful" }
+        }},
+        { "msg_상점대사1", new Dictionary<Language, string> {
+            { Language.Korean, "저주의 기운이 느껴지는군" },
+            { Language.English, "I feel a cursed presence" }
+        }},
+        { "msg_상점대사1", new Dictionary<Language, string> {
+            { Language.Korean, "도라지즙은 팔고있지 않다네" },
+            { Language.English, "We do not sell juice here" }
+        }},
+        { "msg_상점대사1", new Dictionary<Language, string> {
+            { Language.Korean, "배고픈가?" },
+            { Language.English, "Hungry?" }
+        }},
+        { "msg_상점대사1", new Dictionary<Language, string> {
+            { Language.Korean, "내가 얼마나 오랫동안 여기에 있었던거지" },
+            { Language.English, "How long have I been here?" }
+        }},
     };
 
     public static string GetOrDefault(string key, string fallback)

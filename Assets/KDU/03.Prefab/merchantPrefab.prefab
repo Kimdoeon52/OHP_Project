@@ -127,7 +127,7 @@ MonoBehaviour:
   speechBubble: {fileID: 4668356983607921453}
   speechTextUI: {fileID: 6261751881471082551}
   followNpcPosition: 1
-  speechBubbleOffset: {x: 5, y: 0.7, z: 0}
+  speechBubbleOffset: {x: 0, y: 0.7, z: 0}
   targetCamera: {fileID: 0}
   adjustScaleWithZoom: 1
   referenceCameraSize: 5
