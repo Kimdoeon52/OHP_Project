@@ -21,6 +21,9 @@ namespace PrototypeRT
             if (item == null)
                 return AudioEventId.None;
 
+            if (item is FragmentsOfLife)
+                return AudioEventId.FragmentOfLifeMove;
+
             if (item is PotionData || ItemCategories.Of(item) == ItemCategory.Potion)
                 return AudioEventId.MovePotion;
 

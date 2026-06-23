@@ -70,9 +70,8 @@ public class ShopStall : MonoBehaviour
         if (_sold || itemSO == null || _player == null || _player.IsDead)
             return;
 
-        // 같은 칸 또는 인접
-        int dist = Mathf.Abs(_player.GridPosition.x - GridPosition.x) + Mathf.Abs(_player.GridPosition.y - GridPosition.y);
-        if (dist > 1)
+        // 같은 칸만 (인접 허용 시 옆 진열대 팝업이 잘못 뜸)
+        if (_player.GridPosition != GridPosition)
             return;
         if (KeyBindingManager.ShouldBlockGameplayInput)
             return;

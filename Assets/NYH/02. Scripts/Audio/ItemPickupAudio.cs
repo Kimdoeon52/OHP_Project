@@ -20,6 +20,9 @@ namespace PrototypeRT
         {
             if (item == null)
                 return AudioEventId.None;
+
+            if (item is FragmentsOfLife)
+                return AudioEventId.FragmentOfLifePicked;
             
             if(IsPotion(item))
                 return AudioEventId.PotionPicked;
