@@ -621,7 +621,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: -0.031555414, y: -0.00000011920929}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.4}
@@ -631,7 +631,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 4, y: 4}
+  m_Size: {x: 1.7280159, y: 1.7280161}
   m_EdgeRadius: 0
 --- !u!114 &5157262205569359877
 MonoBehaviour:
@@ -661,9 +661,13 @@ MonoBehaviour:
   travelBoolName: Walk
   burrowStateName: big worm 1 retreat
   idleStateName: Idle
-  burrowDuration: 0.15
+  animationFPS: 12
+  burrowSpeedMultiplier: 1.8
+  emergeSpeedMultiplier: 1.5
+  burrowFreezeFrame: 12
   travelDuration: 0.25
-  emergeDuration: 0.15
+  emergeFrames: 8
+  attackTelegraphDelay: 0.6
 --- !u!1 &7951092420217939258
 GameObject:
   m_ObjectHideFlags: 0
