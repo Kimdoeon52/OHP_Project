@@ -47,6 +47,9 @@ public class EnemySpider : EnemyBase
             }
         }
         ClearTelegraphs();
+        _attackActionPoints = 0f;
+        _isAttacking = false;
+        _pendingAttackCell = null;
     }
 
     /// <summary>

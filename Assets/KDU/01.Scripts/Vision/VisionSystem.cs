@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -117,7 +117,7 @@ public class VisionSystem : Singleton<VisionSystem>
         _torchCts = null;
     }
 
-    private bool HasLineOfSight(Vector2Int from, Vector2Int to)
+    public bool HasLineOfSight(Vector2Int from, Vector2Int to)
     {
         int x = from.x, y = from.y;
         int dx = Mathf.Abs(to.x - from.x), dy = Mathf.Abs(to.y - from.y);

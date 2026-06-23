@@ -49,6 +49,7 @@ public class EnemyFireSpirit : EnemyBase
 
         ClearTelegraphs();
         _isAttacking = false;
+        _pendingAttackCell = null;
     }
 
     protected override void PerformMovement()
