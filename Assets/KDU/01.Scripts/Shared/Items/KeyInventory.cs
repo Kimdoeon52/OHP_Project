@@ -29,6 +29,7 @@ public class KeyInventory : Singleton<KeyInventory>
 
         _counts[type] = GetCount(type) + amount;
         GameEvents.OnKeyAcquired?.Invoke(type);
+        GameEvents.OnKeyChanged?.Invoke();
     }
 
     public bool TryConsume(KeyType type, int amount = 1)
@@ -38,9 +39,14 @@ public class KeyInventory : Singleton<KeyInventory>
             return false;
 
         _counts[type] = have - amount;
+        GameEvents.OnKeyChanged?.Invoke();
         return true;
     }
 
     // 층 변경이나 사망시 클리어로 열쇠 개수 초기화
-    public void ClearAll() => _counts.Clear();
+    public void ClearAll()
+    {
+        _counts.Clear();
+        GameEvents.OnKeyChanged?.Invoke();
+    }
 }

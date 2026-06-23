@@ -28,6 +28,7 @@ public static class GameEvents
     // 상호작용
     public static Action<Vector2Int> OnChestOpened;         // 상자 개방 셀
     public static Action<KeyType> OnKeyAcquired;            // 획득한 열쇠 종류
+    public static Action OnKeyChanged;                      // 열쇠 보유 수 변동(획득/소모/초기화) — HUD가 구독
 
     // 탐색 액션
     public static Action<Vector2Int, int> OnSearchPerformed; // center, radius (1 = 3x3)
@@ -74,6 +75,7 @@ public static class GameEvents
         OnItemPurchased = null;             // 상점 구매
         OnChestOpened = null;               // 상자 개방
         OnKeyAcquired = null;               // 열쇠 획득
+        OnKeyChanged = null;                // 열쇠 보유 수 변동
         OnSearchPerformed = null;           // 탐색 액션
         OnSecretDiscovered = null;          // 숨겨진 요소 발견
         OnStatusEffectApplied = null;       // 상태이상 적용

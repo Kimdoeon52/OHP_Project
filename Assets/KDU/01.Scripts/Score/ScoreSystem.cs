@@ -49,8 +49,13 @@ public class ScoreSystem : Singleton<ScoreSystem>
     // 출구 진입 = 층 클리어. 잔여 시간을 누적.
     private void OnFloorCleared()
     {
+        // 무한 시간 모드(SetInfinite)는 잔여 시간 누적 제외 — Infinity가 점수에 섞이면 int 변환에서 오버플로.
         if (TimeSystem.Instance != null)
-            _residualTime += TimeSystem.Instance.TimeRemaining;
+        {
+            float remaining = TimeSystem.Instance.TimeRemaining;
+            if (!float.IsInfinity(remaining) && !float.IsNaN(remaining))
+                _residualTime += remaining;
+        }
         RefreshCurrent();
     }
 
