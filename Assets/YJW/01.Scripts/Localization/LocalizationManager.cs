@@ -719,7 +719,7 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
         }},
         { "item_desc_4003", new Dictionary<Language, string> {
             { Language.Korean, "보잘것없어 보여도 없는 것보다는 낫다. 모험의 시작." },
-            { Language.English, "It might look pathetic, but it's better than nothing. The start of an adventure." }
+            { Language.English, "Looks pitiful, but better than nothing.\nThe start of an adventure." }
         }},
         { "item_name_4004", new Dictionary<Language, string> {
             { Language.Korean, "황금 갑옷" },
@@ -727,7 +727,7 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
         }},
         { "item_desc_4004", new Dictionary<Language, string> {
             { Language.Korean, "빛나는 방어구. 두꺼운 금속이 어지간한 공격을 튕겨낸다." },
-            { Language.English, "A gleaming suit of armor. Its thick metal deflects all but the fiercest attacks." }
+            { Language.English, "Gleaming armor. Thick metal deflects most attacks." }
         }},
         //------------------------------------------ 아이템 - 저주
         { "item_name_curse_Slow", new Dictionary<Language, string> {
