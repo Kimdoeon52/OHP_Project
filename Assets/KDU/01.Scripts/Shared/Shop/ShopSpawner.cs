@@ -18,6 +18,7 @@ public class ShopSpawner : MonoBehaviour
     };
 
     private readonly List<GameObject> _spawned = new();
+    private Vector2Int? _merchantCell;
 
     public void Spawn(List<RoomData> rooms, int depth, DungeonRandom rng)
     {
@@ -58,6 +59,10 @@ public class ShopSpawner : MonoBehaviour
 
     public void Clear()
     {
+        if (_merchantCell.HasValue && GridSystem.Instance != null)
+            GridSystem.Instance.UnblockCell(_merchantCell.Value);
+        _merchantCell = null;
+
         foreach (var go in _spawned)
         {
             if (go == null)
@@ -169,6 +174,13 @@ public class ShopSpawner : MonoBehaviour
         Vector2Int cell = MerchantCell(safe);
         Vector3 pos = GridSystem.Instance != null ? GridSystem.Instance.GridToWorld(cell) : new Vector3(cell.x, cell.y, 0);
         _spawned.Add(Instantiate(merchantPrefab, pos, Quaternion.identity));
+
+        // 상인 칸 통행 차단
+        if (GridSystem.Instance != null)
+        {
+            GridSystem.Instance.BlockCell(cell);
+            _merchantCell = cell;
+        }
     }
 
     // 중앙에서 문 반대쪽(방 안쪽)으로 살짝 민 셀
