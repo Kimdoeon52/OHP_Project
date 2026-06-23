@@ -32,8 +32,12 @@ public class ShopperText : MonoBehaviour
     [SerializeField] private float referenceCameraSize = 5f;
 
     [Header("Dialogue Settings")]
-    [Tooltip("플레이어가 주변에 오면 랜덤하게 출력될 대사 목록 (기본 2개 제공)")]
-    [SerializeField] private string[] dialogueLines = new string[] { "어서오세요!", "무엇을 찾으시나요?" };
+    [Tooltip("플레이어가 주변에 오면 랜덤하게 출력될 대사 목록 — LocalizationManager 키를 입력합니다.")]
+    [SerializeField] private string[] dialogueLines = new string[]
+    {
+        "msg_상점대사1", "msg_상점대사2", "msg_상점대사3", "msg_상점대사4",
+        "msg_상점대사5", "msg_상점대사6", "msg_상점대사7"
+    };
 
     [Tooltip("말풍선이 켜진 후 자동으로 꺼지기까지의 시간(초)")]
     [SerializeField] private float autoCloseDelay = 2.0f;
@@ -205,7 +209,7 @@ public class ShopperText : MonoBehaviour
         int randomIndex = Random.Range(0, dialogueLines.Length);
         string selectedText = dialogueLines[randomIndex];
 
-        SetText(selectedText);
+        SetText(ResolveLine(selectedText));
 
         // 말풍선 활성화
         if (speechBubble != null)
@@ -233,6 +237,12 @@ public class ShopperText : MonoBehaviour
         }
         
         closeBubbleCoroutine = null;
+    }
+
+    // dialogueLines 항목을 LocalizationManager 키로 보고 텍스트 조회 (매니저 없으면 원본 그대로)
+    private string ResolveLine(string raw)
+    {
+        return LocalizationManager.Instance != null ? LocalizationManager.Instance.Get(raw) : raw;
     }
 
     private void SetText(string text)

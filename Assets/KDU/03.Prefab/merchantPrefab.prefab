@@ -132,8 +132,13 @@ MonoBehaviour:
   adjustScaleWithZoom: 1
   referenceCameraSize: 5
   dialogueLines:
-  - "\uC5EC\uAE34 \uC0C1\uC810\uC774\uB77C\uB124"
-  - "\uC8FC\uBCC0\uC5D0 \uC788\uB294 \uBB3C\uAC74\uC744 \uAD6C\uC785\uD558\uAC8C"
+  - "msg_\uC0C1\uC810\uB300\uC0AC1"
+  - "msg_\uC0C1\uC810\uB300\uC0AC2"
+  - "msg_\uC0C1\uC810\uB300\uC0AC3"
+  - "msg_\uC0C1\uC810\uB300\uC0AC4"
+  - "msg_\uC0C1\uC810\uB300\uC0AC5"
+  - "msg_\uC0C1\uC810\uB300\uC0AC6"
+  - "msg_\uC0C1\uC810\uB300\uC0AC7"
   autoCloseDelay: 1
 --- !u!1 &3957231951822357005
 GameObject:
