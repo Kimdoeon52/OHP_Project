@@ -4,7 +4,8 @@ using static UnityEngine.Rendering.DebugUI;
 public class RingInstance : EquipmentInstance
 {
 	public RingData Ring => data as RingData;
-    public int enhanceValue => enhanceLevel * Ring.Value;
+    // +0강이어도 기본 효과(1배)는 적용되고, 강화 단계마다 1배씩 더 붙는다.
+    public int enhanceValue => Ring.Value * (enhanceLevel + 1);
 
     // 강화 단계마다 착용 힘이 1씩 줄어들며, 0 밑으로는 내려가지 않는다.
     public int GetRequiredStrength() => Mathf.Max(0, Ring.CanUseStrength - enhanceLevel);
@@ -69,7 +70,7 @@ public class RingInstance : EquipmentInstance
                $"--------------------\n" +
                $"{Ring.LocalizedDescription}\n" +
                $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}: {GetRequiredStrength()}\n" +
-               $"{LocalizationManager.GetOrDefault("msg_효과", "Effect")}: {Ring.LocalizedEffect} {(Ring.Value >= 0 ? "+" : "")}{Ring.Value}";
+               $"{LocalizationManager.GetOrDefault("msg_효과", "Effect")}: {Ring.LocalizedEffect} {(enhanceValue >= 0 ? "+" : "")}{enhanceValue}";
     }
 
 }
