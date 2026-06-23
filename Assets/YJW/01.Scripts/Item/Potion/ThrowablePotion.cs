@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class ThrowablePotion : PotionData, IThrowable
 {
-    public virtual void Throw(Vector2Int targetPos) 
+    public virtual void Throw(Vector2Int targetPos)
     {
         // 포션을 targetPos로 던지는 로직
         for (int x = -1; x <= 1; x++)
@@ -11,6 +11,11 @@ public class ThrowablePotion : PotionData, IThrowable
             for (int y = -1; y <= 1; y++)
             {
                 Vector2Int tile = targetPos + new Vector2Int(x, y);
+
+                // 벽이나 막힌 칸에는 불/얼음 이펙트가 붙지 않도록 막는다.
+                if (GridSystem.Instance != null && !GridSystem.Instance.IsWalkable(tile))
+                    continue;
+
                 ApplyEffect(tile);
             }
         }

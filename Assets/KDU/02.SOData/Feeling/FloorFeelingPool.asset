@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - feeling: {fileID: 11400000, guid: 67cb3b7577f2bf84aa1c35b73a638304, type: 2}
-    weightArea1: 50
+    weightArea1: 100
     weightArea2: 50
     weightArea3: 50
   - feeling: {fileID: 11400000, guid: 25156e060f531224a8db00af7935f149, type: 2}
-    weightArea1: 50
+    weightArea1: 0
     weightArea2: 50
     weightArea3: 50
   triggerChance: 1
