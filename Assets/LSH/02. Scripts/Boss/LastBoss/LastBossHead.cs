@@ -295,7 +295,6 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
     private async UniTask HeadLaserSweepPattern()
     {
         if (player == null || player.IsDead) return;
-        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.LastBoss_HeadLaser);
 
         // 1. 좌측 혹은 우측 중 하나를 결정해 보스를 해당 끝으로 빠르게 이동
         bool moveToLeft = Random.value < 0.5f;
@@ -367,6 +366,9 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
             GameObject laserObj = null;
             if (laserPrefab != null)
             {
+                // 경고가 사라지고 실제 레이저가 생성되는 순간에 발사음을 재생한다.
+                GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.LastBoss_HeadLaser);
+
                 Vector3 vStart = GridSystem.Instance.GridToWorld(new Vector2Int(laserStartX, mapBounds.yMin));
                 Vector3 vEnd = GridSystem.Instance.GridToWorld(new Vector2Int(laserStartX, mapBounds.yMax - 1));
                 Vector3 vCenter = (vStart + vEnd) * 0.5f;
@@ -444,7 +446,6 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
     private async UniTask HeadLavaPattern()
     {
         if (player == null || player.IsDead) return;
-        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.LastBoss_Meteor);
 
         for (int i = 0; i < 5; i++)
         {
@@ -494,6 +495,9 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
                 await effect.transform.DOMove(targetWorld, 0.3f)
                     .SetEase(Ease.InQuad)
                     .AsyncWaitForCompletion();
+
+                // 충돌음 계열 SFX라서 실제 용암/운석이 바닥에 닿은 직후 재생한다.
+                GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.LastBoss_Meteor);
 
                 // 3. 충돌 효과 & 대미지 판정 & 스케일 확대 (1.5배)
                 if (CameraFollow.Instance != null)
@@ -682,6 +686,9 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
                 await effect.transform.DOMove(targetWorld, 0.3f)
                     .SetEase(Ease.InQuad)
                     .AsyncWaitForCompletion();
+
+                // 지속 낙하도 바닥 충돌 순간에 맞춰 재생한다.
+                GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.LastBoss_Meteor);
 
                 // 3. 충돌 효과 & 대미지 판정 & 스케일 확대 (1.5배)
                 if (CameraFollow.Instance != null)

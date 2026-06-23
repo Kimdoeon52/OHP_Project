@@ -471,8 +471,6 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
     {
         if (player == null || player.IsDead) return;
 
-        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.LastBoss_HandSlam);
-
         Vector2Int targetCenter = player.GridPosition;
 
         // 3x3 cells centered on player
@@ -508,6 +506,9 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
         await transform.DOMove(slamTargetWorld, slamSpeed).SetEase(Ease.InQuad).AsyncWaitForCompletion();
 
         if (isDying || cancelToken.IsCancellationRequested) return;
+
+        // 경고가 끝나고 실제 손이 바닥에 닿은 순간에 충격음을 재생한다.
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.LastBoss_HandSlam);
 
         // Spawn slam effect
         if (slamEffectPrefab != null)
@@ -551,8 +552,6 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
     {
         if (!hasMapBounds) CacheMapBounds();
 
-        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.LastBoss_Sweep);
-
         int baseTargetY = _gridPos.y;
 
         List<Vector2Int> targetCells = new List<Vector2Int>();
@@ -588,6 +587,8 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
         transform.position = startWorld;
 
         // Start sweep
+        // 경고 시간이 끝난 뒤, 손이 실제로 쓸기 시작하는 순간에 재생한다.
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.LastBoss_Sweep);
         transform.DOMove(endWorld, sweepSpeed).SetEase(Ease.Linear);
 
         float hitDelay = 0.25f;
@@ -632,8 +633,6 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
     {
         if (!hasMapBounds) CacheMapBounds();
 
-        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.LastBoss_Scratch);
-
         int baseTargetX = _gridPos.x;
 
         // Target cells: both hands sweep the full column
@@ -672,6 +671,8 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
         transform.position = startWorld;
 
         // Start sweep
+        // 경고 시간이 끝난 뒤, 손이 실제로 긁고 올라가는 순간에 재생한다.
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.LastBoss_Scratch);
         transform.DOMove(endWorld, sweepSpeed).SetEase(Ease.Linear);
 
         float hitDelay = 0.25f;
