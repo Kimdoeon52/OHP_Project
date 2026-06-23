@@ -66,5 +66,9 @@
     BossB_CrystalImpact,
     BossB_Swing,
 
-    BossA_LaserFire
+    BossA_LaserFire,
+
+    FragmentOfLifePicked,
+    FragmentOfLifeMove,
+    FragmentOfLifeUsed
 }

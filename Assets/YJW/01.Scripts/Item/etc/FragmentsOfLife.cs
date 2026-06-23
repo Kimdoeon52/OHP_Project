@@ -16,6 +16,7 @@ public class FragmentsOfLife : ItemBase
 
         int healAmount = Mathf.Max(1, health.MaxHp / 20);
         health.Heal(healAmount);
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.FragmentOfLifeUsed);
     }
 
     public override ItemInstance CreateInstance()
