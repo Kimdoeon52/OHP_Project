@@ -860,6 +860,15 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "하수인들이 품고 있던 시간 조각. 상처를 조금씩 회복시킨다." },
             { Language.English, "A shard of time the minions once carried. It slowly mends your wounds." }
         }},
+        //------------------------------------------ 열쇠 이름
+        { "msg_반지상자열쇠", new Dictionary<Language, string> {
+            { Language.Korean, "반지 상자 열쇠" },
+            { Language.English, "Ring Chest Key" }
+        }},
+        { "msg_스페셜방열쇠", new Dictionary<Language, string> {
+            { Language.Korean, "스페셜 방 열쇠" },
+            { Language.English, "Special Room Key" }
+        }},
         //------------------------------------------ 인챈트
         { "msg_마법부여", new Dictionary<Language, string> {
             { Language.Korean, "마법 부여" },
