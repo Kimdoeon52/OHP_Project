@@ -46,10 +46,24 @@ public class EnemyWorm : EnemyBase
 
     protected override void Update()
     {
-        // 이동 연출 중이거나 공격 진행 중(경고 장판 대기 및 실제 공격 연출 중)일 때는 
+        // 1. 벽 안에 정지 상태(이동 코루틴이 돌고 있지 않을 때)에서는
+        // 애니메이션 재생을 강제로 멈추고 굴 속에 들어간 상태(Walk = true, speed = 0)로 고정합니다.
+        // _isMovingVisual 중에는 코루틴이 직접 애니메이터를 제어하므로 간섭하지 않습니다.
+        if (!_isMovingVisual)
+        {
+            bool isInWall = GridSystem.Instance != null && !GridSystem.Instance.IsWalkable(GridPosition);
+            if (isInWall)
+            {
+                if (_animator != null)
+                {
+                    _animator.speed = 0f;
+                    SafeSetBool(travelBoolName, true);
+                }
+            }
+        }
+
+        // 2. 이동 연출 중이거나 공격 진행 중(경고 장판 대기 및 실제 공격 연출 중)일 때는 
         // 턴 행동 로직 업데이트(AP 누적 및 판단)를 완전히 일시 정지합니다.
-        // 이를 통해 "이동 -> 솟아나옴 -> 공격 예고 장판 -> 공격 완료 -> 다시 굴파고 다음 이동" 순서가
-        // 서로 겹치거나 뒤섞이지 않고 완벽하게 상호 배제되며 단방향으로 흘러가도록 보장합니다.
         if (_isMovingVisual || _isAttacking || _pendingAttackCell != null) return;
 
         base.Update();
@@ -143,8 +157,8 @@ public class EnemyWorm : EnemyBase
                 var cell = playerPos + dir;
                 if (GridSystem.Instance.IsInBounds(cell) && !IsSafeRoomCell(cell))
                 {
-                    // 플레이어 셀이 아니며, 타 엔티티가 점유하지 않은 곳
-                    if (cell != playerPos && !GridSystem.Instance.IsCellOccupied(cell))
+                    // 플레이어 셀, 자기 자신의 현재 위치, 타 엔티티 점유 셀 제외
+                    if (cell != playerPos && cell != GridPosition && !GridSystem.Instance.IsCellOccupied(cell))
                     {
                         var door = GridSystem.Instance.GetDoorAt(cell);
                         if (door == null || door.IsOpen)
@@ -174,6 +188,8 @@ public class EnemyWorm : EnemyBase
                 {
                     if (x == 0 && y == 0) continue;
                     var cell = GridPosition + new Vector2Int(x, y);
+                    // 자기 자신의 현재 위치를 배회 목적지로 선택하지 않도록 제외
+                    if (cell == GridPosition) continue;
                     if (GridSystem.Instance.IsInBounds(cell) && !IsSafeRoomCell(cell))
                     {
                         if (!GridSystem.Instance.IsCellOccupied(cell))
@@ -214,13 +230,11 @@ public class EnemyWorm : EnemyBase
         Vector3 startWorldPos = transform.position;
         _isMovingVisual = true;
 
-        // 최종 목적 격자 좌표 설정
+        // 논리 좌표(GridPosition)는 비주얼 이동이 완전히 끝난 시점에 갱신합니다.
+        // 이동 중에 미리 갱신하면 화면상 멀리 있는데도 플레이어가 때릴 수 있는 버그가 발생합니다.
         Vector2Int finalGridPos = path[path.Count - 1];
-        SetGridPosition(finalGridPos);
-
-        TrapTerrainController.TryApplyTerrainAt(this, finalGridPos);
-        UpdateVisibility(); // _isMovingVisual = true 상태이므로 스프라이트 활성화 상태 강제 유지
         UpdateSpriteDirection(finalGridPos);
+        UpdateVisibility(); // _isMovingVisual = true 상태이므로 스프라이트 활성화 상태 강제 유지
 
         transform.position = startWorldPos;
 
@@ -316,22 +330,37 @@ public class EnemyWorm : EnemyBase
         float burrowFreezeTime = (animationFPS > 0) ? (burrowFreezeFrame / animationFPS) : 0f;
         float emergeDuration = (animationFPS > 0) ? (emergeFrames / animationFPS) : 0f;
 
-        // 1단계: Burrow (땅속으로 들어감)
-        _isBurrowing = true;
-        if (_animator != null)
-        {
-            _animator.speed = burrowSpeedMultiplier;
-            // Walk 파라미터를 true로 설정 -> Animator가 트랜지션을 타고 big worm 1 retreat 상태 재생 시작
-            SafeSetBool(travelBoolName, true);
+        // 현재 출발하는 격자가 벽 안인지 검출
+        bool startInWall = GridSystem.Instance != null && !GridSystem.Instance.IsWalkable(GridPosition);
 
-            // 즉시 굴 파기 상태의 시작 부분(0프레임)으로 강제 진입시켜 
-            // 애니메이터 전이 지연(Transition Duration) 때문에 지렁이가 땅 밖으로 솟아난 채 움직이는 현상을 방지합니다.
-            _animator.Play(burrowStateName, 0, 0f);
-            _animator.Update(0f);
+        if (!startInWall)
+        {
+            // 1단계: Burrow (땅 위에서 시작할 때만 땅속으로 들어가는 연출)
+            _isBurrowing = true;
+            if (_animator != null)
+            {
+                _animator.speed = burrowSpeedMultiplier;
+                // Walk 파라미터를 true로 설정 -> Animator가 트랜지션을 타고 big worm 1 retreat 상태 재생 시작
+                SafeSetBool(travelBoolName, true);
+
+                // 즉시 굴 파기 상태의 시작 부분(0프레임)으로 강제 진입시켜 
+                // 애니메이터 전이 지연(Transition Duration) 때문에 지렁이가 땅 밖으로 솟아난 채 움직이는 현상을 방지합니다.
+                _animator.Play(burrowStateName, 0, 0f);
+                _animator.Update(0f);
+            }
+            // 굴 속으로 완전히 들어갈 때(burrowFreezeTime)까지 대기
+            yield return new WaitForSeconds(burrowFreezeTime);
+            _isBurrowing = false;
         }
-        // 굴 속으로 완전히 들어갈 때(burrowFreezeTime)까지 대기
-        yield return new WaitForSeconds(burrowFreezeTime);
-        _isBurrowing = false;
+        else
+        {
+            // 이미 벽 안에서 출발하는 경우: 땅 파기 연출 생략
+            if (_animator != null)
+            {
+                SafeSetBool(travelBoolName, true);
+                _animator.speed = 0f; // 굴 속 정지 상태 강제 유지
+            }
+        }
 
         // 2단계: Travel (땅속 연속 이동)
         _isUnderground = true;
@@ -365,27 +394,48 @@ public class EnemyWorm : EnemyBase
 
         _isUnderground = false;
 
-        // 3단계: Emerge (땅 위로 나옴 - 정지했던 지점부터 이어서 정방향 재생)
-        _isEmerging = true;
+        // 최종 목적 격자가 벽 안인지 검출
+        bool endInWall = GridSystem.Instance != null && !GridSystem.Instance.IsWalkable(path[path.Count - 1]);
 
-        if (_animator != null)
+        if (!endInWall)
         {
-            // Walk = true 상태를 유지한 채, 속도를 다시 켜서 남은 애니메이션이 이어서 재생되게 합니다.
-            _animator.speed = emergeSpeedMultiplier;
+            // 3단계: Emerge (땅 위로 나옴 - 정지했던 지점부터 이어서 정방향 재생)
+            _isEmerging = true;
+
+            if (_animator != null)
+            {
+                // Walk = true 상태를 유지한 채, 속도를 다시 켜서 남은 애니메이션이 이어서 재생되게 합니다.
+                _animator.speed = emergeSpeedMultiplier;
+            }
+
+            UpdateVisibility(); // 비주얼 보장
+            yield return new WaitForSeconds(emergeDuration);
+
+            if (_animator != null)
+            {
+                // 4단계: 완료 및 Idle 복귀
+                // Walk 파라미터를 false로 설정 -> Animator가 트랜지션을 타고 big worm 1 idle로 복귀
+                SafeSetBool(travelBoolName, false);
+                _animator.speed = 1f;
+            }
+
+            _isEmerging = false;
+        }
+        else
+        {
+            // 벽 속에서 이동이 끝나는 경우 Emerge(나오기) 연출을 하지 않고, 
+            // 굴 속에 쏙 들어가서 멈춘 상태(Walk = true, speed = 0)를 유지합니다.
+            if (_animator != null)
+            {
+                _animator.speed = 0f;
+            }
         }
 
-        UpdateVisibility(); // 비주얼 보장
-        yield return new WaitForSeconds(emergeDuration);
+        // 비주얼 이동이 완전히 끝난 시점에 논리 좌표를 최종 목적지로 갱신합니다.
+        Vector2Int finalPos = path[path.Count - 1];
+        SetGridPosition(finalPos);
+        TrapTerrainController.TryApplyTerrainAt(this, finalPos);
 
-        if (_animator != null)
-        {
-            // 4단계: 완료 및 Idle 복귀
-            // Walk 파라미터를 false로 설정 -> Animator가 트랜지션을 타고 big worm 1 idle로 복귀
-            SafeSetBool(travelBoolName, false);
-            _animator.speed = 1f;
-        }
-
-        _isEmerging = false;
         _isMovingVisual = false;
 
         // 이동 완료 후 최종 가시성 업데이트

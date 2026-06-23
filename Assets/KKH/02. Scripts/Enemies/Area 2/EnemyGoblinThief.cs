@@ -62,6 +62,7 @@ public class EnemyGoblinThief : EnemyBase
         }
         ClearTelegraphs();
         _isAttacking = false;
+        _pendingAttackCell = null;
     }
 
     /// <summary>

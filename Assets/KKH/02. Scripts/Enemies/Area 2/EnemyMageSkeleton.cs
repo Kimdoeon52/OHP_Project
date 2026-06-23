@@ -97,6 +97,7 @@ public class EnemyMageSkeleton : EnemyBase
         }
         ClearTelegraphs();
         _isAttacking = false;
+        _pendingAttackCell = null;
     }
 
     /// <summary>

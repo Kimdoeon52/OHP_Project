@@ -15,6 +15,12 @@ public class EnemyImp : EnemyBase
 
         if (SquaredDistanceToPlayer() <= data.visionRange * data.visionRange)
         {
+            // 벽 너머에 플레이어가 있는 경우(시야선이 가로막힌 경우) 공격 및 예고를 차단합니다.
+            if (VisionSystem.Instance != null && !VisionSystem.Instance.HasLineOfSight(GridPosition, Player.GridPosition))
+            {
+                return;
+            }
+
             _pendingAttackCell = Player.GridPosition;
             UpdateSpriteDirection(_pendingAttackCell.Value);
 
@@ -62,6 +68,7 @@ public class EnemyImp : EnemyBase
         ClearTelegraphs();
         _attackActionPoints = 0f; // 공격 완료 후 공격 포인트 초기화 (쿨타임 보장)
         _isAttacking = false;
+        _pendingAttackCell = null;
     }
 
 }
