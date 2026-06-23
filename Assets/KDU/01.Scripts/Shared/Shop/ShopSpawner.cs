@@ -9,6 +9,8 @@ public class ShopSpawner : MonoBehaviour
     [SerializeField] private ShopTableData table;
     [Tooltip("상인 장식 프롭 (선택)")]
     [SerializeField] private GameObject merchantPrefab;
+    [Tooltip("중앙에서 방 안쪽으로 밀 칸 수")]
+    [SerializeField] private int merchantInsetCells = 2;
 
     private static readonly Vector2Int[] Neighbors =
     {
@@ -164,23 +166,73 @@ public class ShopSpawner : MonoBehaviour
         if (merchantPrefab == null)
             return;
 
-        Vector2Int center = CenterCell(safe.floorCells);
-        Vector3 pos = GridSystem.Instance != null ? GridSystem.Instance.GridToWorld(center) : new Vector3(center.x, center.y, 0);
+        Vector2Int cell = MerchantCell(safe);
+        Vector3 pos = GridSystem.Instance != null ? GridSystem.Instance.GridToWorld(cell) : new Vector3(cell.x, cell.y, 0);
         _spawned.Add(Instantiate(merchantPrefab, pos, Quaternion.identity));
     }
 
-    private static Vector2Int CenterCell(List<Vector2Int> cells)
+    // 중앙에서 문 반대쪽(방 안쪽)으로 살짝 민 셀
+    private Vector2Int MerchantCell(RoomData safe)
     {
-        Vector2 center = Vector2.zero;
-        foreach (var c in cells)
-            center += c;
-        center /= cells.Count;
+        Vector2 center = Centroid(safe.floorCells);
+        Vector2 target = center + InwardDir(safe, center) * merchantInsetCells;
+        return NearestFloorCell(safe.floorCells, target, center);
+    }
 
+    private static Vector2 Centroid(List<Vector2Int> cells)
+    {
+        Vector2 sum = Vector2.zero;
+        foreach (var c in cells)
+            sum += c;
+        return sum / cells.Count;
+    }
+
+    // 문 평균 → 중앙 방향 (문 없으면 0)
+    private static Vector2 InwardDir(RoomData safe, Vector2 center)
+    {
+        if (safe.doorCells == null || safe.doorCells.Count == 0)
+            return Vector2.zero;
+
+        Vector2 doorAvg = Vector2.zero;
+        foreach (var d in safe.doorCells)
+            doorAvg += d;
+        doorAvg /= safe.doorCells.Count;
+
+        Vector2 dir = center - doorAvg;
+        return dir.sqrMagnitude > 0.001f ? dir.normalized : Vector2.zero;
+    }
+
+    // target에 가장 가까운 통행 가능·미점유 floor 셀 (없으면 fallback 셀)
+    private static Vector2Int NearestFloorCell(List<Vector2Int> cells, Vector2 target, Vector2 fallback)
+    {
+        var grid = GridSystem.Instance;
+        Vector2Int best = NearestCell(cells, fallback);
+        float bestDist = float.MaxValue;
+
+        foreach (var c in cells)
+        {
+            if (grid != null && !grid.IsWalkable(c))
+                continue;
+            if (SpawnCells.IsOccupied(c))
+                continue;
+
+            float d = ((Vector2)c - target).sqrMagnitude;
+            if (d < bestDist)
+            {
+                bestDist = d;
+                best = c;
+            }
+        }
+        return best;
+    }
+
+    private static Vector2Int NearestCell(List<Vector2Int> cells, Vector2 target)
+    {
         Vector2Int best = cells[0];
         float bestDist = float.MaxValue;
         foreach (var c in cells)
         {
-            float d = ((Vector2)c - center).sqrMagnitude;
+            float d = ((Vector2)c - target).sqrMagnitude;
             if (d < bestDist)
             {
                 bestDist = d;
