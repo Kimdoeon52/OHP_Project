@@ -13,13 +13,13 @@
 [라이선스 목록 및 크레딧]
 - Epic RPG World Collection
   - 저작권자: RafaelMatos
-  - 라이센스 전문: https://unity.com/kr/legal/as-terms
+  - 라이센스 전문: https://unity.com/legal/as-terms
   - 라이센스: Standard Unity Asset Store EULA
   - 라이센스 파일: Standard_Unity_Asset_Store_EULA(Eng), Standard_Unity_Asset_Store_EULA(Kor)
 
 - DOTween (HOTween v2)
   - 저작권자: Demigiant
-  - 라이센스 전문: https://unity.com/kr/legal/as-terms
+  - 라이센스 전문: https://unity.com/legal/as-terms
   - 라이센스: Standard Unity Asset Store EULA
   - 라이센스 파일: Standard_Unity_Asset_Store_EULA(Eng), Standard_Unity_Asset_Store_EULA(Kor)
 
@@ -35,79 +35,229 @@
   - 라이센스: MIT License
   - 라이센스 파일: MIT_License(Eng), MIT_License(Kor)
 
-- Pixel Monsters Animated Boss Pack #1
-  - 저작권자: Hippo
-  - 라이센스 전문: https://unity.com/kr/legal/as-terms
-  - 라이센스: Standard Unity Asset Store EULA
-  - 라이센스 파일: Standard_Unity_Asset_Store_EULA(Eng), Standard_Unity_Asset_Store_EULA(Kor)
-
-- Pixel Arsenal
-  - 저작권자: Archanor VFX
-  - 라이센스 전문: https://unity.com/kr/legal/as-terms
-  - 라이센스: Standard Unity Asset Store EULA
-  - 라이센스 파일: Standard_Unity_Asset_Store_EULA(Eng), Standard_Unity_Asset_Store_EULA(Kor)
-
-- Fantasy Map Creator 2
-  - 저작권자: PONETI
-  - 라이센스 전문: https://unity.com/kr/legal/as-terms
-  - 라이센스: Standard Unity Asset Store EULA
-  - 라이센스 파일: Standard_Unity_Asset_Store_EULA(Eng), Standard_Unity_Asset_Store_EULA(Kor)
-
-- Magic Runes Pixel Art Asset Pack
-  - 저작권자: Beowulfus Universum
-  - 라이센스 전문: https://unity.com/kr/legal/as-terms
-  - 라이센스: Standard Unity Asset Store EULA
-  - 라이센스 파일: Standard_Unity_Asset_Store_EULA(Eng), Standard_Unity_Asset_Store_EULA(Kor)
-
-- Bouns
-  - 저작권자: by Universfield via Pixabay
+- driken5482-retro-hurt-2-236675
+  - 저작권자: by freesound_gamestudio via Pixabay
   - 라이센스 전문: https://pixabay.com/ko/service/terms/
-  - 라이센스: CC0 license
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+-  stepir44-hurt-sound-435314
+  - 저작권자: by Stepir44 via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- floraphonic-wooden-trunk-latch-3-183946
+  - 저작권자: by floraphonic via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- freesound_community-coin-dropped-81172
+  - 저작권자: by freesound_community via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- prmodrai-key-404884
+  - 저작권자: by Prmodrai via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- freesound_gamestudio-find-408438
+  - 저작권자: by freesound_gamestudio via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- freesound_community-desperate-shout-106691
+  - 저작권자: by freesound_community via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- faespencer-vintage-blacksmith-hammer-484077
+  - 저작권자: by freesound_community via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- yodguard-iced-magic-1-378607
+  - 저작권자: by Yodguard via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- makigai_maimai-paper-245786
+  - 저작권자: by Makigai_MaiMai via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- Cinematic Logo
+  - 저작권자: by DRAGON-STUDIO via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- Bottle Pop
+  - 저작권자: by jackyyang09 (Freesound) via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- Golf Swing Practice 01
+  - 저작권자: by linhmitto via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- Bottle open
+  - 저작권자: by ScreamStudio (Freesound) via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- fire magic (5)
+  - 저작권자: by Yodguard via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- Iced magic (5)
+  - 저작권자: by Yodguard via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- Button Press
+  - 저작권자: by DRAGON-STUDIO via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- Armor Hit Soft 01
+  - 저작권자: by u_xjrmmgxfru via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
   - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
   - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
 
 - Drop Coin
-  - 저작권자: by freesound_community via Pixabay
+  - 저작권자: by freesound_gamestudio via Pixabay
   - 라이센스 전문: https://pixabay.com/ko/service/terms/
-  - 라이센스: CC0 license
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
   - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
   - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
 
-- Fall
-  - 저작권자: by freesound_CrunchpixStudio via Pixabay
+- warp magic (3)
+  - 저작권자: by Yodguard via Pixabay
   - 라이센스 전문: https://pixabay.com/ko/service/terms/
-  - 라이센스: CC0 license
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
   - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
   - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
 
-- Effect 8-bit Retro
-  - 저작권자: by Lesiakower via Pixabay
+- Trúng Gạch Đá
+  - 저작권자: by SieuAmThanh (Freesound) via Pixabay
   - 라이센스 전문: https://pixabay.com/ko/service/terms/
-  - 라이센스: CC0 license
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
   - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
   - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
 
-- Click Button
-  - 저작권자: by Universfield via Pixabay
+- Wet Punch
+  - 저작권자: by Wolff-SFX via Pixabay
   - 라이센스 전문: https://pixabay.com/ko/service/terms/
-  - 라이센스: CC0 license
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
   - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
   - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
 
-- 11L-Victory_sound_with_t-1749487045383
-  - 저작권자: by PeekabooLabCreative via Pixabay
+- KL Peach Game Over I
+  - 저작권자: by Lightyeartraxx via Pixabay
   - 라이센스 전문: https://pixabay.com/ko/service/terms/
-  - 라이센스: CC0 license
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
   - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
   - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
 
-- Crying out in the Darkness
+- Door (Opening and Closing)
+  - 저작권자: by Breviceps (Freesound) via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- Short energy beam shot (3)
+  - 저작권자: by Yodguard via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- 9 spinning wind
+  - 저작권자: by u_6dbry9y6qd via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- Hard Heavy Impact
+  - 저작권자: by DRAGON-STUDIO via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- Sword Slash and Swing
+  - 저작권자: by DavidDumaisAudio via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- Sound Design Elements Impact SFX PS 141
+  - 저작권자: by AudioPapkin via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- Sizzle
+  - 저작권자: by CHEATSman115 (Freesound) via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
+
+- Lava Flow
   - 저작권자: by SoundReality via Pixabay
   - 라이센스 전문: https://pixabay.com/ko/service/terms/
-  - 라이센스: CC0 license
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
   - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
   - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
 
+- Pickup_item
+  - 저작권자: by Defaultv (Freesound) via Pixabay
+  - 라이센스 전문: https://pixabay.com/ko/service/terms/
+  - 라이센스: Pixabay Content License — royalty-free, commercial use OK, no attribution required (standalone resale prohibited)
+  - 라이센스 파일: Pixabay_License(Eng), Pixabay_License(Kor)
+  - 라이센스 요약 파일: Pixabay_License_Summary(Eng), Pixabay_License_Summary(Kor)
 
 - liberationfonts
   - 저작권자: Red Hat, Inc.
@@ -115,197 +265,47 @@
   - 라이센스: SIL Open Font License 1.1
   - 라이센스 파일: SIL_Open_Font_License_1.1(Eng), SIL_Open_Font_License_1.1(Kor)
 
-- BattleStage
+- EyeBossTheme
   - 저작권자: Suno AI
-  - 라이센스 전문: https://suno.com/terms
-  - 라이센스: Generated music, used under Suno AI Terms — Commercial use permitted
+  - 라이센스 전문: https://suno.com/terms-of-service
+  - 라이센스: Generated music, used under Suno AI Terms — Commercial use rights assigned (paid-tier)
   - 라이센스 파일: SunoAi_License(Eng), SunoAi_License(Kor)
 
-- BattleStage2
+- GOLGOL Theme
   - 저작권자: Suno AI
-  - 라이센스 전문: https://suno.com/terms
-  - 라이센스: Generated music, used under Suno AI Terms — Commercial use permitted
+  - 라이센스 전문: https://suno.com/terms-of-service
+  - 라이센스: Generated music, used under Suno AI Terms — Commercial use rights assigned (paid-tier)
   - 라이센스 파일: SunoAi_License(Eng), SunoAi_License(Kor)
 
-- BattleStage3
+- HellDun
   - 저작권자: Suno AI
-  - 라이센스 전문: https://suno.com/terms
-  - 라이센스: Generated music, used under Suno AI Terms — Commercial use permitted
+  - 라이센스 전문: https://suno.com/terms-of-service
+  - 라이센스: Generated music, used under Suno AI Terms — Commercial use rights assigned (paid-tier)
   - 라이센스 파일: SunoAi_License(Eng), SunoAi_License(Kor)
 
-- EliteStage
+- LastBoss
   - 저작권자: Suno AI
-  - 라이센스 전문: https://suno.com/terms
-  - 라이센스: Generated music, used under Suno AI Terms — Commercial use permitted
+  - 라이센스 전문: https://suno.com/terms-of-service
+  - 라이센스: Generated music, used under Suno AI Terms — Commercial use rights assigned (paid-tier)
   - 라이센스 파일: SunoAi_License(Eng), SunoAi_License(Kor)
 
-- MainStage
+- MainTheme
   - 저작권자: Suno AI
-  - 라이센스 전문: https://suno.com/terms
-  - 라이센스: Generated music, used under Suno AI Terms — Commercial use permitted
+  - 라이센스 전문: https://suno.com/terms-of-service
+  - 라이센스: Generated music, used under Suno AI Terms — Commercial use rights assigned (paid-tier)
   - 라이센스 파일: SunoAi_License(Eng), SunoAi_License(Kor)
 
-- Title
+- PixelDUN(하수구)
   - 저작권자: Suno AI
-  - 라이센스 전문: https://suno.com/terms
-  - 라이센스: Generated music, used under Suno AI Terms — Commercial use permitted
+  - 라이센스 전문: https://suno.com/terms-of-service
+  - 라이센스: Generated music, used under Suno AI Terms — Commercial use rights assigned (paid-tier)
   - 라이센스 파일: SunoAi_License(Eng), SunoAi_License(Kor)
 
-- March of the Rising Heroes
+- PixelDUN(해골던전)
   - 저작권자: Suno AI
-  - 라이센스 전문: https://suno.com/terms
-  - 라이센스: Generated music, used under Suno AI Terms — Commercial use permitted
+  - 라이센스 전문: https://suno.com/terms-of-service
+  - 라이센스: Generated music, used under Suno AI Terms — Commercial use rights assigned (paid-tier)
   - 라이센스 파일: SunoAi_License(Eng), SunoAi_License(Kor)
-
-- IntroImage1
-  - 저작권자: Image created with Gemini
-  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
-  - 라이센스: Generated Image, used under Google's Terms of Service — Misrepresentation prohibited, compliance enforced
-  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
-
-- IntroImage2
-  - 저작권자: Image created with Gemini
-  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
-  - 라이센스: Generated Image, used under Google's Terms of Service — Misrepresentation prohibited, compliance enforced
-  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
-
-- IntroImage3
-  - 저작권자: Image created with Gemini
-  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
-  - 라이센스: Generated Image, used under Google's Terms of Service — Misrepresentation prohibited, compliance enforced
-  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
-
-- IntroImage4
-  - 저작권자: Image created with Gemini
-  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
-  - 라이센스: Generated Image, used under Google's Terms of Service — Misrepresentation prohibited, compliance enforced
-  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
-
-- IntroImage5
-  - 저작권자: Image created with Gemini
-  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
-  - 라이센스: Generated Image, used under Google's Terms of Service — Misrepresentation prohibited, compliance enforced
-  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
-
-- IntroImage6
-  - 저작권자: Image created with Gemini
-  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
-  - 라이센스: Generated Image, used under Google's Terms of Service — Misrepresentation prohibited, compliance enforced
-  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
-
-- EndingImage1
-  - 저작권자: Image created with Gemini
-  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
-  - 라이센스: Generated Image, used under Google's Terms of Service — Misrepresentation prohibited, compliance enforced
-  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
-
-- EndingImage2
-  - 저작권자: Image created with Gemini
-  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
-  - 라이센스: Generated Image, used under Google's Terms of Service — Misrepresentation prohibited, compliance enforced
-  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
-
-- EndingImage3
-  - 저작권자: Image created with Gemini
-  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
-  - 라이센스: Generated Image, used under Google's Terms of Service — Misrepresentation prohibited, compliance enforced
-  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
-
-- DemonGolden
-  - 저작권자: Image created with ChatGPT (DALL·E) / OpenAI
-  - 라이선스 전문: https://openai.com/policies/terms-of-use, https://openai.com/policies/usage-policies
-  - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
-  - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
-
-- DemonInclusive
-  - 저작권자: Image created with ChatGPT (DALL·E) / OpenAI
-  - 라이선스 전문: https://openai.com/policies/terms-of-use, https://openai.com/policies/usage-policies
-  - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
-  - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
-
-- DemonLucky
-  - 저작권자: Image created with ChatGPT (DALL·E) / OpenAI
-  - 라이선스 전문: https://openai.com/policies/terms-of-use, https://openai.com/policies/usage-policies
-  - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
-  - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
-
-- DemonUndead
-  - 저작권자: Image created with ChatGPT (DALL·E) / OpenAI
-  - 라이선스 전문: https://openai.com/policies/terms-of-use, https://openai.com/policies/usage-policies
-  - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
-  - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
-
-- DemonWisdom
-  - 저작권자: Image created with ChatGPT (DALL·E) / OpenAI
-  - 라이선스 전문: https://openai.com/policies/terms-of-use, https://openai.com/policies/usage-policies
-  - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
-  - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
-
-- TitleImage
-  - 저작권자: Image created with ChatGPT (DALL·E) / OpenAI
-  - 라이선스 전문: https://openai.com/policies/terms-of-use, https://openai.com/policies/usage-policies
-  - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
-  - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
-
-- BattleImage1
-  - 저작권자: Image created with ChatGPT (DALL·E) / OpenAI
-  - 라이선스 전문: https://openai.com/policies/terms-of-use, https://openai.com/policies/usage-policies
-  - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
-  - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
-
-- BattleImage2
-  - 저작권자: Image created with ChatGPT (DALL·E) / OpenAI
-  - 라이선스 전문: https://openai.com/policies/terms-of-use, https://openai.com/policies/usage-policies
-  - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
-  - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
-
-- BattleImage3
-  - 저작권자: Image created with ChatGPT (DALL·E) / OpenAI
-  - 라이선스 전문: https://openai.com/policies/terms-of-use, https://openai.com/policies/usage-policies
-  - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
-  - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
-
-- ainRuneEvent
-  - 저작권자: Image created with ChatGPT (DALL·E) / OpenAI
-  - 라이선스 전문: https://openai.com/policies/terms-of-use, https://openai.com/policies/usage-policies
-  - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
-  - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
-
-- evilRuneEvent
-  - 저작권자: Image created with ChatGPT (DALL·E) / OpenAI
-  - 라이선스 전문: https://openai.com/policies/terms-of-use, https://openai.com/policies/usage-policies
-  - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
-  - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
-
-- guadianRuneEvent
-  - 저작권자: Image created with ChatGPT (DALL·E) / OpenAI
-  - 라이선스 전문: https://openai.com/policies/terms-of-use, https://openai.com/policies/usage-policies
-  - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
-  - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
-
-- kingRuneEvent
-  - 저작권자: Image created with ChatGPT (DALL·E) / OpenAI
-  - 라이선스 전문: https://openai.com/policies/terms-of-use, https://openai.com/policies/usage-policies
-  - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
-  - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
-
-- MineImage
-  - 저작권자: Image created with ChatGPT (DALL·E) / OpenAI
-  - 라이선스 전문: https://openai.com/policies/terms-of-use, https://openai.com/policies/usage-policies
-  - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
-  - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
-
-- suinRuneEvent
-  - 저작권자: Image created with ChatGPT (DALL·E) / OpenAI
-  - 라이선스 전문: https://openai.com/policies/terms-of-use, https://openai.com/policies/usage-policies
-  - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
-  - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
-
-- undeadRuneEvent
-  - 저작권자: Image created with ChatGPT (DALL·E) / OpenAI
-  - 라이선스 전문: https://openai.com/policies/terms-of-use, https://openai.com/policies/usage-policies
-  - 라이선스: Generated Image, used under OpenAI Terms of Use and Content Policy — Commercial use permitted
-  - 라이선스 파일: DALL·E_License_AI(Eng), DALL·E_License_AI(Kor), OpenAI_Terms(Eng), OpenAI_Terms(Kor)
 
 - FriePotionEffect
   - 저작권자: Base image created with Gemini (Retouched by 윤지우)
@@ -505,8 +505,68 @@
   - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
   - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
 
-- LongSword
-  - 저작권자: Base image created with Gemini (Retouched by 윤지우)
+- MainBG
+  - 저작권자: Base image created with Gemini (Retouched by 남윤호)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- Title
+  - 저작권자: Base image created with Gemini (Retouched by 남윤호)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- Gemini_Generated_Image_egbhv6egbhv6egbh
+  - 저작권자: Base image created with Gemini
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- green_blood_splat_1781756557722
+  - 저작권자: Base image created with Gemini
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- EnchantBOX
+  - 저작권자: Base image created with Gemini (Retouched by 이상혁)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- EndingImage
+  - 저작권자: Base image created with Gemini (Retouched by 이상혁)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- HpBar-0001
+  - 저작권자: Base image created with Gemini (Retouched by 이상혁)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- LastBossName
+  - 저작권자: Base image created with Gemini (Retouched by 이상혁)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- Name 1
+  - 저작권자: Base image created with Gemini (Retouched by 이상혁)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- Name
+  - 저작권자: Base image created with Gemini (Retouched by 이상혁)
+  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
+  - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
+
+- Opening
+  - 저작권자: Base image created with Gemini (Retouched by 이상혁)
   - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
   - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
   - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
