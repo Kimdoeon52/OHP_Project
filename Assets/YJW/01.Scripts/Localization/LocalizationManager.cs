@@ -852,6 +852,19 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "하수인들이 품고 있던 시간 조각. 상처를 조금씩 회복시킨다." },
             { Language.English, "A shard of time the minions once carried. It slowly mends your wounds." }
         }},
+        //------------------------------------------ 인챈트
+        { "msg_마법부여", new Dictionary<Language, string> {
+            { Language.Korean, "마법 부여" },
+            { Language.English, "Enchant" }
+        }},
+        { "msg_무기마법부여", new Dictionary<Language, string> {
+            { Language.Korean, "무기\r\n마법부여" },
+            { Language.English, "Weapon\r\nEnchant" }
+        }},
+        { "msg_갑옷마법부여", new Dictionary<Language, string> {
+            { Language.Korean, "갑옷\r\n마법부여" },
+            { Language.English, "Armor\r\nEnchant" }
+        }},
     };
 
     public static string GetOrDefault(string key, string fallback)

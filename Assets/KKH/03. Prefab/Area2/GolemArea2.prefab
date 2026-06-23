@@ -561,8 +561,8 @@ MonoBehaviour:
   warningPrefab: {fileID: 0}
   hitParticlePrefab: {fileID: 5800963707191380806, guid: 29f51e0ae1dab43479770b76c9ce1519, type: 3}
   deathEffectPrefab: {fileID: 0}
-  goldPickupPrefab: {fileID: 0}
-  dropItemPickupPrefab: {fileID: 0}
+  goldPickupPrefab: {fileID: 1257418033240296761, guid: 66ffa8c140c0701468162ba42fae4d28, type: 3}
+  dropItemPickupPrefab: {fileID: 3144045374493979777, guid: 77773f66336d9a3449a1297c8155ca5d, type: 3}
   fragmentsOfLifeItem: {fileID: 11400000, guid: 65d0b9fecefb8ae47a582817a20344ed, type: 2}
   deathTriggerName: Die
   deathDestroyDelay: 0.6
