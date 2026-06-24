@@ -89,11 +89,22 @@ public class GridPlayerCombat : MonoBehaviour
         {
             MagicData weaponMagic = GetEquippedMagic(EquipmentSlot.Weapon);
             EnemyBase enemyTarget = entity as EnemyBase;
+            BossBase bossTarget = entity as BossBase;
 
             bool hitGuaranteed = weaponMagic != null && weaponMagic.IsHitGuaranteed;
-            if (!hitGuaranteed && enemyTarget != null && !RollPlayerHit(enemyTarget.Data != null ? enemyTarget.Data.evasion : 0))
+            int targetEvasion = 0;
+            if (enemyTarget != null && enemyTarget.Data != null)
             {
-                // 플레이어 공격도 적의 회피 스탯을 반영합니다. 보스는 아직 회피 데이터가 없어서 이 분기를 타지 않습니다.
+                targetEvasion = enemyTarget.Data.evasion;
+            }
+            else if (bossTarget != null)
+            {
+                targetEvasion = bossTarget.Evasion;
+            }
+
+            if (!hitGuaranteed && (enemyTarget != null || bossTarget != null) && !RollPlayerHit(targetEvasion))
+            {
+                // 플레이어 공격도 적/보스의 회피 스탯을 반영합니다.
                 weaponMagic?.OnMiss();
                 PublishCombatText(GetCombatWorldPosition(damageable), "Miss", 0, CombatTextType.Miss);
                 FinishMeleeAttack(dir);

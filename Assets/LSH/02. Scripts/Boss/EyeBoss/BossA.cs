@@ -390,7 +390,7 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
                 if (playerHit)
                 {
-                    player.TakeDamage(BossBase.ScaleBossDamage(20));
+                    TryDamagePlayer(20);
                     Vector2Int? knockbackTarget = FindKnockbackTarget(player.GridPosition, playerCell, landingGridPos);
                     if (knockbackTarget.HasValue)
                     {

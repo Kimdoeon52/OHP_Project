@@ -65,6 +65,13 @@ public class BossBase : EnemyNormalBASE
     [Header("사망 연출 공통 설정")]
     [SerializeField] protected GameObject deathParticlePrefab; // 사망 시 재생할 파티클 프리팹
 
+    [Header("보스 전투 스탯")]
+    [SerializeField] protected int evasion = 15;
+    [SerializeField] protected int accuracy = 20;
+
+    public int Evasion => evasion;
+    public int Accuracy => accuracy;
+
     protected bool isBossAttacking; //보스가 공격 중인지 여부를 나타내는 변수
     protected Animator bossAnimation; //보스 애니메이션을 제어하기 위한
     protected CancellationTokenSource cancelToken;
@@ -544,17 +551,40 @@ public class BossBase : EnemyNormalBASE
         _warningRefCount.Clear();
     }
 
+    // 플레이어 공격 시 회피 및 보스 정확도 비교 판정 후 데미지를 가하는 공통 함수
+    public bool TryDamagePlayer(int rawDamage)
+    {
+        if (player == null || player.IsDead || rawDamage <= 0) return false;
+
+        int finalDamage = ScaleBossDamage(rawDamage); // 강화 시 1.5배 적용
+
+        NYHPlayerStats playerStats = player.GetComponent<NYHPlayerStats>();
+        if (playerStats == null)
+            playerStats = NYHPlayerStats.Instance;
+        int targetEvasion = playerStats != null ? playerStats.Evasion : 0;
+
+        int missChancePercent = Mathf.Clamp(targetEvasion - accuracy, 0, 50);
+        if (Random.Range(0, 100) < missChancePercent)
+        {
+            GameEvents.OnCombatTextRequested?.Invoke(new CombatTextRequest(player.transform.position, "Miss", 0, CombatTextType.Miss));
+            Debug.Log($"[보스 공격 빗나감] 보스 정확도 {accuracy}, 플레이어 회피 {targetEvasion}");
+            return false;
+        }
+
+        Debug.Log($"<color=red>[보스 공격 히트]</color> 플레이어에게 데미지 가함. 데미지: {finalDamage}");
+        player.TakeDamage(finalDamage);
+        return true;
+    }
+
     // 데이터 기반 히트 판정. 플레이어 격자 좌표가 공격 칸 집합에 들어 있으면 데미지.
     protected void DamagePlayerIfInCells(IEnumerable<Vector2Int> cells, int damage)
     {
         if (player == null || player.IsDead) return;
-        int finalDamage = ScaleBossDamage(damage); //강화 시 1.5배
         foreach (var c in cells)
         {
             if (player.GridPosition == c)
             {
-                Debug.Log($"<color=red>[보스 공격 히트]</color> 플레이어가 공격 칸 {c}에 있음. 데미지: {finalDamage}");
-                player.TakeDamage(finalDamage);
+                TryDamagePlayer(damage);
                 return;
             }
         }

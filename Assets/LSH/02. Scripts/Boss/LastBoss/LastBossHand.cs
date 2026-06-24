@@ -526,7 +526,7 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
         // Hit check & knockback
         if (player != null && !player.IsDead && targetCells.Contains(player.GridPosition))
         {
-            player.TakeDamage(BossBase.ScaleBossDamage(fistSlamDamage));
+            TryDamagePlayer(fistSlamDamage);
 
             Vector2Int pushDir = player.GridPosition - targetCenter;
             if (pushDir == Vector2Int.zero) pushDir = Vector2Int.down;
@@ -609,7 +609,7 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
 
         if (player != null && !player.IsDead && targetCells.Contains(player.GridPosition))
         {
-            player.TakeDamage(BossBase.ScaleBossDamage(sweepDamage));
+            TryDamagePlayer(sweepDamage);
             Vector2Int kbTarget = FindKnockbackTargetOutsideRange(player.GridPosition, targetCells, sweepDir);
             player.Movement.Knockback(kbTarget, 0.2f);
         }
@@ -693,7 +693,7 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
 
         if (player != null && !player.IsDead && targetCells.Contains(player.GridPosition))
         {
-            player.TakeDamage(BossBase.ScaleBossDamage(scratchDamage));
+            TryDamagePlayer(scratchDamage);
             Vector2Int kbTarget = FindKnockbackTargetOutsideRange(player.GridPosition, targetCells, Vector2Int.up);
             player.Movement.Knockback(kbTarget, 0.2f);
         }
