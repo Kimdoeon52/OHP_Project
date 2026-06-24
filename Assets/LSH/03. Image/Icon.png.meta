@@ -1,10 +1,25 @@
 fileFormatVersion: 2
-guid: 285f0c68fad088040b78755383fef433
+guid: 42e3236053e1f3b41a45b4c61919f820
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2207342408803503721
-    second: TeacherDoraji_0
+      213: -2278566297644842510
+    second: Icon_0
+  - first:
+      213: -2297356003100555120
+    second: Icon_1
+  - first:
+      213: -1313622784187593632
+    second: Icon_2
+  - first:
+      213: 2487655054320033108
+    second: Icon_3
+  - first:
+      213: 2173798992543767541
+    second: Icon_4
+  - first:
+      213: 6739602711923796364
+    second: Icon_5
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +52,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -51,7 +66,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 320
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -75,7 +90,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -100,13 +115,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: TeacherDoraji_0
+      name: Icon_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 320
-        height: 320
+        x: 3
+        y: 35
+        width: 71
+        height: 74
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,228 +130,118 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 791bc9136c1fd51e0800000000000000
-      internalID: -2207342408803503721
+      spriteID: 2f1c3bf4608e060e0800000000000000
+      internalID: -2278566297644842510
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TeacherDoraji_1
+      name: Icon_1
       rect:
         serializedVersion: 2
-        x: 320
-        y: 0
-        width: 320
-        height: 320
+        x: 8
+        y: 103
+        width: 304
+        height: 213
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 3f8aaf82135d13045adf97443178ccab
-      internalID: 714620444
+      spriteID: 098849813e62e10e0800000000000000
+      internalID: -2297356003100555120
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TeacherDoraji_2
+      name: Icon_2
       rect:
         serializedVersion: 2
-        x: 640
-        y: 0
-        width: 320
-        height: 320
+        x: 69
+        y: 40
+        width: 139
+        height: 70
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 66d59543dc6a4a14692fcfdd631f3d47
-      internalID: -57019669
+      spriteID: 06c83a3a90315cde0800000000000000
+      internalID: -1313622784187593632
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TeacherDoraji_3
+      name: Icon_3
       rect:
         serializedVersion: 2
-        x: 960
-        y: 0
-        width: 320
-        height: 320
+        x: 189
+        y: 27
+        width: 56
+        height: 119
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: f419278185f334746b0ee93857bcc5d7
-      internalID: -377604640
+      spriteID: 45d537c771de58220800000000000000
+      internalID: 2487655054320033108
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TeacherDoraji_4
+      name: Icon_4
       rect:
         serializedVersion: 2
-        x: 1280
-        y: 0
-        width: 320
-        height: 320
+        x: 95
+        y: 38
+        width: 8
+        height: 6
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 416f7d47c65b95b489d75e0363ac708b
-      internalID: 1444400294
+      spriteID: 5fb5cab9aa2ea2e10800000000000000
+      internalID: 2173798992543767541
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TeacherDoraji_5
+      name: Icon_5
       rect:
         serializedVersion: 2
-        x: 1600
-        y: 0
-        width: 320
-        height: 320
+        x: 225
+        y: 43
+        width: 85
+        height: 50
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 4321219af9907e947bdf745fa2aed724
-      internalID: 2111836930
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TeacherDoraji_6
-      rect:
-        serializedVersion: 2
-        x: 1920
-        y: 0
-        width: 320
-        height: 320
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 366c9d00b21079444b47f9674bed9919
-      internalID: -388139300
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TeacherDoraji_7
-      rect:
-        serializedVersion: 2
-        x: 2240
-        y: 0
-        width: 320
-        height: 320
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 1cb21ceb05b24bd46818ae1196063b14
-      internalID: -522556262
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TeacherDoraji_8
-      rect:
-        serializedVersion: 2
-        x: 2560
-        y: 0
-        width: 320
-        height: 320
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 0359412a684f4724aa0039921c24088b
-      internalID: 105703941
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TeacherDoraji_9
-      rect:
-        serializedVersion: 2
-        x: 2880
-        y: 0
-        width: 320
-        height: 320
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 51ca1928a1d09c54ab8bf81696191d1c
-      internalID: -1512652968
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TeacherDoraji_10
-      rect:
-        serializedVersion: 2
-        x: 3200
-        y: 0
-        width: 320
-        height: 320
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: bf30b2d466e5dab4f8af9b23dff667f3
-      internalID: 2003354623
+      spriteID: c892a7365f0e78d50800000000000000
+      internalID: 6739602711923796364
       vertices: []
       indices: 
       edges: []
@@ -345,7 +250,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 57892a2d26dd2db488a5b342e8c66cdd
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -355,17 +260,12 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      TeacherDoraji_0: -2207342408803503721
-      TeacherDoraji_1: 714620444
-      TeacherDoraji_10: 2003354623
-      TeacherDoraji_2: -57019669
-      TeacherDoraji_3: -377604640
-      TeacherDoraji_4: 1444400294
-      TeacherDoraji_5: 2111836930
-      TeacherDoraji_6: -388139300
-      TeacherDoraji_7: -522556262
-      TeacherDoraji_8: 105703941
-      TeacherDoraji_9: -1512652968
+      Icon_0: -2278566297644842510
+      Icon_1: -2297356003100555120
+      Icon_2: -1313622784187593632
+      Icon_3: 2487655054320033108
+      Icon_4: 2173798992543767541
+      Icon_5: 6739602711923796364
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
