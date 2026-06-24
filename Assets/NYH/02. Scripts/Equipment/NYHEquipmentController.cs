@@ -422,6 +422,9 @@ public class NYHEquipmentController : MonoBehaviour
             // 이때 해제/재장착 이벤트가 없으므로 여기서 최종 보정을 다시 계산해 강화 수치를 반영한다.
             RebuildEquipmentStats("[강화/상태변경]", _equippedItems.TryGetValue(pair.Key, out NYHEquipmentItemInstance changedEquipped) ? changedEquipped : null);
             RebuildFinalStatModifiers("[강화/상태변경]", _equippedItems.TryGetValue(pair.Key, out changedEquipped) ? changedEquipped : null);
+            // 반지는 Profile 시스템이 아닌 OnEquip()으로 스탯을 관리하므로 별도로 델타 갱신
+            if (changedEquipped?.SourceInstance is RingInstance ring)
+                ring.RefreshEquippedStat();
             OnInventoryItemStateChanged?.Invoke(pair.Key.Slot, pair.Key.Index, changedItem);
             return true;
         }
