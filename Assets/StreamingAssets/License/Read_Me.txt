@@ -483,7 +483,7 @@
 
 - VeryBigShield
   - 저작권자: Base image created with Gemini (Retouched by 윤지우)
-  - 라이센스 전문: https://policies.google.com/terms, https://policies.google.com/terms/generative-ai
+  - 라이센스 전문: https://policies.google.com/terms, h	ttps://policies.google.com/terms/generative-ai
   - 라이센스: AI-Generated Base Asset with Manual Retouching — Misrepresentation prohibited, compliance enforced
   - 라이센스 파일: Gemini_License_AI(Eng), Gemini_License_AI(Kor), Gemini_License_Google(Eng), Gemini_License_Google(Kor)
 
