@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+using UnityEngine;
+using PrototypeRT;
 
 /// <summary>
 /// 고대 골렘 (EnemyGolem) [Elite] — 스페셜 룸 (몬스터 방) 전용 미니 보스
@@ -98,23 +99,39 @@ public class EnemyGolem : EnemyBase
 
     /// <summary>
     /// 골렘 위치에 장착 중인 WeaponInstance를 바닥 픽업 오브젝트로 생성합니다.
+    /// GroundItemController가 있으면 그쪽으로 위임하고, 없으면 직접 ItemPickup을 스폰합니다.
     /// </summary>
     private void DropWeaponOnFloor()
     {
-        if (_holdingWeaponInstance == null || itemPickupPrefab == null) return;
+        if (_holdingWeaponInstance == null) return;
 
-        // 아이템 픽업 프리팹 생성
+        // ── 우선 경로: GroundItemController에 위임 (인벤토리 시스템 통합) ──
+        var groundItemController = FindFirstObjectByType<GroundItemController>();
+        if (groundItemController != null)
+        {
+            groundItemController.DropItem(_holdingWeaponInstance, 1, GridPosition);
+            Debug.Log($"{name} 처치 완료: '{_holdingWeaponInstance.Weapon.Name} (+{_weaponEnhanceLevel})' GroundItemController로 드롭.");
+            return;
+        }
+
+        // ── 폴백 경로: 직접 ItemPickup 스폰 ──
+        if (itemPickupPrefab == null)
+        {
+            Debug.LogWarning($"{name}: GroundItemController 없고 itemPickupPrefab 미할당 — 무기 드롭 실패.");
+            return;
+        }
+
         GameObject dropGo = Instantiate(itemPickupPrefab, transform.position, Quaternion.identity);
         ItemPickup pickup = dropGo.GetComponent<ItemPickup>();
 
         if (pickup != null)
         {
-            // 인스턴스를 직접 주입하여 강화도 정보가 유지되도록 설정
+            // itemSO를 설정하면 ItemPickup.Start()에서 새 인스턴스로 덮어써 강화도가 사라지므로
+            // item 인스턴스만 직접 주입하고 itemSO는 설정하지 않는다.
             pickup.item = _holdingWeaponInstance;
-            pickup.itemSO = _holdingWeaponInstance.Weapon; // 아이콘 표기를 위한 SO 등록
             pickup.Initialize(GridPosition);
 
-            Debug.Log($"{name} 처치 완료: '{_holdingWeaponInstance.Weapon.Name} (+{_weaponEnhanceLevel})' 바닥에 드롭.");
+            Debug.Log($"{name} 처치 완료: '{_holdingWeaponInstance.Weapon.Name} (+{_weaponEnhanceLevel})' 직접 드롭.");
         }
     }
 }

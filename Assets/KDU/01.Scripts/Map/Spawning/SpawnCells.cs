@@ -3,11 +3,6 @@ using UnityEngine;
 
 public static class SpawnCells
 {
-    private static readonly Vector2Int[] Neighbors =
-    {
-        Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
-    };
-
     // 이미 무언가(상자/아이템/골드)가 차지한 셀 — 스포너 간 중복 배치 방지
     private static readonly HashSet<Vector2Int> Occupied = new HashSet<Vector2Int>();
 
@@ -35,13 +30,21 @@ public static class SpawnCells
         if (room == null || room.floorCells == null) 
             return result;
 
+        // 문(door) 주변 스폰 제외 범위: 맨해튼 거리 3칸 이내 모두 제외
+        const int DoorAvoidRadius = 3;
         var avoid = new HashSet<Vector2Int>();
         if (room.doorCells != null)
         {
             foreach (var d in room.doorCells)
             {
-                avoid.Add(d);
-                foreach (var n in Neighbors) avoid.Add(d + n);
+                for (int dx = -DoorAvoidRadius; dx <= DoorAvoidRadius; dx++)
+                {
+                    int remaining = DoorAvoidRadius - Mathf.Abs(dx);
+                    for (int dy = -remaining; dy <= remaining; dy++)
+                    {
+                        avoid.Add(d + new Vector2Int(dx, dy));
+                    }
+                }
             }
         }
 
