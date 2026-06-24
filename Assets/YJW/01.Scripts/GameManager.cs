@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class GameManager : PersistentSingleton<GameManager>
 {
@@ -11,5 +11,10 @@ public class GameManager : PersistentSingleton<GameManager>
         base.Awake();
 
         player = GameObject.FindWithTag("Player");
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
     }
 }
