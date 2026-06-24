@@ -147,7 +147,13 @@ namespace PrototypeRT
 
         public void OpenGameExit()
         {
-            OpenPanel(MainSystemPanel.GameExit, true);
+            // 종료 패널은 별도 캔버스라 시스템 창(windowRoot)을 켜지 않고 단독으로만 표시합니다.
+            SetActive(gameExitPanel, true);
+        }
+
+        public void CloseGameExit()
+        {
+            SetActive(gameExitPanel, false);
         }
 
         public void OpenCredit()
@@ -222,7 +228,7 @@ namespace PrototypeRT
             RegisterButton(gameExitButton, OpenGameExit);
             RegisterButton(creditButton, OpenCredit);
             RegisterButton(confirmExitButton, QuitGame);
-            RegisterButton(cancelExitButton, CloseLastOpenedLayer);
+            RegisterButton(cancelExitButton, CloseGameExit);
         }
 
         private void UnregisterButtons()
@@ -234,7 +240,7 @@ namespace PrototypeRT
             UnregisterButton(gameExitButton, OpenGameExit);
             UnregisterButton(creditButton, OpenCredit);
             UnregisterButton(confirmExitButton, QuitGame);
-            UnregisterButton(cancelExitButton, CloseLastOpenedLayer);
+            UnregisterButton(cancelExitButton, CloseGameExit);
         }
 
         private static void SetActive(GameObject target, bool active)
