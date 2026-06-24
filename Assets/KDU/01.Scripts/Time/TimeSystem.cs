@@ -18,7 +18,12 @@ public class TimeSystem : Singleton<TimeSystem>
 
     public void ResetForNewFloor()
     {
-        TimeRemaining = config != null ? config.startTime : 60f;
+        float baseTime = config != null ? config.startTime : 60f;
+        // 시간 압박 챌린지 — 층 제한시간 단축
+        if (config != null && ChallengeState.Has(ChallengeType.TimePressure))
+            baseTime *= config.timePressureMultiplier;
+
+        TimeRemaining = baseTime;
         IsRunning = false;
         GameEvents.OnTimeChanged?.Invoke(TimeRemaining);
     }

@@ -7,6 +7,10 @@ public class GameConfig : ScriptableObject
     public float startTime = 60f;
     public float lowTimeWarning = 10f;
 
+    [Header("챌린지 — 시간 압박")]
+    [Tooltip("층 제한시간 배율")]
+    [Range(0.1f, 1f)] public float timePressureMultiplier = 0.75f;
+
     [Header("행동별 시간 비용")]
     public float moveTimeDelay = 0.5f;
     public float potionTimeDealy = 1.0f;
@@ -14,6 +18,10 @@ public class GameConfig : ScriptableObject
 
     [Header("시야")]
     public int visionRadius = 5;
+
+    [Header("챌린지 — 시야 제한")]
+    [Tooltip("시야 반경 가감")]
+    public int visionLimitDelta = -2;
 
     [Header("스페셜 방 등장 확률")]
     [Range(0f, 1f)] public float specialRoomChance = 0.5f;

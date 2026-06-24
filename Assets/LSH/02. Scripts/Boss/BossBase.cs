@@ -32,6 +32,19 @@ public class BossBase : EnemyNormalBASE
     [Header("보스 레벨")] //레벨에 따라서 보스 패턴이나 보스의 능력치가 달라질 수 있음
     [SerializeField] protected int bossLevel;
 
+    [Header("보스 체력 데이터")]
+    [SerializeField] protected BossStatData statData; //기본/강화 체력 SO
+
+    // 강화 시 보스 데미지 배율 (고정값).
+    private const float EnhancedDamageMultiplier = 1.5f;
+
+    // isEnhanced: 보스 강화 챌린지면 강화.
+    // TODO(다회차): 전역 회차 카운터/세이브 도입 시 OR 조건 추가 — 주입 지점.
+    public static bool IsBossEnhanced => ChallengeState.Has(ChallengeType.BossBuff);
+
+    // 보스 고정 데미지에 강화 배율 적용. 패턴/소환물 등 모든 데미지 출처가 공유.
+    public static int ScaleBossDamage(int damage) => IsBossEnhanced ? Mathf.RoundToInt(damage * EnhancedDamageMultiplier) : damage;
+
     [Header("보스 패턴")]
     [SerializeField] protected List<ActionCases> actionCases = new List<ActionCases>();
 
@@ -107,6 +120,9 @@ public class BossBase : EnemyNormalBASE
             }
         }
 
+        // 보스 체력 적용 — isEnhanced면 강화 체력.
+        ApplyStats();
+
         currentHp = maxHp;
 
         // 1) 핵심 시스템 초기화 — 이 블록은 절대 예외로 끊기면 안 됨 (이후 모든 패턴이 의존).
@@ -168,6 +184,14 @@ public class BossBase : EnemyNormalBASE
  
         WaitBossCoolTime().Forget();
     }
+
+    // 스폰 시 1회. SO 체력을 isEnhanced에 따라 maxHp에 반영. SO 미연결이면 인스펙터 값 유지.
+    protected virtual void ApplyStats()
+    {
+        if (statData != null)
+            maxHp = statData.ResolveHp(IsBossEnhanced);
+    }
+
     protected virtual void OnDisable()
     {
         if (cancelToken != null)
@@ -524,12 +548,13 @@ public class BossBase : EnemyNormalBASE
     protected void DamagePlayerIfInCells(IEnumerable<Vector2Int> cells, int damage)
     {
         if (player == null || player.IsDead) return;
+        int finalDamage = ScaleBossDamage(damage); //강화 시 1.5배
         foreach (var c in cells)
         {
             if (player.GridPosition == c)
             {
-                Debug.Log($"<color=red>[보스 공격 히트]</color> 플레이어가 공격 칸 {c}에 있음. 데미지: {damage}");
-                player.TakeDamage(damage);
+                Debug.Log($"<color=red>[보스 공격 히트]</color> 플레이어가 공격 칸 {c}에 있음. 데미지: {finalDamage}");
+                player.TakeDamage(finalDamage);
                 return;
             }
         }

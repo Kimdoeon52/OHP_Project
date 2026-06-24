@@ -31,9 +31,11 @@ public class PotionData : ItemBase
         bool used = false;
         switch(potionType)
         {
-            case PotionType.HP: 
+            case PotionType.HP:
                 if(GridPlayerHealth.Instance.CurrentHp >= GridPlayerHealth.Instance.MaxHp) return;
-                HealPlayer(value); //체력 증가 수정
+                // 회복 봉인 챌린지 — 회복 효과 0 (포션은 소모됨)
+                if(!ChallengeState.Has(ChallengeType.HealSeal))
+                    HealPlayer(value); //체력 증가 수정
                 used = true;
                 break;
             case PotionType.strength:

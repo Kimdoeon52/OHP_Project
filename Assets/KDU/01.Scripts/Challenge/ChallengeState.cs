@@ -14,6 +14,12 @@ public class ChallengeState : Singleton<ChallengeState>
         return _active.Contains(type);
     }
 
+    // 효과 분기용 정적 단축 — 인스턴스 없으면 false.
+    public static bool Has(ChallengeType type)
+    {
+        return Instance != null && Instance._active.Contains(type);
+    }
+
     // 런 시작 시 1번. 잠긴 후엔 무시.
     public void Configure(IEnumerable<ChallengeType> types)
     {

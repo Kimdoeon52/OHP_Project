@@ -48,7 +48,7 @@ public class Lava : MonoBehaviour
             var player = FindFirstObjectByType<GridPlayer>();
             if (player != null && !player.IsDead && affectedCells.Contains(player.GridPosition))
             {
-                player.TakeDamage(damage);
+                player.TakeDamage(BossBase.ScaleBossDamage(damage));
             }
             
             await UniTask.Delay(intervalMs, cancellationToken: token);

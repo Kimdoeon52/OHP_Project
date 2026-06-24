@@ -50,6 +50,10 @@ public class MapItemSpawner : MonoBehaviour
     [Header("Secret 방 — 마법 부여 방")]
     [SerializeField] private EnchantAltar enchantAltarPrefab;
 
+    [Header("챌린지 — 빈약한 강화")]
+    [Tooltip("강화주문서 등장 수 감소량")]
+    [SerializeField, Min(0)] private int scarceUpgradeCountReduction = 1;
+
     [Header("스페셜 방 — 골드 방")]
     [SerializeField, Min(1)] private int goldRoomPileMin = 3;
     [SerializeField, Min(1)] private int goldRoomPileMax = 5;
@@ -240,18 +244,23 @@ public class MapItemSpawner : MonoBehaviour
             var entry = scheduled[i];
             if (entry == null || entry.item == null || entry.floors == null || entry.floors.Length == 0)
                 continue;
-            if (Array.IndexOf(entry.floors, depth) < 0) 
+            if (Array.IndexOf(entry.floors, depth) < 0)
                 continue;
 
-            if (DepthIsChosen(entry, depth, runSeed, i))
+            int count = entry.count;
+            // 빈약한 강화 챌린지 — 강화주문서 등장 수 감소
+            if (entry.item is ReinforceScroll && ChallengeState.Has(ChallengeType.ScarceUpgrade))
+                count = Mathf.Max(1, entry.count - scarceUpgradeCountReduction);
+
+            if (DepthIsChosen(entry, count, depth, runSeed, i))
                 PlaceInNormalOrExit(rooms, entry.item, rng);
         }
     }
 
-    private static bool DepthIsChosen(ScheduledItemSpawn entry, int depth, int runSeed, int index)
+    private static bool DepthIsChosen(ScheduledItemSpawn entry, int count, int depth, int runSeed, int index)
     {
         var floors = new List<int>(entry.floors);
-        int take = Mathf.Min(entry.count, floors.Count);
+        int take = Mathf.Min(count, floors.Count);
 
         var r = new DungeonRandom();
         r.Init(runSeed ^ (entry.item.Id * 397) ^ (index * 131) ^ (floors.Count * 17)); // 대충 설정한 숫자
@@ -327,7 +336,7 @@ public class MapItemSpawner : MonoBehaviour
 
     private void SpawnPickup(ItemBase item, Vector2Int cell, DungeonRandom rng)
     {
-        if (item == null) 
+        if (item == null)
             return;
 
         Vector3 pos = GridSystem.Instance != null ? GridSystem.Instance.GridToWorld(cell) : new Vector3(cell.x, cell.y, 0);

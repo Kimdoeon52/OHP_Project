@@ -22,6 +22,15 @@ public class ThrowableWeapon : ItemBase
     public int Durability => durability;
     public int StartCount => startCount;
 
+    public override string GetToolTipStats()
+    {
+        return $"[{LocalizedName}]  <color=red>{LocalizationManager.GetOrDefault("msg_미감정", "Unidentified")}</color>\n" +
+               $"--------------------\n" +
+               $"{LocalizedDescription}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_착용힘", "STR Required")}: {CanUseStrength}\n" +
+               $"{LocalizationManager.GetOrDefault("msg_T공격력", "Damage")}: {MinDamage}~{MaxDamage}";
+    }
+
     public override ItemInstance CreateInstance()
     {
         var inst = new ThrowableWeaponInstance { data = this };

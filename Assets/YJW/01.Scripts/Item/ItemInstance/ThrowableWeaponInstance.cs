@@ -19,6 +19,9 @@ public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
 
     public override string GetToolTipStats()
     {
+        if (!isAnalyzed)
+            return weapon.GetToolTipStats();
+
         int count = currentDurabilities.Count;
         string enhanceStr = enhanceLevel > 0 ? $" <color=yellow>+{enhanceLevel}</color>" : "";
         string countStr = count > 0 ? $" ×{count}" : "";

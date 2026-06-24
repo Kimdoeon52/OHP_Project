@@ -28,7 +28,9 @@ public class VisionSystem : Singleton<VisionSystem>
             // 포션/층 효과 같은 임시 시야 변화와 특성 보너스가 서로 덮어쓰지 않게 하기 위해서다.
             TraitController traitController = TraitController.FindAvailableInstance();
             int traitBonus = traitController != null ? traitController.GetVisionBonus() : 0;
-            return Mathf.Max(1, baseRadius + VisionRadiusDelta + traitBonus);
+            // 시야 제한 챌린지 — 반경 감소
+            int challengeDelta = config != null && ChallengeState.Has(ChallengeType.VisionLimit) ? config.visionLimitDelta : 0;
+            return Mathf.Max(1, baseRadius + VisionRadiusDelta + traitBonus + challengeDelta);
         }
     }
 

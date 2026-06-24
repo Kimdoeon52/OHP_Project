@@ -310,8 +310,8 @@ public abstract class EnemyBase : EntityBase, IDamageable
             }
         }
 
-        // 생명 파편 무조건(100% 확률) 드롭
-        if (fragmentsOfLifeItem != null)
+        // 생명 파편 무조건(100% 확률) 드롭 — 파편 봉인 챌린지 시 드롭 없음
+        if (fragmentsOfLifeItem != null && !ChallengeState.Has(ChallengeType.FragmentSeal))
         {
             SpawnItemDrop(fragmentsOfLifeItem);
         }

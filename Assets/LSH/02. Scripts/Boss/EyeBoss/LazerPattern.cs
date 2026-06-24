@@ -517,7 +517,7 @@ public class LazerPattern : MonoBehaviour
                     }
 
                     if (hit && player != null && !player.IsDead)
-                        player.TakeDamage(phase3LaserDamage);
+                        player.TakeDamage(BossBase.ScaleBossDamage(phase3LaserDamage));
 
                     await UniTask.Yield(token);
                 }
@@ -665,11 +665,12 @@ public class LazerPattern : MonoBehaviour
     private void DamagePlayerIfInCells(IEnumerable<Vector2Int> cells, int damage)
     {
         if (player == null || player.IsDead) return;
+        int finalDamage = BossBase.ScaleBossDamage(damage); //강화 시 1.5배
         foreach (var c in cells)
         {
             if (player.GridPosition == c)
             {
-                player.TakeDamage(damage);
+                player.TakeDamage(finalDamage);
                 return;
             }
         }

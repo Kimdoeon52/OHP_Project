@@ -237,7 +237,7 @@ public class SpecialPattern : MonoBehaviour
 
             if (boss.Player != null && !boss.Player.IsDead && boss.Player.GridPosition == targetPos)
             {
-                boss.Player.TakeDamage(crystalDamage);
+                boss.Player.TakeDamage(BossBase.ScaleBossDamage(crystalDamage));
             }
         }
         catch (System.OperationCanceledException) { }

@@ -416,7 +416,7 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
 
                     if (player.GridPosition.x == currentLaserGridX)
                     {
-                        player.TakeDamage(laserDamage);
+                        player.TakeDamage(BossBase.ScaleBossDamage(laserDamage));
                         hasDamagedPlayer = true; // 스윕당 1회 피격 제한
                         Debug.Log($"<color=orange>[하데스 레이저 스윕]</color> 플레이어가 레이저 범위 X={currentLaserGridX} 에 닿았습니다!");
                     }
@@ -518,7 +518,7 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
 
                 if (hit)
                 {
-                    player.TakeDamage(meteorDamage);
+                    player.TakeDamage(BossBase.ScaleBossDamage(meteorDamage));
                     Debug.Log($"<color=red>[용암 낙하 타격]</color> 플레이어가 3x3 범위 내에서 맞았습니다!");
                 }
 
@@ -546,7 +546,7 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
 
                 if (hit)
                 {
-                    player.TakeDamage(meteorDamage);
+                    player.TakeDamage(BossBase.ScaleBossDamage(meteorDamage));
                 }
                 ClearWarning(targetCells);
             }
@@ -709,7 +709,7 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
 
                 if (hit)
                 {
-                    player.TakeDamage(meteorDamage);
+                    player.TakeDamage(BossBase.ScaleBossDamage(meteorDamage));
                     Debug.Log($"<color=red>[지속 랜덤 용암 낙하 타격]</color> 플레이어가 3x3 범위 내에서 맞았습니다!");
                 }
 
@@ -738,7 +738,7 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
 
                 if (hit)
                 {
-                    player.TakeDamage(meteorDamage);
+                    player.TakeDamage(BossBase.ScaleBossDamage(meteorDamage));
                 }
                 ClearWarning(targetCells);
                 warningCleared = true;

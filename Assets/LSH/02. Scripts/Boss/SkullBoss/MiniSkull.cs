@@ -61,7 +61,7 @@ public class MiniSkull : MonoBehaviour
         if (player.GridPosition != gridPos) return;
         if (Time.time - lastDamageTime < damageCooldownSec) return;
 
-        player.TakeDamage(contactDamage);
+        player.TakeDamage(BossBase.ScaleBossDamage(contactDamage));
         lastDamageTime = Time.time;
     }
 
