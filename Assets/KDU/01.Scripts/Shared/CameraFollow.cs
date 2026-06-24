@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 using PrototypeRT;
 
 public class CameraFollow : MonoBehaviour
@@ -14,6 +15,14 @@ public class CameraFollow : MonoBehaviour
     [SerializeField] private float planningZoomSpeed = 1.5f;
     [SerializeField] private float planningMinSize = 3f;
     [SerializeField] private float planningMaxSize = 15f;
+
+    // Pixel Perfect Camera는 매 프레임 orthographicSize를 덮어써서 줌이 막힘 — refResolution 정수 배수로 단계 줌
+    [Tooltip("줌아웃 최대 배수")]
+    [SerializeField] private int planningZoomMaxStep = 3;
+    private PixelPerfectCamera _ppc;
+    private int _basePpcRefX;
+    private int _basePpcRefY;
+    private int _zoomStep = 1;
 
     [SerializeField] private bool useMouseEdgePan = false;
     [SerializeField] private float planningEdgePixels = 40f;
@@ -73,6 +82,12 @@ public class CameraFollow : MonoBehaviour
         Instance = this;
         if (planningCamera == null) planningCamera = GetComponent<Camera>();
         if (planningCamera != null) _defaultSize = planningCamera.orthographicSize;
+        if (planningCamera != null) _ppc = planningCamera.GetComponent<PixelPerfectCamera>();
+        if (_ppc != null)
+        {
+            _basePpcRefX = _ppc.refResolutionX;
+            _basePpcRefY = _ppc.refResolutionY;
+        }
         if (player == null) player = FindFirstObjectByType<GridPlayer>();
     }
 
@@ -151,6 +166,12 @@ public class CameraFollow : MonoBehaviour
         _planningPan = Vector2.zero;
         _hasPanned = false;
         if (planningCamera != null) planningCamera.orthographicSize = _defaultSize;
+        if (_ppc != null)
+        {
+            _basePpcRefX = _ppc.refResolutionX;
+            _basePpcRefY = _ppc.refResolutionY;
+            _zoomStep = 1;
+        }
         _planningMode = true;
     }
 
@@ -161,6 +182,17 @@ public class CameraFollow : MonoBehaviour
         _planningPan = Vector2.zero;
         _dragging = false;
         if (planningCamera != null) planningCamera.orthographicSize = _defaultSize;
+        _zoomStep = 1;
+        ApplyPpcZoom();
+    }
+
+    // refResolution 정수 배수로 줌 단계 적용 (배수↑ = 넓게 보임 = 줌아웃)
+    private void ApplyPpcZoom()
+    {
+        if (_ppc == null)
+            return;
+        _ppc.refResolutionX = _basePpcRefX * _zoomStep;
+        _ppc.refResolutionY = _basePpcRefY * _zoomStep;
     }
 
     private void Update()
@@ -182,11 +214,22 @@ public class CameraFollow : MonoBehaviour
             return;
         }
 
-        // 스크롤 줌
-        if (planningCamera != null)
+        // 스크롤 줌 — PPC면 refResolution 단계(휠 위=줌인/step↓), 없으면 orthographicSize
+        float scroll = Input.mouseScrollDelta.y;
+        if (scroll != 0f)
         {
-            float scroll = Input.mouseScrollDelta.y;
-            if (scroll != 0f)
+            if (_ppc != null)
+            {
+                int dir = scroll > 0f ? -1 : 1;
+                int next = Mathf.Clamp(_zoomStep + dir, 1, Mathf.Max(1, planningZoomMaxStep));
+                if (next != _zoomStep)
+                {
+                    _zoomStep = next;
+                    ApplyPpcZoom();
+                    _hasPanned = true;
+                }
+            }
+            else if (planningCamera != null)
             {
                 float ns = planningCamera.orthographicSize - scroll * planningZoomSpeed;
                 planningCamera.orthographicSize = Mathf.Clamp(ns, planningMinSize, MaxSizeForMap());
