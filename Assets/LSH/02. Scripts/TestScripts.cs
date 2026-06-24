@@ -97,7 +97,7 @@ public class TestScripts : MonoBehaviour
 
     void Update()
     {
-        //// ─── 디버그 단축키 블록 (주석 처리하여 비활성화 가능) ───
+        //// ─── 디버그 단축키 블록(주석 처리하여 비활성화 가능) ───
         //if (enableDebugFloorKeys)
         //{
         //    if (Input.GetKeyDown(KeyCode.F5))
@@ -110,7 +110,7 @@ public class TestScripts : MonoBehaviour
         //        Debug.Log("<color=yellow>[디버그]</color> F6 입력: 10층으로 즉시 이동합니다.");
         //        TriggerDebugFloorTransition(10);
         //    }
-        //    if(Input.GetKeyDown(KeyCode.F7))
+        //    if (Input.GetKeyDown(KeyCode.F7))
         //    {
         //        Debug.Log("<color=yellow>[디버그]</color> F7 입력: 15층으로 즉시 이동합니다.");
         //        TriggerDebugFloorTransition(15);
