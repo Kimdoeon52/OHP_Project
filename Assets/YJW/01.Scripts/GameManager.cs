@@ -1,8 +1,19 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class GameManager : PersistentSingleton<GameManager>
 {
-    public GameObject player { get; private set; }
+    private GameObject _player;
+    public GameObject player
+    {
+        get
+        {
+            if (_player == null)
+            {
+                _player = GameObject.FindWithTag("Player");
+            }
+            return _player;
+        }
+    }
 
     public bool isAlerted = false;   // 경보 저주 발동 여부
 
@@ -10,7 +21,7 @@ public class GameManager : PersistentSingleton<GameManager>
     {
         base.Awake();
 
-        player = GameObject.FindWithTag("Player");
+        _player = GameObject.FindWithTag("Player");
     }
 
     public void QuitGame()
