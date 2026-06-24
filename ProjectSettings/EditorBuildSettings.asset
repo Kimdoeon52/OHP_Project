@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/NYH/01. Scene/NYH_MainScene.unity
     guid: b4da60a83b7717e41ab1752ff1775e4c
   - enabled: 1
-    path: Assets/KDU/01.Scripts/00.Scene/KDU_Opening.unity
+    path: Assets/KDU/00.Scene/KDU_Opening.unity
     guid: 8536471d636e2b84da5f7b59f3c767c8
   - enabled: 1
     path: Assets/NYH/01. Scene/Loading.unity
@@ -18,13 +18,13 @@ EditorBuildSettings:
     path: Assets/NYH/01. Scene/NYH_Grid.unity
     guid: 0452a982e6dbf3d48a1ddff9687e8869
   - enabled: 1
-    path: Assets/KDU/01.Scripts/00.Scene/KDU_Tuto.unity
+    path: Assets/KDU/00.Scene/KDU_Tuto.unity
     guid: 5daa3e02511ba0946a0a8f2b1c10425e
   - enabled: 1
-    path: Assets/KDU/01.Scripts/00.Scene/KDU_2.unity
+    path: Assets/KDU/00.Scene/KDU_2.unity
     guid: b268e95ae00cbdb40b26a6000acded9c
   - enabled: 1
-    path: Assets/KDU/01.Scripts/00.Scene/KDU_Ending.unity
+    path: Assets/KDU/00.Scene/KDU_Ending.unity
     guid: 431edaf77eb192e489f015d05bbb2c6a
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
