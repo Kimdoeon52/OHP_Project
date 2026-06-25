@@ -140,9 +140,10 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
 
         if (CurrentHp <= 0)
         {
+            // 사망 연출/게임오버 이벤트가 진행되는 동안 타이머가 더 흐르지 않게 먼저 멈춥니다.
+            TimeSystem.Instance?.StopTimer();
             OnDied?.Invoke();
             GameEvents.OnPlayerDied?.Invoke();
-            TimeSystem.Instance.StopTimer();
         }
     }
 
@@ -168,6 +169,19 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
     {
         CurrentHp = Mathf.Clamp(hp, 0, MaxHp);
         RaiseHealthChanged();
+    }
+
+    /// <summary>
+    /// 시간초과 게임오버에서는 전역 사망 이벤트를 다시 발행하지 않고 HP와 로컬 사망 연출만 처리합니다.
+    /// </summary>
+    public void MarkDeadByTimeUp()
+    {
+        if (IsDead)
+            return;
+
+        CurrentHp = 0;
+        RaiseHealthChanged();
+        OnDied?.Invoke();
     }
 
     /// <summary>

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using UnityEngine;
+using System.Collections;
 
 public enum PotionType
 {
@@ -17,6 +18,12 @@ public enum PotionType
 [CreateAssetMenu(fileName = "NewPotion", menuName = "Item/Potion/NewPotion")]
 public class PotionData : ItemBase
 {
+    private const float MoveSpeedPotionDurationSeconds = 10f;
+
+    private static NYHPlayerStats activeMoveSpeedPotionStats;
+    private static Coroutine activeMoveSpeedPotionCoroutine;
+    private static int activeMoveSpeedPotionAmount;
+
     [SerializeField] private PotionType potionType;
     [SerializeField] private int value;
 
@@ -51,7 +58,7 @@ public class PotionData : ItemBase
                 used = true;
                 break;
             case PotionType.moveSpeed:
-                AddNYHStat(NYHStatType.MoveSpeed);
+                ApplyTemporaryMoveSpeed(value, MoveSpeedPotionDurationSeconds);
                 used = true;
                 break;
             case PotionType.levitation:
@@ -94,6 +101,73 @@ public class PotionData : ItemBase
         }
 
         NYHPlayerStats.Instance.AddStat(type, value);
+    }
+
+    private void ApplyTemporaryMoveSpeed(int amount, float durationSeconds)
+    {
+        NYHPlayerStats stats = NYHPlayerStats.Instance;
+        if (stats == null)
+        {
+            Debug.LogWarning("PotionData: NYHPlayerStats가 씬에 없어 이동속도 포션 효과를 적용하지 못했습니다.");
+            return;
+        }
+
+        if (amount <= 0)
+            return;
+
+        RefreshMoveSpeedPotion(stats, amount, durationSeconds);
+    }
+
+    private static void RefreshMoveSpeedPotion(NYHPlayerStats stats, int amount, float durationSeconds)
+    {
+        if (activeMoveSpeedPotionStats != null && activeMoveSpeedPotionStats != stats)
+        {
+            if (activeMoveSpeedPotionCoroutine != null)
+                activeMoveSpeedPotionStats.StopCoroutine(activeMoveSpeedPotionCoroutine);
+
+            activeMoveSpeedPotionStats.AddStat(NYHStatType.MoveSpeed, -activeMoveSpeedPotionAmount);
+            activeMoveSpeedPotionStats = null;
+            activeMoveSpeedPotionAmount = 0;
+            activeMoveSpeedPotionCoroutine = null;
+        }
+
+        if (activeMoveSpeedPotionStats == stats && activeMoveSpeedPotionCoroutine != null)
+            stats.StopCoroutine(activeMoveSpeedPotionCoroutine);
+
+        // 이미 같은 버프가 켜져 있으면 중첩하지 않고 차이만 반영한 뒤 지속시간만 갱신합니다.
+        int delta = activeMoveSpeedPotionStats == stats
+            ? amount - activeMoveSpeedPotionAmount
+            : amount;
+
+        if (delta != 0)
+            stats.AddStat(NYHStatType.MoveSpeed, delta);
+
+        activeMoveSpeedPotionStats = stats;
+        activeMoveSpeedPotionAmount = amount;
+        activeMoveSpeedPotionCoroutine = stats.StartCoroutine(RemoveMoveSpeedAfterDuration(stats, amount, durationSeconds));
+    }
+
+    private static IEnumerator RemoveMoveSpeedAfterDuration(NYHPlayerStats stats, int expectedAmount, float durationSeconds)
+    {
+        float elapsed = 0f;
+        float duration = Mathf.Max(0.1f, durationSeconds);
+
+        while (elapsed < duration)
+        {
+            // Safe Room처럼 타이머가 멈춘 상태에서는 버프 시간도 소모하지 않습니다.
+            if (TimeSystem.Instance == null || TimeSystem.Instance.IsRunning)
+                elapsed += Time.deltaTime;
+
+            yield return null;
+        }
+
+        if (stats != null && activeMoveSpeedPotionStats == stats && activeMoveSpeedPotionAmount == expectedAmount)
+        {
+            stats.AddStat(NYHStatType.MoveSpeed, -activeMoveSpeedPotionAmount);
+            activeMoveSpeedPotionStats = null;
+            activeMoveSpeedPotionCoroutine = null;
+            activeMoveSpeedPotionAmount = 0;
+        }
     }
 
     //플레이어의 경험치를 증가시켜주는 함수 경험치는

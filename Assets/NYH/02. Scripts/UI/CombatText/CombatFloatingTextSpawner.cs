@@ -29,7 +29,10 @@ public class CombatFloatingTextSpawner : MonoBehaviour
     [SerializeField] private Color criticalDamageColor = Color.red;
 
     [Tooltip("빗나감 텍스트 색상입니다.")]
-    [SerializeField] private Color missColor = Color.gray;
+    [SerializeField] private Color missColor = new Color(1f, 0.92f, 0.15f, 1f);
+
+    [Tooltip("피해가 방어로 막혔을 때 표시할 텍스트 색상입니다.")]
+    [SerializeField] private Color blockColor = new Color(1f, 0.58f, 0.08f, 1f);
 
     [Tooltip("회복 숫자 색상입니다.")]
     [SerializeField] private Color healColor = Color.green;
@@ -138,6 +141,7 @@ public class CombatFloatingTextSpawner : MonoBehaviour
         {
             CombatTextType.CriticalDamage => criticalDamageColor,
             CombatTextType.Miss => missColor,
+            CombatTextType.Block => blockColor,
             CombatTextType.Heal => healColor,
             CombatTextType.Gold => goldColor,
             _ => damageColor // 일반 데미지 및 기타

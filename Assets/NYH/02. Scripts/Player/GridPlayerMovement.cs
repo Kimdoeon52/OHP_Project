@@ -41,7 +41,10 @@ public class GridPlayerMovement : MonoBehaviour
     [SerializeField, Min(0f)] private float moveSpeedDurationMultiplier = 0.15f;
 
     [Tooltip("MoveSpeed가 높아져도 한 칸 이동 시간이 이 값보다 짧아지지 않게 합니다.")]
-    [SerializeField, Min(0.0001f)] private float minMoveDuration = 0.001f;
+    [SerializeField, Min(0.0001f)] private float minMoveDuration = 0.02f;
+
+    [Tooltip("기존 씬에 남아 있는 높은 minMoveDuration 값보다 아래까지 속도 보너스가 체감되도록 허용할 최소 이동 시간입니다.")]
+    [SerializeField, Min(0.0001f)] private float speedBonusMinMoveDuration = 0.02f;
 
     [Header("Move Mode")]
     [SerializeField] private PlayerGridMoveMode moveMode = PlayerGridMoveMode.ContinuousGridMove;
@@ -68,9 +71,15 @@ public class GridPlayerMovement : MonoBehaviour
     [Tooltip("이 MoveSpeed에 도달하면 이동 행동 딜레이가 minMoveActionDelay에 도달합니다. 기본값 10은 GDD의 10레벨 0.3초 기준입니다.")]
     [SerializeField, Min(1)] private int moveSpeedForMinActionDelay = 10;
 
+    [Tooltip("MoveSpeed 1당 이동 행동 딜레이에서 추가로 줄일 시간입니다. 속도 포션 체감을 위해 레벨 테이블 이후에 적용합니다.")]
+    [SerializeField, Min(0f)] private float actionDelayReductionPerMoveSpeed = 0.01f;
+
     [Header("Animation Speed")]
     [Tooltip("걷기 애니메이션 배속 계산에 반영할 최대 MoveSpeed. 실제 이동속도는 이 값을 넘어도 계속 빨라집니다.")]
     [SerializeField, Min(0)] private int animationSpeedCapMoveSpeed = 5;
+
+    [Tooltip("켜두면 걷기 애니메이션 배속을 animationSpeedCapMoveSpeed에서 제한합니다. 꺼두면 속도 포션/고레벨 MoveSpeed를 그대로 반영합니다.")]
+    [SerializeField] private bool useAnimationSpeedCap;
 
     public Vector2Int Facing { get; private set; } = Vector2Int.right;
 
@@ -263,7 +272,7 @@ public class GridPlayerMovement : MonoBehaviour
         // 실제 그리드 이동 시간 공식:
         // MoveSpeed가 5를 넘어도 계속 전체 수치를 반영합니다.
         float speedFactor = 1f + Mathf.Max(0, moveSpeed) * moveSpeedDurationMultiplier;
-        return Mathf.Max(minMoveDuration, baseMoveDuration / speedFactor);
+        return Mathf.Max(GetEffectiveMinMoveDuration(), baseMoveDuration / speedFactor);
     }
 
     private float GetMoveActionDelay()
@@ -282,6 +291,8 @@ public class GridPlayerMovement : MonoBehaviour
                 : Mathf.Clamp01((moveSpeed - 1f) / (moveSpeedForMinActionDelay - 1f));
             delay = Mathf.Lerp(baseDelay, minMoveActionDelay, progress);
         }
+
+        delay -= Mathf.Max(0, GetMoveSpeed()) * actionDelayReductionPerMoveSpeed;
 
         float magicBonus = (GetEquippedMagic(EquipmentSlot.Armor)?.GetMoveCooldownBonus() ?? 0f)
                          + (GetEquippedMagic(EquipmentSlot.Weapon)?.GetMoveCooldownBonus() ?? 0f);
@@ -309,15 +320,19 @@ public class GridPlayerMovement : MonoBehaviour
             return false;
 
         // GDD 8.3의 레벨별 이동 코스트 수치를 우선 적용합니다.
-        // 최대 레벨 이후는 마지막 값에 고정하여 고레벨 이동이 과도하게 빨라지는 것을 막습니다.
         int index = Mathf.Clamp(_levelSystem.Level - 1, 0, levelMoveActionDelays.Length - 1);
         delay = levelMoveActionDelays[index];
+
+        delay = Mathf.Max(minMoveActionDelay, delay);
         return delay > 0f;
     }
 
     private float GetAnimationSpeedMultiplier()
     {
-        int cappedMoveSpeed = Mathf.Min(GetMoveSpeed(), animationSpeedCapMoveSpeed);
+        int moveSpeed = GetMoveSpeed();
+        int cappedMoveSpeed = useAnimationSpeedCap
+            ? Mathf.Min(moveSpeed, animationSpeedCapMoveSpeed)
+            : moveSpeed;
 
         // 애니메이션 배속 공식:
         // MoveSpeed 5 이후에는 cappedMoveSpeed가 고정되어 걷기 애니메이션이 너무 빨라지지 않게 합니다.
@@ -330,7 +345,12 @@ public class GridPlayerMovement : MonoBehaviour
     private float GetDurationForMoveSpeed(int moveSpeed)
     {
         float speedFactor = 1f + Mathf.Max(0, moveSpeed) * moveSpeedDurationMultiplier;
-        return Mathf.Max(minMoveDuration, baseMoveDuration / speedFactor);
+        return Mathf.Max(GetEffectiveMinMoveDuration(), baseMoveDuration / speedFactor);
+    }
+
+    private float GetEffectiveMinMoveDuration()
+    {
+        return Mathf.Max(0.0001f, Mathf.Min(minMoveDuration, speedBonusMinMoveDuration));
     }
 
     private int GetMoveSpeed()
@@ -397,6 +417,9 @@ public class GridPlayerMovement : MonoBehaviour
     private void OnValidate()
     {
         minMoveActionDelay = Mathf.Max(0.0005f, minMoveActionDelay);
+        minMoveDuration = Mathf.Max(0.0001f, minMoveDuration);
+        speedBonusMinMoveDuration = Mathf.Max(0.0001f, speedBonusMinMoveDuration);
+        actionDelayReductionPerMoveSpeed = Mathf.Max(0f, actionDelayReductionPerMoveSpeed);
 
         if (levelMoveActionDelays == null || levelMoveActionDelays.Length == 0)
             return;

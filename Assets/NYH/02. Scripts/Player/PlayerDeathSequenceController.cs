@@ -101,6 +101,7 @@ public class PlayerDeathSequenceController : MonoBehaviour
         if (_isPlaying)
             return;
 
+        MarkPlayerDeadByTimeUp();
         _sequenceRoutine = StartCoroutine(PlaySequence());
     }
 
@@ -135,6 +136,14 @@ public class PlayerDeathSequenceController : MonoBehaviour
         }
 
         _sequenceRoutine = null;
+    }
+
+    private void MarkPlayerDeadByTimeUp()
+    {
+        ResolveReferences();
+
+        if (player != null && player.Health != null)
+            player.Health.MarkDeadByTimeUp();
     }
 
     private IEnumerator FadeDarkOverlay(float targetAlpha, float duration)

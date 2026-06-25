@@ -130,13 +130,20 @@ public class GridPlayerCombat : MonoBehaviour
                 weaponMagic?.OnKill();
 
             // BossBase는 BossTakeDamage 내부에서도 표시 이벤트를 쏘므로 여기서 중복 표시하지 않습니다.
-            if (finalDamage > 0 && damageable is not BossBase)
+            if (damageable is not BossBase)
             {
-                CombatTextType textType = IsCriticalDamage(finalDamage, damageRange.MaxDamage)
-                    ? CombatTextType.CriticalDamage
-                    : CombatTextType.Damage;
+                if (finalDamage > 0)
+                {
+                    CombatTextType textType = IsCriticalDamage(finalDamage, damageRange.MaxDamage)
+                        ? CombatTextType.CriticalDamage
+                        : CombatTextType.Damage;
 
-                PublishCombatText(GetCombatWorldPosition(damageable), finalDamage.ToString(), finalDamage, textType);
+                    PublishCombatText(GetCombatWorldPosition(damageable), finalDamage.ToString(), finalDamage, textType);
+                }
+                else
+                {
+                    PublishCombatText(GetCombatWorldPosition(damageable), "Block", 0, CombatTextType.Block);
+                }
             }
 
             LogDamageDealt("Melee", damageable, damage, beforeHp);

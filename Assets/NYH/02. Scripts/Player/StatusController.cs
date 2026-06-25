@@ -247,9 +247,25 @@ public class StatusController : MonoBehaviour
             case StatusType.Bleed:
             case StatusType.Corrosion:
             case StatusType.Ooze:
-                _damageable.TakeDamage(Mathf.Max(1, status.Power));
+                int damage = Mathf.Max(1, status.Power);
+                int beforeHp = _damageable.CurrentHp;
+                _damageable.TakeDamage(damage);
+                int actualDamage = Mathf.Max(0, beforeHp - _damageable.CurrentHp);
+                PublishTickDamageText(actualDamage);
                 break;
         }
+    }
+
+    private void PublishTickDamageText(int damage)
+    {
+        if (damage <= 0)
+            return;
+
+        GameEvents.OnCombatTextRequested?.Invoke(new CombatTextRequest(
+            transform.position,
+            damage.ToString(),
+            damage,
+            CombatTextType.Damage));
     }
 
     private bool IsTickDamageStatus(StatusType type)

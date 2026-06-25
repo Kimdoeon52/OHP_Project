@@ -9,6 +9,7 @@ public enum CombatTextType
     Damage,
     CriticalDamage,
     Miss,
+    Block,
     Heal,
     Gold
 }
