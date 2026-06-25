@@ -272,7 +272,7 @@ public class NYHEquipmentController : MonoBehaviour
                     continue;
 
                 NYHEquipmentProfile profile = FindProfile(equipped.Data);
-                if (MeetsEquipRequirements(equipped.Data, profile, GetEnhanceLevel(equipped)))
+                if (MeetsEquipRequirements(equipped.Data, profile, GetRequirementEnhanceLevel(equipped)))
                     continue;
 
                 failingKeys ??= new List<NYHEquipmentSlotKey>();
@@ -535,7 +535,7 @@ public class NYHEquipmentController : MonoBehaviour
             return false;
         }
 
-        if (!MeetsEquipRequirements(item.Data, profile, GetEnhanceLevel(item)))
+        if (!MeetsEquipRequirements(item.Data, profile, GetRequirementEnhanceLevel(item)))
             return false;
 
         // 타겟 슬롯에 이미 착용 중인 장비가 있을 경우 스왑을 위해 기존 장비 해제
@@ -841,6 +841,15 @@ public class NYHEquipmentController : MonoBehaviour
     private static int GetEnhanceLevel(NYHEquipmentItemInstance item)
     {
         if (item != null && item.SourceInstance is EquipmentInstance equipmentInstance)
+            return equipmentInstance.enhanceLevel;
+
+        return 0;
+    }
+
+    // 요구 조건용 강화 수치 — 미감정 장비는 강화 보정 없이 0강으로 취급
+    private static int GetRequirementEnhanceLevel(NYHEquipmentItemInstance item)
+    {
+        if (item != null && item.SourceInstance is EquipmentInstance equipmentInstance && equipmentInstance.isAnalyzed)
             return equipmentInstance.enhanceLevel;
 
         return 0;
