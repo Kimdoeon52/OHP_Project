@@ -106,10 +106,11 @@ public class GridPlayerInput : MonoBehaviour
             return;
         }
 
-        if (KeyBindingManager.GetGameplayKeyDown(KeyBindingAction.UseHealthPotion))
-        {
-            _player.Health.TryUsePotion();
-        }
+        // 옛 포션 사용 막음 — 퀵슬롯으로 대체
+        // if (KeyBindingManager.GetGameplayKeyDown(KeyBindingAction.UseHealthPotion))
+        // {
+        //     _player.Health.TryUsePotion();
+        // }
     }
 
     /// <summary>

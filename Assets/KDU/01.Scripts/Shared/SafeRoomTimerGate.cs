@@ -14,6 +14,13 @@ public class SafeRoomTimerGate : MonoBehaviour
     // 적 감지 차단용 — 플레이어가 세이프룸 안에 있는지 (적 AI가 조회)
     public static bool PlayerInSafeRoom { get; private set; }
 
+    // 게이트 비활성화 — 보스층 등 게이트가 타이머를 건드리면 안 되는 층에서 호출
+    public void Disarm()
+    {
+        _armed = false;
+        PlayerInSafeRoom = false;
+    }
+
     public void Arm(RoomData safeRoom)
     {
         if (safeRoom == null || safeRoom.floorCells == null || safeRoom.floorCells.Count == 0)

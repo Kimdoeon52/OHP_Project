@@ -1,8 +1,18 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 // 현재 런의 활성 챌린지. 1층 시작 시 Configure+Lock, 이후 고정. 점수/효과가 조회.
 public class ChallengeState : Singleton<ChallengeState>
 {
+    // 씬에 인스턴스가 없으면 만들어 보장 — 런 시작부에서 호출.
+    public static ChallengeState Ensure()
+    {
+        if (Instance == null)
+            new GameObject(nameof(ChallengeState)).AddComponent<ChallengeState>();
+
+        return Instance;
+    }
+
     private readonly HashSet<ChallengeType> _active = new HashSet<ChallengeType>();
 
     public bool IsLocked { get; private set; }

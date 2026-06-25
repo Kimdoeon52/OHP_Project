@@ -14,7 +14,7 @@ public static class RunRestorer
         RunState.Instance?.ResetRun(snap.seed, snap.depth);
 
         // 챌린지(보스강화/시야 등)는 맵 생성·효과에 영향 → 빌드 전에 복원·고정.
-        ChallengeState cs = ChallengeState.Instance;
+        ChallengeState cs = ChallengeState.Ensure();
         if (cs != null)
         {
             var types = new List<ChallengeType>();

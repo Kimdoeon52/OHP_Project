@@ -71,7 +71,7 @@ public class FloorTransitionController : MonoBehaviour
     // 타이틀 씬에서 넘어온 챌린지 선택과 시드를 적용하고 고정한다.
     private void ApplyPendingChallenges()
     {
-        ChallengeState cs = ChallengeState.Instance;
+        ChallengeState cs = ChallengeState.Ensure();
         if (cs != null)
         {
             cs.Configure(ChallengeSelection.PendingTypes);
@@ -243,8 +243,10 @@ public class FloorTransitionController : MonoBehaviour
         // 타이머
         if (isBossFloor)
         {
-            // 보스층은 게이트를 무장하지 않음 — 연출 끝(BossBase.OnEnable)에서 타이머 시작.
-            // 진입~걷기~대사~연출 동안 정지. 5/10층은 보스 제한시간 표시, 15층은 무한 연출이 처리.
+            // 보스층은 게이트 무장 해제 — 이전 층 게이트가 타이머를 재시작하지 않게.
+            // 연출 끝(BossBase.OnEnable)에서 타이머 시작. 진입~걷기~대사~연출 동안 정지.
+            // 5/10층은 보스 제한시간 표시, 15층은 무한 연출이 처리.
+            safeRoomGate?.Disarm();
             if (runState.CurrentDepth != finalDepth)
                 TimeSystem.Instance?.SetBossTime();
             else

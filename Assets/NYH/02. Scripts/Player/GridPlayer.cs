@@ -78,9 +78,8 @@ public class GridPlayer : EntityBase, IDamageable
 
         // 플레이어 시작 위치를 기준으로 첫 시야 및 안개 처리를 계산합니다.
         VisionSystem.Instance.UpdateVision(GridPosition);
-        
-        // 60초 제한시간 카운트다운을 시작합니다.
-        TimeSystem.Instance.StartTimer();
+
+        // 타이머 시작은 FloorTransition(세이프룸 게이트)·보스 연출이 소유. 여기서 직접 시작하지 않습니다.
     }
 
     /// <summary>

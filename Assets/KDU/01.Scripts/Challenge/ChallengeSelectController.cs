@@ -47,13 +47,20 @@ public class ChallengeSelectController : MonoBehaviour
         }
     }
 
-    // 버튼 클릭 — 해당 챌린지 On/Off 뒤집고 라벨 갱신.
+    // 버튼 클릭 — 해당 챌린지 On/Off 뒤집고 라벨 갱신 후 즉시 전달자에 반영.
     private void ToggleType(ChallengeType type)
     {
         if (!active.Remove(type))
             active.Add(type);
 
         RefreshLabels();
+        Apply();
+    }
+
+    // 현재 선택/시드를 전달자에 기록 — 토글/확인 모두 같은 경로.
+    private void Apply()
+    {
+        ChallengeSelection.Set(active.ToList(), TryGetSeed(out int seed), seed);
     }
 
     // 챌린지 버튼이 호출 — 설정 창 열고 기존 선택을 버튼에 반영.
@@ -68,7 +75,7 @@ public class ChallengeSelectController : MonoBehaviour
     // 확인 버튼이 호출 — 현재 선택/시드를 전달자에 기록하고 창 닫음.
     public void Confirm()
     {
-        ChallengeSelection.Set(active.ToList(), TryGetSeed(out int seed), seed);
+        Apply();
 
         if (panel != null)
             panel.SetActive(false);
