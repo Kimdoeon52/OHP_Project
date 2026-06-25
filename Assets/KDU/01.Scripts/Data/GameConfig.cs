@@ -6,6 +6,8 @@ public class GameConfig : ScriptableObject
     [Header("타이머")]
     public float startTime = 60f;
     public float lowTimeWarning = 10f;
+    [Tooltip("보스전 제한시간 (5/10층)")]
+    public float bossStartTime = 120f;
 
     [Header("챌린지 — 시간 압박")]
     [Tooltip("층 제한시간 배율")]

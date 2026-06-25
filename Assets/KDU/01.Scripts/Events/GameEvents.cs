@@ -44,6 +44,7 @@ public static class GameEvents
     public static Action OnFloorReset;                // 새 층 생성 직전 — 바닥 아이템 정리 등이 구독
     public static Action OnPlayerDied;                // 플레이어 사망
     public static Action OnLevelComplete;             // 레벨업
+    public static Action OnBossFightStarted;          // 보스 연출 종료·전투 시작 — 세이프 출구 잠금 등이 구독
     public static Action OnBossDefeated;              // 보스 처치 — 맵 출구 개방 등이 구독
     public static Action OnRunCleared;                // 최종층 클리어 — 승리/엔딩이 구독
     public static Action<ScoreResult> OnScoreFinalized; // 런 종료 점수 확정 — 결산 UI가 구독
@@ -83,6 +84,7 @@ public static class GameEvents
         OnFloorReset = null;                // 새 층 생성 직전
         OnPlayerDied = null;                // 플레이어 사망
         OnLevelComplete = null;             // 레벨업
+        OnBossFightStarted = null;         // 보스 전투 시작
         OnBossDefeated = null;              // 보스 처치
         OnRunCleared = null;                // 최종층 클리어
         OnScoreFinalized = null;            // 점수 확정

@@ -241,7 +241,16 @@ public class FloorTransitionController : MonoBehaviour
         VisionSystem.Instance?.UpdateVision(spawnCell);
 
         // 타이머
-        if (safeRoomGate != null && safeRoom != null)
+        if (isBossFloor)
+        {
+            // 보스층은 게이트를 무장하지 않음 — 연출 끝(BossBase.OnEnable)에서 타이머 시작.
+            // 진입~걷기~대사~연출 동안 정지. 5/10층은 보스 제한시간 표시, 15층은 무한 연출이 처리.
+            if (runState.CurrentDepth != finalDepth)
+                TimeSystem.Instance?.SetBossTime();
+            else
+                TimeSystem.Instance?.StopTimer();
+        }
+        else if (safeRoomGate != null && safeRoom != null)
             safeRoomGate.Arm(safeRoom);
         else
             TimeSystem.Instance?.StartTimer();

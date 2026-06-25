@@ -66,6 +66,21 @@ public class TimeSystem : Singleton<TimeSystem>
         GameEvents.OnTimeChanged?.Invoke(TimeRemaining);
     }
 
+    // 남은 시간을 직접 설정 (정지 상태 유지)
+    public void SetTime(float seconds)
+    {
+        TimeRemaining = seconds;
+        GameEvents.OnTimeChanged?.Invoke(TimeRemaining);
+    }
+
+    // 보스전 제한시간으로 설정하고 정지 — 연출 끝나면 StartTimer로 시작
+    public void SetBossTime()
+    {
+        TimeRemaining = config != null ? config.bossStartTime : 120f;
+        IsRunning = false;
+        GameEvents.OnTimeChanged?.Invoke(TimeRemaining);
+    }
+
     // 시간을 무한으로 설정
     public void SetInfinite()
     {

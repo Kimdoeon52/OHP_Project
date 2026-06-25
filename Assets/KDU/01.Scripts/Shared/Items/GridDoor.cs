@@ -76,12 +76,24 @@ public class GridDoor : MonoBehaviour
     {
         GameEvents.OnVisionUpdated += OnVisionUpdated;
         GameEvents.OnSearchPerformed += OnSearchPerformed;
+        GameEvents.OnBossFightStarted += OnBossFightStarted;
     }
 
     private void OnDisable()
     {
         GameEvents.OnVisionUpdated -= OnVisionUpdated;
         GameEvents.OnSearchPerformed -= OnSearchPerformed;
+        GameEvents.OnBossFightStarted -= OnBossFightStarted;
+    }
+
+    // 보스 연출 종료 시 세이프 출구 영구 잠금 — AttackFloor 밖(세이프룸) 복귀 차단
+    private void OnBossFightStarted()
+    {
+        if (Kind != DoorKind.SafeExit)
+            return;
+
+        _safePermLocked = true;
+        SetState(DoorState.Closed);
     }
 
     // 탐색

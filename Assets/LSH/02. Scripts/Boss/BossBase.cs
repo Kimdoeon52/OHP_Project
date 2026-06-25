@@ -54,9 +54,6 @@ public class BossBase : EnemyNormalBASE
     [Header("페이즈 전환 설정")]
     [SerializeField, Range(0.05f, 1f)] protected float phase2DelayMultiplier = 0.3f; //Phase 2 진입 시 patternDelay에 곱하는 배율
 
-    [Header("보스전 시간")]
-    [SerializeField] protected float bossFightTimeLimit = 120f; //보스전 진입 시 제한 시간(초)으로 고정
-
     [Header("경고 타일맵 (시각 표시 전용 — 판정 아님)")]
     [SerializeField] protected Tilemap warningTilemap; //공격 예고를 칠할 전용 타일맵
     [SerializeField] protected TileBase warningTile;   //예고 칸에 칠할 타일
@@ -169,8 +166,7 @@ public class BossBase : EnemyNormalBASE
                            $"인스펙터에서 별도의 WarningTilemap을 지정해 주세요. (현재 충돌 중)");
         }
 
-        // 4) 보스전 진입 시 제한 시간을 bossFightTimeLimit(초)로 고정하고 타이머 시작.
-        //    TimeSystem에 SetTime이 없어 AddTime(목표 - 현재)로 보정 (실험용 — 추후 SetTime 도입 검토).
+        // 4) 보스전 제한 시간을 GameConfig(bossStartTime)로 설정하고 타이머 시작. (15층은 무한 연출이 처리)
         if (TimeSystem.Instance != null)
         {
             int currentDepth = 5;
@@ -185,16 +181,19 @@ public class BossBase : EnemyNormalBASE
 
             if (currentDepth != 15)
             {
-                TimeSystem.Instance.AddTime(bossFightTimeLimit - TimeSystem.Instance.TimeRemaining);
+                TimeSystem.Instance.SetBossTime();
                 TimeSystem.Instance.StartTimer();
-                Debug.Log($"<color=cyan>[보스전]</color> 제한 시간 {bossFightTimeLimit}초로 고정, 타이머 시작.");
+                Debug.Log($"<color=cyan>[보스전]</color> 제한 시간 고정(GameConfig), 타이머 시작.");
             }
             else
             {
                 Debug.Log($"<color=cyan>[보스전]</color> 15층 보스전 진입: 타이머 재설정을 건너뛰고 무한 상태를 유지합니다.");
             }
         }
- 
+
+        // 연출 종료·전투 시작 알림 — 세이프 출구 잠금 등이 구독 (AttackFloor 이탈 차단)
+        GameEvents.OnBossFightStarted?.Invoke();
+
         WaitBossCoolTime().Forget();
     }
 
