@@ -102,6 +102,12 @@ public class BossBase : EnemyNormalBASE
 
     protected virtual void OnEnable()
     {
+        // 상태이상 틴트(PlayerStatusVisual)보다 먼저 진짜 색을 저장 — 피격 플래시 복구 기준색
+        CacheOriginalColors();
+
+        // 스폰 시점(피격 전)에 상태 비주얼을 미리 부착 — normalColor가 플래시 빨강이 아닌 진짜 색으로 캐싱되게
+        PlayerStatusVisual.EnsureFor(gameObject);
+
         if (attackFloorTilemap == null)
         {
             if (MapGenerator.Instance != null && MapGenerator.Instance.Tilemaps != null && MapGenerator.Instance.Tilemaps.attackFloor != null)
@@ -282,20 +288,26 @@ public class BossBase : EnemyNormalBASE
         }
     }
 
-    public void PlayHitEffect()
+    // 자식 포함 모든 SpriteRenderer의 최초 색을 1회 저장. 상태이상 틴트 전에 호출돼야 함.
+    private void CacheOriginalColors()
     {
-        // 자식 오브젝트를 포함하여 모든 SpriteRenderer 캐싱 및 최초 색상 저장
-        if (_spriteRenderers == null)
+        if (_spriteRenderers != null)
+            return;
+
+        _spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+        foreach (var sr in _spriteRenderers)
         {
-            _spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
-            foreach (var sr in _spriteRenderers)
+            if (sr != null && !_originalColors.ContainsKey(sr))
             {
-                if (sr != null && !_originalColors.ContainsKey(sr))
-                {
-                    _originalColors[sr] = sr.color;
-                }
+                _originalColors[sr] = sr.color;
             }
         }
+    }
+
+    public void PlayHitEffect()
+    {
+        // OnEnable에서 미리 캐싱하지만, 혹시 비어 있으면 보강
+        CacheOriginalColors();
 
         // 진행 중이던 기존 트윈 중단
         foreach (var t in _activeTweens)

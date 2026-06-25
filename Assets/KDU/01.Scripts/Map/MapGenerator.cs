@@ -450,7 +450,7 @@ public class MapGenerator : Singleton<MapGenerator>
             if (placed.Contains(cell))
                 continue;
 
-            if (!IsSecretDoorwayCell(cell, out bool horizontalPassage)) 
+            if (!TryGetSecretPassage(cell, out bool horizontalPassage))
                 continue;
 
             placed.Add(cell);
@@ -481,6 +481,31 @@ public class MapGenerator : Singleton<MapGenerator>
             var U = cell + Vector2Int.up;
             return safeFloor.Contains(U) ? cell + Vector2Int.down : U;
         }
+    }
+
+    // 봉인 쌍 칸 방향으로 통로 축 결정 — 수직 인접 바닥에 흔들리지 않게 두 칸 다 문 보장
+    private bool TryGetSecretPassage(Vector2Int cell, out bool horizontalPassage)
+    {
+        horizontalPassage = false;
+
+        bool gateL = SecretGatewayCells.Contains(cell + Vector2Int.left);
+        bool gateR = SecretGatewayCells.Contains(cell + Vector2Int.right);
+        bool gateU = SecretGatewayCells.Contains(cell + Vector2Int.up);
+        bool gateD = SecretGatewayCells.Contains(cell + Vector2Int.down);
+
+        if (gateL || gateR)
+        {
+            horizontalPassage = true;
+            return true;
+        }
+        if (gateU || gateD)
+        {
+            horizontalPassage = false;
+            return true;
+        }
+
+        // 쌍이 안 잡히는 단일 봉인은 바닥 감지로 폴백
+        return IsSecretDoorwayCell(cell, out horizontalPassage);
     }
 
     // Secret방 문 상하좌우 판단
