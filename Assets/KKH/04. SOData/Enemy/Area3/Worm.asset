@@ -26,11 +26,13 @@ MonoBehaviour:
   attackSpeed: 1
   defenseMin: 1
   defenseMax: 3
-  evasion: 6
+  evasion: 3
   accuracy: 10
   timeBonus: 3
   expReward: 15
+  goldDropChance: 1
   goldMin: 10
   goldMax: 20
+  itemDrops: []
   visionRange: 6
   onHitEffect: {fileID: 0}
