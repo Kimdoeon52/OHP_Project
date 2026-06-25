@@ -103,6 +103,9 @@ namespace PrototypeRT
         {
             EnsureInitialized();
 
+            // 이전 배치 시도에서 남은 교체 대상이 새 배치 검사에 섞이지 않도록 매번 초기화합니다.
+            overlapItem = null;
+
             if (item == null || item.ItemData == null) return false;
             if (!CanAcceptItem(item)) return false;
             if (!IsWithinBoundary(x, y, item.ItemData.Width, item.ItemData.Height)) return false;
@@ -120,6 +123,11 @@ namespace PrototypeRT
         public void PlaceItemInternal(InventoryItem item, int x, int y)
         {
             EnsureInitialized();
+
+            if (item == null || item.ItemData == null) return;
+
+            // 자동 배치/되돌리기 같은 예외 흐름에서도 같은 아이템의 예전 슬롯 참조가 남지 않게 방어합니다.
+            ClearItemReferences(item);
 
             RectTransform itemRect = item.GetComponent<RectTransform>();
             itemRect.SetParent(_rectTransform, false);
