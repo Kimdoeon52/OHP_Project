@@ -66,6 +66,7 @@ public class GridDoor : MonoBehaviour
     private Vector2Int _safeOutsideCell;
     private bool _safeOutsideCellSet;
     private bool _safePermLocked;
+    private bool _wasInSafeRoom;
 
     private void Awake()
     {
@@ -240,6 +241,16 @@ public class GridDoor : MonoBehaviour
             SetState(DoorState.Closed);
             return;
         }
+
+        // 폴백 — 세이프룸 안에 있다 벗어나면 잠금 (문 방향 무관, 보스맵 구제)
+        bool inSafe = SafeRoomTimerGate.PlayerInSafeRoom;
+        if (_wasInSafeRoom && !inSafe)
+        {
+            _safePermLocked = true;
+            SetState(DoorState.Closed);
+            return;
+        }
+        _wasInSafeRoom = inSafe;
 
         // 잠기기 전엔 일반 문처럼 자동 개폐.
         if (autoOpenWhenAdjacent)
