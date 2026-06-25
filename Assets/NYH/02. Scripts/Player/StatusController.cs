@@ -249,9 +249,21 @@ public class StatusController : MonoBehaviour
             case StatusType.Ooze:
                 int damage = Mathf.Max(1, status.Power);
                 int beforeHp = _damageable.CurrentHp;
-                _damageable.TakeDamage(damage);
+                bool playerHealthHandledText = false;
+                if (_damageable is GridPlayerHealth playerHealth)
+                {
+                    // 지속 피해는 공격 판정이 아니므로 치명타 색상을 쓰지 않고, Health 쪽 텍스트 1개만 남깁니다.
+                    playerHealth.TakeDamageWithCombatText(damage, 0);
+                    playerHealthHandledText = true;
+                }
+                else
+                {
+                    _damageable.TakeDamage(damage);
+                }
+
                 int actualDamage = Mathf.Max(0, beforeHp - _damageable.CurrentHp);
-                PublishTickDamageText(actualDamage);
+                if (!playerHealthHandledText)
+                    PublishTickDamageText(actualDamage);
                 break;
         }
     }

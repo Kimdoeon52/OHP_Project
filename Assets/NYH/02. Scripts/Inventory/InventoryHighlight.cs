@@ -19,7 +19,11 @@ namespace PrototypeRT
 
         public void Show(bool value)
         {
-            if (highlight != null) highlight.gameObject.SetActive(value);
+            if (highlight == null) return;
+
+            highlight.gameObject.SetActive(value);
+            if (value)
+                MoveBehindItems();
         }
 
         public void UpdateSize(InventoryItem item)
@@ -28,11 +32,15 @@ namespace PrototypeRT
 
             // 아이템이 차지하는 칸 수만큼 하이라이트 크기를 늘립니다.
             highlight.sizeDelta = new Vector2(item.ItemData.Width * ItemGrid.TileWidth, item.ItemData.Height * ItemGrid.TileHeight);
+            MoveBehindItems();
         }
 
         public void UpdatePosition(Vector2 localPos)
         {
-            if (highlight != null) highlight.localPosition = localPos;
+            if (highlight == null) return;
+
+            highlight.localPosition = localPos;
+            MoveBehindItems();
         }
 
         public void SetParent(ItemGrid grid)
@@ -43,29 +51,46 @@ namespace PrototypeRT
 
             // 하이라이트를 현재 그리드 아래로 옮겨, 그리드 로컬 좌표로 바로 위치시킬 수 있게 합니다.
             highlight.SetParent(grid.GetComponent<RectTransform>(), false);
-            MoveBehindItems(grid);
+            MoveBehindItems();
         }
 
-        private void MoveBehindItems(ItemGrid grid)
+        private void MoveBehindItems()
         {
-            int itemSiblingIndex = -1;
-            Transform gridTransform = grid.transform;
+            if (highlight == null || highlight.parent == null) return;
+
+            Transform gridTransform = highlight.parent;
+            int targetIndex = 0;
 
             for (int i = 0; i < gridTransform.childCount; i++)
             {
                 Transform child = gridTransform.GetChild(i);
-                if (child == highlight || child.GetComponent<InventoryItem>() == null) continue;
+                if (child == highlight) continue;
 
-                itemSiblingIndex = i;
-                break;
+                if (child.GetComponent<InventoryItem>() != null)
+                {
+                    targetIndex = i;
+                    break;
+                }
+
+                targetIndex = i + 1;
             }
 
             // 아이템 아이콘을 어둡게 덮지 않도록 하이라이트는 첫 아이템 바로 뒤에 둡니다.
             // 아직 아이템이 없는 빈 그리드라면 슬롯 배경 위에 보이도록 마지막에 둡니다.
-            if (itemSiblingIndex >= 0)
-                highlight.SetSiblingIndex(itemSiblingIndex);
-            else
-                highlight.SetAsLastSibling();
+            highlight.SetSiblingIndex(Mathf.Clamp(targetIndex, 0, gridTransform.childCount - 1));
+            BringItemsToFront(gridTransform);
+        }
+
+        private static void BringItemsToFront(Transform gridTransform)
+        {
+            if (gridTransform == null) return;
+
+            for (int i = gridTransform.childCount - 1; i >= 0; i--)
+            {
+                Transform child = gridTransform.GetChild(i);
+                if (child != null && child.GetComponent<InventoryItem>() != null)
+                    child.SetAsLastSibling();
+            }
         }
 
         private void DisableHighlightRaycast()

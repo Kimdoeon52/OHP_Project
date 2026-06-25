@@ -131,6 +131,7 @@ namespace PrototypeRT
 
             RectTransform itemRect = item.GetComponent<RectTransform>();
             itemRect.SetParent(_rectTransform, false);
+            itemRect.SetAsLastSibling();
 
             // 아이템이 차지하는 모든 칸에 같은 참조를 넣어, 어느 칸을 눌러도 같은 아이템을 찾게 합니다.
             for (int ix = 0; ix < item.ItemData.Width; ix++)
