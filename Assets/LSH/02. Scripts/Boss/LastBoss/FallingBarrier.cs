@@ -41,11 +41,29 @@ public class FallingBarrier : MonoBehaviour
         // 기준 Y 칸 캐시
         _triggerY = GridSystem.Instance.WorldToGrid(triggerLine.position).y;
 
+        // 재진입 대비 — 이전 발동에서 막힌 셀 초기화 (GridSystem은 싱글톤이라 잔류)
+        foreach (var obj in fallingObjects)
+        {
+            if (obj != null)
+                ForEachBarrierCell(obj, GridSystem.Instance.UnblockCell);
+        }
+
         // 발동 전엔 장벽 숨김
         foreach (var obj in fallingObjects)
         {
             if (obj != null)
                 obj.gameObject.SetActive(false);
+        }
+    }
+
+    // 오브젝트 기준 셀부터 barrierSize 사각 영역에 동작 적용
+    private void ForEachBarrierCell(Transform obj, System.Action<Vector2Int> action)
+    {
+        Vector2Int origin = GridSystem.Instance.WorldToGrid(obj.position);
+        for (int dx = 0; dx < barrierSize.x; dx++)
+        {
+            for (int dy = 0; dy < barrierSize.y; dy++)
+                action(origin + new Vector2Int(dx, dy));
         }
     }
 
@@ -84,13 +102,7 @@ public class FallingBarrier : MonoBehaviour
                 continue;
 
             // 셀 즉시 차단 — 떨어지는 도중에도 되돌아가지 못함
-            // 오브젝트 기준 셀부터 barrierSize 만큼 사각 영역 차단
-            Vector2Int origin = GridSystem.Instance.WorldToGrid(obj.position);
-            for (int dx = 0; dx < barrierSize.x; dx++)
-            {
-                for (int dy = 0; dy < barrierSize.y; dy++)
-                    GridSystem.Instance.BlockCell(origin + new Vector2Int(dx, dy));
-            }
+            ForEachBarrierCell(obj, GridSystem.Instance.BlockCell);
 
             StartCoroutine(DropOne(obj));
 
