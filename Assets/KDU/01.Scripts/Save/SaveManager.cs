@@ -74,6 +74,7 @@ public static class SaveManager
 
         snap.seed = run.RunSeed;
         snap.depth = run.CurrentDepth;
+        snap.gold = Wallet.Instance != null ? Wallet.Instance.Balance : 0;
         snap.challenges = BuildChallenges();
 
         snap.player = BuildPlayerSnapshot();

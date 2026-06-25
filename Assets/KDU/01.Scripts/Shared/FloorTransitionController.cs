@@ -162,6 +162,9 @@ public class FloorTransitionController : MonoBehaviour
         }
         else
         {
+            // 새 런 — 직전 런 종료 시점에서 넘어온 골드를 받고 저장에 반영.
+            Wallet.Instance?.ConsumeCarryOver();
+
             // 새 런 1층 진입도 저장 — 1층에서 나가면 1층부터 다시 시작.
             SaveManager.Save();
         }

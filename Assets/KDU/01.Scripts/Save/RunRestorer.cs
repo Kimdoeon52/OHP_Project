@@ -41,6 +41,9 @@ public static class RunRestorer
 
         PlayerSnapshot p = snap.player;
 
+        // 이어하기는 저장된 그 런의 골드 그대로 복원 (이월 골드 아님).
+        Wallet.Instance?.SetBalance(snap.gold);
+
         // 레벨 먼저 — 장착 요구레벨 검증에 쓰임.
         PlayerLevelSystem.Instance?.SetLevelExp(p.level, p.exp);
 

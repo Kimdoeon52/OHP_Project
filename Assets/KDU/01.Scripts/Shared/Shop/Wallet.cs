@@ -8,20 +8,43 @@ public class Wallet : Singleton<Wallet>
     private void OnEnable()
     {
         GameEvents.OnGoldDropped += OnGoldAcquired;
-        GameEvents.OnPlayerDied += ResetBalance;
+        GameEvents.OnPlayerDied += OnPlayerDied;
+        GameEvents.OnRunCleared += OnRunCleared;
     }
 
     private void OnDisable()
     {
         GameEvents.OnGoldDropped -= OnGoldAcquired;
-        GameEvents.OnPlayerDied -= ResetBalance;
+        GameEvents.OnPlayerDied -= OnPlayerDied;
+        GameEvents.OnRunCleared -= OnRunCleared;
     }
 
-    // 사망 시 잔액 0
-    private void ResetBalance()
+    // 사망 시 절반을 다음 런으로 넘기고 잔액 0
+    private void OnPlayerDied()
     {
+        GoldCarryOver.Set(Balance / 2);
         Balance = 0;
         GameEvents.OnGoldChanged?.Invoke(Balance);
+    }
+
+    // 최종 클리어 시 전액을 다음 런으로 넘김
+    private void OnRunCleared()
+    {
+        GoldCarryOver.Set(Balance);
+    }
+
+    // 잔액 지정 (이어하기 복원 등)
+    public void SetBalance(int amount)
+    {
+        Balance = Mathf.Max(0, amount);
+        GameEvents.OnGoldChanged?.Invoke(Balance);
+    }
+
+    // 새 런 시작 시 직전 런에서 넘어온 골드를 받고 비움
+    public void ConsumeCarryOver()
+    {
+        SetBalance(GoldCarryOver.Pending);
+        GoldCarryOver.Clear();
     }
 
     private void Start()

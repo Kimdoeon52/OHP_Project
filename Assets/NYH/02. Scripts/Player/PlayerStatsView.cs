@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using PrototypeRT;
@@ -51,6 +52,9 @@ public class PlayerStatsView : MonoBehaviour
     [SerializeField] private TMP_Text attackText;
     [Tooltip("명중률 수치만 표시할 Text입니다. 예: 85%")]
     [SerializeField] private TMP_Text accuracyText;
+
+    // 미감정 장비의 강화 보너스를 표시값에서만 빼기 위한 재사용 버퍼.
+    private readonly Dictionary<NYHStatType, int> _hiddenStatTotals = new();
 
     /// <summary>
     /// UI가 켜질 때 참조를 찾고 이벤트 구독을 시작한다.
@@ -180,18 +184,22 @@ public class PlayerStatsView : MonoBehaviour
             return;
         }
 
+        // 미감정 장비의 강화분은 표시값에서만 뺀다. 실제 스탯/전투 수치는 그대로 강화된 상태로 둔다.
+        if (equipmentController != null)
+            equipmentController.GetUnanalyzedHiddenStatTotals(_hiddenStatTotals);
+        else
+            _hiddenStatTotals.Clear();
+
         string health = playerHealth != null ? $"{playerHealth.CurrentHp} / {playerHealth.MaxHp}" : "-";
-        string strength = playerStats != null ? playerStats.Strength.ToString() : "-";
-        string moveSpeed = playerStats != null ? playerStats.MoveSpeed.ToString() : "-";
-        string attackSpeed = playerStats != null ? playerStats.AttackSpeed.ToString() : "-";
-        string accuracy = playerStats != null ? $"{playerStats.Accuracy}%" : "-";
+        string strength = playerStats != null ? DisplayStat(playerStats.Strength, NYHStatType.Strength).ToString() : "-";
+        string moveSpeed = playerStats != null ? DisplayStat(playerStats.MoveSpeed, NYHStatType.MoveSpeed).ToString() : "-";
+        string attackSpeed = playerStats != null ? DisplayStat(playerStats.AttackSpeed, NYHStatType.AttackSpeed).ToString() : "-";
+        string accuracy = playerStats != null ? $"{DisplayStat(playerStats.Accuracy, NYHStatType.Accuracy)}%" : "-";
         string level = playerLevel != null ? playerLevel.Level.ToString() : "-";
-        string defense = playerStats != null ? playerStats.Defense.ToString() : "-";
-        string evasion = playerStats != null ? $"{playerStats.Evasion}%" : "-";
+        string defense = playerStats != null ? DisplayStat(playerStats.Defense, NYHStatType.Defense).ToString() : "-";
+        string evasion = playerStats != null ? $"{DisplayStat(playerStats.Evasion, NYHStatType.Evasion)}%" : "-";
         string exp = playerLevel != null ? playerLevel.ExpDisplayText : "-";
-        string attack = playerStats != null
-            ? NYHPlayerAttackCalculator.CalculateMeleeRange(playerStats, equipmentController).ToDisplayText()
-            : "-";
+        string attack = playerStats != null ? BuildAttackDisplay(playerStats) : "-";
 
 
         SetText(healthText, health);
@@ -218,6 +226,28 @@ public class PlayerStatsView : MonoBehaviour
             $"명중률 {accuracy}"
             );
 
+    }
+
+    // 실제 스탯에서 미감정 장비의 숨긴 강화분을 빼 표시용 값을 만든다.
+    private int DisplayStat(int rawValue, NYHStatType type)
+    {
+        _hiddenStatTotals.TryGetValue(type, out int hidden);
+        return Mathf.Max(0, rawValue - hidden);
+    }
+
+    // 공격력 표시 — 미감정 무기의 강화분을 범위에서 빼 0강처럼 보이게 한다.
+    private string BuildAttackDisplay(NYHPlayerStats playerStats)
+    {
+        NYHAttackDamageRange range = NYHPlayerAttackCalculator.CalculateMeleeRange(playerStats, equipmentController);
+        if (equipmentController == null)
+            return range.ToDisplayText();
+
+        equipmentController.GetUnanalyzedWeaponHiddenDamage(out int hiddenMin, out int hiddenMax);
+        if (hiddenMin == 0 && hiddenMax == 0)
+            return range.ToDisplayText();
+
+        NYHAttackDamageRange display = new NYHAttackDamageRange(range.MinDamage - hiddenMin, range.MaxDamage - hiddenMax, range.BonusMax, range.IsUnarmed, range.WeaponName);
+        return display.ToDisplayText();
     }
 
     /// <summary>

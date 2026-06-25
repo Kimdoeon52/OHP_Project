@@ -8,6 +8,7 @@ public class RunSnapshot
     public int version = 1;          // 포맷 마이그레이션용
     public int seed;                 // RunState.RunSeed
     public int depth;                // 진입 시점 층
+    public int gold;                 // 진입 시점 지갑 잔액
 
     public List<int> challenges = new List<int>();          // 활성 ChallengeType
 

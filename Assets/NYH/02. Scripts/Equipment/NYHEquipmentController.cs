@@ -855,6 +855,52 @@ public class NYHEquipmentController : MonoBehaviour
         return 0;
     }
 
+    // 미감정 장비가 스탯 표시에 더한 강화 보너스 합 — 표시값에서 빼서 0강처럼 보이게 한다.
+    public void GetUnanalyzedHiddenStatTotals(Dictionary<NYHStatType, int> output)
+    {
+        if (output == null)
+            return;
+
+        output.Clear();
+        foreach (KeyValuePair<NYHEquipmentSlotKey, NYHEquipmentItemInstance> pair in _equippedItems)
+        {
+            NYHEquipmentItemInstance item = pair.Value;
+            if (item == null || item.Data == null)
+                continue;
+            if (item.SourceInstance is not EquipmentInstance equip || equip.isAnalyzed)
+                continue;
+
+            NYHEquipmentProfile profile = FindProfile(item.Data);
+            if (profile == null || profile.ScalingStatModifiers == null)
+                continue;
+
+            foreach (NYHEquipmentScalingStatModifier modifier in profile.ScalingStatModifiers)
+            {
+                int hidden = modifier.Evaluate(equip.enhanceLevel) - modifier.Evaluate(0);
+                if (hidden == 0)
+                    continue;
+
+                output.TryGetValue(modifier.statType, out int current);
+                output[modifier.statType] = current + hidden;
+            }
+        }
+    }
+
+    // 미감정 무기가 공격력 표시에 더한 강화 보너스 — 표시 범위에서 빼서 0강처럼 보이게 한다.
+    public void GetUnanalyzedWeaponHiddenDamage(out int hiddenMin, out int hiddenMax)
+    {
+        hiddenMin = 0;
+        hiddenMax = 0;
+
+        if (!TryGetEquipped(EquipmentSlot.Weapon, out NYHEquipmentItemInstance item) || item == null)
+            return;
+        if (item.SourceInstance is not WeaponInstance weapon || weapon.isAnalyzed || weapon.Weapon == null)
+            return;
+
+        hiddenMin = weapon.enhanceLevel * weapon.Weapon.MinEnhanceBonus;
+        hiddenMax = weapon.enhanceLevel * weapon.Weapon.MaxEnhanceBonus;
+    }
+
     private void LogStatChanges(string logPrefix, NYHEquipmentItemInstance changedItem, Dictionary<NYHStatType, int> deltas)
     {
         if (!logEquipmentStatChanges || string.IsNullOrEmpty(logPrefix) || deltas == null || deltas.Count == 0)
