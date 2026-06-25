@@ -105,38 +105,22 @@ public class EnemyGoblinThief : EnemyBase
 
     /// <summary>
     /// 사망 override.
-    /// 훔친 아이템이 있으면 InventoryController에 복구 후 부모 Die() 호출.
-    /// 인벤토리가 꽉 차면 복구 실패 (경고 로그 출력).
+    /// 훔친 아이템이 있으면 현재 그리드 위치에 바닥 드롭 후 부모 Die() 호출.
+    /// 플레이어가 직접 주워야 아이템을 회수할 수 있습니다.
     /// </summary>
     protected override void Die()
     {
         if (_hasStolenItem && _stolenItem != null)
         {
-            var invController = FindFirstObjectByType<InventoryController>();
-            bool itemRecovered = false;
-
-            if (invController != null)
+            var groundItemController = FindFirstObjectByType<GroundItemController>();
+            if (groundItemController != null)
             {
-                bool added = invController.TryAddItem(_stolenItem);
-                if (added)
-                {
-                    Debug.Log($"[GoblinThief] {name} 처치 → {_stolenItem.data.Name} 회수 성공.");
-                    itemRecovered = true;
-                }
+                groundItemController.DropItem(_stolenItem, 1, GridPosition);
+                Debug.Log($"[GoblinThief] {name} 처치 → {_stolenItem.data.Name}을(를) {GridPosition}에 드롭.");
             }
-
-            if (!itemRecovered)
+            else
             {
-                var groundItemController = FindFirstObjectByType<GroundItemController>();
-                if (groundItemController != null)
-                {
-                    groundItemController.DropItem(_stolenItem, 1, GridPosition);
-                    Debug.Log($"[GoblinThief] {name} 처치했으나 인벤토리 가득 차 회수 실패 → {_stolenItem.data.Name} 바닥에 드롭.");
-                }
-                else
-                {
-                    Debug.LogError($"[GoblinThief] {name} 처치 후 GroundItemController가 없어 {_stolenItem.data.Name} 영구 분실!");
-                }
+                Debug.LogError($"[GoblinThief] {name} 처치 후 GroundItemController가 없어 {_stolenItem.data.Name} 영구 분실!");
             }
         }
 

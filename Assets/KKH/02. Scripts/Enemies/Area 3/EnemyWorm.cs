@@ -31,7 +31,7 @@ public class EnemyWorm : EnemyBase
     [SerializeField] private float travelDuration = 1.0f;
 
     [Tooltip("굴에서 나와서 기본 상태로 복구될 때까지 재생할 프레임 수입니다. (남은 연출 프레임 수)")]
-    [SerializeField] private int emergeFrames = 8;
+    [SerializeField] private int emergeFrames = 14;
 
     [Tooltip("공격 예고 장판이 생성된 후 실제 타격이 가해지기까지의 대기 시간(초)입니다.")]
     [SerializeField] private float attackTelegraphDelay = 0.6f;
@@ -73,17 +73,17 @@ public class EnemyWorm : EnemyBase
     {
         if (IsDead || amount <= 0) return;
 
-        // 땅속 이동 프로세스 중(Burrow, Underground, Emerge)이거나 Walk 중일 때 원거리 면역
+        // 땅속 이동 프로세스 중(Burrow, Underground, Emerge)이거나 Walk 중일 때 모든 공격 면역
         bool isImmuneState = _isMovingVisual || _isBurrowing || _isUnderground || _isEmerging || 
                              (_animator != null && HasParameter(travelBoolName) && _animator.GetBool(travelBoolName));
 
-        if (isImmuneState && damageType == DamageType.Ranged)
+        if (isImmuneState)
         {
             // 이펙트 혹은 텍스트 요청 ("Immune" 등)
             GameEvents.OnCombatTextRequested?.Invoke(
                 new CombatTextRequest(transform.position, "Immune", 0, CombatTextType.Miss)
             );
-            Debug.Log($"{name}이 이동 중 원거리 공격을 면역했습니다.");
+            Debug.Log($"{name}이 이동 중 {damageType} 공격을 면역했습니다.");
             return;
         }
 
