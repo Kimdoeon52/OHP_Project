@@ -150,10 +150,14 @@ public class MapGenerator : Singleton<MapGenerator>
         // 보스 층 분기
         if (IsBossDepth(depth) && bossRoomLoader != null)
         {
-            var bossRooms = bossRoomLoader.Load(depth, tilemaps, out var bossExitCell);
+            var bossRooms = bossRoomLoader.Load(depth, tilemaps, out var bossExitCell, out var bossDoors);
 
-            if (bossRooms == null) 
+            if (bossRooms == null)
                 return null;
+
+            // 보스 prefab 에 손배치한 문 — 다음 층 진입 시 정리되도록 추적
+            if (bossDoors != null)
+                _currentDoors.AddRange(bossDoors);
 
             CurrentRooms = bossRooms;
             CurrentFeeling = null;

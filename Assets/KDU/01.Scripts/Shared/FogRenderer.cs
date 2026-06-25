@@ -10,6 +10,15 @@ public class FogRenderer : Singleton<FogRenderer>
     [SerializeField] private TileBase exploredTile; // 반투명
 
     private bool _initialized;
+    private bool _fogEnabled = true;
+
+    // 보스 층 등 안개 비활성 — 끄면 타일 제거 + 이후 갱신 무시
+    public void SetFogEnabled(bool enabled)
+    {
+        _fogEnabled = enabled;
+        if (!enabled)
+            ClearFog();
+    }
 
     private void OnEnable()
     {
@@ -42,6 +51,8 @@ public class FogRenderer : Singleton<FogRenderer>
 
     private void FillInitialFog()
     {
+        if (!_fogEnabled)
+            return;
         if (fogTilemap == null || fogTile == null || GridSystem.Instance == null)
             return;
 
@@ -57,6 +68,9 @@ public class FogRenderer : Singleton<FogRenderer>
 
     private void OnVisionUpdated(IReadOnlyCollection<Vector2Int> visible, IReadOnlyCollection<Vector2Int> explored)
     {
+        if (!_fogEnabled)
+            return;
+
         if ((visible == null || visible.Count == 0) && (explored == null || explored.Count == 0))
         {
             ClearFog();

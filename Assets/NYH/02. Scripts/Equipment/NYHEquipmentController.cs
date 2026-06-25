@@ -36,6 +36,9 @@ public class NYHEquipmentController : MonoBehaviour
     [Tooltip("시작 장비 InventoryItem을 임시로 보관할 부모 Transform입니다. 비워두면 InventoryController Transform 아래에 비활성 상태로 둡니다.")]
     [SerializeField] private Transform startingEquipmentViewParent;
 
+    [Tooltip("힘 부족으로 강제 해제한 장비를 인벤토리에 넣지 못할 때 바닥에 떨어뜨릴 컨트롤러입니다. 비워두면 씬에서 자동으로 찾습니다.")]
+    [SerializeField] private GroundItemController groundItemController;
+
     [Tooltip("반지/마법부여/저주가 최종 이동/공격 지연 시간에 개입하는 공용 통로입니다. 비워도 플레이어에서 자동으로 찾아 붙입니다.")]
     [SerializeField] private NYHFinalStatModifierController finalStatModifierController;
 
@@ -62,6 +65,9 @@ public class NYHEquipmentController : MonoBehaviour
 
     // 씬 오브젝트가 꺼졌다 켜져도 시작 장비가 중복 장착되지 않도록 한 번만 처리한다.
     private bool _startingEquipmentApplied;
+
+    // 강제 해제 재검사가 자기 자신을 다시 호출하는 무한 루프를 막는 플래그.
+    private bool _revalidatingRequirements;
 
     /// <summary>장비 장착 완료 시 발동하는 이벤트</summary>
     public event Action<EquipmentSlot, NYHEquipmentItemInstance> OnEquipped;
@@ -241,6 +247,75 @@ public class NYHEquipmentController : MonoBehaviour
         return inventoryController;
     }
 
+    private GroundItemController ResolveGroundItemController()
+    {
+        if (groundItemController == null)
+            groundItemController = FindFirstObjectByType<GroundItemController>();
+
+        return groundItemController;
+    }
+
+    // 힘 같은 스탯이 줄어든 뒤 더는 요구 조건을 못 맞추는 장착 무기/방어구를 강제로 벗긴다.
+    private void RevalidateEquipmentRequirements()
+    {
+        if (_revalidatingRequirements)
+            return;
+
+        _revalidatingRequirements = true;
+        try
+        {
+            List<NYHEquipmentSlotKey> failingKeys = null;
+            foreach (KeyValuePair<NYHEquipmentSlotKey, NYHEquipmentItemInstance> pair in _equippedItems)
+            {
+                NYHEquipmentItemInstance equipped = pair.Value;
+                if (equipped == null || equipped.Data == null)
+                    continue;
+
+                NYHEquipmentProfile profile = FindProfile(equipped.Data);
+                if (MeetsEquipRequirements(equipped.Data, profile, GetEnhanceLevel(equipped)))
+                    continue;
+
+                failingKeys ??= new List<NYHEquipmentSlotKey>();
+                failingKeys.Add(pair.Key);
+            }
+
+            if (failingKeys == null)
+                return;
+
+            for (int i = 0; i < failingKeys.Count; i++)
+            {
+                NYHEquipmentSlotKey key = failingKeys[i];
+                if (Unequip(key.Slot, key.Index, out InventoryItem itemView))
+                    ReturnUnequippedItemToInventoryOrGround(itemView);
+            }
+        }
+        finally
+        {
+            _revalidatingRequirements = false;
+        }
+    }
+
+    // 강제로 벗긴 장비를 인벤토리 빈 칸으로 돌리고, 자리가 없으면 발밑 바닥에 떨어뜨린다.
+    private void ReturnUnequippedItemToInventoryOrGround(InventoryItem itemView)
+    {
+        if (itemView == null)
+            return;
+
+        InventoryController inventory = ResolveInventoryController();
+        if (inventory != null && inventory.TryPlaceInDefaultGrid(itemView))
+            return;
+
+        // 인벤토리가 가득 차면 강화/저주 상태를 유지한 채 바닥에 떨어뜨리고 숨은 뷰는 정리한다.
+        GroundItemController ground = ResolveGroundItemController();
+        if (ground != null && itemView.ItemInstance != null && ground.DropItem(itemView.ItemInstance, 1))
+        {
+            Destroy(itemView.gameObject);
+            return;
+        }
+
+        Debug.LogWarning("NYHEquipmentController: 강제 해제한 장비를 인벤토리/바닥 어디에도 보내지 못했습니다.");
+    }
+
     /// <summary>
     /// 이미 생성된 장비 인스턴스의 장착을 시도합니다. 
     /// UI 참조(InventoryItem) 없이 순수 데이터 레벨의 장착 시 사용됩니다.
@@ -376,6 +451,10 @@ public class NYHEquipmentController : MonoBehaviour
 
         OnUnequipped?.Invoke(slot, item);
         OnInventoryItemUnequipped?.Invoke(slot, slotIndex, itemView);
+
+        // 힘 반지를 빼면 힘이 줄어 이미 착용 중인 무기/방어구가 요구 힘을 못 맞출 수 있다.
+        // 이 시점엔 스탯 롤백이 끝났으므로 남은 장비를 다시 검사해 미달 장비를 강제로 벗긴다.
+        RevalidateEquipmentRequirements();
         return true;
     }
 

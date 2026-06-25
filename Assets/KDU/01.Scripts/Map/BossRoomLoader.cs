@@ -20,9 +20,10 @@ public class BossRoomLoader : ScriptableObject
 
    
     // depth 의 보스 prefab 을 로드해 target Tilemap 에 타일 복사
-    public List<RoomData> Load(int depth, TerrainTilemaps target, out Vector2Int? exitCell)
+    public List<RoomData> Load(int depth, TerrainTilemaps target, out Vector2Int? exitCell, out List<GridDoor> doors)
     {
         exitCell = null;
+        doors = null;
         if (target == null)
         {
             Debug.LogError("[BossRoomLoader] target TerrainTilemaps 가 null");
@@ -51,6 +52,7 @@ public class BossRoomLoader : ScriptableObject
             safeCells = ReadTilemapCells(tempRoot.transform, "Safe");
             safeCell = ReadAnchorCell(tempRoot.transform, "SafeAnchor");
             exitCell = ReadAnchorCell(tempRoot.transform, "ExitAnchor");
+            doors = DetachDoors(tempRoot.transform);
         }
         finally
         {
@@ -64,6 +66,22 @@ public class BossRoomLoader : ScriptableObject
         }
 
         return BuildBossRoomData(target, safeCells, safeCell);
+    }
+
+    // prefab 안 GridDoor 들을 파괴 전에 씬으로 분리 — selfInitInScene 으로 자동 초기화
+    private static List<GridDoor> DetachDoors(Transform root)
+    {
+        var found = root.GetComponentsInChildren<GridDoor>(true);
+        if (found == null || found.Length == 0)
+            return null;
+
+        var result = new List<GridDoor>(found.Length);
+        foreach (var door in found)
+        {
+            door.transform.SetParent(null, true);
+            result.Add(door);
+        }
+        return result;
     }
 
     // prefab 안의 anchor 자식 Transform 위치를 prefab 의 Floor Tilemap 기준 셀 좌표로 변환

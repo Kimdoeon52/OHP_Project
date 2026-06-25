@@ -198,10 +198,20 @@ public class FloorTransitionController : MonoBehaviour
         else
             AudioManager.Instance?.PlayBgmForDepth(runState.CurrentDepth, false);
 
-        // 안개 생성 
+        bool isBossFloor = mapGenerator.IsBossDepth(runState.CurrentDepth);
+
+        // 안개 생성 — 보스 층은 안개 없음
         FogRenderer fogRenderer = FindFirstObjectByType<FogRenderer>();
         if (fogRenderer != null)
-            fogRenderer.RebuildFogForCurrentMap();
+        {
+            if (isBossFloor)
+                fogRenderer.SetFogEnabled(false);
+            else
+            {
+                fogRenderer.SetFogEnabled(true);
+                fogRenderer.RebuildFogForCurrentMap();
+            }
+        }
 
         // Safe Room 중앙 셀로 플레이어 텔레포트
         var safeRoom = rooms.Find(r => r.type == RoomType.Safe);
@@ -217,10 +227,10 @@ public class FloorTransitionController : MonoBehaviour
 
         player.SetGridPosition(spawnCell);
 
-        // Safe Room 플래닝
+        // Safe Room 플래닝 — 보스 층은 플래닝 모드 비활성
         if (cameraFollow != null)
         {
-            cameraFollow.ArmSafeRoom(safeRoom != null ? safeRoom.floorCells : null);
+            cameraFollow.ArmSafeRoom(isBossFloor ? null : (safeRoom != null ? safeRoom.floorCells : null));
             cameraFollow.SnapToTarget();
         }
 
