@@ -562,15 +562,12 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
         UnregisterGridOccupancy();
         UnblockGridOccupancy();
         
-        Debug.Log("<color=red>[하데스 머리]</color> 완전히 패배함. 소멸 연출 시작.");
+        Debug.Log("<color=red>[하데스 머리]</color> 패배함. 소멸 연출 시작.");
 
-        // Clear boss battle exit barriers
-        await base.OnDeath();
-
-        // Destroy owner controller if alive
+        // 본체 컨트롤러에 머리가 제거되었음을 통보하여 최종 클리어 여부를 판정하도록 유도
         if (_owner != null)
         {
-            Destroy(_owner.gameObject);
+            _owner.OnHeadDefeated();
         }
 
         // Dissolve animation
