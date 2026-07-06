@@ -16,7 +16,7 @@ public class CurseData : ScriptableObject
     [SerializeField] private string curseName;
     [SerializeField] private string description;
     [SerializeField] private CurseType curseType;
-    [SerializeField] private float triggerChance;   // 발동 확률 (0~1)
+    [SerializeField] private float triggerChance;   // 발동 확률 (%, 0~100)
     [SerializeField] private EquipmentSlot targetSlot;
 
     [Header("출혈 저주")]
@@ -62,15 +62,15 @@ public class CurseData : ScriptableObject
         switch (curseType)
         {
             case CurseType.Bleed:
-                if (Random.value < triggerChance)
+                if (Random.value < triggerChance / 100f)
                 {
                     int damage = Random.Range(bleedMin, bleedMax + 1);
-                    PlayerStats.Instance.AddStat(StatType.Hp, -damage);
+                    GridPlayerHealth.Instance?.TakeDamage(damage);
                 }
                 break;
 
             case CurseType.Displace:
-                if (Random.value < triggerChance)
+                if (Random.value < triggerChance / 100f)
                 {
                     GridSystem.Instance.MoveRanPos();
                 }
@@ -84,16 +84,16 @@ public class CurseData : ScriptableObject
         switch (curseType)
         {
             case CurseType.Alert:
-                if (Random.value < triggerChance)
+                if (Random.value < triggerChance / 100f)
                 {
                     GameManager.Instance.isAlerted = true;
                 }
                 break;
 
             case CurseType.Drain:
-                if (Random.value < triggerChance)
+                if (Random.value < triggerChance / 100f)
                 {
-                    PlayerStats.Instance.AddStat(StatType.Hp, -drainPercentage);
+                    GridPlayerHealth.Instance?.TakeDamage(drainPercentage);
                 }
                 break;
 
