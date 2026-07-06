@@ -746,6 +746,10 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
             return;
         }
 
+        // 내구성(방어력) 적용 (defenseMin 0 ~ defenseMax 10, BossBase 필드)
+        int finalDamage = ApplyBossDefense(amount);
+        if (finalDamage <= 0) return;
+
         // 자가 치유: 런타임 참조 유실 시 재탐색
         if (hpBar == null)
         {
@@ -759,17 +763,17 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
         }
 
         int beforeHp = currentHp;
-        currentHp = Mathf.Max(0, currentHp - amount);
-        int finalDamage = Mathf.Max(0, beforeHp - currentHp);
+        currentHp = Mathf.Max(0, currentHp - finalDamage);
+        int actualDamage = Mathf.Max(0, beforeHp - currentHp);
 
-        if (finalDamage > 0)
+        if (actualDamage > 0)
         {
             GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.BossHit);
 
             GameEvents.OnCombatTextRequested?.Invoke(new CombatTextRequest(
                 transform.position,
-                finalDamage.ToString(),
-                finalDamage,
+                actualDamage.ToString(),
+                actualDamage,
                 CombatTextType.Damage
             ));
 
@@ -783,7 +787,7 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
 
         if (_ownerBoss != null)
         {
-            _ownerBoss.OnHandDamaged(finalDamage);
+            _ownerBoss.OnHandDamaged(actualDamage);
         }
 
         if (currentHp <= 0)

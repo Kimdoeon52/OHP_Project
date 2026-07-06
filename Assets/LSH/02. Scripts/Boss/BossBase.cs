@@ -66,6 +66,12 @@ public class BossBase : EnemyNormalBASE
     [SerializeField] protected int evasion = 15;
     [SerializeField] protected int accuracy = 20;
 
+    [Header("보스 내구성 (방어력)")]
+    [Tooltip("피격 시 랜덤하게 경감할 데미지 최솟값. 0이면 항상 defenseMax 이하로 랜덤.")]
+    [SerializeField] protected int defenseMin = 0;
+    [Tooltip("피격 시 랜덤하게 경감할 데미지 최댓값. 보스A: 2 / 보스B: 5 / 최종보스: 10")]
+    [SerializeField] protected int defenseMax = 0;
+
     public int Evasion => evasion;
     public int Accuracy => accuracy;
 
@@ -201,7 +207,22 @@ public class BossBase : EnemyNormalBASE
     protected virtual void ApplyStats()
     {
         if (statData != null)
+        {
             maxHp = statData.ResolveHp(IsBossEnhanced);
+            // SO에 내구성 수치가 있으면 덮어씀 (defenseMin/Max는 하위 클래스 인스펙터로도 조정 가능)
+            defenseMin = statData.ResolveDefenseMin(IsBossEnhanced);
+            defenseMax = statData.ResolveDefenseMax(IsBossEnhanced);
+        }
+    }
+
+    /// <summary>
+    /// 내구성(방어력) 적용 후 실제 데미지를 반환합니다. 최솟값은 0.
+    /// 일반 몬스터의 ApplyDefense()와 동일한 범위 랜덤 방식입니다.
+    /// </summary>
+    protected int ApplyBossDefense(int rawDamage)
+    {
+        int defense = Random.Range(defenseMin, defenseMax + 1);
+        return Mathf.Max(0, rawDamage - defense);
     }
 
     protected virtual void OnDisable()
@@ -268,16 +289,20 @@ public class BossBase : EnemyNormalBASE
     {
         if (amount <= 0 || isDying) return;
 
+        // 내구성(방어력) 적용 — 일반 몬스터와 동일한 랜덤 범위 방식
+        int finalDamage = ApplyBossDefense(amount);
+        if (finalDamage <= 0) return;
+
         int beforeHp = currentHp;
-        currentHp -= amount;
-        int finalDamage = Mathf.Max(0, beforeHp - currentHp);
-        PublishBossCombatText(finalDamage);
-        if (finalDamage > 0)
+        currentHp -= finalDamage;
+        int actualDamage = Mathf.Max(0, beforeHp - currentHp);
+        PublishBossCombatText(actualDamage);
+        if (actualDamage > 0)
         {
             GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.BossHit);
             PlayHitEffect();
         }
-        Debug.Log($"<color=red>[보스 데미지]</color> 보스가 {amount}만큼 데미지를 받음. 현재 HP: {currentHp}");
+        Debug.Log($"<color=red>[보스 데미지]</color> 원본 {amount} → 방어 후 {finalDamage} 적용. 현재 HP: {currentHp}");
         if (hpBar != null) hpBar.UpdateBar();
 
         if (currentHp <= 0)
