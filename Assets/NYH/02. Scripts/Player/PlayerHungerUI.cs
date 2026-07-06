@@ -44,7 +44,7 @@ public class PlayerHungerUI : MonoBehaviour
         if (stats == null) return;
 
         float maxHunger = 10f; // 배고픔 최대치는 GDD상 고정 10
-        float currentHunger = stats.Hunger;
+        float currentHunger = stats.Hungry;
 
         if (fillImage != null)
         {

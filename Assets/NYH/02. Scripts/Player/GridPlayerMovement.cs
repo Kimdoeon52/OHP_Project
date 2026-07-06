@@ -101,6 +101,7 @@ public class GridPlayerMovement : MonoBehaviour
     private NYHPlayerStats _stats;
     private PlayerLevelSystem _levelSystem;
     private NYHEquipmentController _equipmentController;
+    private GridPlayerHungerController _hungerController;
     private Coroutine _moveCoroutine;
 
     public void Init(GridPlayer player)
@@ -115,6 +116,7 @@ public class GridPlayerMovement : MonoBehaviour
             _levelSystem = PlayerLevelSystem.Instance;
 
         _equipmentController = GetComponent<NYHEquipmentController>();
+        _hungerController = GetComponent<GridPlayerHungerController>();
     }
 
     /// <summary>
@@ -296,7 +298,15 @@ public class GridPlayerMovement : MonoBehaviour
 
         float magicBonus = (GetEquippedMagic(EquipmentSlot.Armor)?.GetMoveCooldownBonus() ?? 0f)
                          + (GetEquippedMagic(EquipmentSlot.Weapon)?.GetMoveCooldownBonus() ?? 0f);
-        return Mathf.Max(minMoveActionDelay, delay + magicBonus);
+
+        // hungry == 0 이면 이동 쿨타임에 고정 +0.5초 패널티를 더합니다.
+        float hungerPenalty = 0f;
+        if (_hungerController == null)
+            _hungerController = GetComponent<GridPlayerHungerController>();
+        if (_hungerController != null && _hungerController.IsHungerPenaltyActive)
+            hungerPenalty = _hungerController.HungerMovePenalty;
+
+        return Mathf.Max(minMoveActionDelay, delay + magicBonus + hungerPenalty);
     }
 
     // 장착 장비의 MagicData를 가져옴

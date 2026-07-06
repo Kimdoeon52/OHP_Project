@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using PrototypeRT;
 
@@ -25,7 +25,7 @@ public enum NYHStatType
     // 이전 데이터 호환용. 실제 레벨/경험치는 PlayerLevelSystem에서 관리한다.
     Level,
 
-    // 배고픔 수치. 시간에 따라 감소하며 0이 되면 굶주림 상태가 된다.
+    // 배고픔 수치. 시간에 따라 감소하며 0이 되면 굶주림 상태가 된다. (변수명: hungry)
     Hunger,
 
     // 명중률 보정값. 기존 enum 직렬화 값을 밀지 않기 위해 마지막에 추가한다.
@@ -67,8 +67,8 @@ public class NYHPlayerStats : MonoBehaviour
     [SerializeField, Range(0, 100)] private int evasion = 20;
 
     [Header("상태 스탯")]
-    [Tooltip("배고픔 수치입니다. 10초마다 1씩 감소하며 0이 되면 굶주림(체력감소, 쿨타임 증가) 상태가 됩니다.")]
-    [SerializeField, Range(0, 10)] private int hunger = 10;
+    [Tooltip("배고픔 수치입니다. 10초마다 1씩 감소하며 0이 되면 굶주림(체력감소, 쿨타임+0.5초) 상태가 됩니다. 범위: 0~10.")]
+    [SerializeField, Range(0, 10)] private int hungry = 10;
 
     /// <summary>
     /// 스탯 값이 변경됐을 때 호출된다.
@@ -89,7 +89,7 @@ public class NYHPlayerStats : MonoBehaviour
     public int Accuracy => accuracy;
     public int Defense => defense;
     public int Evasion => evasion;
-    public int Hunger => hunger;
+    public int Hungry => hungry;
 
     /// <summary>
     /// 씬에서 전역 접근할 플레이어 스탯 인스턴스를 등록한다.
@@ -148,7 +148,7 @@ public class NYHPlayerStats : MonoBehaviour
                 evasion = Mathf.Clamp(evasion + amount, 0, 100);
                 break;
             case NYHStatType.Hunger:
-                hunger = Mathf.Clamp(hunger + amount, 0, 10);
+                hungry = Mathf.Clamp(hungry + amount, 0, 10);
                 break;
             case NYHStatType.Level:
                 Debug.LogWarning("NYHPlayerStats: Level은 PlayerLevelSystem에서 관리합니다.");
@@ -164,7 +164,7 @@ public class NYHPlayerStats : MonoBehaviour
     /// AddStat의 누적/회복 부수효과를 피하기 위해 필드를 직접 세팅하고, 마지막에 변경 이벤트만 발생시킵니다.
     /// 현재 체력 복원은 GridPlayerHealth가 별도로 처리하므로 여기서 Health 회복 이벤트는 보내지 않습니다.
     /// </summary>
-    public void SetStats(int maxHealth, int strength, int moveSpeed, int attackSpeed, int accuracy, int defense, int evasion, int hunger)
+    public void SetStats(int maxHealth, int strength, int moveSpeed, int attackSpeed, int accuracy, int defense, int evasion, int hungry)
     {
         this.maxHealth = Mathf.Max(1, maxHealth);
         this.strength = Mathf.Max(0, strength);
@@ -173,7 +173,7 @@ public class NYHPlayerStats : MonoBehaviour
         this.accuracy = Mathf.Clamp(accuracy, 0, 100);
         this.defense = Mathf.Max(0, defense);
         this.evasion = Mathf.Clamp(evasion, 0, 100);
-        this.hunger = Mathf.Clamp(hunger, 0, 10);
+        this.hungry = Mathf.Clamp(hungry, 0, 10);
 
         OnStatsChanged?.Invoke();
     }

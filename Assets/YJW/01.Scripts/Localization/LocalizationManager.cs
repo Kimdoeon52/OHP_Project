@@ -693,7 +693,7 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.English, "Throwing weapons land sharper, and dig in deeper." }
         }},
         { "item_effect_7006", new Dictionary<Language, string> {
-            { Language.Korean, "정확도" },
+            { Language.Korean, "명중률" },
             { Language.English, "Accuracy" }
         }},
         //------------------------------------------ 아이템 - 갑옷

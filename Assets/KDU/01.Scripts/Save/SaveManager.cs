@@ -112,7 +112,7 @@ public static class SaveManager
             p.accuracy = stats.Accuracy;
             p.defense = stats.Defense;
             p.evasion = stats.Evasion;
-            p.hunger = stats.Hunger;
+            p.hunger = stats.Hungry;
         }
 
         GridPlayerHealth health = GridPlayerHealth.Instance;
