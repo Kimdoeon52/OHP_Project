@@ -26,6 +26,13 @@ public class MapItemSpawner : MonoBehaviour
     [Header("매 층 등장 아이템")]
     [SerializeField] private List<ItemBase> guaranteedPerFloor = new();
 
+    [Header("매 층 택1 등장 아이템 (빵/비상 식량 균등)")]
+    [SerializeField] private List<ItemBase> perFloorOneOf = new();
+
+    [Header("소형 비상 식량 — 생존주의자 특성 전용")]
+    [Tooltip("소형 비상 식량 SO")]
+    [SerializeField] private ItemBase smallEmergencyFood;
+
     [Header("랜덤 아이템 등장 확률")]
     [SerializeField, Range(0f, 1f)] private float randomItemChance = 0.2f;
     [SerializeField, Min(1)] private int attemptsPerRoom = 1;
@@ -62,17 +69,66 @@ public class MapItemSpawner : MonoBehaviour
 
     private readonly List<GameObject> _spawned = new();
 
+    // 생존주의자 특성으로 소형 비상 식량이 예약된 남은 층 수
+    private int _emergencyFoodFloorsRemaining;
+
+    private void OnEnable()
+    {
+        var trait = TraitController.FindAvailableInstance();
+        if (trait != null)
+            trait.OnTraitLevelChanged += HandleTraitLevelChanged;
+    }
+
+    private void OnDisable()
+    {
+        if (TraitController.Instance != null)
+            TraitController.Instance.OnTraitLevelChanged -= HandleTraitLevelChanged;
+    }
+
+    // 생존주의자 특성 레벨업 시 다음 N개 층에 소형 비상 식량 예약
+    private void HandleTraitLevelChanged(TraitId id, int level)
+    {
+        if (id != TraitId.Survivalist || TraitController.Instance == null)
+            return;
+        _emergencyFoodFloorsRemaining = TraitController.Instance.GetEmergencyFoodFloorCount();
+    }
+
     public void Spawn(List<RoomData> rooms, int depth, int runSeed, DungeonRandom rng)
     {
         Clear();
-        if (itemPickupPrefab == null || rooms == null || rng == null) 
+        if (itemPickupPrefab == null || rooms == null || rng == null)
             return;
 
         SpawnScheduled(rooms, depth, runSeed, rng);
         SpawnGuaranteed(rooms, rng);
+        SpawnPerFloorOneOf(rooms, rng);
+        SpawnTraitEmergencyFood(rooms, rng);
         SpawnRandom(rooms, rng);
         SpawnGold(rooms, rng);
         SpawnSubtypeRooms(rooms, depth, rng);
+    }
+
+    // 빵/비상 식량 — 매 층 후보 중 균등하게 1개 등장 (보스 층은 Spawn 미호출로 자동 제외)
+    private void SpawnPerFloorOneOf(List<RoomData> rooms, DungeonRandom rng)
+    {
+        var candidates = new List<ItemBase>();
+        foreach (var item in perFloorOneOf)
+            if (item != null)
+                candidates.Add(item);
+
+        if (candidates.Count == 0)
+            return;
+
+        PlaceInNormalOrExit(rooms, candidates[rng.Range(0, candidates.Count)], rng);
+    }
+
+    // 소형 비상 식량 — 특성 예약 층 동안 1개씩 배치 (보스 층은 Spawn 미호출로 소모 안 됨)
+    private void SpawnTraitEmergencyFood(List<RoomData> rooms, DungeonRandom rng)
+    {
+        if (smallEmergencyFood == null || _emergencyFoodFloorsRemaining <= 0)
+            return;
+        _emergencyFoodFloorsRemaining--;
+        PlaceInNormalOrExit(rooms, smallEmergencyFood, rng);
     }
 
 
@@ -321,8 +377,15 @@ public class MapItemSpawner : MonoBehaviour
                 excluded.Add(s.item);
 
         foreach (var g in guaranteedPerFloor)
-            if (g != null) 
+            if (g != null)
                 excluded.Add(g);
+
+        foreach (var p in perFloorOneOf)
+            if (p != null)
+                excluded.Add(p);
+
+        if (smallEmergencyFood != null)
+            excluded.Add(smallEmergencyFood);
 
         foreach (var so in randomItemPool.items)
         {

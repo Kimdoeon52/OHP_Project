@@ -127,3 +127,15 @@ MonoBehaviour:
     - {x: 1, y: 1}
     price: 00000000000000002c010000
     enhanceLevel: 0
+  - item: {fileID: 11400000, guid: 4dd3af21dced84b4fb5f3f602cc8d33f, type: 2}
+    oneOfSet: []
+    appearChance:
+    - 100
+    - 100
+    - 100
+    countRange:
+    - {x: 2, y: 2}
+    - {x: 2, y: 2}
+    - {x: 2, y: 2}
+    price: 320000006400000096000000
+    enhanceLevel: 0

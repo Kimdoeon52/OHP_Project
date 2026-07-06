@@ -125,7 +125,7 @@ public class ShopStall : MonoBehaviour
     private void ApplyPriceLabel()
     {
         if (priceLabel != null)
-            priceLabel.text = price.ToString();
+            priceLabel.text = $"{price}G";
     }
 
     private void OnVisionUpdated(IReadOnlyCollection<Vector2Int> visible, IReadOnlyCollection<Vector2Int> explored)
