@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,6 +8,7 @@ public static class GameEvents
     public static Action<float> OnTimeChanged;
     public static Action OnTimeUp;
     public static Action<float> OnPlayerActionCompleted;
+    public static Action OnAlertTriggered;                  // 경보 저주 발동
 
     // 전투
     public static Action<Vector2Int, float> OnEnemyKilled;  // pos, timeBonus
@@ -62,6 +63,7 @@ public static class GameEvents
         OnTimeChanged = null;               // 타이머
         OnTimeUp = null;                    // 타이머 종료
         OnPlayerActionCompleted = null;     // 플레이어 행동 완료
+        OnAlertTriggered = null;            // 경보 저주
         OnEnemyKilled = null;               // 적 처치
         OnPlayerDamaged = null;             // 플레이어 피해
         OnCombatTextRequested = null;       // 전투 텍스트
