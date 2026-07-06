@@ -19,4 +19,10 @@ public static class ItemRoll
         if (rng.Value() > 0.5f) return null;
         return pool[rng.Range(0, pool.Length)];
     }
+
+    // 저주/마법은 근접무기·방어구에만 붙는다. 투척무기 등 그 외 장비는 대상 아님.
+    public static bool IsCurseEligible(ItemBase item)
+    {
+        return item is CloseWeapon || item is ArmorData;
+    }
 }

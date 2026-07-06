@@ -370,6 +370,9 @@ public abstract class EnemyBase : EntityBase, IDamageable
 
     private CurseData RollCurseForEquipment(EquipmentInstance equipInst, DungeonRandom rng)
     {
+        // 저주는 근접무기·방어구에만 붙는다 (투척무기 등 제외)
+        if (!ItemRoll.IsCurseEligible(equipInst.data)) return null;
+
         // 50% 확률로 저주 없음
         if (rng.Value() > 0.5f) return null;
 

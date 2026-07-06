@@ -12,8 +12,6 @@ public class ArmorInstance : EquipmentInstance
     // 강화 단계마다 착용 힘이 1씩 줄어들며, 0 밑으로는 내려가지 않는다.
     public int GetRequiredStrength() => Mathf.Max(0, Armor.CanUseStrength - enhanceLevel);
 
-    public void OnHit() => curse?.OnHit();
-
     public override string GetToolTipStats()
     {
         if (!isAnalyzed)

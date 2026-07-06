@@ -74,7 +74,6 @@ public class WeaponProjectile : MonoBehaviour
         {
             int damage = weaponInstance.GetDamage();
             Debug.Log($"{other.name}한테 투척무기 맞힘");
-            weaponInstance.curse?.OnAttack(ref damage);
 
             EnemyBase enemy = damageable as EnemyBase;
             int beforeHp = damageable.CurrentHp;

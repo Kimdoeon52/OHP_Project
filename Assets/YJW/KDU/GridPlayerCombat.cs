@@ -88,6 +88,7 @@ public class GridPlayerCombat : MonoBehaviour
         if (entity is IDamageable damageable && (UnityEngine.Object)damageable != _player)
         {
             MagicData weaponMagic = GetEquippedMagic(EquipmentSlot.Weapon);
+            CurseData weaponCurse = GetEquippedCurse(EquipmentSlot.Weapon);
             EnemyBase enemyTarget = entity as EnemyBase;
             BossBase bossTarget = entity as BossBase;
 
@@ -113,6 +114,7 @@ public class GridPlayerCombat : MonoBehaviour
 
             NYHAttackDamageRange damageRange = GetMeleeDamageRange();
             int damage = GetModifiedOutgoingDamage(RollMeleeDamage(damageRange));
+            weaponCurse?.OnAttack(ref damage);
             weaponMagic?.OnAttack(ref damage, enemyTarget, damageRange.MaxDamage);
             int beforeHp = damageable.CurrentHp;
             CombatTextCriticalContext.SetCurrentMaxDamage(damageRange.MaxDamage);
@@ -305,6 +307,16 @@ public class GridPlayerCombat : MonoBehaviour
         if (equipmentController == null || !equipmentController.TryGetEquipped(slot, out NYHEquipmentItemInstance item))
             return null;
         return item.SourceInstance is EquipmentInstance inst ? inst.magic : null;
+    }
+
+    // 장착 장비의 CurseData를 가져옴
+    private CurseData GetEquippedCurse(EquipmentSlot slot)
+    {
+        if (equipmentController == null)
+            equipmentController = FindFirstObjectByType<NYHEquipmentController>();
+        if (equipmentController == null || !equipmentController.TryGetEquipped(slot, out NYHEquipmentItemInstance item))
+            return null;
+        return item.SourceInstance is EquipmentInstance inst ? inst.curse : null;
     }
 
     /// <summary>

@@ -131,7 +131,10 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
         CurrentHp = Mathf.Max(0, CurrentHp - finalDamage);
 
         if (finalDamage > 0)
+        {
+            GetArmorCurse()?.OnHit();
             GetArmorMagic()?.OnHit();
+        }
 
         OnDamaged?.Invoke(finalDamage);
         GameEvents.OnPlayerDamaged?.Invoke(finalDamage);
@@ -291,6 +294,16 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
         if (!_equipmentController.TryGetEquipped(EquipmentSlot.Armor, out NYHEquipmentItemInstance item))
             return null;
         return item.SourceInstance is EquipmentInstance inst ? inst.magic : null;
+    }
+
+    // 장착 갑옷의 CurseData를 가져옴
+    private CurseData GetArmorCurse()
+    {
+        if (_equipmentController == null)
+            return null;
+        if (!_equipmentController.TryGetEquipped(EquipmentSlot.Armor, out NYHEquipmentItemInstance item))
+            return null;
+        return item.SourceInstance is EquipmentInstance inst ? inst.curse : null;
     }
 
     /// <summary>

@@ -183,7 +183,7 @@ public class GridChest : MonoBehaviour
             {
                 so = so,
                 enhanceLevel = so.CanEnhance ? ItemRoll.Enhance(rng) : 0,
-                curse = so.CanCurse ? ItemRoll.Curse(rng, cursePool) : null,
+                curse = so.CanCurse && ItemRoll.IsCurseEligible(so) ? ItemRoll.Curse(rng, cursePool) : null,
             });
         }
 
