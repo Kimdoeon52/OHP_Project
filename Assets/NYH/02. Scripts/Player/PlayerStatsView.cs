@@ -48,6 +48,8 @@ public class PlayerStatsView : MonoBehaviour
 
     [Tooltip("회피율 수치만 표시할 Text입니다. 예: 10%")]
     [SerializeField] private TMP_Text evasionText;
+    [Tooltip("허기 상태(굶주림/배고픔/보통/배부름)를 표시할 Text입니다.")]
+    [SerializeField] private TMP_Text hungerStatusText;
     [Tooltip("공격력을 표시할 Text입니다.")]
     [SerializeField] private TMP_Text attackText;
     [Tooltip("명중률 수치만 표시할 Text입니다. 예: 85%")]
@@ -138,6 +140,12 @@ public class PlayerStatsView : MonoBehaviour
             equipmentController.OnInventoryItemStateChanged -= OnEquipmentItemStateChanged;
             equipmentController.OnInventoryItemStateChanged += OnEquipmentItemStateChanged;
         }
+
+        if (LocalizationManager.Instance != null)
+        {
+            LocalizationManager.Instance.OnLanguageChanged -= Refresh;
+            LocalizationManager.Instance.OnLanguageChanged += Refresh;
+        }
     }
 
     /// <summary>
@@ -166,6 +174,9 @@ public class PlayerStatsView : MonoBehaviour
             equipmentController.OnUnequipped -= OnEquipmentChanged;
             equipmentController.OnInventoryItemStateChanged -= OnEquipmentItemStateChanged;
         }
+
+        if (LocalizationManager.Instance != null)
+            LocalizationManager.Instance.OnLanguageChanged -= Refresh;
     }
 
     /// <summary>
@@ -200,6 +211,7 @@ public class PlayerStatsView : MonoBehaviour
         string evasion = playerStats != null ? $"{DisplayStat(playerStats.Evasion, NYHStatType.Evasion)}%" : "-";
         string exp = playerLevel != null ? playerLevel.ExpDisplayText : "-";
         string attack = playerStats != null ? BuildAttackDisplay(playerStats) : "-";
+        string hungerStatus = playerStats != null ? BuildHungerStatusDisplay(playerStats.Hungry) : "-";
 
 
         SetText(healthText, health);
@@ -212,6 +224,9 @@ public class PlayerStatsView : MonoBehaviour
         SetText(expText, exp);
         SetText(attackText, attack);
         SetText(accuracyText, accuracy);
+        SetText(hungerStatusText, hungerStatus);
+        if (playerStats != null && hungerStatusText != null)
+            hungerStatusText.color = NYHHungerStatusCalculator.GetColor(NYHHungerStatusCalculator.GetStatus(playerStats.Hungry));
 
         SetText(summaryText,
             $"명중률 {accuracy}\n" +
@@ -226,6 +241,14 @@ public class PlayerStatsView : MonoBehaviour
             $"명중률 {accuracy}"
             );
 
+    }
+
+    // 배고픔 수치(0~10)를 GDD 8.4 구간에 맞는 상태 이름으로 변환한다 (굶주림/배고픔/보통/배부름).
+    private static string BuildHungerStatusDisplay(int hungry)
+    {
+        HungerStatus status = NYHHungerStatusCalculator.GetStatus(hungry);
+        string key = NYHHungerStatusCalculator.GetLocalizationKey(status);
+        return LocalizationManager.GetOrDefault(key, status.ToString());
     }
 
     // 실제 스탯에서 미감정 장비의 숨긴 강화분을 빼 표시용 값을 만든다.

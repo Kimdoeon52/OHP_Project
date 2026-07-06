@@ -179,6 +179,22 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "허기" },
             { Language.English, "Hunger" }
         }},
+        { "msg_상태_굶주림", new Dictionary<Language, string> {
+            { Language.Korean, "굶주림" },
+            { Language.English, "Starving" }
+        }},
+        { "msg_상태_배고픔", new Dictionary<Language, string> {
+            { Language.Korean, "배고픔" },
+            { Language.English, "Hungry" }
+        }},
+        { "msg_상태_보통", new Dictionary<Language, string> {
+            { Language.Korean, "보통" },
+            { Language.English, "Normal" }
+        }},
+        { "msg_상태_배부름", new Dictionary<Language, string> {
+            { Language.Korean, "배부름" },
+            { Language.English, "Full" }
+        }},
         //------------------------------------------ 플레이어 특성
         { "msg_감정", new Dictionary<Language, string> {
             { Language.Korean, "감정\n장착 무기 감정 속도 2배,\n갑옷 1.5배, 무기 즉시 감정,\n갑옷 1.5배" },

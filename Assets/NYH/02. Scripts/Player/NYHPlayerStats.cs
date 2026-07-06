@@ -331,6 +331,49 @@ public static class NYHPlayerAttackCalculator
     }
 }
 
+// GDD 8.4 배고픔 상태 구간
+public enum HungerStatus
+{
+    Starving,   // 굶주림: 배고픔 = 0
+    Hungry,     // 배고픔: 0 < 배고픔 <= 3
+    Normal,     // 보통: 3 < 배고픔 <= 6
+    Full        // 배부름: 6 < 배고픔 <= 10
+}
+
+public static class NYHHungerStatusCalculator
+{
+    public static HungerStatus GetStatus(int hungry)
+    {
+        if (hungry <= 0) return HungerStatus.Starving;
+        if (hungry <= 3) return HungerStatus.Hungry;
+        if (hungry <= 6) return HungerStatus.Normal;
+        return HungerStatus.Full;
+    }
+
+    public static string GetLocalizationKey(HungerStatus status)
+    {
+        switch (status)
+        {
+            case HungerStatus.Starving: return "msg_상태_굶주림";
+            case HungerStatus.Hungry: return "msg_상태_배고픔";
+            case HungerStatus.Full: return "msg_상태_배부름";
+            default: return "msg_상태_보통";
+        }
+    }
+
+    // 상태별 표시 색 — 굶주림 빨강 / 배고픔 주황 / 보통 연두 / 배부름 초록
+    public static Color GetColor(HungerStatus status)
+    {
+        switch (status)
+        {
+            case HungerStatus.Starving: return new Color(0.9f, 0.15f, 0.15f);
+            case HungerStatus.Hungry: return new Color(1f, 0.55f, 0f);
+            case HungerStatus.Full: return new Color(0.1f, 0.7f, 0.15f);
+            default: return new Color(0.6f, 0.85f, 0.2f);
+        }
+    }
+}
+
 public static class NYHPlayerDefenseCalculator
 {
     public static int RollArmorDefense(NYHEquipmentController equipmentController)
