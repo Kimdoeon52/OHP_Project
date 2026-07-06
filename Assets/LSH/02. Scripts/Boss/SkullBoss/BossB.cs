@@ -659,7 +659,7 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
     {
         base.EnterPhase2();
 
-        if (bossSprite != null) bossSprite.color = phase2Tint;
+        // 붉은 틴트 색 변환 제거
         if (bossAnimation != null) bossAnimation.speed = phase2AnimSpeed;
 
         var specialPattern = GetComponent<SpecialPattern>();
@@ -683,9 +683,9 @@ public class BossB : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
 
     protected override async UniTask PhaseState()
     {
-        if (bossLevel == 1 && currentHp <= maxHp * 0.5f)
+        if (bossLevel == 1 && currentHp <= maxHp * 0.7f)
         {
-            Debug.Log($"<color=orange>[보스 Phase 2 진입 조건 충족]</color> 체력 {currentHp} ≤ {maxHp * 0.5f}");
+            Debug.Log($"<color=orange>[보스 Phase 2 진입 조건 충족]</color> 체력 {currentHp} ≤ {maxHp * 0.7f}");
             EnterPhase2();
         }
         else if (bossLevel == 2 && currentHp <= maxHp * 0.3f)

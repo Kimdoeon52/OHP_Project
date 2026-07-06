@@ -33,6 +33,8 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
     private bool _isRegisteredToTurnManager = false;
     private bool _isInitialized = false;
 
+    // 사망 연출은 손(LastBossHand)과 동일한 고정값 사용 (duration=1.0f, shake=(0.4,0,0), vibrato=30, randomness=90)
+
     [Header("프록시 설정")]
     [SerializeField] private Vector2Int bossSize = new Vector2Int(5, 1);
     private Vector2Int gridPos => _gridPos;
@@ -570,8 +572,10 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
             _owner.OnHeadDefeated();
         }
 
-        // Dissolve animation
-        await transform.DOScale(0f, 0.8f).SetEase(Ease.InBack).AsyncWaitForCompletion();
+        // 손(LastBossHand)과 동일한 연출: 1초 동안 좌우로 흔들리면서 크기가 0으로 작아진 뒤 제거
+        float duration = 1.0f;
+        transform.DOShakePosition(duration, new Vector3(0.4f, 0f, 0f), 30, 90f, false, true);
+        await transform.DOScale(0f, duration).SetEase(Ease.InQuad).AsyncWaitForCompletion();
         Destroy(gameObject);
     }
 
