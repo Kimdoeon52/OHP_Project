@@ -20,6 +20,9 @@ public class GridPlayerHungerController : MonoBehaviour
     [Tooltip("hungry가 0일 때 이동 쿨타임에 추가되는 고정 시간(초)입니다. 기본값 0.5.")]
     [SerializeField, Min(0f)] private float hungerMovePenalty = 0.5f;
 
+    // 배부름 구간 기본 회복량(틱당). 건강한 몸 특성이 배율로 곱한다.
+    private const int BaseHealPerTick = 1;
+
     // ── 내부 참조 ──────────────────────────────────────────────────
     private NYHPlayerStats _stats;
     private GridPlayerHealth _health;
@@ -27,6 +30,9 @@ public class GridPlayerHungerController : MonoBehaviour
     // ── 타이머 ─────────────────────────────────────────────────────
     private float _hungerDrainTimer = 0f;
     private float _healthTickTimer  = 0f;
+
+    // 배부름 회복 소수분 누적기. 건강한 몸 배율(예 ×1.25)의 소수분을 모아 다음 회복에 넘긴다.
+    private float _healAccumulator = 0f;
 
     // ── 이동 패널티 상태 ────────────────────────────────────────────
     /// <summary>현재 굶주림 이동 패널티가 활성화되어 있는지 반환합니다.</summary>
@@ -80,6 +86,7 @@ public class GridPlayerHungerController : MonoBehaviour
         if (h == 0)
         {
             // 굶주림: 5초마다 체력 1 감소
+            _healAccumulator = 0f;
             if (_healthTickTimer >= 5f)
             {
                 _healthTickTimer -= 5f;
@@ -89,6 +96,7 @@ public class GridPlayerHungerController : MonoBehaviour
         else if (h <= 3)
         {
             // 배고픔: 10초마다 체력 1 감소
+            _healAccumulator = 0f;
             if (_healthTickTimer >= 10f)
             {
                 _healthTickTimer -= 10f;
@@ -97,18 +105,32 @@ public class GridPlayerHungerController : MonoBehaviour
         }
         else if (h >= 7)
         {
-            // 포식: 5초마다 체력 1 회복
+            // 포식: 5초마다 회복. 건강한 몸 배율의 소수분은 누적해 다음 회복에 넘긴다.
             if (_healthTickTimer >= 5f)
             {
                 _healthTickTimer -= 5f;
-                _health.Heal(1);
+                _healAccumulator += BaseHealPerTick * HealMultiplier();
+                int heal = Mathf.FloorToInt(_healAccumulator);
+                if (heal > 0)
+                {
+                    _healAccumulator -= heal;
+                    _health.Heal(heal);
+                }
             }
         }
         // h 4~6: 변화 없음 (타이머는 계속 누적되지 않도록 초기화)
         else
         {
             _healthTickTimer = 0f;
+            _healAccumulator = 0f;
         }
+    }
+
+    // 건강한 몸 회복 배율 (특성 없으면 1배)
+    private float HealMultiplier()
+    {
+        TraitController trait = TraitController.FindAvailableInstance();
+        return trait != null ? trait.GetHealthyBodyRecoveryMultiplier() : 1f;
     }
 
     // ── 이동 패널티 갱신 ───────────────────────────────────────────
