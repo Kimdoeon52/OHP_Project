@@ -133,6 +133,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
     {
         // VisionSystem 갱신 이벤트 구독 → 안개/시야 내 가시성 자동 갱신
         GameEvents.OnVisionUpdated += OnVisionUpdated;
+        GameEvents.OnAlertTriggered += OnAlertTriggered;
 
         if (TurnManager.Instance != null)
         {
@@ -144,6 +145,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
     {
         // 메모리 누수 방지: 씬 제거 또는 오브젝트 비활성화 시 구독 해제
         GameEvents.OnVisionUpdated -= OnVisionUpdated;
+        GameEvents.OnAlertTriggered -= OnAlertTriggered;
 
         if (TurnManager.Instance != null)
         {
@@ -183,6 +185,14 @@ public abstract class EnemyBase : EntityBase, IDamageable
     private void OnVisionUpdated(IReadOnlyCollection<Vector2Int> visible, IReadOnlyCollection<Vector2Int> explored)
     {
         UpdateVisibility();
+    }
+
+    private void OnAlertTriggered()
+    {
+        if (Player != null && !SafeRoomTimerGate.PlayerInSafeRoom)
+        {
+            _alarmTarget = Player.GridPosition;
+        }
     }
 
     /// <summary>
