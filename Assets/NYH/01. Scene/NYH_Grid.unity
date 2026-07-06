@@ -10730,6 +10730,7 @@ GameObject:
   - component: {fileID: 553153708}
   - component: {fileID: 553153707}
   - component: {fileID: 553153710}
+  - component: {fileID: 99019101}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -10737,6 +10738,19 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &99019101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 553153693}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94ed2f4ee1388f943bb6880cf104338b, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  hungerMovePenalty: 0.5
 --- !u!114 &553153694
 MonoBehaviour:
   m_ObjectHideFlags: 0
