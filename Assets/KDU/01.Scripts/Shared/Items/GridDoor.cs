@@ -274,15 +274,23 @@ public class GridDoor : MonoBehaviour
 
         EnsureDiscoveryRng();
         _secretRollTimer += Time.deltaTime;
+        float chance = Mathf.Clamp01(passiveDiscoveryChancePerSecond * SearchChanceMultiplier());
         while (_secretRollTimer >= 1f)
         {
             _secretRollTimer -= 1f;
-            if (_discoveryRng.Chance(passiveDiscoveryChancePerSecond)) 
-            { 
+            if (_discoveryRng.Chance(chance))
+            {
                 Discover();
-                return; 
+                return;
             }
         }
+    }
+
+    // 조심스러운 발걸음 특성 — 패시브 탐색 확률 배율
+    private float SearchChanceMultiplier()
+    {
+        TraitController trait = TraitController.FindAvailableInstance();
+        return trait != null ? trait.GetCarefulStepSearchMultiplier() : 1f;
     }
 
     private void EnsureDiscoveryRng()

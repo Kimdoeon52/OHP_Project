@@ -1072,6 +1072,9 @@ public class NYHEquipmentController : MonoBehaviour
             finalStatModifierController.ClearModifiers(this);
 
         _appliedEquipmentFinalStatTotals.Clear();
+
+        if (TraitController.Instance != null)
+            TraitController.Instance.OnTraitLevelChanged -= OnTraitLevelChanged;
     }
 
     /// <summary>
@@ -1082,6 +1085,24 @@ public class NYHEquipmentController : MonoBehaviour
     {
         RebuildEquipmentStats();
         RebuildFinalStatModifiers();
+
+        // 악세사리 중독 특성이 런 중 올라가면 착용 중인 반지 효율도 즉시 바뀌어야 한다.
+        TraitController trait = TraitController.FindAvailableInstance();
+        if (trait != null)
+            trait.OnTraitLevelChanged += OnTraitLevelChanged;
+    }
+
+    // 악세사리 중독 레벨 변경 시 착용 중인 반지 스탯을 다시 계산한다.
+    private void OnTraitLevelChanged(TraitId id, int level)
+    {
+        if (id != TraitId.Trinket)
+            return;
+
+        foreach (KeyValuePair<NYHEquipmentSlotKey, NYHEquipmentItemInstance> pair in _equippedItems)
+        {
+            if (pair.Value?.SourceInstance is RingInstance ring)
+                ring.RefreshEquippedStat();
+        }
     }
 
     // 반지 장착 시 RingInstance.OnEquip() 호출

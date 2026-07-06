@@ -63,7 +63,8 @@ public class Wallet : Singleton<Wallet>
         // 이렇게 하면 이미 떨어진 골드 오브젝트 구조를 바꾸지 않아도 배율 효과만 안전하게 적용된다.
         TraitController traitController = TraitController.FindAvailableInstance();
         float multiplier = traitController != null ? traitController.GetGoldMultiplier() : 1f;
-        int finalAmount = Mathf.Max(0, Mathf.RoundToInt(amount * multiplier));
+        // 0.5는 올림 처리 (Mathf.RoundToInt는 짝수로 붙어 2.5->2 가 되는 문제 회피)
+        int finalAmount = Mathf.Max(0, Mathf.FloorToInt(amount * multiplier + 0.5f));
         Balance += finalAmount;
         GameEvents.OnGoldChanged?.Invoke(Balance);
 
