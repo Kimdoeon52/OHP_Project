@@ -374,6 +374,10 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "효과: 최대 체력의 1/20 회복" },
             { Language.English, "Effect: Heals 1/20 of Max HP" }
         }},
+        { "msg_음식효과", new Dictionary<Language, string> {
+            { Language.Korean, "효과: 허기 +{0}" },
+            { Language.English, "Effect: Hunger +{0}" }
+        }},
         //------------------------------------------ 아이템 - 포션
         { "item_name_2001", new Dictionary<Language, string> {
             { Language.Korean, "회복 포션" },
@@ -859,6 +863,30 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
         { "item_desc_6002", new Dictionary<Language, string> {
             { Language.Korean, "하수인들이 품고 있던 시간 조각. 상처를 조금씩 회복시킨다." },
             { Language.English, "A shard of time the minions once carried. It slowly mends your wounds." }
+        }},
+        { "item_name_8001", new Dictionary<Language, string> {
+            { Language.Korean, "소형 비상 식량" },
+            { Language.English, "Small Emergency Rations" }
+        }},
+        { "item_desc_8001", new Dictionary<Language, string> {
+            { Language.Korean, "급할 때 한 입. 배고픔을 조금 달랜다." },
+            { Language.English, "A quick bite in a pinch. Takes the edge off your hunger." }
+        }},
+        { "item_name_8002", new Dictionary<Language, string> {
+            { Language.Korean, "비상 식량" },
+            { Language.English, "Emergency Rations" }
+        }},
+        { "item_desc_8002", new Dictionary<Language, string> {
+            { Language.Korean, "허기를 채운다. 살아남는 자는 먹는 것도 잊지 않는다." },
+            { Language.English, "Fills your stomach. Survivors never forget to eat." }
+        }},
+        { "item_name_8003", new Dictionary<Language, string> {
+            { Language.Korean, "빵" },
+            { Language.English, "Bread" }
+        }},
+        { "item_desc_8003", new Dictionary<Language, string> {
+            { Language.Korean, "따뜻한 빵 한 덩이. 이 지하에서 이런 걸 찾다니 운이 좋다." },
+            { Language.English, "A loaf of warm bread. Lucky to find something like this down here." }
         }},
         //------------------------------------------ 열쇠 이름
         { "msg_반지상자열쇠", new Dictionary<Language, string> {

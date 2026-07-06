@@ -20,6 +20,6 @@ public class Food : ItemBase
         return $"[{LocalizedName}]\n" +
                $"--------------------\n" +
                $"{LocalizedDescription}\n" +
-               $"{LocalizationManager.GetOrDefault("msg_»ı¸íÆÄÆíÈ¿°ú", "Effect: Heals 1/20 of Max HP")}";
+               $"{string.Format(LocalizationManager.GetOrDefault("msg_ìŒì‹íš¨ê³¼", "Effect: Hunger +{0}"), hungerBonus)}";
     }
 }
