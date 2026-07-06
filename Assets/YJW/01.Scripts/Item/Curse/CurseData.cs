@@ -51,8 +51,8 @@ public class CurseData : ScriptableObject
         switch (curseType)
         {
             case CurseType.Slow:
-				NYHPlayerStats.Instance.AddStat(NYHStatType.MoveSpeed, 1);
-				break;
+                NYHPlayerStats.Instance.AddStat(NYHStatType.MoveSpeed, 1);
+                break;
         }
     }
 
@@ -87,6 +87,7 @@ public class CurseData : ScriptableObject
                 if (Random.value < triggerChance / 100f)
                 {
                     GameManager.Instance.isAlerted = true;
+                    GameEvents.OnAlertTriggered?.Invoke();
                 }
                 break;
 
