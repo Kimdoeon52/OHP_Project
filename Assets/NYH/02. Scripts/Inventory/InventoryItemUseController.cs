@@ -71,6 +71,10 @@ namespace PrototypeRT
                 Predicate = data => data is FragmentsOfLife,
                 Handler = UseImmediateItem
             });
+            _useStrategies.Add(new ItemUseStrategy {
+                Predicate = data => data is Food,
+                Handler = UseImmediateItem
+            });
         }
 
         /// <summary>

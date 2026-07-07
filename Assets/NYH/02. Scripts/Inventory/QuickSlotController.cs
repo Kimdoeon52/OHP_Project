@@ -307,7 +307,7 @@ namespace PrototypeRT
             if (itemData == null || itemData is IThrowable)
                 return false;
 
-            return itemData is PotionData || itemData is TorchData || itemData is FragmentsOfLife;
+            return itemData is PotionData || itemData is TorchData || itemData is FragmentsOfLife || itemData is Food;
         }
 
         /// <summary>
