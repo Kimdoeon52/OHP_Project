@@ -1,0 +1,793 @@
+fileFormatVersion: 2
+guid: aed9240de31f5ad4682faeec4c31db34
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -3019516997887768502
+    second: Status_0
+  - first:
+      213: 814004640374956523
+    second: Status_1
+  - first:
+      213: 6962396484033635494
+    second: Status_2
+  - first:
+      213: -6713231963320828161
+    second: Status_3
+  - first:
+      213: -9111092196008513476
+    second: Status_4
+  - first:
+      213: -4791753407910122166
+    second: Status_5
+  - first:
+      213: -7115641777840415526
+    second: Status_6
+  - first:
+      213: 1987289428962411420
+    second: Status_7
+  - first:
+      213: -5432620205739684469
+    second: Status_8
+  - first:
+      213: -1714587326511343238
+    second: Status_9
+  - first:
+      213: -2018058481527933341
+    second: Status_10
+  - first:
+      213: 2243717429656705874
+    second: Status_11
+  - first:
+      213: 7787517540700288752
+    second: Status_12
+  - first:
+      213: -6852777496594991496
+    second: Status_13
+  - first:
+      213: 8916648105341551598
+    second: Status_14
+  - first:
+      213: -4037855074611460424
+    second: Status_15
+  - first:
+      213: -2783674646565937454
+    second: Status_16
+  - first:
+      213: 8675558817246999636
+    second: Status_17
+  - first:
+      213: 6062342300536408606
+    second: Status_18
+  - first:
+      213: 5176526146172408448
+    second: Status_19
+  - first:
+      213: -3184520735652663752
+    second: Status_20
+  - first:
+      213: -4420790731199247826
+    second: Status_21
+  - first:
+      213: 4492623708128978582
+    second: Status_22
+  - first:
+      213: -7164715817575060547
+    second: Status_23
+  - first:
+      213: 6036677161089331360
+    second: Status_24
+  - first:
+      213: -7771450190607259462
+    second: Status_25
+  - first:
+      213: -322792643324635144
+    second: Status_26
+  - first:
+      213: -3393307921286725556
+    second: Status_27
+  - first:
+      213: -6841049287706059523
+    second: Status_28
+  - first:
+      213: 7022500194247887470
+    second: Status_29
+  - first:
+      213: 758553868213801590
+    second: Status_30
+  - first:
+      213: -661001597841624280
+    second: Status_31
+  - first:
+      213: 7123113675268083441
+    second: Status_32
+  - first:
+      213: 9058086029648203309
+    second: Status_33
+  - first:
+      213: -4673182979208670069
+    second: Status_34
+  - first:
+      213: -5298666659278618962
+    second: Status_35
+  - first:
+      213: 6792883429567360058
+    second: Status_36
+  - first:
+      213: 5325715936269686294
+    second: Status_37
+  - first:
+      213: -5848608374100936168
+    second: Status_38
+  - first:
+      213: -5028758946942687655
+    second: Status_39
+  - first:
+      213: 4035468988600666375
+    second: Status_40
+  - first:
+      213: -4679189631102453215
+    second: Status_41
+  - first:
+      213: -4493174510124721897
+    second: Status_42
+  - first:
+      213: 1707401093655011831
+    second: Status_43
+  - first:
+      213: -3934446894283805686
+    second: Status_44
+  - first:
+      213: 4086870901351579942
+    second: Status_45
+  - first:
+      213: 4958462497240454086
+    second: Status_46
+  - first:
+      213: 5039815287833683667
+    second: Status_47
+  - first:
+      213: -4043548490589438954
+    second: Status_48
+  - first:
+      213: 3525053237878324366
+    second: Status_49
+  - first:
+      213: 4374945161629066366
+    second: Status_50
+  - first:
+      213: 1277250575670101548
+    second: Status_51
+  - first:
+      213: -807499752175196464
+    second: Status_52
+  - first:
+      213: -8546698206776795540
+    second: Status_53
+  - first:
+      213: -691088413428619255
+    second: Status_54
+  - first:
+      213: -88601261331270488
+    second: Status_55
+  - first:
+      213: -373644976048969780
+    second: Status_56
+  - first:
+      213: -4663240127091167287
+    second: Status_57
+  - first:
+      213: -3247225044509531629
+    second: Status_58
+  - first:
+      213: 1866816154362411681
+    second: Status_59
+  - first:
+      213: 9161124971580157652
+    second: Status_60
+  - first:
+      213: -1631761016052003742
+    second: Status_61
+  - first:
+      213: -3731424425811492336
+    second: Status_62
+  - first:
+      213: -131198862859833458
+    second: Status_63
+  - first:
+      213: -868340192245891768
+    second: Status_64
+  - first:
+      213: -197111567379890771
+    second: Status_65
+  - first:
+      213: -2664505553625875350
+    second: Status_66
+  - first:
+      213: -2752594812767200021
+    second: Status_67
+  - first:
+      213: -4638843274889627098
+    second: Status_68
+  - first:
+      213: 6999642078331538537
+    second: Status_69
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Status_0
+      rect:
+        serializedVersion: 2
+        x: 6
+        y: 257
+        width: 98
+        height: 100
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a4845abd9458816d0800000000000000
+      internalID: -3019516997887768502
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_2
+      rect:
+        serializedVersion: 2
+        x: 119
+        y: 257
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a4e040c6b66f9060800000000000000
+      internalID: 6962396484033635494
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_6
+      rect:
+        serializedVersion: 2
+        x: 232
+        y: 257
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: adc94ead089204d90800000000000000
+      internalID: -7115641777840415526
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_9
+      rect:
+        serializedVersion: 2
+        x: 345
+        y: 257
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7997ea29ef8438e0800000000000000
+      internalID: -1714587326511343238
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_13
+      rect:
+        serializedVersion: 2
+        x: 458
+        y: 257
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8763aa6ac2b06e0a0800000000000000
+      internalID: -6852777496594991496
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_16
+      rect:
+        serializedVersion: 2
+        x: 573
+        y: 257
+        width: 98
+        height: 100
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2de1d2158a66e59d0800000000000000
+      internalID: -2783674646565937454
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_22
+      rect:
+        serializedVersion: 2
+        x: 6
+        y: 137
+        width: 98
+        height: 96
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 696a688a571095e30800000000000000
+      internalID: 4492623708128978582
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_24
+      rect:
+        serializedVersion: 2
+        x: 119
+        y: 136
+        width: 98
+        height: 97
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a07172f4e596c350800000000000000
+      internalID: 6036677161089331360
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_28
+      rect:
+        serializedVersion: 2
+        x: 232
+        y: 136
+        width: 100
+        height: 97
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dfc57531be5bf01a0800000000000000
+      internalID: -6841049287706059523
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_30
+      rect:
+        serializedVersion: 2
+        x: 345
+        y: 136
+        width: 100
+        height: 97
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 672d1e169bce68a00800000000000000
+      internalID: 758553868213801590
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_32
+      rect:
+        serializedVersion: 2
+        x: 458
+        y: 136
+        width: 100
+        height: 98
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1fec415d5226ad260800000000000000
+      internalID: 7123113675268083441
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_34
+      rect:
+        serializedVersion: 2
+        x: 573
+        y: 136
+        width: 98
+        height: 97
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b849dd907d4852fb0800000000000000
+      internalID: -4673182979208670069
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_40
+      rect:
+        serializedVersion: 2
+        x: 6
+        y: 21
+        width: 98
+        height: 91
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 709c5af0aadd00830800000000000000
+      internalID: 4035468988600666375
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_41
+      rect:
+        serializedVersion: 2
+        x: 119
+        y: 21
+        width: 98
+        height: 91
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 12a727962dd201fb0800000000000000
+      internalID: -4679189631102453215
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_42
+      rect:
+        serializedVersion: 2
+        x: 232
+        y: 21
+        width: 100
+        height: 91
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7191d22c69905a1c0800000000000000
+      internalID: -4493174510124721897
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_43
+      rect:
+        serializedVersion: 2
+        x: 345
+        y: 21
+        width: 100
+        height: 91
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f1ab6c9f38e1b710800000000000000
+      internalID: 1707401093655011831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_44
+      rect:
+        serializedVersion: 2
+        x: 460
+        y: 21
+        width: 98
+        height: 91
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a0c239e25690669c0800000000000000
+      internalID: -3934446894283805686
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Status_45
+      rect:
+        serializedVersion: 2
+        x: 573
+        y: 21
+        width: 100
+        height: 91
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 62101fd7e6b77b830800000000000000
+      internalID: 4086870901351579942
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: cf7fb8c65b5d8104b8ea0f4a2bec4367
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Status_0: -3019516997887768502
+      Status_1: 814004640374956523
+      Status_10: -2018058481527933341
+      Status_11: 2243717429656705874
+      Status_12: 7787517540700288752
+      Status_13: -6852777496594991496
+      Status_14: 8916648105341551598
+      Status_15: -4037855074611460424
+      Status_16: -2783674646565937454
+      Status_17: 8675558817246999636
+      Status_18: 6062342300536408606
+      Status_19: 5176526146172408448
+      Status_2: 6962396484033635494
+      Status_20: -3184520735652663752
+      Status_21: -4420790731199247826
+      Status_22: 4492623708128978582
+      Status_23: -7164715817575060547
+      Status_24: 6036677161089331360
+      Status_25: -7771450190607259462
+      Status_26: -322792643324635144
+      Status_27: -3393307921286725556
+      Status_28: -6841049287706059523
+      Status_29: 7022500194247887470
+      Status_3: -6713231963320828161
+      Status_30: 758553868213801590
+      Status_31: -661001597841624280
+      Status_32: 7123113675268083441
+      Status_33: 9058086029648203309
+      Status_34: -4673182979208670069
+      Status_35: -5298666659278618962
+      Status_36: 6792883429567360058
+      Status_37: 5325715936269686294
+      Status_38: -5848608374100936168
+      Status_39: -5028758946942687655
+      Status_4: -9111092196008513476
+      Status_40: 4035468988600666375
+      Status_41: -4679189631102453215
+      Status_42: -4493174510124721897
+      Status_43: 1707401093655011831
+      Status_44: -3934446894283805686
+      Status_45: 4086870901351579942
+      Status_46: 4958462497240454086
+      Status_47: 5039815287833683667
+      Status_48: -4043548490589438954
+      Status_49: 3525053237878324366
+      Status_5: -4791753407910122166
+      Status_50: 4374945161629066366
+      Status_51: 1277250575670101548
+      Status_52: -807499752175196464
+      Status_53: -8546698206776795540
+      Status_54: -691088413428619255
+      Status_55: -88601261331270488
+      Status_56: -373644976048969780
+      Status_57: -4663240127091167287
+      Status_58: -3247225044509531629
+      Status_59: 1866816154362411681
+      Status_6: -7115641777840415526
+      Status_60: 9161124971580157652
+      Status_61: -1631761016052003742
+      Status_62: -3731424425811492336
+      Status_63: -131198862859833458
+      Status_64: -868340192245891768
+      Status_65: -197111567379890771
+      Status_66: -2664505553625875350
+      Status_67: -2752594812767200021
+      Status_68: -4638843274889627098
+      Status_69: 6999642078331538537
+      Status_7: 1987289428962411420
+      Status_8: -5432620205739684469
+      Status_9: -1714587326511343238
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

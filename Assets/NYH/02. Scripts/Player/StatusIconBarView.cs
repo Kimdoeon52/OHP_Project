@@ -81,7 +81,7 @@ public class StatusIconBarView : MonoBehaviour
             if (slot == null)
                 continue;
 
-            slot.Apply(icons[i].Icon, snapshot.Remaining, snapshot.Total);
+            slot.Apply(icons[i].Icon, snapshot.Remaining, snapshot.Total, !icons[i].persistent);
             slot.gameObject.SetActive(true);
             shown++;
         }
@@ -133,5 +133,8 @@ public class StatusIconBarView : MonoBehaviour
     {
         public StatusType Type;
         public Sprite Icon;
+
+        [Tooltip("켜면 쿨타임 오버레이/깜빡임 없이 상태가 사라질 때까지 아이콘만 표시. 배고픔처럼 지속 상태에 사용.")]
+        public bool persistent;
     }
 }

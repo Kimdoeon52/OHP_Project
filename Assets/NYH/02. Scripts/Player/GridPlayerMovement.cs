@@ -260,6 +260,11 @@ public class GridPlayerMovement : MonoBehaviour
 
     private void PlayStepSfx(Vector2Int target)
     {
+        // 부유 상태에서는 공중에 떠 있으므로 일반/독장판(Hazard) 발소리를 내지 않는다.
+        StatusController statusController = _player.GetComponent<StatusController>();
+        if (statusController != null && statusController.IsFloating)
+            return;
+
         AudioEventId eventId = HazardTerrainEffect.IsHazardCell(target)
             ? AudioEventId.PlayerStepHazard
             : AudioEventId.PlayerStep;

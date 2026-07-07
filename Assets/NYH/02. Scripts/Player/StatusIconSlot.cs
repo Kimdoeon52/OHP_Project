@@ -18,12 +18,20 @@ public class StatusIconSlot : MonoBehaviour
     [SerializeField, Min(0.05f)] private float blinkInterval = 0.2f;
 
     // 아이콘 스프라이트와 남은/전체 시간을 받아 표시를 갱신한다. 바가 매 프레임 호출한다.
-    public void Apply(Sprite sprite, float remaining, float total)
+    // showCooldown이 false면 배고픔처럼 지속 상태로 보고 쿨타임/깜빡임 없이 아이콘만 표시한다.
+    public void Apply(Sprite sprite, float remaining, float total, bool showCooldown)
     {
         if (icon != null)
         {
             icon.sprite = sprite;
             icon.enabled = sprite != null;
+        }
+
+        if (!showCooldown)
+        {
+            if (cooldownOverlay != null)
+                cooldownOverlay.enabled = false;
+            return;
         }
 
         UpdateOverlay(remaining, total);
