@@ -17,8 +17,15 @@ namespace PrototypeRT
         [Tooltip("화면 모드 드롭다운(전체화면/테두리없는 창/창). 옵션은 코드가 채운다.")]
         [SerializeField] private TMP_Dropdown screenModeDropdown;
 
+        [Tooltip("켜면 16:9 비율 해상도만 목록에 표시한다. 다른 비율에서 생기는 화면 여백/잘림을 막는다.")]
+        [SerializeField] private bool only16By9 = true;
+
         // 중복 없는 해상도 목록(너비 x 높이)
         private readonly List<Vector2Int> _resolutions = new();
+
+        // 16:9 비율 판정용 (오차 허용)
+        private const float Aspect16By9 = 16f / 9f;
+        private const float AspectTolerance = 0.02f;
 
         // 드롭다운 순서와 맞춘 화면 모드
         private static readonly FullScreenMode[] ScreenModes =
@@ -61,6 +68,10 @@ namespace PrototypeRT
             HashSet<long> seen = new HashSet<long>();
             foreach (Resolution res in Screen.resolutions)
             {
+                // 16:9만 남겨 다른 비율에서 생기는 화면 여백/잘림을 막는다.
+                if (only16By9 && Mathf.Abs((float)res.width / res.height - Aspect16By9) > AspectTolerance)
+                    continue;
+
                 // 같은 해상도가 주사율만 다르게 여러 개 들어오므로 너비x높이로 중복을 제거한다.
                 long key = ((long)res.width << 32) | (uint)res.height;
                 if (!seen.Add(key))
@@ -69,7 +80,7 @@ namespace PrototypeRT
                 _resolutions.Add(new Vector2Int(res.width, res.height));
             }
 
-            // 지원 목록이 비면 최소한 현재 해상도라도 넣는다.
+            // 지원 목록이 비면(모니터에 16:9가 없거나 필터가 다 걸러낸 경우) 최소한 현재 해상도라도 넣는다.
             if (_resolutions.Count == 0)
                 _resolutions.Add(new Vector2Int(Screen.width, Screen.height));
         }
