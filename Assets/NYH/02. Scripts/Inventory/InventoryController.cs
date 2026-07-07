@@ -66,6 +66,9 @@ namespace PrototypeRT
         // 패널이 닫힌 동안에는 클릭/하이라이트/드래그 입력을 처리하지 않기 위해 사용합니다.
         private bool _isInventoryOpen;
 
+        // 사망/타임아웃 후 게임오버 화면에서 인벤토리 조작을 완전히 막기 위한 플래그입니다.
+        private bool _isPlayerDead;
+
         // 드래그 시작 시점의 "원래 칸"을 저장합니다.
         // 화면 좌표를 저장하지 않고 ItemGrid + 그리드 X/Y를 저장하는 이유:
         // Canvas 해상도, 앵커, 스케일이 달라도 아이템이 실제로 돌아가야 할 위치는 "몇 번째 칸"이기 때문입니다.
@@ -128,6 +131,13 @@ namespace PrototypeRT
         /// </summary>
         private void Update()
         {
+            // 사망/타임아웃 후에는 게임오버 화면에서 인벤토리를 조작할 수 없게 모든 입력을 막습니다.
+            if (_isPlayerDead)
+            {
+                _inventoryHighlight.Show(false);
+                return;
+            }
+
             // 인벤토리 패널이 닫혀 있으면 입력을 전부 무시합니다.
             // 이 상태에서 클릭이 들어오면 닫힌 UI의 아이템을 집는 문제가 생길 수 있습니다.
             if (!_isInventoryOpen)
@@ -830,13 +840,32 @@ namespace PrototypeRT
             return true;
         }
 
+        // 사망/타임아웃 신호를 받아 게임오버 화면에서 인벤토리 조작을 잠급니다.
+        private void OnEnable()
+        {
+            GameEvents.OnPlayerDied += HandlePlayerDied;
+            GameEvents.OnTimeUp += HandlePlayerDied;
+        }
+
         /// <summary>
         /// 이 컴포넌트가 꺼질 때 드래그 상태가 남아 있으면 안전하게 원위치로 되돌립니다.
         /// 패널 토글에서 SetInventoryOpen(false)를 호출하는 것이 주 경로이고, 이 함수는 예외 상황 대비용입니다.
         /// </summary>
         private void OnDisable()
         {
+            GameEvents.OnPlayerDied -= HandlePlayerDied;
+            GameEvents.OnTimeUp -= HandlePlayerDied;
             CancelDragAndReturnItem();
+        }
+
+        // 사망 시 드래그 중이던 아이템을 원위치로 돌리고 이후 입력을 막습니다.
+        private void HandlePlayerDied()
+        {
+            if (_isPlayerDead)
+                return;
+
+            _isPlayerDead = true;
+            SetPointerInputBlocked(true);
         }
 
         /// <summary>

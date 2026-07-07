@@ -24,6 +24,9 @@ namespace PrototypeRT
             if (item is FragmentsOfLife)
                 return AudioEventId.FragmentOfLifeMove;
 
+            if (item is Food)
+                return AudioEventId.FoodMove;
+
             if (item is PotionData || ItemCategories.Of(item) == ItemCategory.Potion)
                 return AudioEventId.MovePotion;
 

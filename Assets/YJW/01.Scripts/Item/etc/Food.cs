@@ -13,6 +13,7 @@ public class Food : ItemBase
     public override void Use()
     {
         NYHPlayerStats.Instance.AddStat(NYHStatType.Hunger, hungerBonus);
+        GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.FoodUsed);
     }
 
     public override string GetToolTipStats()

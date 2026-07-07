@@ -94,9 +94,24 @@ namespace PrototypeRT
             inventoryController?.SetInventoryOpen(inventoryPanel.activeInHierarchy);
         }
 
+        private void OnEnable()
+        {
+            GameEvents.OnPlayerDied += HandlePlayerDied;
+            GameEvents.OnTimeUp += HandlePlayerDied;
+        }
+
         private void OnDisable()
         {
+            GameEvents.OnPlayerDied -= HandlePlayerDied;
+            GameEvents.OnTimeUp -= HandlePlayerDied;
             SetInputBlock(false);
+        }
+
+        // 게임오버 시 인벤토리 패널을 닫아 조작을 막습니다.
+        private void HandlePlayerDied()
+        {
+            if (IsOpen)
+                SetOpen(false);
         }
 
         private void OnDestroy()

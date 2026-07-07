@@ -346,9 +346,29 @@ namespace PrototypeRT
             KeyBindingManager.SetUiInputBlock(InputBlockSource, shouldBlock);
         }
 
+        private void OnEnable()
+        {
+            GameEvents.OnPlayerDied += HandlePlayerDied;
+            GameEvents.OnTimeUp += HandlePlayerDied;
+        }
+
         private void OnDisable()
         {
+            GameEvents.OnPlayerDied -= HandlePlayerDied;
+            GameEvents.OnTimeUp -= HandlePlayerDied;
             KeyBindingManager.SetUiInputBlock(InputBlockSource, false);
+        }
+
+        // 게임오버(사망/타임아웃) 시 인벤토리/시스템/확인창을 모두 닫습니다.
+        private void HandlePlayerDied()
+        {
+            if (windowRoot != null)
+                windowRoot.SetActive(false);
+
+            CloseAllModalPanels();
+            _lastWindowActive = IsWindowActive();
+            SyncInventoryInput();
+            SyncUiInputBlock();
         }
 
         private void OnDestroy()

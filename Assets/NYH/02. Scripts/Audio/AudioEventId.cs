@@ -70,5 +70,9 @@
 
     FragmentOfLifePicked,
     FragmentOfLifeMove,
-    FragmentOfLifeUsed
+    FragmentOfLifeUsed,
+
+    FoodPicked,
+    FoodMove,
+    FoodUsed
 }
