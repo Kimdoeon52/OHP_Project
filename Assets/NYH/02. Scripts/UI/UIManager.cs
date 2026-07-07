@@ -20,7 +20,8 @@ namespace PrototypeRT
         {
             None,
             KeySetting,
-            AudioSetting
+            AudioSetting,
+            VideoSetting
         }
 
         [Header("Window Root")]
@@ -49,16 +50,22 @@ namespace PrototypeRT
         [SerializeField] private Button keySettingButton;
         [Tooltip("오디오 설정 항목이 Button 컴포넌트일 때 연결.")]
         [SerializeField] private Button audioSettingButton;
+        [Tooltip("비디오 설정 항목이 Button 컴포넌트일 때 연결.")]
+        [SerializeField] private Button videoSettingButton;
         [Tooltip("키 설정 항목이 Button이 아니라 Text/Image 오브젝트일 때 연결.")]
         [SerializeField] private GameObject keySettingClickTarget;
         [Tooltip("오디오 설정 항목이 Button이 아니라 Text/Image 오브젝트일 때 연결.")]
         [SerializeField] private GameObject audioSettingClickTarget;
+        [Tooltip("비디오 설정 항목이 Button이 아니라 Text/Image 오브젝트일 때 연결.")]
+        [SerializeField] private GameObject videoSettingClickTarget;
 
         [Header("System Panels")]
         [Tooltip("키 설정 항목을 눌렀을 때 켜지는 패널.")]
         [SerializeField] private GameObject keySettingPanel;
         [Tooltip("오디오 설정 항목을 눌렀을 때 켜지는 패널.")]
         [SerializeField] private GameObject audioSettingPanel;
+        [Tooltip("비디오 설정 항목을 눌렀을 때 켜지는 패널.")]
+        [SerializeField] private GameObject videoSettingPanel;
 
         [Header("Confirm Panel Open Buttons")]
         [Tooltip("게임 종료 확인창을 여는 버튼. Button 컴포넌트가 있으면 여기에 연결.")]
@@ -108,6 +115,7 @@ namespace PrototypeRT
             RegisterButton(mainToSystemButton, ToggleSystemWindow);
             RegisterButton(keySettingButton, OpenKeySetting);
             RegisterButton(audioSettingButton, OpenAudioSetting);
+            RegisterButton(videoSettingButton, OpenVideoSetting);
             RegisterButton(gameExitOpenButton, OpenGameExitPanel);
             RegisterButton(goToMainOpenButton, OpenGoToMainPanel);
             RegisterButton(gameExitCancelButton, CloseTopModalPanel);
@@ -115,6 +123,7 @@ namespace PrototypeRT
 
             RegisterClickTarget(keySettingClickTarget, OpenKeySetting);
             RegisterClickTarget(audioSettingClickTarget, OpenAudioSetting);
+            RegisterClickTarget(videoSettingClickTarget, OpenVideoSetting);
             RegisterClickTarget(gameExitOpenClickTarget, OpenGameExitPanel);
             RegisterClickTarget(goToMainOpenClickTarget, OpenGoToMainPanel);
         }
@@ -239,6 +248,11 @@ namespace PrototypeRT
             OpenSystemTab(SystemTab.AudioSetting);
         }
 
+        public void OpenVideoSetting()
+        {
+            OpenSystemTab(SystemTab.VideoSetting);
+        }
+
         public void OpenGameExitPanel()
         {
             OpenModalPanel(gameExitPanel);
@@ -291,6 +305,7 @@ namespace PrototypeRT
 
             SetActive(keySettingPanel, tab == SystemTab.KeySetting);
             SetActive(audioSettingPanel, tab == SystemTab.AudioSetting);
+            SetActive(videoSettingPanel, tab == SystemTab.VideoSetting);
         }
 
         private void OpenModalPanel(GameObject panel)
@@ -385,6 +400,7 @@ namespace PrototypeRT
         {
             SetActive(keySettingPanel, false);
             SetActive(audioSettingPanel, false);
+            SetActive(videoSettingPanel, false);
         }
 
         private static void SetActive(GameObject target, bool value)
