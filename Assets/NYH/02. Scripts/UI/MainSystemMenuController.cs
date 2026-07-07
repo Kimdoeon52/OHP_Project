@@ -32,9 +32,6 @@ namespace PrototypeRT
         [Tooltip("씬 시작 시 시스템 창을 바로 열어둘지 정합니다. 메인 메뉴 첫 화면에 항상 보일 UI라면 켜둡니다.")]
         [SerializeField] private bool openOnStart;
 
-        [Tooltip("시스템 창을 닫거나 이전 패널로 돌아갈 키입니다. 메인씬에서는 ESC 고정 용도로 사용합니다.")]
-        [SerializeField] private KeyCode closeKey = KeyCode.Escape;
-
         [Header("기본 표시")]
         [Tooltip("시스템 창을 처음 열었을 때 오른쪽에 보여줄 기본 패널입니다.")]
         [SerializeField] private MainSystemPanel defaultPanel = MainSystemPanel.KeySetting;
@@ -85,20 +82,6 @@ namespace PrototypeRT
             // 나중에 창을 열 때 빈 오른쪽 영역이 잠깐 보이는 일을 막을 수 있습니다.
             OpenPanel(defaultPanel, false);
             SetWindowVisible(openOnStart);
-        }
-
-        private void Update()
-        {
-            if (!IsWindowVisible())
-                return;
-
-            // 키 변경 UI가 입력을 기다리는 중이면 ESC는 "창 닫기"가 아니라 "키 변경 취소"로 써야 합니다.
-            // 같은 프레임에 두 UI가 동시에 ESC를 먹으면 키 변경 취소와 창 닫기가 겹치므로 여기서는 무시합니다.
-            if (KeyBindingManager.InputCaptureActive || KeyBindingManager.WasInputCapturedThisFrame())
-                return;
-
-            if (Input.GetKeyDown(closeKey))
-                CloseSystemWindow();
         }
 
         private void OnDestroy()
