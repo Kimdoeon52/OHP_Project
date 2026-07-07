@@ -91,6 +91,7 @@ public class StatusController : MonoBehaviour
             if (current.Type != request.StatusType) continue;
 
             current.RemainingTime = Mathf.Max(current.RemainingTime, duration);
+            current.TotalTime = Mathf.Max(current.TotalTime, current.RemainingTime);
             current.Power = Mathf.Max(current.Power, power);
             current.TickInterval = Mathf.Max(0.05f, tickInterval);
             current.TickTimer = Mathf.Min(current.TickTimer, current.TickInterval);
@@ -132,6 +133,33 @@ public class StatusController : MonoBehaviour
             if (_statuses[i].RemainingTime > 0f)
                 results.Add(_statuses[i].Type);
         }
+    }
+
+    // 남은 시간까지 필요한 UI(쿨타임 오버레이)가 현재 상태 목록을 읽을 수 있게 채워줍니다.
+    public void GetActiveStatuses(List<StatusSnapshot> results)
+    {
+        if (results == null) return;
+
+        results.Clear();
+        for (int i = 0; i < _statuses.Count; i++)
+        {
+            if (_statuses[i].RemainingTime <= 0f) continue;
+
+            results.Add(new StatusSnapshot
+            {
+                Type = _statuses[i].Type,
+                Remaining = _statuses[i].RemainingTime,
+                Total = Mathf.Max(_statuses[i].TotalTime, _statuses[i].RemainingTime)
+            });
+        }
+    }
+
+    // 상태 종류 + 남은/전체 시간을 UI에 전달하기 위한 읽기 전용 스냅샷.
+    public struct StatusSnapshot
+    {
+        public StatusType Type;
+        public float Remaining;
+        public float Total;
     }
 
     /// <summary>
@@ -326,6 +354,7 @@ public class StatusController : MonoBehaviour
     {
         public StatusType Type;
         public float RemainingTime;
+        public float TotalTime;
         public float TickTimer;
         public float TickInterval;
         public int Power;
@@ -334,6 +363,7 @@ public class StatusController : MonoBehaviour
         {
             Type = type;
             RemainingTime = remainingTime;
+            TotalTime = remainingTime;
             TickInterval = Mathf.Max(0.05f, tickInterval);
             TickTimer = TickInterval;
             Power = power;

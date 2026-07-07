@@ -15,6 +15,7 @@ namespace PrototypeRT
         {
             KeySetting,
             AudioSetting,
+            VideoSetting,
             GameExit,
             Credit
         }
@@ -43,6 +44,9 @@ namespace PrototypeRT
         [Tooltip("오디오 설정 패널을 여는 버튼입니다. 비워두면 Inspector OnClick에 OpenAudioSetting을 직접 연결해도 됩니다.")]
         [SerializeField] private Button audioSettingButton;
 
+        [Tooltip("비디오 설정 패널을 여는 버튼입니다. 비워두면 Inspector Onlcik에 OpenVideoSetting을 직접 연결해도 됩니다.")]
+        [SerializeField] private Button videoSettingButton;
+
         [Tooltip("게임 종료 확인 패널을 여는 버튼입니다. 비워두면 Inspector OnClick에 OpenGameExit를 직접 연결해도 됩니다.")]
         [SerializeField] private Button gameExitButton;
 
@@ -55,6 +59,9 @@ namespace PrototypeRT
 
         [Tooltip("오디오 설정 UI가 들어있는 오른쪽 패널입니다.")]
         [SerializeField] private GameObject audioSettingPanel;
+
+        [Tooltip("비디오 설정 UI가 들어있는 오른쪽 패널입니다.")]
+        [SerializeField] private GameObject videoSettingPanel;
 
         [Tooltip("게임 종료 확인 UI가 들어있는 오른쪽 패널입니다.")]
         [SerializeField] private GameObject gameExitPanel;
@@ -128,6 +135,11 @@ namespace PrototypeRT
             OpenPanel(MainSystemPanel.AudioSetting, true);
         }
 
+        public void OpenVideoSetting()
+        {
+            OpenPanel(MainSystemPanel.VideoSetting, true);
+        }
+
         public void OpenGameExit()
         {
             // 종료 패널은 별도 캔버스라 시스템 창(windowRoot)을 켜지 않고 단독으로만 표시합니다.
@@ -188,6 +200,7 @@ namespace PrototypeRT
             // 여러 패널이 동시에 켜지면 버튼 클릭 영역이나 스크롤 입력이 겹쳐 예상 못 한 입력이 발생할 수 있습니다.
             SetActive(keySettingPanel, panel == MainSystemPanel.KeySetting);
             SetActive(audioSettingPanel, panel == MainSystemPanel.AudioSetting);
+            SetActive(videoSettingPanel, panel == MainSystemPanel.VideoSetting);
             SetActive(gameExitPanel, panel == MainSystemPanel.GameExit);
             SetActive(creditPanel, panel == MainSystemPanel.Credit);
         }
@@ -208,10 +221,12 @@ namespace PrototypeRT
             RegisterButton(closeWindowButton, CloseSystemWindow);
             RegisterButton(keySettingButton, OpenKeySetting);
             RegisterButton(audioSettingButton, OpenAudioSetting);
+            RegisterButton(videoSettingButton, OpenVideoSetting);
             RegisterButton(gameExitButton, OpenGameExit);
             RegisterButton(creditButton, OpenCredit);
             RegisterButton(confirmExitButton, QuitGame);
             RegisterButton(cancelExitButton, CloseGameExit);
+           
         }
 
         private void UnregisterButtons()
