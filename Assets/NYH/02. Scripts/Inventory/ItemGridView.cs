@@ -169,8 +169,8 @@ namespace PrototypeRT
         {
             int startX = item.OnGridPositionX;
             int startY = item.OnGridPositionY;
-            int width = item.ItemData.Width;
-            int height = item.ItemData.Height;
+            int width = item.RotatedWidth;
+            int height = item.RotatedHeight;
 
             if (!_itemGrid.IsWithinBoundary(startX, startY, width, height))
                 return;

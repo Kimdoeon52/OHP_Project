@@ -30,8 +30,8 @@ namespace PrototypeRT
         {
             if (highlight == null || item == null || item.ItemData == null) return;
 
-            // 아이템이 차지하는 칸 수만큼 하이라이트 크기를 늘립니다.
-            highlight.sizeDelta = new Vector2(item.ItemData.Width * ItemGrid.TileWidth, item.ItemData.Height * ItemGrid.TileHeight);
+            // 아이템이 차지하는 칸 수만큼 하이라이트 크기를 늘립니다. (회전 반영 크기, 하이라이트는 축 정렬)
+            highlight.sizeDelta = new Vector2(item.RotatedWidth * ItemGrid.TileWidth, item.RotatedHeight * ItemGrid.TileHeight);
             MoveBehindItems();
         }
 

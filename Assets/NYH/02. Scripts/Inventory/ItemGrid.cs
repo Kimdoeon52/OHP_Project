@@ -108,8 +108,8 @@ namespace PrototypeRT
 
             if (item == null || item.ItemData == null) return false;
             if (!CanAcceptItem(item)) return false;
-            if (!IsWithinBoundary(x, y, item.ItemData.Width, item.ItemData.Height)) return false;
-            if (!CheckOverlap(x, y, item.ItemData.Width, item.ItemData.Height, ref overlapItem))
+            if (!IsWithinBoundary(x, y, item.RotatedWidth, item.RotatedHeight)) return false;
+            if (!CheckOverlap(x, y, item.RotatedWidth, item.RotatedHeight, ref overlapItem))
             {
                 overlapItem = null;
                 return false;
@@ -133,10 +133,10 @@ namespace PrototypeRT
             itemRect.SetParent(_rectTransform, false);
             itemRect.SetAsLastSibling();
 
-            // 아이템이 차지하는 모든 칸에 같은 참조를 넣어, 어느 칸을 눌러도 같은 아이템을 찾게 합니다.
-            for (int ix = 0; ix < item.ItemData.Width; ix++)
+            // 아이템이 차지하는 모든 칸에 같은 참조를 넣어, 어느 칸을 눌러도 같은 아이템을 찾게 합니다. (회전 반영 크기)
+            for (int ix = 0; ix < item.RotatedWidth; ix++)
             {
-                for (int iy = 0; iy < item.ItemData.Height; iy++)
+                for (int iy = 0; iy < item.RotatedHeight; iy++)
                     _slots[x + ix, y + iy] = item;
             }
 
@@ -177,9 +177,10 @@ namespace PrototypeRT
             EnsureInitialized();
 
             Vector2 topLeft = GetTopLeftLocalPosition();
+            // 회전은 중심 피벗 기준이므로 회전 반영 footprint의 중심에 두면 회전된 아이템도 칸에 정확히 맞는다.
             return new Vector2(
-                topLeft.x + x * TileWidth + TileWidth * item.ItemData.Width / 2f,
-                topLeft.y - (y * TileHeight + TileHeight * item.ItemData.Height / 2f));
+                topLeft.x + x * TileWidth + TileWidth * item.RotatedWidth / 2f,
+                topLeft.y - (y * TileHeight + TileHeight * item.RotatedHeight / 2f));
         }
 
         public Vector2 GetTopLeftLocalPosition()
@@ -230,12 +231,12 @@ namespace PrototypeRT
 
             if (!CanAcceptItem(item)) return null;
 
-            // 자동 획득시 탐색합니다. 위쪽 줄부터 왼쪽에서 오른쪽으로 훑어 첫 빈 공간을 반환합니다.
-            for (int y = 0; y <= gridHeight - item.ItemData.Height; y++)
+            // 자동 획득시 탐색합니다. 위쪽 줄부터 왼쪽에서 오른쪽으로 훑어 첫 빈 공간을 반환합니다. (회전 반영 크기)
+            for (int y = 0; y <= gridHeight - item.RotatedHeight; y++)
             {
-                for (int x = 0; x <= gridWidth - item.ItemData.Width; x++)
+                for (int x = 0; x <= gridWidth - item.RotatedWidth; x++)
                 {
-                    if (IsAreaEmpty(x, y, item.ItemData.Width, item.ItemData.Height))
+                    if (IsAreaEmpty(x, y, item.RotatedWidth, item.RotatedHeight))
                         return new Vector2Int(x, y);
                 }
             }
@@ -329,11 +330,11 @@ namespace PrototypeRT
         {
             if (item.ItemData == null) return;
 
-            // item에 기록된 좌상단 위치와 크기를 기준으로 슬롯 참조를 제거합니다.
+            // item에 기록된 좌상단 위치와 회전 반영 크기를 기준으로 슬롯 참조를 제거합니다.
             // 혹시 다른 아이템 참조가 들어간 칸은 건드리지 않아 방어적으로 동작합니다.
-            for (int ix = 0; ix < item.ItemData.Width; ix++)
+            for (int ix = 0; ix < item.RotatedWidth; ix++)
             {
-                for (int iy = 0; iy < item.ItemData.Height; iy++)
+                for (int iy = 0; iy < item.RotatedHeight; iy++)
                 {
                     int x = item.OnGridPositionX + ix;
                     int y = item.OnGridPositionY + iy;
@@ -349,11 +350,11 @@ namespace PrototypeRT
             foreach (InventoryItem item in existingItems)
             {
                 if (item == null || item.ItemData == null) continue;
-                if (!IsWithinBoundary(item.OnGridPositionX, item.OnGridPositionY, item.ItemData.Width, item.ItemData.Height)) continue;
+                if (!IsWithinBoundary(item.OnGridPositionX, item.OnGridPositionY, item.RotatedWidth, item.RotatedHeight)) continue;
 
-                for (int ix = 0; ix < item.ItemData.Width; ix++)
+                for (int ix = 0; ix < item.RotatedWidth; ix++)
                 {
-                    for (int iy = 0; iy < item.ItemData.Height; iy++)
+                    for (int iy = 0; iy < item.RotatedHeight; iy++)
                         _slots[item.OnGridPositionX + ix, item.OnGridPositionY + iy] = item;
                 }
             }

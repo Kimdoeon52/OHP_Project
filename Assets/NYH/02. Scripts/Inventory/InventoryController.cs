@@ -29,6 +29,9 @@ namespace PrototypeRT
         [Tooltip("아이템을 들고 다시 클릭했을 때 더블클릭으로 인정할 최대 시간입니다.")]
         [SerializeField, Min(0.05f)] private float doubleClickMaxDelay = 0.25f;
 
+        [Tooltip("들고 있는 아이템을 시계방향 90도 회전시키는 키(상호작용 키). 기본 F(조사).")]
+        [SerializeField] private KeyBindingAction rotateAction = KeyBindingAction.Search;
+
         [Tooltip("더블클릭 아이템 사용 분기를 담당하는 컨트롤러입니다. 비워두면 런타임에 자동으로 붙입니다.")]
         [SerializeField] private InventoryItemUseController itemUseController;
 
@@ -149,6 +152,14 @@ namespace PrototypeRT
             // 들고 있는 아이템 이미지는 입력 가능 여부와 상관없이 마우스를 따라오게 둡니다.
             DragSelectedItemIcon();
             RefreshSelectedGridUnderMouse();
+
+            // 들고 있는 아이템을 상호작용 키로 시계방향 회전시킵니다. (그리드 점유 보정은 다음 단계)
+            if (_selectedItem != null
+                && !KeyBindingManager.InputCaptureActive
+                && Input.GetKeyDown(KeyBindingManager.GetKey(rotateAction)))
+            {
+                _selectedItem.Rotate();
+            }
 
             // 주문서 타겟팅 중이거나 방금 타겟팅 클릭을 처리한 프레임이면,
             // 같은 클릭으로 인벤 아이템을 집는 일반 입력이 이어지지 않게 막습니다.
@@ -700,9 +711,9 @@ namespace PrototypeRT
             Vector2 mousePos = Input.mousePosition;
             if (_selectedItem != null)
             {
-                // 아이템 크기가 2칸 이상일 때도 마우스가 아이템의 좌상단 기준 칸을 가리키도록 보정합니다.
-                mousePos.x -= (_selectedItem.ItemData.Width - 1) * ItemGrid.TileWidth / 2f;
-                mousePos.y += (_selectedItem.ItemData.Height - 1) * ItemGrid.TileHeight / 2f;
+                // 아이템 크기가 2칸 이상일 때도 마우스가 아이템의 좌상단 기준 칸을 가리키도록 보정합니다. (회전 반영 크기)
+                mousePos.x -= (_selectedItem.RotatedWidth - 1) * ItemGrid.TileWidth / 2f;
+                mousePos.y += (_selectedItem.RotatedHeight - 1) * ItemGrid.TileHeight / 2f;
             }
 
             return _selectedGrid.ScreenToGridPosition(mousePos);
@@ -893,7 +904,7 @@ namespace PrototypeRT
             {
                 // 아이템을 들고 있을 때는 현재 위치에 배치 가능한 경우에만 하이라이트를 보여줍니다.
                 bool valid = _selectedGrid.CanAcceptItem(_selectedItem)
-                    && _selectedGrid.IsWithinBoundary(gridPos.x, gridPos.y, _selectedItem.ItemData.Width, _selectedItem.ItemData.Height);
+                    && _selectedGrid.IsWithinBoundary(gridPos.x, gridPos.y, _selectedItem.RotatedWidth, _selectedItem.RotatedHeight);
                 _inventoryHighlight.Show(valid);
                 _inventoryHighlight.UpdateSize(_selectedItem);
                 _inventoryHighlight.UpdatePosition(_selectedGrid.GetLocalPositionForItem(_selectedItem, gridPos.x, gridPos.y));

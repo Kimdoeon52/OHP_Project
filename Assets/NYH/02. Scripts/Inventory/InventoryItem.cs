@@ -51,6 +51,13 @@ namespace PrototypeRT
         /// </summary>
         public int OnGridPositionY { get; set; }
 
+        // 회전 단계(0~3). 시계방향 90도씩. 0=원래 모양, 4번 돌면 다시 0으로.
+        public int RotationSteps { get; private set; }
+
+        // 회전을 반영한 그리드 점유 크기. 90/270도면 가로세로가 뒤바뀐다. (그리드 배치/경계검사가 이 값을 봐야 함 — 다음 단계)
+        public int RotatedWidth => ItemData == null ? 0 : (RotationSteps % 2 == 0 ? ItemData.Width : ItemData.Height);
+        public int RotatedHeight => ItemData == null ? 0 : (RotationSteps % 2 == 0 ? ItemData.Height : ItemData.Width);
+
         // 유니티에서 이미지를 화면에 띄워주기 위해 사용하는 도구입니다.
         private Image _image;
         // 스택 수량 표시용 텍스트입니다. 프리팹에 없으면 런타임에 CountText를 자동 생성합니다.
@@ -109,7 +116,28 @@ namespace PrototypeRT
             // 아이템의 타일 크기(예: 1x1, 2x2)에 맞춰 실제 RectTransform의 화면상 픽셀 크기를 동기화합니다.
             RectTransform rect = GetComponent<RectTransform>();
             rect.sizeDelta = new Vector2(itemData.Width * ItemGrid.TileWidth, itemData.Height * ItemGrid.TileHeight);
+            // 재사용된 UI가 이전 회전을 물고 오지 않도록 새 아이템을 세팅할 때 회전을 초기화한다.
+            ResetRotation();
             RefreshCountText();
+        }
+
+        // 상호작용 키로 호출. 시계방향으로 90도 돌리고 비주얼을 갱신한다. 4번이면 원래대로.
+        public void Rotate()
+        {
+            RotationSteps = (RotationSteps + 1) % 4;
+            ApplyRotationVisual();
+        }
+
+        private void ResetRotation()
+        {
+            RotationSteps = 0;
+            ApplyRotationVisual();
+        }
+
+        private void ApplyRotationVisual()
+        {
+            // UI 좌표계에서 시계방향은 음(-)의 Z 회전이다.
+            GetComponent<RectTransform>().localRotation = Quaternion.Euler(0f, 0f, -90f * RotationSteps);
         }
 
         public void SetCount(int count)
