@@ -23,6 +23,7 @@ public class ShopPurchasePopup : MonoBehaviour
 
     private ShopStall _stall;
     private InventoryController _inventory;
+    private GridPlayer _player;
 
     private void Awake()
     {
@@ -55,6 +56,21 @@ public class ShopPurchasePopup : MonoBehaviour
 
         if (panel != null)
             panel.SetActive(true);
+    }
+
+    // 진열대 칸을 벗어나면 팝업 자동 닫기 — 세이프룸 이탈 후 잔존 방지.
+    private void Update()
+    {
+        if (!IsOpen || _stall == null)
+            return;
+
+        if (_player == null)
+            _player = FindFirstObjectByType<GridPlayer>();
+        if (_player == null)
+            return;
+
+        if (_player.IsDead || _player.GridPosition != _stall.GridPosition)
+            Close();
     }
 
     public void Close()

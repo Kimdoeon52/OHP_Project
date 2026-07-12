@@ -45,6 +45,10 @@ public class ChallengeSelectController : MonoBehaviour
             ChallengeType type = b.type;
             b.button.onClick.AddListener(() => ToggleType(type));
         }
+
+        // 시드 입력도 즉시 반영 — 토글 없이 시드만 쳐도 전달자에 기록되게.
+        if (seedInput != null)
+            seedInput.onValueChanged.AddListener(_ => Apply());
     }
 
     // 버튼 클릭 — 해당 챌린지 On/Off 뒤집고 라벨 갱신 후 즉시 전달자에 반영.

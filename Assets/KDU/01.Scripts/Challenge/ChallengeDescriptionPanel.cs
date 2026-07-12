@@ -14,6 +14,7 @@ public class ChallengeDescriptionPanel : Singleton<ChallengeDescriptionPanel>
 
     private void OnEnable()
     {
+        Clear();
         if (LocalizationManager.Instance != null)
             LocalizationManager.Instance.OnLanguageChanged += Refresh;
     }
@@ -22,6 +23,18 @@ public class ChallengeDescriptionPanel : Singleton<ChallengeDescriptionPanel>
     {
         if (LocalizationManager.Instance != null)
             LocalizationManager.Instance.OnLanguageChanged -= Refresh;
+    }
+
+    // 창 오픈 시 초기화 — hover 전까지 옛 언어 설명이 남지 않게.
+    public void Clear()
+    {
+        _current = null;
+
+        if (nameText != null)
+            nameText.text = "";
+
+        if (descriptionText != null)
+            descriptionText.text = "";
     }
 
     // hover 진입 시 트리거가 호출 — 해당 챌린지 정보로 갱신.

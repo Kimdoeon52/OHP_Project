@@ -81,7 +81,7 @@ public class FloorTransitionController : MonoBehaviour
         if (ChallengeSelection.HasSeed)
             runState.ResetRun(ChallengeSelection.Seed, 1);
 
-        ChallengeSelection.Clear();
+        // Clear 안 함 — 게임오버 재시작(타이틀 미경유) 시 같은 챌린지/시드 재적용.
     }
 
     private void OnLevelComplete()
