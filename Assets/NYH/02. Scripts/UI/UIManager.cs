@@ -224,6 +224,7 @@ namespace PrototypeRT
                     windowRoot.SetActive(false);
 
                 CloseAllModalPanels();
+                ClearMainTabSelection();
                 _lastWindowActive = IsWindowActive();
                 SyncInventoryInput();
                 SyncUiInputBlock();
@@ -295,8 +296,34 @@ namespace PrototypeRT
             else
                 HideSystemSubPanels();
 
+            SelectMainTabButton(tab);
             SyncInventoryInput();
             SyncUiInputBlock();
+        }
+
+        // Tab/Esc처럼 버튼 클릭 없이 코드로 탭을 전환할 때도 Selected Color가 맞는 버튼에 반영되도록 한다.
+        private void SelectMainTabButton(MainTab tab)
+        {
+            if (EventSystem.current == null)
+                return;
+
+            Button target = null;
+            if (tab == MainTab.Inventory)
+                target = inventoryButton;
+            else if (tab == MainTab.TuckSung)
+                target = tuckSungButton;
+            else if (tab == MainTab.System)
+                target = systemButton;
+
+            if (target != null)
+                EventSystem.current.SetSelectedGameObject(target.gameObject);
+        }
+
+        // 창을 완전히 닫을 때 마지막 탭 버튼의 Selected Color가 그대로 남지 않도록 선택을 해제한다.
+        private void ClearMainTabSelection()
+        {
+            if (EventSystem.current != null)
+                EventSystem.current.SetSelectedGameObject(null);
         }
 
         public void OpenSystemTab(SystemTab tab)
@@ -335,6 +362,7 @@ namespace PrototypeRT
             {
                 windowRoot.SetActive(false);
                 CloseAllModalPanels();
+                ClearMainTabSelection();
                 SyncInventoryInput();
                 SyncUiInputBlock();
             }
@@ -381,6 +409,7 @@ namespace PrototypeRT
                 windowRoot.SetActive(false);
 
             CloseAllModalPanels();
+            ClearMainTabSelection();
             _lastWindowActive = IsWindowActive();
             SyncInventoryInput();
             SyncUiInputBlock();

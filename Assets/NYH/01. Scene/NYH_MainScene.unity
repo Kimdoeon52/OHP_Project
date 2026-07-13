@@ -21154,7 +21154,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f96009c0efeb17d45a3d875a34ba5f4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  key: "bt_\uC624\uB514\uC624\uC124\uC815"
+  key: "bt_\uBE44\uB514\uC624\uC124\uC815"
 --- !u!114 &421973012
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -51788,7 +51788,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -51}
+  m_AnchoredPosition: {x: 0, y: -18}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1139836842
@@ -59829,7 +59829,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 15}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1309654490
@@ -72352,6 +72352,7 @@ GameObject:
   - component: {fileID: 1623046552}
   - component: {fileID: 1623046551}
   - component: {fileID: 1623046550}
+  - component: {fileID: 1623046553}
   m_Layer: 0
   m_Name: VideoSeting
   m_TagString: Untagged
@@ -72521,6 +72522,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1623046548}
   m_CullTransparentMesh: 1
+--- !u!114 &1623046553
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1623046548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f96009c0efeb17d45a3d875a34ba5f4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  key: "bt_\uBE44\uB514\uC624\uC124\uC815"
 --- !u!1 &1631805832
 GameObject:
   m_ObjectHideFlags: 0

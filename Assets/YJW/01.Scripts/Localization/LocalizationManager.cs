@@ -71,6 +71,10 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "메인 화면으로 돌아 \r\n가시겠습니까?" },
             { Language.English, "Are you sure you want to\nreturn to the main menu?" }
         }},
+        { "bt_비디오설정", new Dictionary<Language, string> {
+            { Language.Korean, "비디오 설정" },
+            { Language.English, "Video Settings" }
+        }},
         //------------------------------------------ 세팅창 오디오 설정
         { "msg_전체볼륨", new Dictionary<Language, string> {
             { Language.Korean, "전체 볼륨" },
@@ -194,6 +198,19 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
         { "msg_상태_배부름", new Dictionary<Language, string> {
             { Language.Korean, "배부름" },
             { Language.English, "Full" }
+        }},
+        //------------------------------------------ 비디오 세팅
+        { "msg_전체화면", new Dictionary<Language, string> {
+            { Language.Korean, "전체화면" },
+            { Language.English, "Fullscreen" }
+        }},
+        { "msg_테두리없는창", new Dictionary<Language, string> {
+            { Language.Korean, "테두리 없는 창" },
+            { Language.English, "Borderless Window" }
+        }},
+        { "msg_창모드", new Dictionary<Language, string> {
+            { Language.Korean, "창모드" },
+            { Language.English, "Windowed" }
         }},
         //------------------------------------------ 플레이어 특성
         { "msg_감정", new Dictionary<Language, string> {

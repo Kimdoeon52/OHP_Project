@@ -35,11 +35,8 @@ namespace PrototypeRT
             FullScreenMode.Windowed             // 창
         };
 
-        // [언어 변경 위치] 화면 모드 드롭다운에 표시될 글자. 다른 언어로 바꾸려면 이 라벨을 수정한다.
-        // ScreenModes 배열과 "같은 순서(인덱스)"여야 선택한 모드가 맞는다.
-        // 여러 언어를 실시간으로 전환하려면 이 고정 문자열 대신 LocalizationManager 키로 빼서
-        // LocalizationManager.GetOrDefault("msg_전체화면", "전체화면") 형태로 채우면 된다.
-        private static readonly string[] ScreenModeLabels = { "전체화면", "테두리 없는 창", "창 모드" };
+        // 화면 모드 드롭다운 라벨의 LocalizationManager 키. ScreenModes 배열과 "같은 순서(인덱스)"여야 한다.
+        private static readonly string[] ScreenModeKeys = { "msg_전체화면", "msg_테두리없는창", "msg_창모드" };
 
         private void Start()
         {
@@ -52,6 +49,8 @@ namespace PrototypeRT
                 resolutionDropdown.onValueChanged.AddListener(OnResolutionChanged);
             if (screenModeDropdown != null)
                 screenModeDropdown.onValueChanged.AddListener(OnScreenModeChanged);
+            if (LocalizationManager.Instance != null)
+                LocalizationManager.Instance.OnLanguageChanged += RefreshScreenModeLabels;
         }
 
         private void OnDestroy()
@@ -60,6 +59,8 @@ namespace PrototypeRT
                 resolutionDropdown.onValueChanged.RemoveListener(OnResolutionChanged);
             if (screenModeDropdown != null)
                 screenModeDropdown.onValueChanged.RemoveListener(OnScreenModeChanged);
+            if (LocalizationManager.Instance != null)
+                LocalizationManager.Instance.OnLanguageChanged -= RefreshScreenModeLabels;
         }
 
         private void BuildResolutionList()
@@ -104,7 +105,28 @@ namespace PrototypeRT
                 return;
 
             screenModeDropdown.ClearOptions();
-            screenModeDropdown.AddOptions(new List<string>(ScreenModeLabels));
+            screenModeDropdown.AddOptions(BuildScreenModeLabels());
+        }
+
+        // 언어가 바뀌면 선택값은 유지한 채 옵션 텍스트만 새로 채운다.
+        private void RefreshScreenModeLabels()
+        {
+            if (screenModeDropdown == null)
+                return;
+
+            int current = screenModeDropdown.value;
+            screenModeDropdown.ClearOptions();
+            screenModeDropdown.AddOptions(BuildScreenModeLabels());
+            screenModeDropdown.SetValueWithoutNotify(current);
+            screenModeDropdown.RefreshShownValue();
+        }
+
+        private List<string> BuildScreenModeLabels()
+        {
+            List<string> labels = new List<string>();
+            foreach (string key in ScreenModeKeys)
+                labels.Add(LocalizationManager.GetOrDefault(key, key));
+            return labels;
         }
 
         private void ApplySaved()
