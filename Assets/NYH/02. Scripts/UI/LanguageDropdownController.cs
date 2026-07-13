@@ -7,8 +7,6 @@ namespace PrototypeRT
     // 언어 선택 드롭다운. 선택을 LocalizationManager에 반영하고 PlayerPrefs에 저장한다.
     public class LanguageDropdownController : MonoBehaviour
     {
-        private const string LanguagePrefsKey = "Localization.Language";
-
         [Tooltip("언어를 고르는 드롭다운. 옵션은 코드가 채운다.")]
         [SerializeField] private TMP_Dropdown dropdown;
 
@@ -42,7 +40,7 @@ namespace PrototypeRT
 
         private void Start()
         {
-            LoadSavedLanguage();
+            // 언어 로드는 LocalizationManager.Awake가 처리 — 여기선 현재 값에 맞춰 표시만
             PopulateDropdown();
 
             if (dropdown != null)
@@ -53,16 +51,6 @@ namespace PrototypeRT
         {
             if (dropdown != null)
                 dropdown.onValueChanged.RemoveListener(OnDropdownChanged);
-        }
-
-        // 저장된 언어를 불러와 즉시 반영한다. 없으면 현재 언어를 유지한다.
-        private void LoadSavedLanguage()
-        {
-            if (LocalizationManager.Instance == null)
-                return;
-
-            int saved = PlayerPrefs.GetInt(LanguagePrefsKey, (int)LocalizationManager.Instance.currentLanguage);
-            LocalizationManager.Instance.SetLanguage((LocalizationManager.Language)saved);
         }
 
         private void PopulateDropdown()
@@ -81,9 +69,8 @@ namespace PrototypeRT
             if (index < 0 || index >= Languages.Length || LocalizationManager.Instance == null)
                 return;
 
+            // SetLanguage가 저장까지 처리
             LocalizationManager.Instance.SetLanguage(Languages[index]);
-            PlayerPrefs.SetInt(LanguagePrefsKey, (int)Languages[index]);
-            PlayerPrefs.Save();
         }
 
         private int CurrentLanguageIndex()

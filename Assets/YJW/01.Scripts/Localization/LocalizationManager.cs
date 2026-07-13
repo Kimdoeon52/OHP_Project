@@ -6,6 +6,9 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
     public enum Language { Korean, English }
     public Language currentLanguage = Language.Korean;
 
+    // 언어 저장 키 (드롭다운과 공유)
+    public const string LanguagePrefsKey = "Localization.Language";
+
     private Dictionary<string, Dictionary<Language, string>> texts
         = new Dictionary<string, Dictionary<Language, string>>()
     {
@@ -1075,6 +1078,15 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
         }},
     };
 
+    // 게임 시작 시 저장된 언어를 즉시 불러온다
+    protected override void Awake()
+    {
+        base.Awake();
+        if (Instance != this)
+            return;
+        currentLanguage = (Language)PlayerPrefs.GetInt(LanguagePrefsKey, (int)currentLanguage);
+    }
+
     public static string GetOrDefault(string key, string fallback)
     {
         return Instance != null ? Instance.Get(key) : fallback;
@@ -1090,6 +1102,9 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
     public void SetLanguage(Language lang)
     {
         currentLanguage = lang;
+        // 변경 즉시 저장
+        PlayerPrefs.SetInt(LanguagePrefsKey, (int)lang);
+        PlayerPrefs.Save();
         // 언어 변경 이벤트 발생
         OnLanguageChanged?.Invoke();
     }
