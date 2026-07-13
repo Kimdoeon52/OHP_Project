@@ -345,11 +345,11 @@ public class BossA : BossBase, IGridEntity, IMultiCellGridEntity, IDamageable
             ShowWarning(attackCells);
             try
             {
-                // 경고 표시 후 2초 대기
+                // 경고 표시 후 2.4초 대기 (총 3초 뒤에 착지 및 데미지가 들어가도록 조정: 경고 2.4초 + 점프 0.6초 = 3.0초)
                 if (bossAnimation != null) bossAnimation.SetTrigger("Jump");
                 // 점프 찍기는 회전 준비음과 착지 충격음을 분리해서 재생한다.
                 GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.BossA_Spin);
-                await UniTask.Delay(2000, cancellationToken: cancelToken.Token);
+                await UniTask.Delay(2400, cancellationToken: cancelToken.Token);
 
                 if (cancelToken.IsCancellationRequested || isDying) break;
 
