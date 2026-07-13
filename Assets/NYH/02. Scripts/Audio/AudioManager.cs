@@ -150,8 +150,20 @@ public class AudioManager : MonoBehaviour
 
     private void Start()
     {
+        // AudioMixer는 씬 로드 직후(Awake)엔 노출 파라미터가 리셋되어 SetFloat이 무시될 수 있다.
+        // 시작 시점과 한 프레임 뒤에 다시 적용해 시작 즉시 저장 볼륨이 들리게 한다.
+        ApplySavedMixerVolumes();
+        StartCoroutine(ApplySavedMixerVolumesNextFrame());
+
         if (playBgmOnStart && startBgmClip != null)
             PlayBgm(startBgmClip, loopStartBgm, 0f);
+    }
+
+    // 믹서가 준비된 다음 프레임에 저장 볼륨을 한 번 더 적용한다.
+    private IEnumerator ApplySavedMixerVolumesNextFrame()
+    {
+        yield return null;
+        ApplySavedMixerVolumes();
     }
 
     private void OnEnable()

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -103,6 +104,9 @@ namespace PrototypeRT
         private SystemTab _currentSystemTab;
         private bool _lastWindowActive;
         private GameObject _topModalPanel;
+
+        // 탭 버튼별 원래 Normal 색 (선택 표시 해제용)
+        private readonly Dictionary<Button, Color> _tabNormalColors = new Dictionary<Button, Color>();
 
         private void Awake()
         {
@@ -297,6 +301,7 @@ namespace PrototypeRT
                 HideSystemSubPanels();
 
             SelectMainTabButton(tab);
+            ApplyMainTabColors(tab);
             SyncInventoryInput();
             SyncUiInputBlock();
         }
@@ -319,11 +324,41 @@ namespace PrototypeRT
                 EventSystem.current.SetSelectedGameObject(target.gameObject);
         }
 
-        // 창을 완전히 닫을 때 마지막 탭 버튼의 Selected Color가 그대로 남지 않도록 선택을 해제한다.
+        // 열린 탭 버튼의 색을 유지한다. 다른 곳을 눌러 선택이 풀려도 남도록 Normal 색 자체를 바꾼다.
+        private void ApplyMainTabColors(MainTab tab)
+        {
+            SetTabSelectedColor(inventoryButton, tab == MainTab.Inventory);
+            SetTabSelectedColor(tuckSungButton, tab == MainTab.TuckSung);
+            SetTabSelectedColor(systemButton, tab == MainTab.System);
+        }
+
+        // 탭 버튼의 Normal 색을 선택/비선택에 맞춰 바꾼다. EventSystem 선택 상태에 의존하지 않는다.
+        private void SetTabSelectedColor(Button button, bool selected)
+        {
+            if (button == null)
+                return;
+
+            if (!_tabNormalColors.ContainsKey(button))
+                _tabNormalColors[button] = button.colors.normalColor;
+
+            ColorBlock cb = button.colors;
+            cb.normalColor = selected ? cb.selectedColor : _tabNormalColors[button];
+            button.colors = cb;
+
+            // 상태 전환을 기다리지 않고 즉시 반영
+            if (button.targetGraphic != null)
+                button.targetGraphic.color = cb.normalColor;
+        }
+
+        // 창을 완전히 닫을 때 마지막 탭 버튼의 색이 그대로 남지 않도록 선택을 해제한다.
         private void ClearMainTabSelection()
         {
             if (EventSystem.current != null)
                 EventSystem.current.SetSelectedGameObject(null);
+
+            SetTabSelectedColor(inventoryButton, false);
+            SetTabSelectedColor(tuckSungButton, false);
+            SetTabSelectedColor(systemButton, false);
         }
 
         public void OpenSystemTab(SystemTab tab)
