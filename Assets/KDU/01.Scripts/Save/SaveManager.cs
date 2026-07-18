@@ -84,7 +84,7 @@ public static class SaveManager
         return snap;
     }
 
-    private static List<int> BuildChallenges()
+    public static List<int> BuildChallenges()
     {
         var list = new List<int>();
 
@@ -151,7 +151,7 @@ public static class SaveManager
         return list;
     }
 
-    private static List<EquipDTO> BuildEquipped()
+    public static List<EquipDTO> BuildEquipped()
     {
         var list = new List<EquipDTO>();
 

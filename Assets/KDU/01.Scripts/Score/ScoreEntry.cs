@@ -10,6 +10,10 @@ public class ScoreEntry
     public int challengeCount;
     public int seed;
     public string date;       // 기록 시각 (yyyy-MM-dd HH:mm)
+
+    public int killCount;                                  // 총 처치 수
+    public List<int> challenges = new List<int>();         // 활성 ChallengeType
+    public List<EquipDTO> equipped = new List<EquipDTO>(); // 종료 시점 장착 장비
 }
 
 // JsonUtility는 최상위 List 직렬화 불가 → 래퍼.

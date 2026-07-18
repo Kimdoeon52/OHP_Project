@@ -7,6 +7,7 @@ public struct ScoreResult
     public int residualBonus;    // 각 층 잔여 시간 합
     public int bossBonus;        // 보스 클리어 합
     public int killBonus;        // 처치 시간보너스 합
+    public int killCount;        // 총 처치 수
     public int baseScore;        // 위 항목 합
     public int challengeCount;   // 활성 챌린지 수
     public float multiplier;     // 1.5^챌린지수

@@ -9,6 +9,7 @@ public class ScoreSystem : Singleton<ScoreSystem>
     private float _residualTime;   // 각 층 잔여 시간 합
     private int _bossBonus;        // 보스 클리어 보너스 합
     private float _killBonus;      // 처치 몬스터 시간보너스 합
+    private int _killCount;        // 총 처치 수
     private bool _finalized;
 
     public ScoreResult LastResult { get; private set; }
@@ -43,6 +44,7 @@ public class ScoreSystem : Singleton<ScoreSystem>
     private void OnEnemyKilled(Vector2Int pos, float timeBonus)
     {
         _killBonus += timeBonus;
+        _killCount++;
         RefreshCurrent();
     }
 
@@ -117,13 +119,14 @@ public class ScoreSystem : Singleton<ScoreSystem>
         r.residualBonus = Mathf.RoundToInt(_residualTime);
         r.bossBonus = _bossBonus;
         r.killBonus = Mathf.RoundToInt(_killBonus);
+        r.killCount = _killCount;
         r.baseScore = r.depthBonus + r.residualBonus + r.bossBonus + r.killBonus;
         r.challengeCount = challengeCount;
         r.multiplier = Mathf.Pow(ChallengeMultiplierBase, challengeCount);
         r.finalScore = Mathf.RoundToInt(r.baseScore * r.multiplier);
 
         LastResult = r;
-        Scoreboard.Submit(r);
+        Scoreboard.Submit(r, SaveManager.BuildEquipped(), SaveManager.BuildChallenges());
         GameEvents.OnScoreFinalized?.Invoke(r);
     }
 }

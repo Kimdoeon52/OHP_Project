@@ -49,6 +49,31 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "일반 순위표" },
             { Language.English, "Normal Ranking" }
         }},
+        //------------------------------------------ 순위표 상세 팝업
+        { "msg_정보", new Dictionary<Language, string> {
+            { Language.Korean, "정보" },
+            { Language.English, "Info" }
+        }},
+        { "msg_장비", new Dictionary<Language, string> {
+            { Language.Korean, "장비" },
+            { Language.English, "Equipment" }
+        }},
+        { "msg_적처치수", new Dictionary<Language, string> {
+            { Language.Korean, "적 처치 수" },
+            { Language.English, "Kills" }
+        }},
+        { "msg_활성챌린지", new Dictionary<Language, string> {
+            { Language.Korean, "활성 챌린지" },
+            { Language.English, "Active Challenges" }
+        }},
+        { "msg_없음", new Dictionary<Language, string> {
+            { Language.Korean, "없음" },
+            { Language.English, "None" }
+        }},
+        { "msg_기록없음", new Dictionary<Language, string> {
+            { Language.Korean, "기록 없음" },
+            { Language.English, "No Record" }
+        }},
         //------------------------------------------ 세팅창 왼쪽 탭
         { "msg_시스템", new Dictionary<Language, string> {
             { Language.Korean, "시스템" },

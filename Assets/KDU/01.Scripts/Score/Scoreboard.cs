@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -29,7 +30,7 @@ public static class Scoreboard
     }
 
     // 결과 등록 → 정렬 → 톱30 유지 → 저장. 톱30 진입 순위(0-based) 반환, 미진입이면 -1.
-    public static int Submit(ScoreResult result)
+    public static int Submit(ScoreResult result, List<EquipDTO> equipped, List<int> challenges)
     {
         var entry = new ScoreEntry
         {
@@ -37,7 +38,10 @@ public static class Scoreboard
             reachedDepth = result.reachedDepth,
             challengeCount = result.challengeCount,
             seed = result.seed,
-            date = DateTime.Now.ToString("yyyy-MM-dd HH:mm")
+            date = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
+            killCount = result.killCount,
+            challenges = challenges ?? new List<int>(),
+            equipped = equipped ?? new List<EquipDTO>()
         };
 
         ScoreboardData data = Load();
