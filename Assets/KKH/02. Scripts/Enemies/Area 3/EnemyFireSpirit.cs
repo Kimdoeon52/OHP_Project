@@ -103,6 +103,9 @@ public class EnemyFireSpirit : EnemyBase
             if (!GridSystem.Instance.IsInBounds(current)) return null;
             if (!GridSystem.Instance.IsWalkable(current)) return null;
 
+            // 문(Door) 위치는 화염 줄기가 방 밖/복도로 넘어가지 못하도록 공격 라인을 차단합니다.
+            if (GridSystem.Instance.GetDoorAt(current) != null) return null;
+
             result.Add(current);
 
             if (current == Player.GridPosition) return result;

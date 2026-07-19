@@ -32,5 +32,5 @@ MonoBehaviour:
   expReward: 30
   goldMin: 30
   goldMax: 50
-  visionRange: 6
+  visionRange: 4
   onHitEffect: {fileID: 11400000, guid: 785fd12345ab4e0987c2b9f390ef14ab, type: 2}
