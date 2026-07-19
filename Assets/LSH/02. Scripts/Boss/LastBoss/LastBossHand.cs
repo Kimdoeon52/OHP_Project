@@ -224,6 +224,10 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
         SetVisualActive(openHandVisual, false);
         SetVisualActive(fistVisual, false);
         SetVisualActive(scratchVisual, false);
+
+        ApplyFlipXBySide(openHandVisual);
+        ApplyFlipXBySide(fistVisual);
+        ApplyFlipXBySide(scratchVisual);
     }
 
     private GameObject EnsureVisualInstance(GameObject visualPrefab, string name)
@@ -434,6 +438,36 @@ public class LastBossHand : BossBase, IMultiCellGridEntity, IDamageable
         SetVisualActive(openHandVisual, mode == HandMode.OpenHand);
         SetVisualActive(fistVisual, mode == HandMode.Fist);
         SetVisualActive(scratchVisual, mode == HandMode.Scratch);
+
+        ApplyFlipXBySide(openHandVisual);
+        ApplyFlipXBySide(fistVisual);
+        ApplyFlipXBySide(scratchVisual);
+    }
+
+    private void ApplyFlipXBySide(GameObject visual)
+    {
+        if (visual == null) return;
+        bool targetFlipX = (side == HandSide.Left);
+
+        if (visual == gameObject)
+        {
+            var sr = visual.GetComponent<SpriteRenderer>();
+            if (sr != null)
+            {
+                sr.flipX = targetFlipX;
+            }
+        }
+        else
+        {
+            var srs = visual.GetComponentsInChildren<SpriteRenderer>(true);
+            foreach (var sr in srs)
+            {
+                if (sr != null)
+                {
+                    sr.flipX = targetFlipX;
+                }
+            }
+        }
     }
 
     private async UniTask ExecuteAttackAtCurrentPosition()
