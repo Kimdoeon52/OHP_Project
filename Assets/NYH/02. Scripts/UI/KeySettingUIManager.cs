@@ -272,6 +272,8 @@ namespace PrototypeRT
                 KeyCode.Alpha9 => "9",
                 KeyCode.Space => "Space",
                 KeyCode.Tab => "Tab",
+                KeyCode.LeftControl => "LeftCtrl",
+                KeyCode.RightControl => "RightCtrl",
                 _ => key.ToString()
             };
         }

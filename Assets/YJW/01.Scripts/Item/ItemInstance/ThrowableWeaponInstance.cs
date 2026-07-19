@@ -36,17 +36,18 @@ public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
                $"{LocalizationManager.GetOrDefault("msg_내구도", "Durability")}   {duraStr}";
     }
 
-    public void Throw(Vector2Int targetCell)
+    public bool Throw(Vector2Int targetCell)
     {
         if (currentDurabilities.Count == 0)
         {
             Debug.Log("던질 무기가 없습니다!");
-            return;
+            return false;
         }
         if (GetPlayerStrength() < GetRequiredStrength())
         {
             Debug.Log("힘이 부족합니다!");
-            return;
+            GameEvents.OnPlayerNoticeRequested?.Invoke(LocalizationManager.GetOrDefault("msg_힘부족", "Not enough strength."));
+            return false;
         }
 
         int lastIndex = currentDurabilities.Count - 1;
@@ -64,7 +65,7 @@ public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
         {
             currentDurabilities.Add(thrownDurability);
             Debug.LogWarning($"ThrowableWeaponInstance: {weapon.PoolType} 투사체 프리팹/풀을 찾지 못해 투척을 취소합니다.");
-            return;
+            return false;
         }
 
         projectile.transform.position = playerPos;
@@ -76,6 +77,7 @@ public class ThrowableWeaponInstance : EquipmentInstance, IThrowable
         wp.SetInstance(this, thrownDurability, weapon.PoolType, pooledProjectile);
         wp.FlyTo(targetWorldPos);
         GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.DaggerThrow);
+        return true;
     }
 
     // WeaponProjectile이 플레이어에게 픽업될 때 호출. 내구도가 남아 복구됐으면 true.

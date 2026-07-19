@@ -439,6 +439,11 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "효과: 허기 +{0}" },
             { Language.English, "Effect: Hunger +{0}" }
         }},
+        //------------------------------------------ 알림
+        { "msg_힘부족", new Dictionary<Language, string> {
+            { Language.Korean, "힘이 부족합니다." },
+            { Language.English, "Not enough strength." }
+        }},
         //------------------------------------------ 아이템 - 포션
         { "item_name_2001", new Dictionary<Language, string> {
             { Language.Korean, "회복 포션" },
@@ -742,8 +747,8 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.English, "Ring of Evasion" }
         }},
         { "item_desc_7005", new Dictionary<Language, string> {
-            { Language.Korean, "투척 무기가 더 날카롭게, 더 깊이 꽂힌다." },
-            { Language.English, "Throwing weapons land sharper, and dig in deeper." }
+            { Language.Korean, "발걸음이 가벼워지고 반사 신경이 예민해진다. 공격을 피하기 한결 쉬워진다." },
+            { Language.English, "Your steps grow lighter and your reflexes sharpen. Dodging attacks becomes far easier." }
         }},
         { "item_effect_7005", new Dictionary<Language, string> {
             { Language.Korean, "회피" },
@@ -754,8 +759,8 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.English, "Ring of Accuracy" }
         }},
         { "item_desc_7006", new Dictionary<Language, string> {
-            { Language.Korean, "투척 무기가 더 날카롭게, 더 깊이 꽂힌다." },
-            { Language.English, "Throwing weapons land sharper, and dig in deeper." }
+            { Language.Korean, "시야가 또렷해지고 손끝이 안정된다. 공격이 더 정확하게 적중한다." },
+            { Language.English, "Your vision sharpens and your hands steady. Attacks strike their mark more precisely." }
         }},
         { "item_effect_7006", new Dictionary<Language, string> {
             { Language.Korean, "명중률" },

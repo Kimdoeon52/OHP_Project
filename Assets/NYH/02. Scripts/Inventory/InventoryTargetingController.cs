@@ -96,15 +96,17 @@ namespace PrototypeRT
             if (potion == null || potion.ItemData is not IThrowable)
                 return false;
 
+            // 투척은 맵을 클릭해야 하므로 인벤토리 패널을 닫고 게임 화면을 보이게 합니다.
+            // 모드를 켜기 전에 먼저 닫아야, SetOpen(false) 내부의 CancelTargeting()이
+            // 방금 시작하려는 이 조준 상태를 "취소 대상"으로 오인해 즉시 꺼버리는 걸 막을 수 있습니다.
+            inventoryPanelToggle?.SetOpen(false);
+
             // activeItem은 나중에 좌클릭 성공/우클릭 취소 때 소비하거나 원위치 복귀할 기준 아이템입니다.
             _activeItem = potion;
             _mode = InventoryTargetingMode.ThrowPotion;
             _scrollKind = InventoryScrollTargetKind.None;
             _startedFrame = Time.frameCount;
             SetCursor(throwPotionCursor);
-
-            // 투척은 맵을 클릭해야 하므로 인벤토리 패널을 닫고 게임 화면을 보이게 합니다.
-            inventoryPanelToggle?.SetOpen(false);
             return true;
         }
 
@@ -199,7 +201,13 @@ namespace PrototypeRT
             // 마우스 화면 좌표를 월드 좌표로 바꾼 뒤, 프로젝트 공용 GridSystem으로 타일 좌표에 맞춥니다.
             Vector3 worldPos = cam.ScreenToWorldPoint(Input.mousePosition);
             Vector2Int targetCell = GridSystem.Instance.WorldToGrid(worldPos);
-            throwable.Throw(targetCell);
+            if (!throwable.Throw(targetCell))
+            {
+                // 힘 부족/내구도 없음 등으로 실제로 던지지 못한 경우 아이템을 소비하지 않고 조준 상태만 정리합니다.
+                CancelTargeting();
+                return;
+            }
+
             // Throw 호출까지 성공한 시점에만 포션을 소비합니다.
             ConsumeActiveItem();
             ClearTargetingState();

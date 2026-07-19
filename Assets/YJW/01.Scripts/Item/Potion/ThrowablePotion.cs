@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class ThrowablePotion : PotionData, IThrowable
 {
-    public virtual void Throw(Vector2Int targetPos)
+    public virtual bool Throw(Vector2Int targetPos)
     {
         // 포션을 targetPos로 던지는 로직
         for (int x = -1; x <= 1; x++)
@@ -19,6 +19,8 @@ public class ThrowablePotion : PotionData, IThrowable
                 ApplyEffect(tile);
             }
         }
+
+        return true;
     }
 
 	protected virtual UniTask ApplyEffect(Vector2Int tile)

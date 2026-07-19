@@ -11,7 +11,7 @@ public class FirePotion : ThrowablePotion
     [Tooltip("불 장판 판정이 몇 번의 플레이어 행동 동안 유지될지 정합니다. 현재 불 이펙트 수명이 짧아서 기본값은 1턴입니다.")]
     [SerializeField, Min(1)] private int fireTerrainDurationTurns = 1;
 
-    public override void Throw(Vector2Int targetPos)
+    public override bool Throw(Vector2Int targetPos)
     {
         GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.PotionThrow);
         Vector3 playerPos = GameManager.Instance.player.transform.position;
@@ -26,6 +26,8 @@ public class FirePotion : ThrowablePotion
             RequestFireTerrain(targetPos);                               // 기존 함정 지형 시스템에 불 장판 판정을 알려 화상 상태이상을 재사용
             ObjectPool.Instance.Return(PoolType.FirePotion, projectile); // 착지 후 반납
         });
+
+        return true;
     }
 
     private void RequestFireTerrain(Vector2Int origin)

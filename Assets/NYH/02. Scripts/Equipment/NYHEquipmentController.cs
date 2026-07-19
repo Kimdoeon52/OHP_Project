@@ -634,6 +634,7 @@ public class NYHEquipmentController : MonoBehaviour
         if (stats.Strength < requiredStrength)
         {
             Debug.LogWarning($"NYHEquipmentController: 힘이 부족합니다. 필요 힘 {requiredStrength}, 현재 힘 {stats.Strength}");
+            GameEvents.OnPlayerNoticeRequested?.Invoke(LocalizationManager.GetOrDefault("msg_힘부족", "Not enough strength."));
             return false;
         }
 

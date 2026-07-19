@@ -128,7 +128,7 @@ public class WeaponProjectile : MonoBehaviour
         GroundItemController groundController = thrownDurability > 1 ? FindFirstObjectByType<GroundItemController>() : null;
         if (groundController != null && GridSystem.Instance != null && weaponInstance != null && weaponInstance.weapon != null)
         {
-            Vector2Int cell = GridSystem.Instance.WorldToGrid(transform.position);
+            Vector2Int cell = ResolveLandingCell(GridSystem.Instance.WorldToGrid(transform.position));
             var dummy = new ThrowableWeaponInstance { data = weaponInstance.weapon };
 
             ThrowableWeaponInstance capturedInstance = weaponInstance;
@@ -144,6 +144,31 @@ public class WeaponProjectile : MonoBehaviour
         }
 
         ReturnToPool();
+    }
+
+    // 벽에 붙은 적 등에 맞아 착지 칸이 벽이면 회수 불가능하므로, 가장 가까운 이동 가능 칸을 찾는다.
+    private static Vector2Int ResolveLandingCell(Vector2Int cell)
+    {
+        if (GridSystem.Instance.IsWalkable(cell))
+            return cell;
+
+        for (int radius = 1; radius <= 5; radius++)
+        {
+            for (int dx = -radius; dx <= radius; dx++)
+            {
+                for (int dy = -radius; dy <= radius; dy++)
+                {
+                    if (Mathf.Max(Mathf.Abs(dx), Mathf.Abs(dy)) != radius)
+                        continue;
+
+                    Vector2Int candidate = cell + new Vector2Int(dx, dy);
+                    if (GridSystem.Instance.IsWalkable(candidate))
+                        return candidate;
+                }
+            }
+        }
+
+        return cell;
     }
 
     // 다 던진 뒤 슬롯이 사라진 상태로 마지막 한 자루를 주운 경우, 인벤토리에 새 슬롯을 만들어 돌려줌

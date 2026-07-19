@@ -11,7 +11,7 @@ public class IcePotion : ThrowablePotion
 	[Tooltip("얼음 장판 판정이 몇 번의 플레이어 행동 동안 유지될지 정합니다.")]
 	[SerializeField, Min(1)] private int iceTerrainDurationTurns = 1;
 
-	public override void Throw(Vector2Int targetPos)
+	public override bool Throw(Vector2Int targetPos)
 	{
 		GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.PotionThrow);
 		Vector3 playerPos = GameManager.Instance.player.transform.position;
@@ -26,6 +26,8 @@ public class IcePotion : ThrowablePotion
 			RequestIceTerrain(targetPos);
 			ObjectPool.Instance.Return(PoolType.IcePotion, projectile); // 착지 후 반납
 		});
+
+		return true;
 	}
 
 	private void RequestIceTerrain(Vector2Int origin)

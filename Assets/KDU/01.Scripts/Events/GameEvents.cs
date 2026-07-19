@@ -55,6 +55,9 @@ public static class GameEvents
     // 오디오
     public static Action<AudioEventId> OnAudioEventRequested;
 
+    // 플레이어 알림
+    public static Action<string> OnPlayerNoticeRequested;   // 힘 부족 등 행동 실패를 화면 중앙에 잠깐 표시
+
     // Vfx
     public static System.Action<UnityEngine.Vector3, VFXType> OnPlayVFX;
 
@@ -93,6 +96,7 @@ public static class GameEvents
         OnDepthChanged = null;              // 층 변경
         OnScoreChanged = null;              // 진행 중 점수 변동
         OnAudioEventRequested = null;        // 오디오 이벤트
+        OnPlayerNoticeRequested = null;      // 플레이어 알림
         CombatTextCriticalContext.Clear();  // 전투 텍스트 초기화
     }
 }
