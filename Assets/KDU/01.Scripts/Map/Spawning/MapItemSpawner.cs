@@ -28,6 +28,8 @@ public class MapItemSpawner : MonoBehaviour
 
     [Header("매 층 택1 등장 아이템 (빵/비상 식량 균등)")]
     [SerializeField] private List<ItemBase> perFloorOneOf = new();
+    [Tooltip("2개째 추가 등장 확률")]
+    [SerializeField, Range(0f, 1f)] private float perFloorOneOfSecondChance = 0.5f;
 
     [Header("소형 비상 식량 — 생존주의자 특성 전용")]
     [Tooltip("소형 비상 식량 SO")]
@@ -108,7 +110,7 @@ public class MapItemSpawner : MonoBehaviour
         SpawnSubtypeRooms(rooms, depth, rng);
     }
 
-    // 빵/비상 식량 — 매 층 후보 중 균등하게 1개 등장 (보스 층은 Spawn 미호출로 자동 제외)
+    // 빵/비상 식량 — 매 층 후보 중 균등하게 1개 등장, 확률로 2개째 추가 (보스 층은 Spawn 미호출로 자동 제외)
     private void SpawnPerFloorOneOf(List<RoomData> rooms, DungeonRandom rng)
     {
         var candidates = new List<ItemBase>();
@@ -119,7 +121,9 @@ public class MapItemSpawner : MonoBehaviour
         if (candidates.Count == 0)
             return;
 
-        PlaceInNormalOrExit(rooms, candidates[rng.Range(0, candidates.Count)], rng);
+        int count = rng.Chance(perFloorOneOfSecondChance) ? 2 : 1;
+        for (int i = 0; i < count; i++)
+            PlaceInNormalOrExit(rooms, candidates[rng.Range(0, candidates.Count)], rng);
     }
 
     // 소형 비상 식량 — 특성 예약 층 동안 1개씩 배치 (보스 층은 Spawn 미호출로 소모 안 됨)

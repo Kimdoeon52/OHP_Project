@@ -1,7 +1,7 @@
 using UnityEngine;
 
-// 런 사이로 넘기는 골드. 사망=절반, 최종 클리어=전액. run.json과 분리해 보관해야
-// 새로 시작 시 덮어쓰이는 저장본이 아니라 직전 런 종료 시점의 골드를 이어받는다.
+// 런 사이로 넘기는 골드. 최종 클리어 시에만 고정 보상, 사망=소실. run.json과 분리해 보관해야
+// 새로 시작 시 덮어쓰이는 저장본이 아니라 직전 런 종료 시점의 기록을 이어받는다.
 public static class GoldCarryOver
 {
     private const string Key = "carry_gold";

@@ -3,6 +3,9 @@ using UnityEngine;
 // 골드
 public class Wallet : Singleton<Wallet>
 {
+    // 최종 클리어 보상 골드 (다음 런 한정)
+    private const int ClearRewardGold = 300;
+
     public int Balance { get; private set; }
 
     private void OnEnable()
@@ -19,18 +22,17 @@ public class Wallet : Singleton<Wallet>
         GameEvents.OnRunCleared -= OnRunCleared;
     }
 
-    // 사망 시 절반을 다음 런으로 넘기고 잔액 0
+    // 사망 시 골드 전액 소실
     private void OnPlayerDied()
     {
-        GoldCarryOver.Set(Balance / 2);
         Balance = 0;
         GameEvents.OnGoldChanged?.Invoke(Balance);
     }
 
-    // 최종 클리어 시 전액을 다음 런으로 넘김
+    // 최종 클리어 시 다음 런에 고정 보상 지급
     private void OnRunCleared()
     {
-        GoldCarryOver.Set(Balance);
+        GoldCarryOver.Set(ClearRewardGold);
     }
 
     // 잔액 지정 (이어하기 복원 등)
