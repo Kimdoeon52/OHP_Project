@@ -39,6 +39,14 @@ namespace PrototypeRT
         // 화면 모드 드롭다운 라벨의 LocalizationManager 키. ScreenModes 배열과 "같은 순서(인덱스)"여야 한다.
         private static readonly string[] ScreenModeKeys = { "msg_전체화면", "msg_테두리없는창", "msg_창모드" };
 
+        // Alt+Enter 등 외부 요인으로 화면 모드/해상도가 바뀌었는지 감지하기 위한 마지막 확인값.
+        private FullScreenMode _lastKnownMode;
+        private int _lastKnownWidth;
+        private int _lastKnownHeight;
+        private float _externalChangeCheckTimer;
+
+        private const float ExternalChangeCheckInterval = 0.25f;
+
         private void Start()
         {
             BuildResolutionList();
@@ -54,6 +62,13 @@ namespace PrototypeRT
                 LocalizationManager.Instance.OnLanguageChanged += RefreshScreenModeLabels;
         }
 
+        private void OnEnable()
+        {
+            // 시스템창을 닫아뒀다 다시 켰을 때, 그 사이 Alt+Enter 등으로 바뀐 실제 화면 상태를 반영한다.
+            if (_resolutions.Count > 0)
+                SyncDropdownsFromCurrentScreen();
+        }
+
         private void OnDestroy()
         {
             if (resolutionDropdown != null)
@@ -62,6 +77,44 @@ namespace PrototypeRT
                 screenModeDropdown.onValueChanged.RemoveListener(OnScreenModeChanged);
             if (LocalizationManager.Instance != null)
                 LocalizationManager.Instance.OnLanguageChanged -= RefreshScreenModeLabels;
+        }
+
+        // Alt+Enter, 창 드래그 등 우리 코드를 거치지 않은 화면 변경을 주기적으로 감지해 드롭다운에 반영한다.
+        private void Update()
+        {
+            _externalChangeCheckTimer += Time.unscaledDeltaTime;
+            if (_externalChangeCheckTimer < ExternalChangeCheckInterval)
+                return;
+
+            _externalChangeCheckTimer = 0f;
+
+            if (Screen.fullScreenMode != _lastKnownMode || Screen.width != _lastKnownWidth || Screen.height != _lastKnownHeight)
+                SyncDropdownsFromCurrentScreen();
+        }
+
+        // 실제 Screen 상태를 기준으로 드롭다운 표시만 맞춘다. ApplySettings를 다시 부르지 않아 무한 루프를 막는다.
+        private void SyncDropdownsFromCurrentScreen()
+        {
+            _lastKnownMode = Screen.fullScreenMode;
+            _lastKnownWidth = Screen.width;
+            _lastKnownHeight = Screen.height;
+
+            int resIndex = FindResolutionIndex(Screen.width, Screen.height);
+            int modeIndex = FindScreenModeIndex(Screen.fullScreenMode);
+
+            if (resolutionDropdown != null)
+            {
+                resolutionDropdown.SetValueWithoutNotify(resIndex);
+                resolutionDropdown.RefreshShownValue();
+            }
+
+            if (screenModeDropdown != null)
+            {
+                screenModeDropdown.SetValueWithoutNotify(modeIndex);
+                screenModeDropdown.RefreshShownValue();
+            }
+
+            Save();
         }
 
         private void BuildResolutionList()
@@ -168,7 +221,16 @@ namespace PrototypeRT
                 modeIndex = 0;
 
             Vector2Int res = _resolutions[resIndex];
-            Screen.SetResolution(res.x, res.y, ScreenModes[modeIndex]);
+            FullScreenMode mode = ScreenModes[modeIndex];
+
+            // 창모드 + 모니터 해상도와 완전히 같은 해상도 조합은 타이틀바 높이만큼 창이 화면보다 커져
+            // 아래쪽이 화면 밖으로 밀려난다. 테두리 없는 창모드로 자동 전환해 화면에 정확히 맞춘다.
+            if (mode == FullScreenMode.Windowed
+                && res.x == Screen.currentResolution.width
+                && res.y == Screen.currentResolution.height)
+                mode = FullScreenMode.FullScreenWindow;
+
+            Screen.SetResolution(res.x, res.y, mode);
             StartCoroutine(ForceTmpRedrawNextFrame());
         }
 

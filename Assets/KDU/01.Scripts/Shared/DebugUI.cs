@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 
 public class DebugUI : MonoBehaviour
@@ -37,7 +37,7 @@ public class DebugUI : MonoBehaviour
             hpText.text = $"HP {_player.CurrentHp}/{_player.MaxHp}";
 
         if (levelText != null && _levelSystem != null)
-            levelText.text = $"LVL {_levelSystem.Level}";
+            levelText.text = $"LV {_levelSystem.Level}";
 
         if (expText != null && _levelSystem != null)
             expText.text = $"EXP {_levelSystem.ExpDisplayText}";
