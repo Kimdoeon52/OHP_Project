@@ -21,12 +21,12 @@ public class LazerActionCases
 /*
  * LazerPattern — 격자 레이저 패턴을 독립적으로 실행하는 모듈.
  * 보스의 행동 사이클(이동/배회/사라짐)과는 완전히 분리. 자체 타이머로 패턴을 계속 발사.
- * 현재 페이즈는 boss.currentHp를 읽어 판정.
+ * 현재 페이즈는 boss.currentHp를 boss.maxHp 대비 퍼센트로 환산해 판정.
  *
  * 페이즈별 패턴:
- *   HP > phase1HpMin       Phase1: P1 가로 랜덤 2~3 / P2 세로 랜덤 2~3
- *   HP > phase2HpMin       Phase2: P1 가로+세로 랜덤 2~3씩 / P2 가로 스윕 / P3 세로 스윕
- *   HP ≤ phase2HpMin       Phase3: 회전 붉은 레이저(닿으면 phase3LaserDamage) + Phase1 패턴 병행
+ *   HP > maxHp * phase1HpMin%       Phase1: P1 가로 랜덤 2~3 / P2 세로 랜덤 2~3
+ *   HP > maxHp * phase2HpMin%       Phase2: P1 가로+세로 랜덤 2~3씩 / P2 가로 스윕 / P3 세로 스윕
+ *   HP ≤ maxHp * phase2HpMin%       Phase3: 회전 붉은 레이저(닿으면 phase3LaserDamage) + Phase1 패턴 병행
  *
  * 경고 표시: warningTilemap에 타일(참조 카운트로 중복 방지).
  */
@@ -65,9 +65,9 @@ public class LazerPattern : MonoBehaviour
     [SerializeField] private int pattern2Repeats = 3;    // 홀수/짝수 반복 횟수
     [SerializeField] private int pattern3StepDelayMs = 600; // 조여드는 사각형 스텝 간격(ms)
 
-    [Header("HP 페이즈 경계 (보스 currentHp 기준)")]
-    [SerializeField] private int phase1HpMin = 70;
-    [SerializeField] private int phase2HpMin = 20;
+    [Header("HP 페이즈 경계 (보스 maxHp 대비 퍼센트, 0~100)")]
+    [SerializeField, Range(0, 100)] private int phase1HpMin = 70;
+    [SerializeField, Range(0, 100)] private int phase2HpMin = 30;
 
     [Header("Phase 3 회전 레이저")]
     [SerializeField] private float phase3LaserRotateSpeed = 60f;
@@ -168,8 +168,10 @@ public class LazerPattern : MonoBehaviour
     {
         if (boss == null) return 1;
         int hp = boss.currentHp;
-        if (hp > phase1HpMin) return 1;
-        if (hp > phase2HpMin) return 2;
+        float phase1Threshold = boss.maxHp * (phase1HpMin / 100f);
+        float phase2Threshold = boss.maxHp * (phase2HpMin / 100f);
+        if (hp > phase1Threshold) return 1;
+        if (hp > phase2Threshold) return 2;
         return 3;
     }
 
