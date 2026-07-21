@@ -23,7 +23,7 @@ public class DebugUI : MonoBehaviour
         {
             if (float.IsInfinity(TimeSystem.Instance.TimeRemaining))
             {
-                timeText.text = "TIME ∞";
+                timeText.text = "TIME ???";
             }
             else
             {
