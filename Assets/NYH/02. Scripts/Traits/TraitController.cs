@@ -4,7 +4,8 @@ using UnityEngine;
 
 /// <summary>
 /// 한 판 동안의 특성 레벨, 티어별 특성 포인트, 특성 효과 조회를 담당하는 런타임 컨트롤러입니다.
-/// GDD 기준 특성은 저장/로드 대상이 아니므로 PlayerPrefs를 쓰지 않고 씬 생명주기 안에서만 유지합니다.
+/// GDD 기준 특성은 판을 넘어 영구히 쌓이는 자원이 아니므로 PlayerPrefs에는 저장하지 않습니다.
+/// 다만 같은 런을 이어하기할 때는 유지되어야 하므로 SaveManager/RunRestorer가 RestoreState로 복원합니다.
 /// </summary>
 public class TraitController : MonoBehaviour
 {
@@ -31,6 +32,10 @@ public class TraitController : MonoBehaviour
     public event Action<TraitTier, int> OnTraitPointChanged;
 
     public IReadOnlyList<TraitData> Traits => traitData;
+
+    // 세이브 시스템이 현재 상태를 읽어갈 때 쓰는 읽기 전용 뷰입니다.
+    public IReadOnlyDictionary<TraitId, int> LevelsSnapshot => _levels;
+    public IReadOnlyDictionary<TraitTier, int> PointsSnapshot => _pointsByTier;
 
     // 특성 이름+레벨별 효과 설명은 LocalizationManager의 "플레이어 특성" 항목에서 한 줄로 합쳐 관리한다.
     private static readonly Dictionary<TraitId, string> LocalizationKeysById = new()
@@ -152,6 +157,31 @@ public class TraitController : MonoBehaviour
         OnTraitLevelChanged?.Invoke(id, nextLevel);
         OnTraitChanged?.Invoke();
         return true;
+    }
+
+    /// <summary>
+    /// 이어하기 복원 전용입니다. 포인트 차감이나 ApplyImmediateTraitEffect 같은 부수효과 없이
+    /// 레벨/포인트 값만 그대로 덮어씁니다. (저장된 스탯 값에 특성 효과가 이미 반영돼 있어 다시 적용하면 중복됩니다.)
+    /// </summary>
+    public void RestoreState(IReadOnlyDictionary<TraitId, int> levels, IReadOnlyDictionary<TraitTier, int> pointsByTier)
+    {
+        _levels.Clear();
+        _pointsByTier.Clear();
+        InitializeRuntimeState();
+
+        if (levels != null)
+        {
+            foreach (var kv in levels)
+                _levels[kv.Key] = kv.Value;
+        }
+
+        if (pointsByTier != null)
+        {
+            foreach (var kv in pointsByTier)
+                _pointsByTier[kv.Key] = kv.Value;
+        }
+
+        OnTraitChanged?.Invoke();
     }
 
     public float GetGoldMultiplier()

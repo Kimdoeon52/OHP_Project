@@ -15,6 +15,9 @@ public class RunSnapshot
     public PlayerSnapshot player = new PlayerSnapshot();
     public List<ItemDTO> inventory = new List<ItemDTO>();   // 가방 아이템
     public List<EquipDTO> equipped = new List<EquipDTO>();  // 장착 슬롯
+
+    public List<TraitDTO> traitLevels = new List<TraitDTO>();       // 찍은 특성 레벨
+    public List<TraitPointDTO> traitPoints = new List<TraitPointDTO>(); // 티어별 남은 특성 포인트
 }
 
 [Serializable]
@@ -57,4 +60,20 @@ public class EquipDTO
     public int slot;                 // EquipmentSlot
     public int slotIndex;            // 반지 0/1 구분
     public ItemDTO item = new ItemDTO();
+}
+
+// 특성 하나의 저장 레벨. level 0인 특성은 저장 목록에서 제외한다.
+[Serializable]
+public class TraitDTO
+{
+    public int traitId;              // TraitId
+    public int level;
+}
+
+// 티어별 남은(아직 안 쓴) 특성 포인트.
+[Serializable]
+public class TraitPointDTO
+{
+    public int tier;                 // TraitTier
+    public int point;
 }

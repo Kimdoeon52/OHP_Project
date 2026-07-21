@@ -80,8 +80,48 @@ public static class SaveManager
         snap.player = BuildPlayerSnapshot();
         snap.inventory = BuildInventory();
         snap.equipped = BuildEquipped();
+        snap.traitLevels = BuildTraitLevels();
+        snap.traitPoints = BuildTraitPoints();
 
         return snap;
+    }
+
+    private static List<TraitDTO> BuildTraitLevels()
+    {
+        var list = new List<TraitDTO>();
+
+        TraitController trait = TraitController.FindAvailableInstance();
+        if (trait == null)
+            return list;
+
+        foreach (var kv in trait.LevelsSnapshot)
+        {
+            if (kv.Value <= 0)
+                continue;
+
+            list.Add(new TraitDTO { traitId = (int)kv.Key, level = kv.Value });
+        }
+
+        return list;
+    }
+
+    private static List<TraitPointDTO> BuildTraitPoints()
+    {
+        var list = new List<TraitPointDTO>();
+
+        TraitController trait = TraitController.FindAvailableInstance();
+        if (trait == null)
+            return list;
+
+        foreach (var kv in trait.PointsSnapshot)
+        {
+            if (kv.Value <= 0)
+                continue;
+
+            list.Add(new TraitPointDTO { tier = (int)kv.Key, point = kv.Value });
+        }
+
+        return list;
     }
 
     public static List<int> BuildChallenges()

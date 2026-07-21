@@ -80,7 +80,7 @@ MonoBehaviour:
   - eventId: 49
     cue: {fileID: 11400000, guid: 604f44cfebc679b48929cd3e8ff6162f, type: 2}
   - eventId: 50
-    cue: {fileID: 0}
+    cue: {fileID: 11400000, guid: 604f44cfebc679b48929cd3e8ff6162f, type: 2}
   - eventId: 51
     cue: {fileID: 11400000, guid: 604f44cfebc679b48929cd3e8ff6162f, type: 2}
   - eventId: 52
@@ -103,3 +103,5 @@ MonoBehaviour:
     cue: {fileID: 11400000, guid: 7a3cc4b87688d174ebe7c2a3c1d7b6a9, type: 2}
   - eventId: 56
     cue: {fileID: 11400000, guid: cd5214853f6ff4645b003577f4d62987, type: 2}
+  - eventId: 37
+    cue: {fileID: 11400000, guid: 7c719084a4084224d9175df4b008814a, type: 2}

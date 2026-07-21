@@ -44,6 +44,9 @@ public static class RunRestorer
         // 이어하기는 저장된 그 런의 골드 그대로 복원 (이월 골드 아님).
         Wallet.Instance?.SetBalance(snap.gold);
 
+        // 특성은 부수효과(포인트 차감/즉시 스탯 적용) 없이 값만 복원 — 아래 ApplyStats가 최종 스탯을 절대값으로 덮어씀.
+        RestoreTraits(snap);
+
         // 레벨 먼저 — 장착 요구레벨 검증에 쓰임.
         PlayerLevelSystem.Instance?.SetLevelExp(p.level, p.exp);
 
@@ -68,6 +71,29 @@ public static class RunRestorer
     private static void ApplyStats(PlayerSnapshot p)
     {
         NYHPlayerStats.Instance?.SetStats(p.maxHealth, p.strength, p.moveSpeed, p.attackSpeed, p.accuracy, p.defense, p.evasion, p.hunger);
+    }
+
+    private static void RestoreTraits(RunSnapshot snap)
+    {
+        TraitController trait = TraitController.FindAvailableInstance();
+        if (trait == null)
+            return;
+
+        var levels = new Dictionary<TraitId, int>();
+        if (snap.traitLevels != null)
+        {
+            foreach (TraitDTO dto in snap.traitLevels)
+                levels[(TraitId)dto.traitId] = dto.level;
+        }
+
+        var points = new Dictionary<TraitTier, int>();
+        if (snap.traitPoints != null)
+        {
+            foreach (TraitPointDTO dto in snap.traitPoints)
+                points[(TraitTier)dto.tier] = dto.point;
+        }
+
+        trait.RestoreState(levels, points);
     }
 
     private static void RestoreInventory(List<ItemDTO> dtos, ItemDatabase db)
