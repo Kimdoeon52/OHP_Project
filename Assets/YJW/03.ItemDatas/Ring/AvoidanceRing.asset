@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 7005
   itemName: "\uD68C\uD53C\uC758 \uBC18\uC9C0"
-  description: "\uD22C\uCC99 \uBB34\uAE30\uAC00 \uB354 \uB0A0\uCE74\uB86D\uAC8C,
-    \uB354 \uAE4A\uC774 \uAF42\uD78C\uB2E4."
+  description: "발걸음이 가벼워지고 반사 신경이 예민해진다. 공격을 피하기 한결 쉬워진다."
   icon: {fileID: -5888383426924168068, guid: a7d8baf5f39a0fc4f9f8e2efc0ed06fa, type: 3}
   itemType: 0
   slot: 3

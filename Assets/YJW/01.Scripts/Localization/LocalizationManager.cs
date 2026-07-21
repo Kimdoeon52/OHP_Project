@@ -552,8 +552,8 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.English, "Reinforce Scroll" }
         }},
         { "item_desc_1002", new Dictionary<Language, string> {
-            { Language.Korean, "어둠의 기운이 씻겨 나간다. 저주 받은 장비를 다시 내 것으로." },
-            { Language.English, "The dark energy is washed away. Reclaim your cursed gear as your own." }
+            { Language.Korean, "고대의 문자가 무기에 깃든다. 날은 더 예리해지고, 갑옷은 더 단단해진다." },
+            { Language.English, "Ancient script settles into the gear. The blade grows sharper, the armor grows tougher." }
         }},
         { "item_name_1003", new Dictionary<Language, string> {
             { Language.Korean, "감정 스크롤" },
@@ -568,8 +568,8 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.English, "Purify Scroll" }
         }},
         { "item_desc_1004", new Dictionary<Language, string> {
-            { Language.Korean, "고대의 문자가 무기에 깃든다. 날은 더 예리해지고, 갑옷은 더 단단해진다." },
-            { Language.English, "Ancient script settles into the gear. The blade grows sharper, the armor grows tougher." }
+            { Language.Korean, "어둠의 기운이 씻겨 나간다. 저주 받은 장비를 다시 내 것으로." },
+            { Language.English, "The dark energy is washed away. Reclaim your cursed gear as your own." }
         }},
         //------------------------------------------ 아이템 - 근접무기
         { "item_name_5001", new Dictionary<Language, string> {
