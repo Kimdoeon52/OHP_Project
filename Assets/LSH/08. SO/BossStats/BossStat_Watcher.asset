@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1610b6ac2ec4817aa094c392900c5af, type: 3}
   m_Name: BossStat_Watcher
   m_EditorClassIdentifier: 
-  hp: 250
-  enhancedHp: 400
+  hp: 300
+  enhancedHp: 500
   defenseMin: 0
   defenseMax: 0
   enhancedDefenseMin: 0
