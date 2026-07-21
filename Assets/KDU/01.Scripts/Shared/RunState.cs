@@ -28,6 +28,7 @@ public class RunState : Singleton<RunState>
     {
         RunSeed = seed;
         CurrentDepth = depth;
+        StartingItemGranter.ResetForNewRun();
         GameEvents.OnDepthChanged?.Invoke(CurrentDepth);
     }
 }

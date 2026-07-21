@@ -91,11 +91,10 @@ public class GridChest : MonoBehaviour
         if (_opened || data == null || _player == null || _player.IsDead) 
             return;
 
-        int dist = Mathf.Abs(_player.GridPosition.x - GridPosition.x) + Mathf.Abs(_player.GridPosition.y - GridPosition.y);
+        // 플레이어와 겹친 상자만 열림
+        bool overlapping = _player.GridPosition == GridPosition;
 
-        bool adjacent = dist <= 1;
-
-        if (!adjacent)
+        if (!overlapping)
         {
             _openProgress = 0f;
             return;

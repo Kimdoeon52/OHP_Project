@@ -70,6 +70,9 @@ public class MoveScene : MonoBehaviour
 
     public void StartChallenge()
     {
+        // 챌린지도 새 런이므로 기존 저장을 폐기해 선택한 챌린지로 1층부터 시작하게 한다.
+        SaveManager.Delete();
+
         // 챌린지 전용 씬 또는 챌린지 모드 초기화 씬이 생기면 challengeSceneName만 바꾸면 된다.
         LoadThroughLoadingScene(challengeSceneName);
     }
