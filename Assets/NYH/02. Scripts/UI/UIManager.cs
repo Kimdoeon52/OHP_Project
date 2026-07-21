@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace PrototypeRT
@@ -81,6 +82,9 @@ namespace PrototypeRT
         [Header("Confirm Panels")]
         [Tooltip("게임 종료 확인창 패널.")]
         [SerializeField] private GameObject gameExitPanel;
+        [Tooltip("게임 종료/메인 화면 이동 확인창 뒤에서 클릭을 막는 공용 배경입니다. 확인창과 함께 켜고 끕니다.")]
+        [FormerlySerializedAs("gameExitBG")]
+        [SerializeField] private GameObject confirmModalBG;
         [Tooltip("메인 화면 이동 확인창 패널.")]
         [SerializeField] private GameObject goToMainPanel;
 
@@ -104,6 +108,7 @@ namespace PrototypeRT
         private SystemTab _currentSystemTab;
         private bool _lastWindowActive;
         private GameObject _topModalPanel;
+        private GameObject _topModalBackground;
 
         // 탭 버튼별 원래 Normal 색 (선택 표시 해제용)
         private readonly Dictionary<Button, Color> _tabNormalColors = new Dictionary<Button, Color>();
@@ -260,12 +265,12 @@ namespace PrototypeRT
 
         public void OpenGameExitPanel()
         {
-            OpenModalPanel(gameExitPanel);
+            OpenModalPanel(gameExitPanel, confirmModalBG);
         }
 
         public void OpenGoToMainPanel()
         {
-            OpenModalPanel(goToMainPanel);
+            OpenModalPanel(goToMainPanel, confirmModalBG);
         }
 
         public void CloseTopModalPanel()
@@ -273,7 +278,10 @@ namespace PrototypeRT
             if (_topModalPanel != null && _topModalPanel.activeSelf)
             {
                 _topModalPanel.SetActive(false);
+                if (_topModalBackground != null)
+                    _topModalBackground.SetActive(false);
                 _topModalPanel = null;
+                _topModalBackground = null;
                 SyncInventoryInput();
                 SyncUiInputBlock();
                 return;
@@ -370,7 +378,7 @@ namespace PrototypeRT
             SetActive(videoSettingPanel, tab == SystemTab.VideoSetting);
         }
 
-        private void OpenModalPanel(GameObject panel)
+        private void OpenModalPanel(GameObject panel, GameObject background)
         {
             if (panel == null) return;
 
@@ -378,9 +386,17 @@ namespace PrototypeRT
                 windowRoot.SetActive(true);
 
             CloseAllModalPanels();
+
+            if (background != null)
+            {
+                background.SetActive(true);
+                background.transform.SetAsLastSibling();
+            }
+
             panel.SetActive(true);
             panel.transform.SetAsLastSibling();
             _topModalPanel = panel;
+            _topModalBackground = background;
             SyncInventoryInput();
             SyncUiInputBlock();
         }
@@ -406,8 +422,10 @@ namespace PrototypeRT
         private void CloseAllModalPanels()
         {
             SetActive(gameExitPanel, false);
+            SetActive(confirmModalBG, false);
             SetActive(goToMainPanel, false);
             _topModalPanel = null;
+            _topModalBackground = null;
         }
 
         private void SyncInventoryInput()

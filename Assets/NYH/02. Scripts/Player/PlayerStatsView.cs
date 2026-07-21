@@ -243,12 +243,10 @@ public class PlayerStatsView : MonoBehaviour
 
     }
 
-    // 배고픔 수치(0~10)를 GDD 8.4 구간에 맞는 상태 이름으로 변환한다 (굶주림/배고픔/보통/배부름).
+    // 배고픔 수치(0~10)를 숫자 표시로 변환한다. 예: 10/10
     private static string BuildHungerStatusDisplay(int hungry)
     {
-        HungerStatus status = NYHHungerStatusCalculator.GetStatus(hungry);
-        string key = NYHHungerStatusCalculator.GetLocalizationKey(status);
-        return LocalizationManager.GetOrDefault(key, status.ToString());
+        return $"{hungry}/10";
     }
 
     // 실제 스탯에서 미감정 장비의 숨긴 강화분을 빼 표시용 값을 만든다.
