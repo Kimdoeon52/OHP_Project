@@ -159,6 +159,9 @@ public class FloorTransitionController : MonoBehaviour
             // 로드 부팅 — 장비 초기화(Start) 이후이므로 여기서 플레이어/인벤/장비 복원.
             RunRestorer.ApplyState(_pendingLoad);
             _pendingLoad = null;
+
+            // 세이브에 골드가 이미 들어있으니 캐리오버는 적용 안 하고 남은 값만 정리.
+            GoldCarryOver.Clear();
         }
         else
         {

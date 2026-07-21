@@ -22,10 +22,11 @@ public class Wallet : Singleton<Wallet>
         GameEvents.OnRunCleared -= OnRunCleared;
     }
 
-    // 사망 시 골드 전액 소실
+    // 사망 시 골드 전액 소실. 넘겨받을 캐리오버도 비워 다음 런에 새지 않게
     private void OnPlayerDied()
     {
         Balance = 0;
+        GoldCarryOver.Clear();
         GameEvents.OnGoldChanged?.Invoke(Balance);
     }
 
