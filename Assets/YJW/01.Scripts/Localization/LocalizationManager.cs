@@ -772,8 +772,8 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.English, "Cloth Armor" }
         }},
         { "item_desc_4001", new Dictionary<Language, string> {
-            { Language.Korean, "촘촘히 엮인 쇠사슬이 날카로운 것들을 막아낸다." },
-            { Language.English, "Tightly woven chain links turn aside anything sharp." }
+            { Language.Korean, "보잘것없어 보여도 없는 것보다는 낫다. 모험의 시작." },
+            { Language.English, "Looks pitiful, but better than nothing.\nThe start of an adventure." }
         }},
         { "item_name_4002", new Dictionary<Language, string> {
             { Language.Korean, "가죽 갑옷" },
@@ -788,8 +788,8 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.English, "Chainmail" }
         }},
         { "item_desc_4003", new Dictionary<Language, string> {
-            { Language.Korean, "보잘것없어 보여도 없는 것보다는 낫다. 모험의 시작." },
-            { Language.English, "Looks pitiful, but better than nothing.\nThe start of an adventure." }
+            { Language.Korean, "촘촘히 엮인 쇠사슬이 날카로운 것들을 막아낸다." },
+            { Language.English, "Tightly woven chain links turn aside anything sharp." }
         }},
         { "item_name_4004", new Dictionary<Language, string> {
             { Language.Korean, "황금 갑옷" },
