@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -168,6 +169,16 @@ namespace PrototypeRT
 
             Vector2Int res = _resolutions[resIndex];
             Screen.SetResolution(res.x, res.y, ScreenModes[modeIndex]);
+            StartCoroutine(ForceTmpRedrawNextFrame());
+        }
+
+        // 화면 모드 전환(디바이스 재생성) 직후 TMP 텍스트가 다시 그려지지 않는 빌드 전용 버그 대응.
+        private IEnumerator ForceTmpRedrawNextFrame()
+        {
+            yield return null;
+            TMP_Text[] texts = FindObjectsByType<TMP_Text>(FindObjectsSortMode.None);
+            foreach (TMP_Text t in texts)
+                t.SetAllDirty();
         }
 
         private void Save()
