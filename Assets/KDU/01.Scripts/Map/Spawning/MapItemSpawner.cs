@@ -411,7 +411,7 @@ public class MapItemSpawner : MonoBehaviour
         ItemPickup pickup = Instantiate(itemPickupPrefab, pos, Quaternion.identity);
         pickup.itemSO = item;
         pickup.enhanceLevel = item.CanEnhance ? ItemRoll.Enhance(rng) : 0;
-        pickup.curse = item.CanCurse && ItemRoll.IsCurseEligible(item) ? ItemRoll.Curse(rng, cursePool) : null;
+        pickup.curse = item.CanCurse && ItemRoll.IsCurseEligible(item) ? ItemRoll.Curse(rng, cursePool, item.Slot) : null;
         pickup.Initialize(cell);
         _spawned.Add(pickup.gameObject);
 

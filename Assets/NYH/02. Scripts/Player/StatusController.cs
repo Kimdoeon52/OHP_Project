@@ -31,6 +31,7 @@ public class StatusController : MonoBehaviour
 
     private readonly List<ActiveStatus> _statuses = new();
     private IDamageable _damageable;
+    private bool _isPlayerStatusController; // 플레이어 소속 여부 — 보스전 구독 범위 한정용
 
     /// <summary>
     /// 상태 목록이 추가/갱신/삭제될 때 호출됩니다.
@@ -57,6 +58,20 @@ public class StatusController : MonoBehaviour
     private void Awake()
     {
         _damageable = GetComponent<IDamageable>();
+        // GridPlayerHealth가 같은 오브젝트에 있으면 플레이어 소속으로 판정합니다.
+        _isPlayerStatusController = GetComponent<GridPlayerHealth>() != null;
+    }
+
+    private void OnEnable()
+    {
+        if (_isPlayerStatusController)
+            GameEvents.OnBossFightStarted += ClearAllExceptHunger;
+    }
+
+    private void OnDisable()
+    {
+        if (_isPlayerStatusController)
+            GameEvents.OnBossFightStarted -= ClearAllExceptHunger;
     }
 
     private void Update()
@@ -227,6 +242,30 @@ public class StatusController : MonoBehaviour
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// 보스방 입장 시 굶주림(Hunger)을 제외한 모든 상태이상을 강제 해제합니다.
+    /// GameEvents.OnBossFightStarted에 구독되어 자동으로 호출됩니다.
+    /// </summary>
+    public void ClearAllExceptHunger()
+    {
+        if (_statuses.Count == 0) return;
+
+        bool changed = false;
+        for (int i = _statuses.Count - 1; i >= 0; i--)
+        {
+            if (_statuses[i].Type == StatusType.Hunger) continue;
+
+            _statuses.RemoveAt(i);
+            changed = true;
+        }
+
+        if (changed)
+        {
+            RaiseStatusChanged();
+            Debug.Log("[StatusController] 보스전 시작: 굶주림을 제외한 모든 상태이상을 해제했습니다.");
+        }
     }
 
     private void TickStatuses(float deltaTime)

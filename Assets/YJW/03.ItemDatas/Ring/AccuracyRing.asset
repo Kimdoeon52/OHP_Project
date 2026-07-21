@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 7006
   itemName: "\uC815\uD655\uC131\uC758 \uBC18\uC9C0"
-  description: "\uD22C\uCC99 \uBB34\uAE30\uAC00 \uB354 \uB0A0\uCE74\uB86D\uAC8C,
-    \uB354 \uAE4A\uC774 \uAF42\uD78C\uB2E4."
+  description: "시야가 또렷해지고 손끝이 안정된다. 공격이 더 정확하게 적중한다."
   icon: {fileID: 3731750801302771727, guid: acf3cc6a9178d7a4e80b50be8c79fb62, type: 3}
   itemType: 0
   slot: 3
