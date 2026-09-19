@@ -73,9 +73,7 @@ public class EnemySpider : EnemyBase
         );
 
         // StatusController 없으면 자동 부착 후 상태 적용
-        StatusController controller = component.GetComponent<StatusController>();
-        if (controller == null)
-            controller = component.gameObject.AddComponent<StatusController>();
+        StatusController controller = component.GetOrAddComponent<StatusController>();
         controller.ApplyStatus(request);
 
         // 상태이상 발동 전역 이벤트 알림 (UI / 사운드 구독자용)

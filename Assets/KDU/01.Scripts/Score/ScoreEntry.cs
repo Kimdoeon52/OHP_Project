@@ -10,6 +10,7 @@ public class ScoreEntry
     public int challengeCount;
     public int seed;
     public string date;       // 기록 시각 (yyyy-MM-dd HH:mm)
+    public bool daily;        // 일일 챌린지 런 (세계 순위 비교 제외)
 
     public int killCount;                                  // 총 처치 수
     public List<int> challenges = new List<int>();         // 활성 ChallengeType

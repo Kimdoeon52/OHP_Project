@@ -5,7 +5,7 @@
 
 ## 핵심 원칙
 
-**살아남을 코어는 제대로, 단발 기능은 가볍게.** 본 개발이라고 모든 코드를 추상화 강박으로 짜지 말 것. 4개월 안에 출품해야 한다.
+**살아남을 코어는 제대로, 단발 기능은 가볍게.** 모든 코드를 추상화 강박으로 짜지 말 것. 1인 개발로 출시까지 가야 한다.
 
 ## 티어 구분
 
@@ -120,7 +120,7 @@ public class GridPlayer : MonoBehaviour {
 
 ## 디렉토리 구조
 
-기능별 폴더 + `[티어 1]`/`[티어 2]` 태그. 팀원별 `Assets/{이니셜}/`. 코어는 KDU 폴더에 모이고, 다른 팀원은 본인 폴더에서 같은 패턴.
+기능별 폴더 + `[티어 1]`/`[티어 2]` 태그. `Assets/{이니셜}/`는 출품 당시 팀원별 폴더 — 1인 개발로 전환 후에도 참조 깨짐 방지 위해 그대로 유지. 새 코드는 KDU 기능 폴더에.
 
 ```
 Assets/
@@ -144,20 +144,25 @@ Assets/
 │   │   ├── Turn/                       # [티어 1] TurnManager
 │   │   ├── Vision/                     # [티어 1] VisionSystem
 │   │   ├── Shared/                     # GameFlow, CameraFollow, DebugUI, FogRenderer, TelegraphIndicator
+│   │   ├── Challenge/                  # [티어 2] 챌린지 토글/선택, DailyChallenge(KST 날짜 키·시드)
+│   │   ├── Score/                      # [티어 2] 점수·로컬 기록판, 랭킹 창(RankingWindow 탭 전환, LeaderboardPanel, RankRow)
+│   │   ├── Steam/                      # [티어 2] SteamBootstrap(자동 초기화), SteamLeaderboard(일일·전체 보드)
 │   │   ├── Util/                       # Singleton 등
 │   │   └── MarkDown/                   # 작업 명세
 │   ├── 02.SOData/                      # SO 인스턴스 (.asset)
 │   └── 03.Prefab/                      # 프리팹 (보스층 고정 맵 프리팹 포함)
 ├── LSH/                                # 보스
 │   └── 02.Scripts/Boss/                # [티어 2] BossBase, BossWatcher, BossImmortalKing, BossHades
-└── (다른 팀원 — 합류 시 같은 패턴)
+└── KKH/NYH/YJW 등                    # 출품 당시 팀원 폴더 — 그대로 유지
 
-# 미생성: _DoNotShip/ (GPL 격리, 빌드 제외), 자체 에셋·공용 UI 씬 (팀 협의 후)
+# 미생성: _DoNotShip/ (GPL 격리, 빌드 제외), 자체 에셋·공용 UI 씬
 ```
 
-**특이점**: `Grid/Player`, `Grid/Enemies`, `Grid/Items`는 티어 2가 티어 1 폴더에 중첩된 프로토 잔재 — 분리 여부 팀 회의. `Builders/Painters/Feelings/Spawning`은 Phase 2 이후 신설. Feelings는 3종 고정. 보스층은 `MapGenerator` → `BossRoomLoader` 분기.
+**특이점**: `Grid/Player`, `Grid/Enemies`, `Grid/Items`는 티어 2가 티어 1 폴더에 중첩된 프로토 잔재 — 분리는 필요할 때만(1인 개발에선 우선순위 낮음). `Builders/Painters/Feelings/Spawning`은 Phase 2 이후 신설. Feelings는 3종 고정. 보스층은 `MapGenerator` → `BossRoomLoader` 분기.
 
-## 팀 분담
+## 팀 분담 (출품 당시 기록)
+
+출품 이후 **1인 개발**. 아래 표는 어느 폴더에 무엇이 있는지 찾는 지도로만 사용.
 
 | 담당 | 폴더 | 주 작업 |
 |------|------|---------|
@@ -167,7 +172,7 @@ Assets/
 | 멤버 D (적/함정) | `Assets/{이니셜}/` | 몬스터·스폰 규칙·함정 |
 | 멤버 E (아이템/UI) | `Assets/{이니셜}/` | 포션/스크롤·UI·Safe Room·상점 |
 
-**코어 영역(KDU 폴더 내)** — 변경 시 PR 리뷰 필수: `Grid, Map, Time, Turn, Vision, Events, Entities, Data`
+**코어 영역(KDU 폴더 내)** — 변경 시 결정론·연결성 점검 후 커밋: `Grid, Map, Time, Turn, Vision, Events, Entities, Data`
 
 ## 도언(PM/맵) 작업 시 응답 스타일
 

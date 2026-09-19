@@ -54,9 +54,7 @@ public static class TrapEffectUtility
 
         if (entity is Component component)
         {
-            StatusController controller = component.GetComponent<StatusController>();
-            if (controller == null)
-                controller = component.gameObject.AddComponent<StatusController>();
+            StatusController controller = component.GetOrAddComponent<StatusController>();
             controller.ApplyStatus(request);
         }
     }

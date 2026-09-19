@@ -126,7 +126,11 @@ public class ScoreSystem : Singleton<ScoreSystem>
         r.finalScore = Mathf.RoundToInt(r.baseScore * r.multiplier);
 
         LastResult = r;
-        Scoreboard.Submit(r, SaveManager.BuildEquipped(), SaveManager.BuildChallenges());
+
+        // 시드 직접 입력 런은 기록 제외
+        bool customSeed = ChallengeState.Instance != null && ChallengeState.Instance.HasCustomSeed;
+        if (!customSeed)
+            Scoreboard.Submit(r, SaveManager.BuildEquipped(), SaveManager.BuildChallenges());
         GameEvents.OnScoreFinalized?.Invoke(r);
     }
 }

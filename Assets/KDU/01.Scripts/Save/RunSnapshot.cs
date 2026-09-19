@@ -11,6 +11,8 @@ public class RunSnapshot
     public int gold;                 // 진입 시점 지갑 잔액
 
     public List<int> challenges = new List<int>();          // 활성 ChallengeType
+    public string dailyKey;                                 // 일일 챌린지 날짜 키, 일반 런이면 빈 값
+    public bool customSeed;                                 // 시드 직접 입력 런 (로컬·전체 랭킹 제외)
 
     public PlayerSnapshot player = new PlayerSnapshot();
     public List<ItemDTO> inventory = new List<ItemDTO>();   // 가방 아이템

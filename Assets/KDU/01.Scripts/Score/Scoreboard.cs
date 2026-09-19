@@ -39,6 +39,7 @@ public static class Scoreboard
             challengeCount = result.challengeCount,
             seed = result.seed,
             date = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
+            daily = ChallengeState.Instance != null && ChallengeState.Instance.IsDaily,
             killCount = result.killCount,
             challenges = challenges ?? new List<int>(),
             equipped = equipped ?? new List<EquipDTO>()

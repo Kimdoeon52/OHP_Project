@@ -8,6 +8,8 @@ using TMPro;
 public class ScoreDetailPopup : MonoBehaviour
 {
     [Header("텍스트")]
+    [Tooltip("기록한 유저 이름 (선택)")]
+    [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text infoText;
     [SerializeField] private TMP_Text killText;
     [SerializeField] private TMP_Text challengeText;
@@ -22,6 +24,7 @@ public class ScoreDetailPopup : MonoBehaviour
     [SerializeField] private Button closeButton;
 
     private ScoreEntry _current;
+    private string _playerName;
 
     private void Awake()
     {
@@ -41,13 +44,14 @@ public class ScoreDetailPopup : MonoBehaviour
             LocalizationManager.Instance.OnLanguageChanged -= Refresh;
     }
 
-    // 선택된 기록으로 갱신 후 열기
-    public void Open(ScoreEntry entry)
+    // 선택된 기록으로 갱신 후 열기 (이름 없으면 이름 칸 숨김)
+    public void Open(ScoreEntry entry, string playerName = null)
     {
         if (entry == null)
             return;
 
         _current = entry;
+        _playerName = playerName;
         gameObject.SetActive(true);
         Refresh();
     }
@@ -62,6 +66,12 @@ public class ScoreDetailPopup : MonoBehaviour
     {
         if (_current == null)
             return;
+
+        if (nameText != null)
+        {
+            nameText.text = _playerName;
+            nameText.gameObject.SetActive(!string.IsNullOrEmpty(_playerName));
+        }
 
         if (infoText != null)
             infoText.text = $"{_current.date}\nSeed {_current.seed}\n{_current.reachedDepth}F · {_current.finalScore:N0}";

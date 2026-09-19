@@ -45,9 +45,17 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "순위표" },
             { Language.English, "Ranking" }
         }},
-        { "msg_일반순위표", new Dictionary<Language, string> {
-            { Language.Korean, "일반 순위표" },
-            { Language.English, "Normal Ranking" }
+        { "msg_전체순위표", new Dictionary<Language, string> {
+            { Language.Korean, "전체 순위표" },
+            { Language.English, "Global Ranking" }
+        }},
+        { "msg_시드순위표", new Dictionary<Language, string> {
+            { Language.Korean, "일일 시드 챌린지 순위표" },
+            { Language.English, "Daily Seed Ranking" }
+        }},
+        { "msg_내순위표", new Dictionary<Language, string> {
+            { Language.Korean, "로컬 순위표" },
+            { Language.English, "Local Ranking" }
         }},
         //------------------------------------------ 순위표 상세 팝업
         { "msg_정보", new Dictionary<Language, string> {
@@ -1037,6 +1045,51 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
         { "challenge_desc_VisionLimit", new Dictionary<Language, string> {
             { Language.Korean, "저승의 어둠이 시야를 좁힌다. \n기본 시야가 2칸 감소한다." },
             { Language.English, "The darkness of the underworld narrows your sight.\nBase vision is reduced by 2 tiles." }
+        }},
+        //------------------------------------------- Steam 랭킹 / 일일 챌린지
+        { "leaderboard.offline", new Dictionary<Language, string> {
+            { Language.Korean, "Steam에 연결되어 있지 않습니다" },
+            { Language.English, "Not connected to Steam" }
+        }},
+        { "leaderboard.loading", new Dictionary<Language, string> {
+            { Language.Korean, "불러오는 중..." },
+            { Language.English, "Loading..." }
+        }},
+        { "leaderboard.failed", new Dictionary<Language, string> {
+            { Language.Korean, "랭킹을 불러오지 못했습니다" },
+            { Language.English, "Failed to load rankings" }
+        }},
+        { "leaderboard.empty", new Dictionary<Language, string> {
+            { Language.Korean, "아직 기록이 없습니다" },
+            { Language.English, "No records yet" }
+        }},
+        { "bt_일일챌린지", new Dictionary<Language, string> {
+            { Language.Korean, "일일 챌린지" },
+            { Language.English, "Daily Challenge" }
+        }},
+        { "bt_랭킹", new Dictionary<Language, string> {
+            { Language.Korean, "랭킹" },
+            { Language.English, "Ranking" }
+        }},
+        { "bt_전체랭킹", new Dictionary<Language, string> {
+            { Language.Korean, "전체 랭킹" },
+            { Language.English, "Global" }
+        }},
+        { "bt_내순위", new Dictionary<Language, string> {
+            { Language.Korean, "내 순위" },
+            { Language.English, "My Rank" }
+        }},
+        { "bt_내기록", new Dictionary<Language, string> {
+            { Language.Korean, "내 기록" },
+            { Language.English, "My Records" }
+        }},
+        { "bt_도전", new Dictionary<Language, string> {
+            { Language.Korean, "도전" },
+            { Language.English, "Play" }
+        }},
+        { "msg_초기화까지", new Dictionary<Language, string> {
+            { Language.Korean, "초기화까지" },
+            { Language.English, "Resets in" }
         }},
         //------------------------------------------- 상점
         { "msg_골드", new Dictionary<Language, string> {

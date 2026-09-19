@@ -71,10 +71,16 @@ public class FloorTransitionController : MonoBehaviour
     // 타이틀 씬에서 넘어온 챌린지 선택과 시드를 적용하고 고정한다.
     private void ApplyPendingChallenges()
     {
+        // 일일 챌린지 재시작이 자정을 넘겼으면 오늘 시드로 갱신
+        if (ChallengeSelection.IsDaily && DailyChallenge.TryGetTodayKey(out string today))
+            ChallengeSelection.SetDaily(today);
+
         ChallengeState cs = ChallengeState.Ensure();
         if (cs != null)
         {
             cs.Configure(ChallengeSelection.PendingTypes);
+            cs.SetDaily(ChallengeSelection.DailyKey);
+            cs.SetCustomSeed(ChallengeSelection.HasSeed && !ChallengeSelection.IsDaily);
             cs.Lock();
         }
 

@@ -51,6 +51,7 @@ public static class GameEvents
     public static Action<ScoreResult> OnScoreFinalized; // 런 종료 점수 확정 — 결산 UI가 구독
     public static Action<int> OnDepthChanged;           // 현재 층 변경 — HUD가 구독
     public static Action<int> OnScoreChanged;           // 진행 중 점수 변동 — HUD가 구독
+    public static Action<SteamLeaderboard.Board, int> OnLeaderboardUploaded; // Steam 랭킹 업로드 완료 — 보드, 전역 순위
 
     // 오디오
     public static Action<AudioEventId> OnAudioEventRequested;
@@ -95,6 +96,7 @@ public static class GameEvents
         OnScoreFinalized = null;            // 점수 확정
         OnDepthChanged = null;              // 층 변경
         OnScoreChanged = null;              // 진행 중 점수 변동
+        OnLeaderboardUploaded = null;       // Steam 랭킹 업로드
         OnAudioEventRequested = null;        // 오디오 이벤트
         OnPlayerNoticeRequested = null;      // 플레이어 알림
         CombatTextCriticalContext.Clear();  // 전투 텍스트 초기화

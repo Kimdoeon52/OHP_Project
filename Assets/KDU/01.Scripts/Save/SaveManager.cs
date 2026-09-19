@@ -76,6 +76,8 @@ public static class SaveManager
         snap.depth = run.CurrentDepth;
         snap.gold = Wallet.Instance != null ? Wallet.Instance.Balance : 0;
         snap.challenges = BuildChallenges();
+        snap.dailyKey = ChallengeState.Instance != null ? ChallengeState.Instance.DailyKey : null;
+        snap.customSeed = ChallengeState.Instance != null && ChallengeState.Instance.HasCustomSeed;
 
         snap.player = BuildPlayerSnapshot();
         snap.inventory = BuildInventory();

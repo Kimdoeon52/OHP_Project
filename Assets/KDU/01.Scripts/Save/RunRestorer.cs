@@ -25,6 +25,8 @@ public static class RunRestorer
             }
 
             cs.Configure(types);
+            cs.SetDaily(snap.dailyKey);
+            cs.SetCustomSeed(snap.customSeed);
             cs.Lock();
         }
     }

@@ -1,7 +1,7 @@
-# BACKLOG.md — 출품 이후로 미룬 항목
+# BACKLOG.md — 미룬 항목
 
-> 출품 범위(3영역 · 15층 · 3보스 · 챌린지 모드)에 포함되지 않거나, 출품 후 개선/확장으로 미룬 작업 모음.
-> 출품 범위는 `CLAUDE.md` / `SCOPE_AND_ROADMAP.md` 참조. GDD 기준 명세는 `Stolen_Time_GDD_v1_3.docx`.
+> 출품(완료) 범위에서 빠졌거나 개선/확장으로 미룬 작업 모음. **현재 Steam 출시 버전 단계** — 각 항목은 출시 포함 여부를 분류한다 (1인 개발).
+> 출시 스코프는 `CLAUDE.md` / `SCOPE_AND_ROADMAP.md` 0절 참조. GDD 기준 명세는 `Stolen_Time_GDD_v1_3.docx`.
 
 ---
 
@@ -25,7 +25,10 @@
 
 ## 그 외 미룬 항목 (자리표시자 — 채워 나갈 것)
 
-- 일일 챌린지 / 공유 시드 랭킹 (GDD 13장 P2)
 - 영역별 페인터 풀 (Sewer 1~5 / Dungeon 6~10 / Hell 11~15) — `MAP_GENERATION.md` Phase 5
 - 더 다양한 빌더 (FigureEight 외) — `MAP_GENERATION.md` Phase 5
-- 폴리싱 (이펙트, 사운드 디테일 등) — 4개월차 마지막 스프린트
+- 폴리싱 (이펙트, 사운드 디테일 등) — 출시 전 폴리싱 스프린트
+
+## 출시 스코프로 이동한 항목
+
+- 일일 챌린지 / Steam 랭킹 (GDD 13장 P2 → 출시 범위) — `SCOPE_AND_ROADMAP.md` 0절

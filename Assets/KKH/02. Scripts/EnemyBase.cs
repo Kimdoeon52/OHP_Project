@@ -112,9 +112,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
         // Animator 자동 캐싱 (자식 오브젝트까지 탐색)
         _animator = GetComponent<Animator>();
         if (_animator == null) _animator = GetComponentInChildren<Animator>();
-        _statusController = GetComponent<StatusController>();
-        if (_statusController == null)
-            _statusController = gameObject.AddComponent<StatusController>();
+        _statusController = gameObject.GetOrAddComponent<StatusController>();
 
         if (data == null)
         {
@@ -660,9 +658,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
             null // trapSource: 적 공격이므로 null
         );
 
-        StatusController controller = component.GetComponent<StatusController>();
-        if (controller == null)
-            controller = component.gameObject.AddComponent<StatusController>();
+        StatusController controller = component.GetOrAddComponent<StatusController>();
 
         controller.ApplyStatus(request);
 

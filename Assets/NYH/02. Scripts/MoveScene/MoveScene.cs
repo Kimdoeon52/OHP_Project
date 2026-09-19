@@ -49,6 +49,7 @@ public class MoveScene : MonoBehaviour
     {
         // 새 게임은 기존 저장을 폐기해 새 시드 1층부터 시작하게 한다.
         SaveManager.Delete();
+        ChallengeSelection.ClearDaily();
 
         // 새 게임은 로딩 씬을 거쳐 게임 메인 씬으로 이동한다.
         Debug.Log("StartNewGame button clicked.");
@@ -72,8 +73,23 @@ public class MoveScene : MonoBehaviour
     {
         // 챌린지도 새 런이므로 기존 저장을 폐기해 선택한 챌린지로 1층부터 시작하게 한다.
         SaveManager.Delete();
+        ChallengeSelection.ClearDaily();
 
         // 챌린지 전용 씬 또는 챌린지 모드 초기화 씬이 생기면 challengeSceneName만 바꾸면 된다.
+        LoadThroughLoadingScene(challengeSceneName);
+    }
+
+    // 일일 챌린지 — 오늘(KST) 날짜 시드로 새 런 시작
+    public void StartDailyChallenge()
+    {
+        if (!DailyChallenge.TryGetTodayKey(out string key))
+        {
+            Debug.LogWarning("Steam 미연결 — 일일 챌린지를 시작할 수 없습니다.");
+            return;
+        }
+
+        SaveManager.Delete();
+        ChallengeSelection.SetDaily(key);
         LoadThroughLoadingScene(challengeSceneName);
     }
 
