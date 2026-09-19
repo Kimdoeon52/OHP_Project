@@ -36,33 +36,30 @@ public class EnemyGolem : EnemyBase
             return;
         }
 
+        // 시드 결정론 유지 — 맵 생성과 같은 난수원을 쓴다
+        DungeonRandom rng = MapGenerator.Instance != null ? MapGenerator.Instance.Rng : null;
+        if (rng == null)
+        {
+            Debug.LogWarning($"{name}: MapGenerator 없음 — 무기 롤링 생략.");
+            return;
+        }
+
         // 1. 무작위 무기 선택
-        CloseWeapon selectedWeapon = dropCandidateWeapons[Random.Range(0, dropCandidateWeapons.Length)];
+        CloseWeapon selectedWeapon = dropCandidateWeapons[rng.Range(0, dropCandidateWeapons.Length)];
 
         // 2. 장비 생성 및 강화 레벨 결정
-        _weaponEnhanceLevel = RollEnhanceLevel();
+        _weaponEnhanceLevel = ItemRoll.Enhance(rng);
 
         // 3. WeaponInstance 인스턴스화
         var instance = selectedWeapon.CreateInstance() as WeaponInstance;
         if (instance != null)
         {
             instance.enhanceLevel = _weaponEnhanceLevel;
+            // 골렘이 들고 있던 무기 — 감정 완료 상태로 드롭
+            instance.isAnalyzed = true;
             _holdingWeaponInstance = instance;
             Debug.Log($"{name}: '{selectedWeapon.Name} (+{_weaponEnhanceLevel})' 장착 완료.");
         }
-    }
-
-    /// <summary>
-    /// GDD 9.7 장비 강화 시스템 등장 강화도 확률 롤 적용
-    /// (0강: 55%, 1강: 30%, 2강: 10%, 3강: 5%)
-    /// </summary>
-    private int RollEnhanceLevel()
-    {
-        float roll = Random.value;
-        if (roll < 0.55f) return 0;
-        if (roll < 0.85f) return 1;
-        if (roll < 0.95f) return 2;
-        return 3;
     }
 
     /// <summary>

@@ -32,18 +32,7 @@ public static class Scoreboard
     // 결과 등록 → 정렬 → 톱30 유지 → 저장. 톱30 진입 순위(0-based) 반환, 미진입이면 -1.
     public static int Submit(ScoreResult result, List<EquipDTO> equipped, List<int> challenges)
     {
-        var entry = new ScoreEntry
-        {
-            finalScore = result.finalScore,
-            reachedDepth = result.reachedDepth,
-            challengeCount = result.challengeCount,
-            seed = result.seed,
-            date = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
-            daily = ChallengeState.Instance != null && ChallengeState.Instance.IsDaily,
-            killCount = result.killCount,
-            challenges = challenges ?? new List<int>(),
-            equipped = equipped ?? new List<EquipDTO>()
-        };
+        ScoreEntry entry = BuildEntry(result, equipped, challenges);
 
         ScoreboardData data = Load();
         data.entries.Add(entry);
@@ -56,6 +45,24 @@ public static class Scoreboard
 
         int rank = data.entries.IndexOf(entry);
         return rank;
+    }
+
+    // 결과 → 기록 1줄. 저장하지 않음 (결산 UI도 같은 형식을 씀)
+    public static ScoreEntry BuildEntry(ScoreResult result, List<EquipDTO> equipped, List<int> challenges)
+    {
+        return new ScoreEntry
+        {
+            finalScore = result.finalScore,
+            reachedDepth = result.reachedDepth,
+            challengeCount = result.challengeCount,
+            seed = result.seed,
+            playerName = PlayerProfile.DisplayName,
+            date = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
+            daily = ChallengeState.Instance != null && ChallengeState.Instance.IsDaily,
+            killCount = result.killCount,
+            challenges = challenges ?? new List<int>(),
+            equipped = equipped ?? new List<EquipDTO>()
+        };
     }
 
     private static void Save(ScoreboardData data)

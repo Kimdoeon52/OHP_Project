@@ -245,8 +245,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -159, y: 0}
-  m_SizeDelta: {x: 180, y: 50}
+  m_AnchoredPosition: {x: -157, y: 0}
+  m_SizeDelta: {x: 238, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7641552084695135452
 CanvasRenderer:
@@ -518,8 +518,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 73, y: 0.000011921}
-  m_SizeDelta: {x: 75, y: 49.2732}
+  m_AnchoredPosition: {x: 93, y: 0}
+  m_SizeDelta: {x: 70, y: 49.2732}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &597065474486305563
 CanvasRenderer:
@@ -594,8 +594,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 173, y: 0.000011921}
-  m_SizeDelta: {x: 150, y: 49.2732}
+  m_AnchoredPosition: {x: 206, y: 0}
+  m_SizeDelta: {x: 140, y: 49.2732}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5665662662853047292
 CanvasRenderer:
@@ -669,8 +669,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -16, y: 0}
-  m_SizeDelta: {x: 100, y: 50}
+  m_AnchoredPosition: {x: 10, y: 0}
+  m_SizeDelta: {x: 80, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4330620095270802253
 CanvasRenderer:
@@ -731,7 +731,7 @@ MonoBehaviour:
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 18
+  m_fontSizeMin: 12
   m_fontSizeMax: 36
   m_fontStyle: 0
   m_HorizontalAlignment: 2
@@ -813,7 +813,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 527.163, y: 78.02125}
+  m_SizeDelta: {x: 565, y: 78.02125}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &994608611594275056
 CanvasRenderer:
@@ -914,3 +914,4 @@ MonoBehaviour:
   scoreText: {fileID: 1029292784423257526}
   depthText: {fileID: 8685993117470078148}
   meHighlight: {fileID: 3397550488543874280}
+  selectButton: {fileID: 8050106478521199854}

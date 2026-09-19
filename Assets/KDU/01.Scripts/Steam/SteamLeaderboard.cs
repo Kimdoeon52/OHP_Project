@@ -23,8 +23,8 @@ public class SteamLeaderboard : PersistentSingleton<SteamLeaderboard>
     // 조회 범위
     public enum Scope { Top, AroundMe, Friends }
 
-    // 순위 표시 상한 (밖이면 NA)
-    public const int MaxRank = 100;
+    // 순위 표시 상한 (밖이면 NA) — 3자리 순위는 행 칸을 넘쳐 99까지만
+    public const int MaxRank = 99;
 
     public const string GlobalBoardName = "global_alltime";
 
@@ -93,6 +93,9 @@ public class SteamLeaderboard : PersistentSingleton<SteamLeaderboard>
                     Debug.LogWarning($"[Leaderboard] 업로드 실패 ({boardName})");
                     return;
                 }
+
+                // 어느 보드에 무슨 점수가 올라갔는지 — 보드 오배정 추적용
+                Debug.Log($"[Leaderboard] {boardName} 업로드 {score}점, 순위 {r.m_nGlobalRankPrevious}→{r.m_nGlobalRankNew}, 기록 갱신 {r.m_bScoreChanged != 0}");
 
                 GameEvents.OnLeaderboardUploaded?.Invoke(board, r.m_nGlobalRankNew);
             });

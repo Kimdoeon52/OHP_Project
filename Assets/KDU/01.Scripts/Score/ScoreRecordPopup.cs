@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Steamworks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,6 +20,9 @@ public class ScoreRecordPopup : MonoBehaviour
     [Header("리스트")]
     [SerializeField] private Transform content;
     [SerializeField] private ScoreEntryRow rowPrefab;
+
+    [Tooltip("맨 위 제목 행 프리팹")]
+    [SerializeField] private GameObject headerPrefab;
 
     [Header("상세")]
     [SerializeField] private ScoreDetailPopup detailPopup;
@@ -62,7 +64,13 @@ public class ScoreRecordPopup : MonoBehaviour
         ScoreboardData data = Scoreboard.Load();
 
         if (content != null)
+        {
             content.DestroyChildren();
+
+            // 제목 행은 목록을 지울 때 같이 사라지므로 매번 맨 위에 다시 만든다
+            if (headerPrefab != null)
+                Instantiate(headerPrefab, content);
+        }
 
         _rows.Clear();
         _entries.Clear();
@@ -85,18 +93,23 @@ public class ScoreRecordPopup : MonoBehaviour
     // 이름·세계 순위 채우기 — Steam 전체 Top 100 기준
     private void RequestWorldRanks()
     {
-        string playerName = SteamBootstrap.IsReady ? SteamFriends.GetPersonaName() : NoValue;
-        foreach (ScoreEntryRow row in _rows)
-            row.SetWorld(playerName, NoValue);
+        for (int i = 0; i < _rows.Count; i++)
+            _rows[i].SetWorld(NameOf(_entries[i]), NoValue);
 
         if (!SteamBootstrap.IsReady || SteamLeaderboard.Instance == null || _rows.Count == 0)
             return;
 
         int request = ++_request;
-        SteamLeaderboard.Instance.Download(SteamLeaderboard.GlobalBoardName, SteamLeaderboard.Scope.Top, 0, top => ApplyWorldRanks(request, playerName, top));
+        SteamLeaderboard.Instance.Download(SteamLeaderboard.GlobalBoardName, SteamLeaderboard.Scope.Top, 0, top => ApplyWorldRanks(request, top));
     }
 
-    private void ApplyWorldRanks(int request, string playerName, List<SteamLeaderboard.Entry> top)
+    // 기록에 저장된 이름 — 구버전 기록이면 현재 이름
+    private static string NameOf(ScoreEntry entry)
+    {
+        return string.IsNullOrEmpty(entry.playerName) ? PlayerProfile.DisplayName : entry.playerName;
+    }
+
+    private void ApplyWorldRanks(int request, List<SteamLeaderboard.Entry> top)
     {
         // 창이 꺼졌거나 다시 채워진 뒤 도착한 응답은 버림
         if (this == null || !isActiveAndEnabled || request != _request || top == null)
@@ -106,7 +119,7 @@ public class ScoreRecordPopup : MonoBehaviour
         {
             ScoreEntry entry = _entries[i];
             string worldRank = entry.daily ? NoValue : RankFormat.Ordinal(SteamLeaderboard.RankForScore(top, entry.finalScore), SteamLeaderboard.MaxRank);
-            _rows[i].SetWorld(playerName, worldRank);
+            _rows[i].SetWorld(NameOf(entry), worldRank);
         }
     }
 
@@ -114,6 +127,6 @@ public class ScoreRecordPopup : MonoBehaviour
     private void OnRowSelected(ScoreEntry entry)
     {
         if (detailPopup != null)
-            detailPopup.Open(entry, SteamBootstrap.IsReady ? SteamFriends.GetPersonaName() : null);
+            detailPopup.Open(entry, NameOf(entry));
     }
 }

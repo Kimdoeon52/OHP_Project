@@ -9,6 +9,7 @@ public class ScoreEntry
     public int reachedDepth;
     public int challengeCount;
     public int seed;
+    public string playerName; // 기록 당시 이름 (구버전 기록은 비어 있음)
     public string date;       // 기록 시각 (yyyy-MM-dd HH:mm)
     public bool daily;        // 일일 챌린지 런 (세계 순위 비교 제외)
 

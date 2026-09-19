@@ -25,10 +25,11 @@ public static class ChallengeSelection
         DailyKey = null;
     }
 
-    // 일일 챌린지 — 챌린지 토글 없음, 날짜 시드 고정
+    // 일일 챌린지 — 날짜 시드 고정, 챌린지 조합도 날짜에서 결정 (플레이어 선택 없음)
     public static void SetDaily(string key)
     {
         _types.Clear();
+        _types.AddRange(DailyChallenge.ChallengesFor(key));
         HasSeed = true;
         Seed = DailyChallenge.SeedFor(key);
         DailyKey = key;

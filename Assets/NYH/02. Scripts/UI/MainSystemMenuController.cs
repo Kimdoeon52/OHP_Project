@@ -16,6 +16,7 @@ namespace PrototypeRT
             KeySetting,
             AudioSetting,
             VideoSetting,
+            NameSetting,
             GameExit,
             Credit
         }
@@ -47,6 +48,9 @@ namespace PrototypeRT
         [Tooltip("비디오 설정 패널을 여는 버튼입니다. 비워두면 Inspector Onlcik에 OpenVideoSetting을 직접 연결해도 됩니다.")]
         [SerializeField] private Button videoSettingButton;
 
+        [Tooltip("이름 설정 패널을 여는 버튼입니다. 비워두면 Inspector OnClick에 OpenNameSetting을 직접 연결해도 됩니다.")]
+        [SerializeField] private Button nameSettingButton;
+
         [Tooltip("게임 종료 확인 패널을 여는 버튼입니다. 비워두면 Inspector OnClick에 OpenGameExit를 직접 연결해도 됩니다.")]
         [SerializeField] private Button gameExitButton;
 
@@ -62,6 +66,9 @@ namespace PrototypeRT
 
         [Tooltip("비디오 설정 UI가 들어있는 오른쪽 패널입니다.")]
         [SerializeField] private GameObject videoSettingPanel;
+
+        [Tooltip("이름 설정 UI가 들어있는 오른쪽 패널입니다.")]
+        [SerializeField] private GameObject nameSettingPanel;
 
         [Tooltip("게임 종료 확인 UI가 들어있는 오른쪽 패널입니다.")]
         [SerializeField] private GameObject gameExitPanel;
@@ -140,6 +147,11 @@ namespace PrototypeRT
             OpenPanel(MainSystemPanel.VideoSetting, true);
         }
 
+        public void OpenNameSetting()
+        {
+            OpenPanel(MainSystemPanel.NameSetting, true);
+        }
+
         public void OpenGameExit()
         {
             // 종료 패널은 별도 캔버스라 시스템 창(windowRoot)을 켜지 않고 단독으로만 표시합니다.
@@ -201,6 +213,7 @@ namespace PrototypeRT
             SetActive(keySettingPanel, panel == MainSystemPanel.KeySetting);
             SetActive(audioSettingPanel, panel == MainSystemPanel.AudioSetting);
             SetActive(videoSettingPanel, panel == MainSystemPanel.VideoSetting);
+            SetActive(nameSettingPanel, panel == MainSystemPanel.NameSetting);
             SetActive(gameExitPanel, panel == MainSystemPanel.GameExit);
             SetActive(creditPanel, panel == MainSystemPanel.Credit);
         }
@@ -222,6 +235,7 @@ namespace PrototypeRT
             RegisterButton(keySettingButton, OpenKeySetting);
             RegisterButton(audioSettingButton, OpenAudioSetting);
             RegisterButton(videoSettingButton, OpenVideoSetting);
+            RegisterButton(nameSettingButton, OpenNameSetting);
             RegisterButton(gameExitButton, OpenGameExit);
             RegisterButton(creditButton, OpenCredit);
             RegisterButton(confirmExitButton, QuitGame);
@@ -235,6 +249,8 @@ namespace PrototypeRT
             UnregisterButton(closeWindowButton, CloseSystemWindow);
             UnregisterButton(keySettingButton, OpenKeySetting);
             UnregisterButton(audioSettingButton, OpenAudioSetting);
+            UnregisterButton(videoSettingButton, OpenVideoSetting);
+            UnregisterButton(nameSettingButton, OpenNameSetting);
             UnregisterButton(gameExitButton, OpenGameExit);
             UnregisterButton(creditButton, OpenCredit);
             UnregisterButton(confirmExitButton, QuitGame);

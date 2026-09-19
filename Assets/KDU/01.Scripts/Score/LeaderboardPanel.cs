@@ -22,6 +22,9 @@ public class LeaderboardPanel : MonoBehaviour
     [Tooltip("행 프리팹")]
     [SerializeField] private RankRow rowPrefab;
 
+    [Tooltip("맨 위 제목 행 프리팹")]
+    [SerializeField] private GameObject headerPrefab;
+
     [Tooltip("로딩·미연결·기록 없음 안내 문구")]
     [SerializeField] private TMP_Text statusText;
 
@@ -161,11 +164,16 @@ public class LeaderboardPanel : MonoBehaviour
             row.RefreshName();
     }
 
-    // 씬에 배치해 둔 미리보기 행까지 모두 제거
+    // 씬에 배치해 둔 미리보기 행까지 모두 제거하고 제목 행만 다시 만든다
     private void ClearRows()
     {
         if (rowParent != null)
+        {
             rowParent.DestroyChildren();
+
+            if (headerPrefab != null)
+                Instantiate(headerPrefab, rowParent);
+        }
 
         _rows.Clear();
     }

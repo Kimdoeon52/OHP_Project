@@ -306,6 +306,10 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "취소" },
             { Language.English, "Cancel" }
         }},
+        { "bt_확인", new Dictionary<Language, string> {
+            { Language.Korean, "확인" },
+            { Language.English, "OK" }
+        }},
         //------------------------------------------ 튜토리얼 대사
         { "msg_튜토리얼대사1", new Dictionary<Language, string> {
             { Language.Korean, "60초. 던전에서 네게 주어진 시간은 그게 전부다.\r\n…하지만 여기 세이프룸에선 시간이 멈춰 있다. 천천히 익혀라.\r\n[아무 키나 눌러 시작]" },
@@ -1062,6 +1066,82 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
         { "leaderboard.empty", new Dictionary<Language, string> {
             { Language.Korean, "아직 기록이 없습니다" },
             { Language.English, "No records yet" }
+        }},
+        { "header.name", new Dictionary<Language, string> {
+            { Language.Korean, "이름" },
+            { Language.English, "Name" }
+        }},
+        { "header.world_rank", new Dictionary<Language, string> {
+            { Language.Korean, "세계" },
+            { Language.English, "World" }
+        }},
+        { "header.rank", new Dictionary<Language, string> {
+            { Language.Korean, "순위" },
+            { Language.English, "Rank" }
+        }},
+        { "header.floor", new Dictionary<Language, string> {
+            { Language.Korean, "층" },
+            { Language.English, "Floor" }
+        }},
+        { "header.score", new Dictionary<Language, string> {
+            { Language.Korean, "점수" },
+            { Language.English, "Score" }
+        }},
+        { "bt_이름설정", new Dictionary<Language, string> {
+            { Language.Korean, "이름 설정" },
+            { Language.English, "Name" }
+        }},
+        { "profile.title", new Dictionary<Language, string> {
+            { Language.Korean, "이름 입력" },
+            { Language.English, "Enter Name" }
+        }},
+        { "profile.name_placeholder", new Dictionary<Language, string> {
+            { Language.Korean, "이름을 입력하세요" },
+            { Language.English, "Enter your name" }
+        }},
+        { "profile.name_hint", new Dictionary<Language, string> {
+            { Language.Korean, "한글·영문·숫자 8자까지" },
+            { Language.English, "Up to 8 letters, digits or Hangul" }
+        }},
+        { "result.title", new Dictionary<Language, string> {
+            { Language.Korean, "결산" },
+            { Language.English, "Results" }
+        }},
+        { "result.depth", new Dictionary<Language, string> {
+            { Language.Korean, "도달 층" },
+            { Language.English, "Depth" }
+        }},
+        { "result.kills", new Dictionary<Language, string> {
+            { Language.Korean, "처치" },
+            { Language.English, "Kills" }
+        }},
+        { "result.depth_bonus", new Dictionary<Language, string> {
+            { Language.Korean, "층 보너스" },
+            { Language.English, "Depth Bonus" }
+        }},
+        { "result.residual_bonus", new Dictionary<Language, string> {
+            { Language.Korean, "잔여 시간" },
+            { Language.English, "Time Left" }
+        }},
+        { "result.boss_bonus", new Dictionary<Language, string> {
+            { Language.Korean, "보스 보너스" },
+            { Language.English, "Boss Bonus" }
+        }},
+        { "result.kill_bonus", new Dictionary<Language, string> {
+            { Language.Korean, "처치 보너스" },
+            { Language.English, "Kill Bonus" }
+        }},
+        { "result.base_score", new Dictionary<Language, string> {
+            { Language.Korean, "기본 점수" },
+            { Language.English, "Base Score" }
+        }},
+        { "result.multiplier", new Dictionary<Language, string> {
+            { Language.Korean, "챌린지 배수" },
+            { Language.English, "Challenge Multiplier" }
+        }},
+        { "result.final_score", new Dictionary<Language, string> {
+            { Language.Korean, "최종 점수" },
+            { Language.English, "Final Score" }
         }},
         { "bt_일일챌린지", new Dictionary<Language, string> {
             { Language.Korean, "일일 챌린지" },

@@ -15,16 +15,19 @@
 - **일일 시드 챌린지 + Steam 리더보드** — KST 날짜마다 보드 1개(`daily_yyyyMMdd`), 자정에 새 보드로 전환(24시간 유지). 날짜 시드 고정, 재도전 허용(최고 기록 유지). **(예정) 챌린지는 그날 모든 플레이어가 같은 조합으로 켜진 채 시작하고, 어떤 제약인지는 플레이어에게 숨김** — 현재 구현은 챌린지 없음. 자정 넘긴 런은 유예 시간 이내면 시작일 보드에 업로드.
 - **전체 랭킹 (Steam, 모든 유저 통합)** — 보드 `global_alltime` 1개, 최고 기록 유지. 랭킹 창 탭 3개: 전체 Top 100 / 내 기록(로컬 톱30, 행마다 `이름 | 세계 순위 | 로컬 순위 | 층 | 점수` — 세계 순위는 전체 Top 100 대비 해당 점수의 순위, 일일 기록은 `-`) / 일일.
 - **순위 표기** — `1st, 2nd, 3rd, 4th …`. Steam 랭킹은 100위 밖이면 `NA`.
-- **시드 직접 입력 런은 기록 제외** — 로컬 기록판·전체 랭킹 모두 저장 안 함 (일일 런은 둘 다 기록).
+- **시드 직접 입력 런은 기록 제외** — 로컬 기록판·전체 랭킹 모두 저장 안 함.
+- **일일 런은 일일 보드에만** — 챌린지 배수(1.5~5배)가 붙어 일반 런과 점수 기준이 달라 로컬 기록판·전체 랭킹에서 제외.
 
 ### 출시 체크리스트 (Steam)
 - [x] Steamworks.NET 도입 (UPM, `Packages/manifest.json`)
 - [x] `SteamBootstrap` 자동 초기화 / `DailyChallenge` / `SteamLeaderboard`(일일·전체 보드) 코드
 - [x] 일일 런 세이브·이어하기 시 날짜 키 유지 (`RunSnapshot.dailyKey`), 시드 입력 여부 유지 (`RunSnapshot.customSeed`)
 - [ ] 타이틀 씬 랭킹 창 UI 연결 (`ScoreRecordPanel` 루트에 `RankingWindow`, 탭별 페이지에 `LeaderboardPanel`/`ScoreRecordPopup` + `RankRow` 프리팹)
-- [ ] 결산 화면에 Steam 순위 표시 (`GameEvents.OnLeaderboardUploaded` 구독)
-- [ ] 일일 챌린지 숨김 챌린지 — 그날 공통 조합 결정 방식·개수 미정(날짜 시드 무작위 / 6종 전부 / 고정 조합 중 택1). 적용 지점: `ChallengeSelection.SetDaily`에서 조합 지정. 숨김 지점: `ScoreDetailPopup` 챌린지 칸(일일 기록이면 가림 — 로컬 `ScoreEntry.daily`, Steam 일일 보드 상세 둘 다)
-- [ ] 다국어 키 추가 (`leaderboard.offline` / `leaderboard.loading` / `leaderboard.empty`)
+- [x] 결산 화면 코드 (`RunResultPanel` — `OnScoreFinalized` 때 `Scoreboard.BuildEntry`로 만든 기록을 `ScoreDetailPopup`으로 표시) / [ ] 씬 배선 (항상 켜진 오브젝트에 부착 + 게임 씬에 팝업 인스턴스)
+- 결산에 Steam 순위 표시는 **하지 않기로 함** (업로드 응답 대기가 결산 흐름을 늦춤). 순위는 타이틀 랭킹 창에서만 확인
+- [x] 일일 챌린지 조합 — 날짜 시드에서 **1~4종 무작위**(`DailyChallenge.ChallengesFor`), 같은 날은 전원 동일. `ChallengeSelection.SetDaily`가 적용. 시작 전에는 알리지 않음(전용 안내 UI 없음), 인게임 표시 UI도 없어 체감으로만 파악 — 결산·기록 상세에서는 그대로 공개
+- [x] 다국어 키 추가 (`leaderboard.*` / `result.rank.*` / `profile.*`)
+- [x] 플레이어 이름 코드 (`PlayerProfile` 저장·검증, `NameInputPanel` 입력창, `ScoreEntry.playerName`) — 첫 실행 1회 입력 + 설정에서 변경, 한글·영문·숫자 8자, 로컬 기록판 전용(Steam 보드는 페르소나 이름 강제) / [ ] 씬 배선 + 설정창 버튼 연결
 - [ ] 출시 직전 Steamworks 파트너 사이트에서 테스트 기록 초기화 (에디터·디버그 층 이동으로 올라간 점수)
 - [ ] 실제 Steam 앱 ID 발급 → `SteamBootstrap.AppId` 교체 (현재 480 테스트용)
 - [ ] `steam_appid.txt`는 에디터/개발용 — Steam 배포 빌드 폴더에서 제외

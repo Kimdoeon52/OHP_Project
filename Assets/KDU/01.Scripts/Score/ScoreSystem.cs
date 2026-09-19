@@ -127,9 +127,10 @@ public class ScoreSystem : Singleton<ScoreSystem>
 
         LastResult = r;
 
-        // 시드 직접 입력 런은 기록 제외
-        bool customSeed = ChallengeState.Instance != null && ChallengeState.Instance.HasCustomSeed;
-        if (!customSeed)
+        // 로컬 기록판은 일반 런만 — 시드 입력 런은 기록 제외, 일일 런은 일일 보드에만
+        ChallengeState cs = ChallengeState.Instance;
+        bool localExcluded = cs != null && (cs.HasCustomSeed || cs.IsDaily);
+        if (!localExcluded)
             Scoreboard.Submit(r, SaveManager.BuildEquipped(), SaveManager.BuildChallenges());
         GameEvents.OnScoreFinalized?.Invoke(r);
     }
