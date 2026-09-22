@@ -59,6 +59,12 @@ public class MapItemSpawner : MonoBehaviour
     [Header("Secret 방 — 마법 부여 방")]
     [SerializeField] private EnchantAltar enchantAltarPrefab;
 
+    [Header("챌린지 — 시야 제한")]
+    [Tooltip("횃불 SO")]
+    [SerializeField] private ItemBase visionLimitTorch;
+    [Tooltip("매 층 등장 수")]
+    [SerializeField, Min(1)] private int visionLimitTorchCount = 1;
+
     [Header("챌린지 — 빈약한 강화")]
     [Tooltip("강화주문서 등장 수 감소량")]
     [SerializeField, Min(0)] private int scarceUpgradeCountReduction = 1;
@@ -103,6 +109,7 @@ public class MapItemSpawner : MonoBehaviour
 
         SpawnScheduled(rooms, depth, runSeed, rng);
         SpawnGuaranteed(rooms, rng);
+        SpawnVisionLimitTorch(rooms, rng);
         SpawnPerFloorOneOf(rooms, rng);
         SpawnTraitEmergencyFood(rooms, rng);
         SpawnRandom(rooms, rng);
@@ -274,6 +281,16 @@ public class MapItemSpawner : MonoBehaviour
         }
     }
 
+    // 시야 제한 챌린지 활성 시 매 층 횃불 고정 등장
+    private void SpawnVisionLimitTorch(List<RoomData> rooms, DungeonRandom rng)
+    {
+        if (visionLimitTorch == null || !ChallengeState.Has(ChallengeType.VisionLimit))
+            return;
+
+        for (int i = 0; i < visionLimitTorchCount; i++)
+            PlaceInNormalOrExit(rooms, visionLimitTorch, rng);
+    }
+
     // 매 층 확정
     private void SpawnGuaranteed(List<RoomData> rooms, DungeonRandom rng)
     {
@@ -390,6 +407,9 @@ public class MapItemSpawner : MonoBehaviour
 
         if (smallEmergencyFood != null)
             excluded.Add(smallEmergencyFood);
+
+        if (visionLimitTorch != null && ChallengeState.Has(ChallengeType.VisionLimit))
+            excluded.Add(visionLimitTorch);
 
         foreach (var so in randomItemPool.items)
         {
