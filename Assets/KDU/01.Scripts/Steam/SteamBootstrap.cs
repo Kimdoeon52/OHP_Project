@@ -20,6 +20,7 @@ public class SteamBootstrap : PersistentSingleton<SteamBootstrap>
         var go = new GameObject(nameof(SteamBootstrap));
         go.AddComponent<SteamBootstrap>();
         go.AddComponent<SteamLeaderboard>();
+        go.AddComponent<SteamAchievements>();
     }
 
     protected override void Awake()
