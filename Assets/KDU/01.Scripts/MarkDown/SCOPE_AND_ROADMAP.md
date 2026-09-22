@@ -47,7 +47,7 @@
 - 영역당 몬스터 종류 = **GDD 10장 로스터로 고정.** 추가 X.
 - 아이템/포션/스크롤/마법/저주 풀 = **GDD 9장으로 고정.** 추가 X.
 - 방 종류 = **GDD 6.2.1(Special 5종) / 6.2.2(Secret 4종)으로 고정.** 발명 X.
-- Floor Feeling = **3종 고정** (Hazard/Traps/Dark).
+- Floor Feeling = **2종 고정** (Hazard/Dark). Traps 는 난이도 과다로 제외.
 
 GDD에 없는 건 **혼자 추가 안 함.** "이거 추가하면 더 좋을 텐데" 충동 발생 시:
 1. 출시 일정에 들어가는지 자문
@@ -97,7 +97,7 @@ GDD에 없는 건 **혼자 추가 안 함.** "이거 추가하면 더 좋을 텐
 - [ ] (LSH) 보스 공통 골격 — BossBase + 페이즈 enum + 텔레그래프 연동
 
 ### Month 2 (콘텐츠 1차 + 보스 착수)
-- [ ] Floor Feeling 2종 (Hazard, Traps)
+- [ ] Floor Feeling 2종 (Hazard, Dark)
 - [ ] 아이템 P0 (지도 스크롤, 회복 포션, 투척용 칼 + 회수, 소검)
 - [ ] 저주 시스템 (정화 스크롤 포함)
 - [ ] Area 1 몬스터 로스터 (GDD 10장)

@@ -13,7 +13,7 @@
 - **티어 구분**: Builder/Painter/Feeling/Spawner = 티어 2 (구현체), 인터페이스 / 풀 SO / GameConfig 변경 = 티어 1
 - **결정론**: 모든 Phase에서 무작위 호출은 `DungeonRandom`만 사용
 - **Feeling 풀 / Builder 풀 / Painter 풀 = 모두 ScriptableObject** — 인스펙터 드래그-드롭으로 추가 가능해야 함
-- **Feeling은 3종 고정** (Hazard/Traps/Dark) — GDD 6.3. 추가 X.
+- **Feeling은 2종 고정** (Hazard/Dark) — GDD 6.3. Traps 제외 확정. 추가 X.
 - **보스층(5/10/15)은 절차생성 제외** — 고정 맵. 본 Phase 작업 범위는 일반 층 생성 + 보스 고정맵 로더 연동까지.
 
 ---
@@ -31,7 +31,7 @@
 1. ✅ **Special / Secret 방 배치 + 게이트 데이터 (① 단계 완료)** — 막다른 가지 배치 + `SecretGatewayCells`/`LockedGatewayCells` 노출 + Secret 게이트 wall 봉인까지 구현. Phase 5 Q3/Q4 의 *콘텐츠*(방 안 보상)는 별건으로 남음. → 아래 'Special/Secret 레이아웃 설계' 절
 2. 🔜 **문 시스템 → 열쇠 연계** — ①의 게이트 데이터(`SecretGatewayCells`/`LockedGatewayCells`)를 입력으로 잠긴문/숨은문 오브젝트 + 상태 + 통행 판정 → 그 뒤 스페셜 열쇠 드랍·1초 개방(GDD 9.15)·탐색 특성(GDD 8.6)
 3. 🔜 **영역 페인터 3종** (Sewer/Dungeon/Hell) — Phase 5 Q2. 블로커 없음, 출품 비주얼 핵심
-4. 🔜 **TrapsFeeling** — Feeling 3종 마무리. 단 몬스터 -1 은 🤝 KKH `EnemySpawner` 연동 필요
+4. ❌ **TrapsFeeling — 제외 확정** (난이도 과다). Feeling 은 Hazard/Dark 2종으로 종료
 5. 🤝 **적 스폰** — ✅ KKH 완료(`EnemySpawner`/`RoomSpawnRule`/`EnemySpawnTable`/`FloorSpawnConfig` + 적 9종, 마법사 스켈레톤 LOS 포함). MapGenerator 가 이미 `Spawner.Spawn` 호출 연결 → KDU 는 **연동·검증만**
 6. ⏳ **아이템 스폰** — 🤝 YJW `ItemSpawner` 존재하나 **아이템 구현 블로킹** + MapGenerator 미연동. **아이템 구현 후 차순위**
 
@@ -49,7 +49,7 @@
 
 ---
 
-## Phase 3 — Feeling 시스템 (3종)  *(✅ Hazard/Dark · 🔜 Traps)*
+## Phase 3 — Feeling 시스템 (2종)  *(✅ Hazard/Dark — 완료)*
 
 ### 작업 항목
 
@@ -59,16 +59,15 @@
    - 영역별 가중치 적용 (GDD 5.2: Area 1 40/40/20, Area 2 40/30/30, Area 3 30/30/40)
 2. **`HazardFeeling`** (`Feelings/HazardFeeling.cs`) — 테스트용 1종 먼저. area 파라미터로 오염수/함정바닥/용암 분기
 3. **`MapGenerator` 통합** — Generate() 안에서 `pool?.Pick(rng, 0.5f)` 호출, 결과를 painter/spawner에 전달
-4. **나머지 2종** — `DarkFeeling`, `TrapsFeeling`
+4. **나머지 1종** — `DarkFeeling`
 
 ### 핵심 설계 결정 (Phase 3 시작 시 확정)
 
 #### Q1. `FloorFeeling` 의 Apply* 메서드는 무엇을 변경하나?
 - `ApplyToInit(rooms)` — 방 리스트에 영향. 후보:
-  - 방 추가 (Traps Feeling: 함정 방 1개 강제 추가)
   - 방 메타데이터 부여 (Feeling별 플래그)
 - **`ApplyToPaint` 제거 (결정 A)**: Painter는 이미 `Paint(rooms, ..., feeling, rng)` 로 `feeling` 인자를 직접 받으므로, Painter가 `feeling`을 직접 읽는 게 깔끔. 별도 ApplyToPaint 불필요.
-- `ApplyToSpawn(IEnemySpawner)` — Phase 4 EnemySpawner 통합 시점에 정의 (TrapsFeeling: 몬스터 -1)
+- `ApplyToSpawn(IEnemySpawner)` — 사용처 없음 (Traps 제외로 몬스터 -1 요구 소멸)
 
 #### Q2. Hazard 효과를 페인터/그리드가 어떻게 표현?
 - **Hazard는 통과 가능 + 비용 부과** (통과 불가 아님 — 옛 Chasm 모델과 다름).
@@ -83,8 +82,7 @@
 ### 의존성 / 차순위
 
 - **Hazard/Dark는 Phase 3 우선**: Dark = `VisionSystem.visionRadius` 인자 1개로 가장 단순. Hazard = hazardCells 집합 + 페인터 분기 + 이동 비용 훅.
-- **Traps는 Phase 4 의존** (몬스터 -1, 함정 30%↑ — 둘 다 spawn 단계 영향)
-  - → Traps Feeling 은 Phase 4 통합 후 마무리해도 됨
+- **Traps 제외 확정** — 함정 방·Hazard 바닥과 겹쳐 60초 클리어가 비현실적으로 어려워짐 (GDD 6.3)
 - (옛 계획의 Grass/Chasm 작업 항목은 삭제됨 — 3종 모델에 없음. VisionSystem 시야차단 셀 확장 / GridSystem 통과불가 확장 모두 불필요.)
 
 ### 검증 기준
@@ -102,7 +100,6 @@
 | `FloorFeelingPool.cs` | `Data/` | SO + .asset 인스턴스, 영역 가중치 |
 | `HazardFeeling.cs` | `Feelings/` | SO, area 분기 (오염수/함정바닥/용암) |
 | `DarkFeeling.cs` | `Feelings/` | VisionSystem.visionRadius 인자 |
-| `TrapsFeeling.cs` | `Feelings/` | Phase 4 의존, 후순위 |
 | `MapGenerator.cs` | `Map/` | **수정** — Feeling 풀 통합 |
 | `DefaultPainter.cs` | `Painters/` | **수정** — Feeling 인자 활용 (hazard 비율) |
 | `FloorFeeling.cs` | `Map/` | **수정** — Q1 결정(ApplyToPaint 제거)에 따라 시그니처 정리 |
@@ -176,7 +173,6 @@ public abstract class RoomSpawnRule : ScriptableObject {
 
 ### 의존성
 
-- **Phase 3 ApplyToSpawn 활성화** — Feeling 이 EnemySpawner 의 spawnDensity 등을 변경 (TrapsFeeling: 몬스터 -1)
 - **기존 적 prefab 인스턴스화 메커니즘** — GDD 10장 로스터의 적들이 prefab 인지 SO 인지 확인 필요. 현재 Resources.Load 또는 직접 참조 둘 중 어느 방식인지 점검 후 통일
 - **아이템 prefab 인스턴스화 메커니즘** — GDD 9장 아이템들이 prefab 인지 SO 인지 점검 후 통일 (적과 동일 방식 권장)
 
@@ -186,7 +182,6 @@ public abstract class RoomSpawnRule : ScriptableObject {
 - [ ] doorCell 인접 4방향 셀에 몬스터 0건
 - [ ] 마법사 스켈레톤이 배치된 셀에서 4방향 LOS 카운트 시 최소 1방향 ≥3 셀 (실패 0건)
 - [ ] distanceFromSafe ≥ 4 인 방에 강한 몬스터 출현 비율 ≥ 50%
-- [ ] Feeling 통합: TrapsFeeling 발동 층에서 몬스터 수 평소 대비 -1
 - [ ] Safe Room / Exit Room 에 바닥 아이템 0개 (100 시드)
 - [ ] 아이템이 hazardCell 또는 doorCell 인접 셀에 배치되지 않음
 - [ ] 동일 셀에 적과 아이템 중복 배치 0건
@@ -205,7 +200,6 @@ public abstract class RoomSpawnRule : ScriptableObject {
 | `EnemySpawnPool.cs` | `Data/` | depth × tier 매트릭스 SO (GDD 10장) |
 | `GridSystem.cs` | `Grid/` | **수정** — LOS 헬퍼 추가 |
 | `MapGenerator.cs` | `Map/` | **수정** — Spawn 단계 호출 (EnemySpawner → ItemSpawner 순) |
-| `TrapsFeeling.cs` | `Feelings/` | Phase 3 미완료 시 여기서 마무리 |
 | `IItemSpawner.cs` | `Map/` | 아이템 스폰 인터페이스 |
 | `ItemSpawner.cs` | `Spawning/` | 아이템 스폰 메인 진입점 |
 | `RoomItemRule.cs` | `Spawning/Rules/` | 추상 SO |
@@ -335,14 +329,12 @@ public abstract class RoomSpawnRule : ScriptableObject {
    - Step 1: FloorFeeling 시그니처 확정 (ApplyToPaint 제거, ApplyToInit/ApplyToSpawn 정리)
    - Step 2: HazardFeeling + FloorFeelingPool + MapGenerator 통합 (가장 핵심 1개로 파이프라인 완성)
    - Step 3: DarkFeeling (VisionSystem 인자 1개)
-   - Step 4: TrapsFeeling — Phase 4 진행 후 마무리
    (옛 Grass/Chasm Step 삭제)
 3. **Phase 4**:
    - Step 1: IEnemySpawner 시그니처 확정 + EnemySpawner 골격
    - Step 2: NormalRoomRule + SafeRoomRule (가장 기본 2개)
    - Step 3: GridSystem LOS 헬퍼 + 마법사 스켈레톤 검증
    - Step 4: EnemySpawnPool + 거리 기반 차등
-   - Step 5: TrapsFeeling 마무리 + ApplyToSpawn 활성화
    - Step 6: IItemSpawner + ItemSpawner 골격 (usedCells 공유 연동)
    - Step 7: ItemSpawnPool SO + NormalRoomItemRule (0~2개, distanceFromSafe 가중치)
    - Step 8: 배치 셀 필터링 (hazardCells/doorCell 인접 제외) + 결정론 검증

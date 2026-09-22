@@ -23,7 +23,7 @@
 2. **데이터는 ScriptableObject.** 적·함정·무기·아이템·포션·스크롤·저주·마법 전부 SO. 콘텐츠 추가 = 데이터만 추가, 코드 수정 X.
 3. **통신은 정적 이벤트(`GameEvents`).** UI/사운드/시간보너스/저주발동은 구독으로. 직접 참조 X.
 4. **시드 결정론은 `DungeonRandom` 통일.** `UnityEngine.Random`/`System.Random` 직접 호출 금지. (챌린지/시드챌린지 기반 — GDD 13장)
-5. **Floor Feeling은 3종 고정** — Hazard/Traps/Dark. Hazard는 영역별 리스킨(오염수/함정바닥/용암), area 파라미터로 분기. **Water/Grass/Chasm은 옛 모델 — 만들지 말 것.** (GDD 6.3)
+5. **Floor Feeling은 2종 고정** — Hazard/Dark. Hazard는 영역별 리스킨(오염수/함정바닥/용암), area 파라미터로 분기. **Traps는 난이도 과다로 제외, Water/Grass/Chasm은 옛 모델 — 둘 다 만들지 말 것.** (GDD 6.3)
 6. **보스층(5/10/15)은 절차생성 제외.** `MapGenerator`가 보스 depth면 스킵 → `BossRoomLoader`로 고정 맵 로드. (GDD 5.1/6.2)
 7. **파일 700줄+ 분리 필수.** 한 클래스 한 책임. (예외: 데이터/SO/enum 파일) → 분리 기준 상세: `ARCHITECTURE.md`
 8. **Steam 연동은 Steamworks.NET(UPM) 단일 경로.** `SteamBootstrap`이 자동 초기화 → Steam API 호출 전 `SteamBootstrap.IsReady` 확인. Steam 미연결이어도 게임은 돌아가야 함(Steam 기능만 비활성).
@@ -50,14 +50,14 @@
 - ❌ ECS, Addressables — 과설계 (저장/로드·다국어는 이미 있음 → `SaveManager`/`LocalizationManager` 확장)
 - ❌ 로컬 시계(`DateTime.Now`)로 일일 챌린지 날짜 판정 — 조작 가능 (반드시 `DailyChallenge`)
 - ❌ 인터페이스 강박(구현 1개뿐인데 인터페이스), 5줄 헬퍼 클래스, getter/setter 래퍼, 추상클래스 남발
-- ❌ Water/Grass/Chasm Feeling 생성 (3종 고정)
+- ❌ Water/Grass/Chasm/Traps Feeling 생성 (2종 고정)
 - ❌ 보스층을 절차생성 파이프라인에 태우기
 - ❌ `UnityEngine.Random`/`System.Random` 직접 호출 (반드시 `DungeonRandom`)
 - ❌ GDD에 없는 콘텐츠(몬스터/아이템/방종류/Feeling) 임의 추가 — 스코프 락
 
 ## 스코프 락
 
-출품은 끝났고 **출시 버전 스코프**로 전환. 3영역·3보스는 그대로, 방어선은 여전히 **영역당 콘텐츠 깊이 = GDD 풀로 고정**(몬스터 GDD 10장, 아이템 9장, Feeling 3종, 방종류 6.2.1/6.2.2). GDD에 없는 콘텐츠는 코드부터 추가 금지 → 넣기로 했으면 **GDD 먼저 갱신** 후 구현, 아니면 `BACKLOG.md`.
+출품은 끝났고 **출시 버전 스코프**로 전환. 3영역·3보스는 그대로, 방어선은 여전히 **영역당 콘텐츠 깊이 = GDD 풀로 고정**(몬스터 GDD 10장, 아이템 9장, Feeling 2종, 방종류 6.2.1/6.2.2). GDD에 없는 콘텐츠는 코드부터 추가 금지 → 넣기로 했으면 **GDD 먼저 갱신** 후 구현, 아니면 `BACKLOG.md`.
 챌린지 모드(13장): 토글 6종+점수+선택/결산 UI+시드입력 완료. **일일 시드 챌린지(KST 24시간 보드) + 전체 Steam 랭킹은 출시 범위**(코드 구현됨, UI 연결 남음). 시드 직접 입력 런은 로컬·Steam 기록 모두 제외. 나머지 `BACKLOG.md` 항목은 출시 전 포함 여부 분류.
 → 스코프 상세·출시 체크리스트·보스 폴백 전략: `SCOPE_AND_ROADMAP.md`
 
@@ -69,7 +69,7 @@
 
 - [ ] 코어 시스템이 프로토타입에서 그대로 이전됐는가? (`Grid/Time/Vision/Turn/Events/Entities/Data`)
 - [ ] 새 적/함정 추가가 SO 인스턴스 + 인스펙터 설정만으로 가능한가?
-- [ ] 새 Feeling 추가가 클래스 1개 + 풀 등록만으로 가능한가? (단 풀은 3종 고정)
+- [ ] 새 Feeling 추가가 클래스 1개 + 풀 등록만으로 가능한가? (단 풀은 2종 고정)
 - [ ] 새 빌더/페인터 추가가 같은 방식으로 가능한가?
 - [ ] **보스층이 절차생성을 스킵하고 고정 맵을 로드하는가?**
 - [ ] 아이템/저주/마법이 GameEvents 구독으로 동작하는가?

@@ -188,10 +188,10 @@ public class DungeonRandom {
 - RuleTile로 벽 자동 연결
 - doorCells에 문 타일
 
-#### Feeling 3종 (`Feelings/`)
-- `HazardFeeling`, `TrapsFeeling`, `DarkFeeling`
+#### Feeling 2종 (`Feelings/`)
+- `HazardFeeling`, `DarkFeeling`
 - 각 Feeling이 자체적으로 페인터/스폰러를 어떻게 변경할지 결정
-- 새 Feeling 추가 = 클래스 1개 + 풀 등록 (단, GDD 기준 3종 고정. 추가 X)
+- 새 Feeling 추가 = 클래스 1개 + 풀 등록 (단, GDD 기준 2종 고정. 추가 X)
 
 ---
 
@@ -234,7 +234,6 @@ public class DungeonRandom {
 | Feeling | 영향 | 구현 메모 |
 |---------|------|-----------|
 | Hazard | 위험 바닥 생성. **영역별 리스킨**: 하수구=오염수, 던전=함정바닥, 지옥=용암. 해당 바닥은 이동 시간 2배 + 올라가 있는 동안 데미지 | area 파라미터로 타일/연출만 분기. 통과는 가능(통과 불가 아님). 부유 포션·공허 발걸음 마법으로 무시 (GDD 8.5.1 / 9.16) |
-| Traps | 함정 추가 배치 (고위험 경로) + 몬스터 수 -1 | Phase 4 spawn 의존 |
 | Dark | 기본 시야 반경 -2 | `VisionSystem.visionRadius` 인자 1개. 횃불·심안 포션·지도 스크롤 가치↑ |
 
 > **주의**: Water/Grass/Chasm은 옛 모델이다. GDD엔 없다. Hazard 하나가 영역별로 리스킨되어 물/용암을 표현하므로 별도 Feeling 클래스를 만들지 말 것.
@@ -353,7 +352,6 @@ bool CanPlaceRangedCaster(Vector2Int cell) {
 11. `HazardFeeling` (테스트용 첫 1종 — Hazard 셀 집합 + 페인터 분기)
 12. Feeling 풀 SO 등록 구조
 13. `DarkFeeling` (VisionSystem 인자 1개)
-14. `TrapsFeeling` (Phase 4 spawn 의존 — 후순위)
 
 ### Phase 4 — 스폰 통합
 15. `EnemySpawner` 방 타입별 룰
@@ -387,7 +385,7 @@ bool CanPlaceRangedCaster(Vector2Int cell) {
 - ❌ Builder/Painter 안에 게임 로직 (몬스터 스폰 등) 섞기
 - ❌ Tilemap 직접 참조 (GridSystem 경유)
 - ❌ 보스층을 절차생성 파이프라인에 태우기 (반드시 BossRoomLoader 분기)
-- ❌ Water/Grass/Chasm Feeling 만들기 (옛 모델 — Hazard/Traps/Dark 3종만)
+- ❌ Water/Grass/Chasm/Traps Feeling 만들기 (Hazard/Dark 2종만)
 - ❌ SPD 코드 복붙 (GPLv3, 디자인만 참고)
 - ❌ Phase를 건너뛰고 한 번에 모든 Feeling 구현
 - ❌ 한 클래스가 여러 책임 (예: Builder가 Painter 역할까지)

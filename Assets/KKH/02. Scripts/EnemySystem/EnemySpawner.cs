@@ -30,7 +30,6 @@ namespace EnemySystem
         /// <summary>
         /// 외부(FloorFeeling 등)에서 마릿수를 임시 조정할 수 있는 보정값.
         /// Spawn() 완료 후 자동으로 0으로 리셋됨.
-        /// 예: TrapsFeeling에서 SpawnCountModifier = -1 하면 각 방 마릿수 1 감소.
         /// </summary>
         public int SpawnCountModifier { get; set; } = 0;
 

@@ -138,7 +138,7 @@ Assets/
 │   │   │   │                           #          IRegionPainter, FloorFeeling, BossRoomLoader, MapGenerator
 │   │   ├── Builders/                   # [티어 2] LoopBuilder, FigureEightBuilder (Phase 2~)
 │   │   ├── Painters/                   # [티어 2] DefaultPainter, Sewer/Dungeon/HellPainter (Phase 2~)
-│   │   ├── Feelings/                   # [티어 2] HazardFeeling, TrapsFeeling, DarkFeeling (3종 고정)
+│   │   ├── Feelings/                   # [티어 2] HazardFeeling, DarkFeeling (2종 고정)
 │   │   ├── Spawning/                   # [티어 2] EnemySpawner, ItemSpawner, Rules/ (Phase 4~)
 │   │   ├── Time/                       # [티어 1] TimeSystem
 │   │   ├── Turn/                       # [티어 1] TurnManager
