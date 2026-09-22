@@ -51,9 +51,6 @@ public class SteamAchievements : PersistentSingleton<SteamAchievements>
     private const int TotalKillsThreshold = 1000;
     private const int DailyTopThreshold = 10;
 
-    private Callback<UserStatsReceived_t> _statsReceived;
-    private bool _statsLoaded;
-
     // 보스 전투 진행 중 피격 여부
     private bool _inBossFight;
     private bool _bossFightClean;
@@ -96,27 +93,10 @@ public class SteamAchievements : PersistentSingleton<SteamAchievements>
         GameEvents.OnFloorReset -= OnFloorReset;
     }
 
-    private void Start()
-    {
-        if (!SteamBootstrap.IsReady)
-            return;
-
-        _statsReceived = Callback<UserStatsReceived_t>.Create(OnUserStatsReceived);
-        SteamUserStats.RequestCurrentStats();
-    }
-
-    private void OnUserStatsReceived(UserStatsReceived_t cb)
-    {
-        if (cb.m_nGameID != SteamUtils.GetAppID().m_AppId)
-            return;
-
-        _statsLoaded = cb.m_eResult == EResult.k_EResultOK;
-    }
-
     // 도전과제 해금 — 이미 해금됐으면 무시
     public void Unlock(string apiName)
     {
-        if (!SteamBootstrap.IsReady || !_statsLoaded)
+        if (!SteamBootstrap.IsReady)
             return;
 
         if (SteamUserStats.GetAchievement(apiName, out bool unlocked) && unlocked)
@@ -193,7 +173,7 @@ public class SteamAchievements : PersistentSingleton<SteamAchievements>
     // 누적 처치 Stat 반영 — 런 종료 시 한 번만 커밋
     private void FlushKills()
     {
-        if (_pendingKills <= 0 || !SteamBootstrap.IsReady || !_statsLoaded)
+        if (_pendingKills <= 0 || !SteamBootstrap.IsReady)
             return;
 
         if (!SteamUserStats.GetStat(StatTotalKills, out int total))
