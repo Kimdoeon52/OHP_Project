@@ -6,6 +6,12 @@ public class WeaponProjectile : MonoBehaviour
     [SerializeField] private PoolType poolType;
     [SerializeField] private float speed = 5f;
 
+    [Tooltip("스프라이트 기본 방향 보정(도)")]
+    [SerializeField] private float spriteAngleOffset;
+
+    [Tooltip("회전 속도(도/초). 0이면 진행 방향 고정")]
+    [SerializeField] private float spinSpeed;
+
     private ThrowableWeaponInstance weaponInstance;
     private int thrownDurability;
     private bool returnToPool = true;
@@ -34,6 +40,7 @@ public class WeaponProjectile : MonoBehaviour
         flyDirection = direction.normalized;
         hasTarget = false;
         isFlying = true;
+        FaceFlyDirection();
     }
 
     public void FlyTo(Vector3 targetWorld)
@@ -43,11 +50,25 @@ public class WeaponProjectile : MonoBehaviour
         flyDirection = ((Vector2)(targetWorldPosition - transform.position)).normalized;
         hasTarget = true;
         isFlying = true;
+        FaceFlyDirection();
+    }
+
+    // 진행 방향으로 스프라이트 정렬
+    private void FaceFlyDirection()
+    {
+        if (flyDirection.sqrMagnitude < 0.0001f)
+            return;
+
+        float angle = Mathf.Atan2(flyDirection.y, flyDirection.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0f, 0f, angle + spriteAngleOffset);
     }
 
     private void Update()
     {
         if (!isFlying) return;
+
+        if (spinSpeed != 0f)
+            transform.Rotate(0f, 0f, spinSpeed * Time.deltaTime);
 
         float moveDistance = speed * Time.deltaTime;
         if (hasTarget)
@@ -187,6 +208,8 @@ public class WeaponProjectile : MonoBehaviour
 
     private void ReturnToPool()
     {
+        transform.rotation = Quaternion.identity;
+
         if (returnToPool && ObjectPool.Instance != null)
         {
             ObjectPool.Instance.Return(poolType, gameObject);

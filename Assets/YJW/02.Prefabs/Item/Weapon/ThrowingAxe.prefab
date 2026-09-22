@@ -104,6 +104,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   poolType: 10
   speed: 40
+  spriteAngleOffset: 0
+  spinSpeed: 720
 --- !u!61 &3329729106250422033
 BoxCollider2D:
   m_ObjectHideFlags: 0

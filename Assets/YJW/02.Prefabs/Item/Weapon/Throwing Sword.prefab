@@ -104,6 +104,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   poolType: 4
   speed: 40
+  spriteAngleOffset: -45
+  spinSpeed: 0
 --- !u!50 &4623697466337526947
 Rigidbody2D:
   serializedVersion: 5
