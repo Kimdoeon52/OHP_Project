@@ -78,12 +78,14 @@
 
 ## 참고 문서
 
-- `Stolen_Time_GDD_v1_3.docx` — **디자인 단일 진실 공급원** (수치·규칙 원본)
+모두 `Assets/KDU/01.Scripts/MarkDown/` 에 있다. GDD `.docx` 원본은 저장소 밖(로컬)이며, 저장소 안 작업 사본은 아래 마크다운 1개뿐이다.
+
+- `Stolen_Time_GDD_v1_3_clean.md` — **디자인 단일 진실 공급원의 저장소 사본** (수치·규칙은 여기서 읽는다. docx 갱신 시 이 파일도 같이 갱신할 것)
 - `ARCHITECTURE.md` — 티어 구분 이유·코드 예시·분리 기준·폴더 트리·(출품 당시) 팀 분담 기록
 - `SCOPE_AND_ROADMAP.md` — 스코프 락 상세·월별 마일스톤·보스 폴백 전략
 - `MAP_GENERATION.md` — 맵 생성 시스템 명세 (맵 작업 시 읽을 것)
 - `PHASE_3_5_PLAN.md` — Phase 3~5 단계별 계획
-- `Stolen_Time_Map_Design_for_ClaudeCode.md` — GDD 맵/레벨 발췌 (직접수정 금지, GDD 변경 시 재생성)
+- `SHOP_PLAN.md` / `TUTORIAL_PLAN.md` — 상점·튜토리얼 구현 계획 (계획만, 미구현)
 - `BACKLOG.md` — 미룬 아이디어 (출시 스코프 분류 대상)
 
 ---
