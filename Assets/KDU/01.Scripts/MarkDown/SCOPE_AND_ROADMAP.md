@@ -29,6 +29,7 @@
 - [x] 다국어 키 추가 (`leaderboard.*` / `result.rank.*` / `profile.*`)
 - [x] 플레이어 이름 코드 (`PlayerProfile` 저장·검증, `NameInputPanel` 입력창, `ScoreEntry.playerName`) — 첫 실행 1회 입력 + 설정에서 변경, 한글·영문·숫자 8자, 로컬 기록판 전용(Steam 보드는 페르소나 이름 강제) / [ ] 씬 배선 + 설정창 버튼 연결
 - [ ] 출시 직전 Steamworks 파트너 사이트에서 테스트 기록 초기화 (에디터·디버그 층 이동으로 올라간 점수)
+- [ ] **`NO_STEAM` 디파인 제거** — 2026-11 GGC 출품 때문에 ProjectSettings Standalone 디파인에 상시 켜둠. 켜진 동안 Steam 초기화·랭킹·업적·일일 챌린지 전부 꺼지고 랭킹 창은 "내 순위표" 탭만 남음. `Tools/KDU/에디터 NO_STEAM 미리보기` 메뉴로 끄면 됨
 - [ ] 실제 Steam 앱 ID 발급 → `SteamBootstrap.AppId` 교체 (현재 480 테스트용)
 - [ ] `steam_appid.txt`는 에디터/개발용 — Steam 배포 빌드 폴더에서 제외
 - [ ] GDD 13장 "일일 챌린지 = P2" 표기를 출시 범위로 갱신

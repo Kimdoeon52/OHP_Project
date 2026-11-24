@@ -59,7 +59,7 @@ public static class NoSteamBuild
         }
     }
 
-    // 에디터 플레이에서 Steam 제외 동작 확인용 — 커밋 전 반드시 끌 것
+    // ProjectSettings 디파인에 NO_STEAM 켜기/끄기
     [MenuItem(ToggleMenu)]
     private static void ToggleEditorDefine()
     {
