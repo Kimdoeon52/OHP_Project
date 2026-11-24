@@ -7,6 +7,13 @@ public class SteamBootstrap : PersistentSingleton<SteamBootstrap>
     // 출시 앱 ID로 교체 (480 = Spacewar 테스트용)
     private const uint AppId = 480;
 
+    // Steam 제외 빌드 (NO_STEAM 심볼)
+#if NO_STEAM
+    public static readonly bool Excluded = true;
+#else
+    public static readonly bool Excluded = false;
+#endif
+
     public static bool IsReady => Instance != null && Instance._initialized;
 
     private bool _initialized;
@@ -14,7 +21,7 @@ public class SteamBootstrap : PersistentSingleton<SteamBootstrap>
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Bootstrap()
     {
-        if (Instance != null)
+        if (Excluded || Instance != null)
             return;
 
         var go = new GameObject(nameof(SteamBootstrap));

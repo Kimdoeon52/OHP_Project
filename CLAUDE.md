@@ -26,7 +26,7 @@
 5. **Floor Feeling은 2종 고정** — Hazard/Dark. Hazard는 영역별 리스킨(오염수/함정바닥/용암), area 파라미터로 분기. **Traps는 난이도 과다로 제외, Water/Grass/Chasm은 옛 모델 — 둘 다 만들지 말 것.** (GDD 6.3)
 6. **보스층(5/10/15)은 절차생성 제외.** `MapGenerator`가 보스 depth면 스킵 → `BossRoomLoader`로 고정 맵 로드. (GDD 5.1/6.2)
 7. **파일 700줄+ 분리 필수.** 한 클래스 한 책임. (예외: 데이터/SO/enum 파일) → 분리 기준 상세: `ARCHITECTURE.md`
-8. **Steam 연동은 Steamworks.NET(UPM) 단일 경로.** `SteamBootstrap`이 자동 초기화 → Steam API 호출 전 `SteamBootstrap.IsReady` 확인. Steam 미연결이어도 게임은 돌아가야 함(Steam 기능만 비활성).
+8. **Steam 연동은 Steamworks.NET(UPM) 단일 경로.** `SteamBootstrap`이 자동 초기화 → Steam API 호출 전 `SteamBootstrap.IsReady` 확인. Steam 미연결이어도 게임은 돌아가야 함(Steam 기능만 비활성). **Steam 제외 빌드(GGC 등)는 `NO_STEAM` 심볼** — `Tools/KDU/Steam 제외 빌드 (GGC)` 메뉴로만 빌드(심볼은 빌드 옵션에만 주입, ProjectSettings에 커밋 금지). 새 Steam 전용 UI는 `SteamBootstrap.Excluded`로 숨김 처리.
 9. **일일 챌린지 날짜는 로컬 시계 금지.** Steam 서버 시각(`SteamUtils.GetServerRealTime`) + 9시간 = KST. 날짜 키·시드·보드 이름은 `DailyChallenge`로 통일.
 
 ## 폴더 컨벤션

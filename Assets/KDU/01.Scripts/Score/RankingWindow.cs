@@ -23,8 +23,12 @@ public class RankingWindow : MonoBehaviour
     [Tooltip("열 때 기본 탭 번호")]
     [SerializeField] private int defaultTab;
 
+    private bool _steamTabsHidden;
+
     private void Awake()
     {
+        HideSteamTabs();
+
         for (int i = 0; i < tabs.Count; i++)
         {
             if (tabs[i].button == null)
@@ -39,7 +43,11 @@ public class RankingWindow : MonoBehaviour
     }
 
     // 기본 탭으로 열기 (메뉴 버튼)
-    public void Open() => OpenTab(defaultTab);
+    public void Open()
+    {
+        HideSteamTabs();
+        OpenTab(defaultTab);
+    }
 
     // 지정 탭으로 열기 — 페이지를 먼저 고른 뒤 창을 켜서 선택 페이지만 갱신되게
     public void OpenTab(int index)
@@ -56,6 +64,8 @@ public class RankingWindow : MonoBehaviour
     // 선택 페이지만 켜고, 선택된 탭 버튼은 비활성으로 표시
     public void Show(int index)
     {
+        HideSteamTabs();
+
         for (int i = 0; i < tabs.Count; i++)
         {
             bool selected = i == index;
@@ -64,6 +74,33 @@ public class RankingWindow : MonoBehaviour
                 tabs[i].page.SetActive(selected);
             if (tabs[i].button != null)
                 tabs[i].button.interactable = !selected;
+        }
+    }
+
+    // Steam 제외 빌드 — 랭킹 페이지 탭 제거, 기본 탭 보정
+    private void HideSteamTabs()
+    {
+        if (!SteamBootstrap.Excluded || _steamTabsHidden)
+            return;
+
+        _steamTabsHidden = true;
+
+        for (int i = tabs.Count - 1; i >= 0; i--)
+        {
+            GameObject page = tabs[i].page;
+            if (page == null || page.GetComponentInChildren<LeaderboardPanel>(true) == null)
+                continue;
+
+            if (tabs[i].button != null)
+                tabs[i].button.gameObject.SetActive(false);
+
+            page.SetActive(false);
+            tabs.RemoveAt(i);
+
+            if (i == defaultTab)
+                defaultTab = 0;
+            else if (i < defaultTab)
+                defaultTab--;
         }
     }
 }
