@@ -159,7 +159,7 @@ public class GridPlayerHungerController : MonoBehaviour
         if (_status == null) return;
 
         if (_stats.Hungry <= hungryStatusThreshold)
-            _status.ApplyStatus(new StatusRequest(null, Vector2Int.zero, StatusType.Hunger, HungerStatusDuration, 1, null));
+            _status.ApplyStatus(new StatusRequest(null, Vector2Int.zero, StatusType.Hunger, HungerStatusDuration, 1));
         else
             _status.TryRemoveStatus(StatusType.Hunger);
     }

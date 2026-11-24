@@ -68,8 +68,7 @@ public class EnemySpider : EnemyBase
             (target as IGridEntity)?.GridPosition ?? GridPosition,
             slowDebuffData.statusType,
             slowDebuffData.durationTurns,
-            slowDebuffData.power,
-            null // trapSource: 적 본인 공격이므로 null
+            slowDebuffData.power
         );
 
         // StatusController 없으면 자동 부착 후 상태 적용

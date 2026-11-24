@@ -314,8 +314,9 @@ public class GridPlayerHealth : MonoBehaviour, IDamageable
     {
         if (rawDamage <= 0) return 0;
         int armorDefense = NYHPlayerDefenseCalculator.RollArmorDefense(_equipmentController);
+        int shieldBlock = NYHPlayerDefenseCalculator.RollShieldBlock(_equipmentController);
         int flatDefense = _stats != null ? _stats.Defense : 0;
-        return Mathf.Max(0, rawDamage - armorDefense - flatDefense);
+        return Mathf.Max(0, rawDamage - armorDefense - shieldBlock - flatDefense);
     }
 
     private CombatTextType GetCombatTextType(int finalDamage, int criticalReferenceMaxDamage)

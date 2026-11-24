@@ -38,8 +38,6 @@ public class TestScripts : MonoBehaviour
 
     private int lastFloor = -1;
 
-    [Header("디버그 단축키 설정 (인스펙터 토글 및 전체 주석 처리 가능)")]
-    [SerializeField] private bool enableDebugFloorKeys = true;
 
     void Start()
     {

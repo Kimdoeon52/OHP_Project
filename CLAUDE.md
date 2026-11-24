@@ -19,8 +19,8 @@
 
 ## 핵심 아키텍처 결정 (이것만은 반드시 인지)
 
-1. **두 티어 분리.** 티어 1(코어: Grid/Time/Vision/Turn/Map/Events/Entities/Data)은 처음부터 제대로, 티어 2(콘텐츠: 개별 적/함정/아이템/빌더/페인터/Feeling/보스/UI)는 가볍게 80%로. → 상세: `ARCHITECTURE.md`
-2. **데이터는 ScriptableObject.** 적·함정·무기·아이템·포션·스크롤·저주·마법 전부 SO. 콘텐츠 추가 = 데이터만 추가, 코드 수정 X.
+1. **두 티어 분리.** 티어 1(코어: Grid/Time/Vision/Turn/Map/Events/Entities/Data)은 처음부터 제대로, 티어 2(콘텐츠: 개별 적/아이템/빌더/페인터/Feeling/보스/UI)는 가볍게 80%로. → 상세: `ARCHITECTURE.md`
+2. **데이터는 ScriptableObject.** 적·무기·아이템·포션·스크롤·저주·마법 전부 SO. 콘텐츠 추가 = 데이터만 추가, 코드 수정 X.
 3. **통신은 정적 이벤트(`GameEvents`).** UI/사운드/시간보너스/저주발동은 구독으로. 직접 참조 X.
 4. **시드 결정론은 `DungeonRandom` 통일.** `UnityEngine.Random`/`System.Random` 직접 호출 금지. (챌린지/시드챌린지 기반 — GDD 13장)
 5. **Floor Feeling은 2종 고정** — Hazard/Dark. Hazard는 영역별 리스킨(오염수/함정바닥/용암), area 파라미터로 분기. **Traps는 난이도 과다로 제외, Water/Grass/Chasm은 옛 모델 — 둘 다 만들지 말 것.** (GDD 6.3)
@@ -51,6 +51,7 @@
 - ❌ 로컬 시계(`DateTime.Now`)로 일일 챌린지 날짜 판정 — 조작 가능 (반드시 `DailyChallenge`)
 - ❌ 인터페이스 강박(구현 1개뿐인데 인터페이스), 5줄 헬퍼 클래스, getter/setter 래퍼, 추상클래스 남발
 - ❌ Water/Grass/Chasm/Traps Feeling 생성 (2종 고정)
+- ❌ 함정(Trap)·튜토리얼 재도입 — 2026-11 제외 확정, 관련 코드 삭제됨 (`TrapTerrainController`/`TrapRequests`는 포션·Hazard용 장판·상태이상 공용이라 유지)
 - ❌ 보스층을 절차생성 파이프라인에 태우기
 - ❌ `UnityEngine.Random`/`System.Random` 직접 호출 (반드시 `DungeonRandom`)
 - ❌ GDD에 없는 콘텐츠(몬스터/아이템/방종류/Feeling) 임의 추가 — 스코프 락
@@ -68,7 +69,7 @@
 ## 본 개발 진입 점검표 (의도 자가검증 — 작업 후 확인)
 
 - [ ] 코어 시스템이 프로토타입에서 그대로 이전됐는가? (`Grid/Time/Vision/Turn/Events/Entities/Data`)
-- [ ] 새 적/함정 추가가 SO 인스턴스 + 인스펙터 설정만으로 가능한가?
+- [ ] 새 적 추가가 SO 인스턴스 + 인스펙터 설정만으로 가능한가?
 - [ ] 새 Feeling 추가가 클래스 1개 + 풀 등록만으로 가능한가? (단 풀은 2종 고정)
 - [ ] 새 빌더/페인터 추가가 같은 방식으로 가능한가?
 - [ ] **보스층이 절차생성을 스킵하고 고정 맵을 로드하는가?**
@@ -85,7 +86,7 @@
 - `SCOPE_AND_ROADMAP.md` — 스코프 락 상세·월별 마일스톤·보스 폴백 전략
 - `MAP_GENERATION.md` — 맵 생성 시스템 명세 (맵 작업 시 읽을 것)
 - `PHASE_3_5_PLAN.md` — Phase 3~5 단계별 계획
-- `SHOP_PLAN.md` / `TUTORIAL_PLAN.md` — 상점·튜토리얼 구현 계획 (계획만, 미구현)
+- `SHOP_PLAN.md` — 상점 구현 계획
 - `BACKLOG.md` — 미룬 아이디어 (출시 스코프 분류 대상)
 
 ---

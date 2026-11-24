@@ -10,7 +10,6 @@ public class GoldPickup : MonoBehaviour
     public Vector2Int GridPosition { get; private set; }
 
     [SerializeField, Min(0)] private int amount = 10;
-    [SerializeField] private KeyCode pickupKey = KeyCode.Space;
 
     private SpriteRenderer _renderer;
     private GridPlayer _player;

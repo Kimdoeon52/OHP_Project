@@ -14,11 +14,8 @@ public static class GameEvents
     public static Action<Vector2Int, float> OnEnemyKilled;  // pos, timeBonus
     public static Action<int> OnPlayerDamaged;              // damage amount
     public static Action<CombatTextRequest> OnCombatTextRequested;
-    public static Action<Vector2Int> OnTrapTriggered;
     public static Action<StatusRequest> OnStatusRequested;
     public static Action<TrapTerrainRequest> OnTrapTerrainRequested;
-    public static Action<TrapSpawnRequest> OnTrapSpawnRequested;
-    public static Action<TrapStubRequest> OnTrapStubRequested;
 
     // 보상 드롭
     public static Action<Vector2Int, int> OnExpDropped;     // pos, exp
@@ -72,11 +69,8 @@ public static class GameEvents
         OnEnemyKilled = null;               // 적 처치
         OnPlayerDamaged = null;             // 플레이어 피해
         OnCombatTextRequested = null;       // 전투 텍스트
-        OnTrapTriggered = null;             // 함정 발동
         OnStatusRequested = null;           // 상태
-        OnTrapTerrainRequested = null;      // 함정 지형
-        OnTrapSpawnRequested = null;        // 함정 생성
-        OnTrapStubRequested = null;         // 함정 미리보기
+        OnTrapTerrainRequested = null;      // 장판 지형
         OnExpDropped = null;                // 경험치 드롭
         OnGoldDropped = null;               // 골드 드롭
         OnGoldChanged = null;               // 골드 잔액 변동

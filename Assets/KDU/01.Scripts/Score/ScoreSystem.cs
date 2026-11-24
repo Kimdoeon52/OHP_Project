@@ -26,8 +26,8 @@ public class ScoreSystem : Singleton<ScoreSystem>
         GameEvents.OnLevelComplete += OnFloorCleared;
         GameEvents.OnBossDefeated += OnBossDefeated;
         GameEvents.OnDepthChanged += OnDepthChanged;
-        GameEvents.OnPlayerDied += Finalize;
-        GameEvents.OnTimeUp += Finalize;
+        GameEvents.OnPlayerDied += FinalizeScore;
+        GameEvents.OnTimeUp += FinalizeScore;
         GameEvents.OnRunCleared += FinalizeCleared;
     }
 
@@ -37,8 +37,8 @@ public class ScoreSystem : Singleton<ScoreSystem>
         GameEvents.OnLevelComplete -= OnFloorCleared;
         GameEvents.OnBossDefeated -= OnBossDefeated;
         GameEvents.OnDepthChanged -= OnDepthChanged;
-        GameEvents.OnPlayerDied -= Finalize;
-        GameEvents.OnTimeUp -= Finalize;
+        GameEvents.OnPlayerDied -= FinalizeScore;
+        GameEvents.OnTimeUp -= FinalizeScore;
         GameEvents.OnRunCleared -= FinalizeCleared;
     }
 
@@ -71,7 +71,7 @@ public class ScoreSystem : Singleton<ScoreSystem>
 
     private void OnDepthChanged(int depth) => RefreshCurrent();
 
-    // 진행 중 점수 재계산 후 HUD에 통지. Finalize와 동일 공식(확정 전 미리보기).
+    // 진행 중 점수 재계산 후 HUD에 통지. FinalizeScore와 동일 공식(확정 전 미리보기).
     private void RefreshCurrent()
     {
         if (_finalized)
@@ -108,11 +108,11 @@ public class ScoreSystem : Singleton<ScoreSystem>
         if (!_finalized)
             _cleared = true;
 
-        Finalize();
+        FinalizeScore();
     }
 
     // 런 종료(사망/타임업/클리어) 1회만 점수 확정.
-    private void Finalize()
+    private void FinalizeScore()
     {
         if (_finalized)
             return;

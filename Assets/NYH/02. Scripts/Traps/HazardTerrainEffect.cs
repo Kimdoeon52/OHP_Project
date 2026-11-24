@@ -36,10 +36,10 @@ public static class HazardTerrainEffect
         bool emptyStep = magic?.HalvesHazardDamage == true;
 
         if (!emptyStep)
-            TrapEffectUtility.RequestStatus(entity, cell, StatusType.Slow, HazardSlowDurationTurns, 1, null);
+            TrapEffectUtility.RequestStatus(entity, cell, StatusType.Slow, HazardSlowDurationTurns, 1);
 
         int power = emptyStep ? Mathf.Max(1, HazardDamagePower / 2) : HazardDamagePower;
-        TrapEffectUtility.RequestStatus(entity, cell, HazardDamageStatusType, HazardDamageDurationTurns, power, null);
+        TrapEffectUtility.RequestStatus(entity, cell, HazardDamageStatusType, HazardDamageDurationTurns, power);
     }
 
     private static bool ShouldApplyHazard(IGridEntity entity, Vector2Int cell)

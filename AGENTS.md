@@ -17,7 +17,7 @@
 | `Assets/KDU/01.Scripts/MarkDown/SCOPE_AND_ROADMAP.md` | 스코프 락 상세·마일스톤·보스 폴백 전략 |
 | `Assets/KDU/01.Scripts/MarkDown/MAP_GENERATION.md` | 맵 생성 시스템 명세 (맵 작업 시 필독) |
 | `Assets/KDU/01.Scripts/MarkDown/PHASE_3_5_PLAN.md` | Phase 3~5 단계별 계획 |
-| `Assets/KDU/01.Scripts/MarkDown/SHOP_PLAN.md` · `TUTORIAL_PLAN.md` | 상점·튜토리얼 구현 계획 (계획만, 미구현) |
+| `Assets/KDU/01.Scripts/MarkDown/SHOP_PLAN.md` | 상점 구현 계획 |
 | `Assets/KDU/01.Scripts/MarkDown/BACKLOG.md` | 미룬 아이디어 |
 
 ---

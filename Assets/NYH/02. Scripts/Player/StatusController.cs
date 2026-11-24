@@ -19,8 +19,6 @@ public class StatusController : MonoBehaviour
     [Tooltip("냉기 상태일 때 이동 쿨타임에 곱할 배율입니다.")]
     [SerializeField, Min(0.01f)] private float chillMoveMultiplier = 1.25f;
 
-    [Tooltip("굶주림(hungry==0) 상태일 때 이동 쿨타임에 고정으로 더해지는 시간(초)입니다. 실제 패널티 값은 GridPlayerHungerController에서 관리합니다.")]
-    [SerializeField, Min(0f)] private float hungerMovePenaltyRef = 0.5f; // 참고용 — 실제 값은 GridPlayerHungerController.hungerMovePenalty
 
     [Tooltip("신속 상태일 때 이동 쿨타임에 곱할 배율입니다. 1보다 작으면 빨라집니다.")]
     [SerializeField, Min(0.01f)] private float hasteMoveMultiplier = 0.7f;

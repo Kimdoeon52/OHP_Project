@@ -16,7 +16,7 @@
 - `VisionSystem` — 시야 계산 + 안개 관리
 - `TurnManager` — 플레이어 행동 → 적 행동 동기화
 - `Entity` 추상화 — IGridEntity, IDamageable, EntityBase
-- 데이터 정의 — EnemyData, TrapData, WeaponData, ItemData (ScriptableObject)
+- 데이터 정의 — EnemyData, ItemData 계열, GameConfig (ScriptableObject)
 - 이벤트 시스템 — GameEvents (정적 이벤트 허브)
 - 맵 생성기 코어 — ILayoutBuilder, IRegionPainter, RoomData, BossRoomLoader
 - DungeonRandom — System.Random 래핑, 시드 결정론
@@ -24,7 +24,7 @@
 ### 티어 2 — 콘텐츠 구현 (가볍게 짤 것)
 추상화 X, 직접 구현. 콘텐츠 추가는 SO 인스턴스로.
 - 개별 몬스터 AI (GDD 10장 로스터)
-- 개별 함정, 개별 아이템 효과(각 포션/스크롤/마법)
+- 개별 아이템 효과(각 포션/스크롤/마법)
 - 개별 빌더/페인터 구현체
 - 보스 구현(감시자/불사왕/하데스) + 보스층 고정 맵
 - UI 화면
@@ -61,13 +61,13 @@ public interface IGridEntity {
 ```csharp
 public static class GameEvents {
     public static event Action<Enemy> OnEnemyKilled;
-    public static event Action<Trap> OnTrapTriggered;
+    public static event Action<int> OnPlayerDamaged;
     public static event Action<float> OnTimeChanged;
 }
 ```
 UI/사운드/시간보너스/저주발동 등이 다 구독. 직접 참조보다 무조건 이거.
 
-**4. ScriptableObject 우선** — 적/함정/무기/아이템/포션/스크롤/저주/마법 다 SO. 콘텐츠 추가 = 데이터만, 코드 수정 X. 디자이너가 인스펙터에서 수치 튜닝.
+**4. ScriptableObject 우선** — 적/무기/아이템/포션/스크롤/저주/마법 다 SO. 콘텐츠 추가 = 데이터만, 코드 수정 X. 디자이너가 인스펙터에서 수치 튜닝.
 
 **5. 매직넘버 금지(단 적당히)**
 ```csharp
@@ -127,7 +127,7 @@ Assets/
 ├── KDU/                                # 김도언 (PM/맵)
 │   ├── 00.Scene/
 │   ├── 01.Scripts/
-│   │   ├── Data/                       # [티어 1] SO 정의 (EnemyData, TrapData, WeaponData, GameConfig)
+│   │   ├── Data/                       # [티어 1] SO 정의 (EnemyData, GameConfig, 풀 SO)
 │   │   ├── Entities/                   # [티어 1] IGridEntity, IDamageable, EntityBase
 │   │   ├── Events/                     # [티어 1] GameEvents
 │   │   ├── Grid/                       # [티어 1] GridSystem

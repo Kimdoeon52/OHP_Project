@@ -382,6 +382,13 @@ public static class NYHPlayerDefenseCalculator
         return armor != null ? armor.GetDefense() : 0;
     }
 
+    // 장착 방패의 받는 피해 추가 차감량
+    public static int RollShieldBlock(NYHEquipmentController equipmentController)
+    {
+        ShieldWeaponInstance shield = GetEquippedShieldInstance(equipmentController);
+        return shield != null ? shield.GetMinusDamage() : 0;
+    }
+
     public static (int min, int max) GetArmorDefenseRange(NYHEquipmentController equipmentController)
     {
         ArmorInstance armor = GetEquippedArmorInstance(equipmentController);
@@ -407,6 +414,29 @@ public static class NYHPlayerDefenseCalculator
             && equipped.SourceInstance is ArmorInstance sourceArmor)
         {
             return sourceArmor;
+        }
+
+        return null;
+    }
+
+    // 무기 슬롯에 장착한 방패 인스턴스
+    private static ShieldWeaponInstance GetEquippedShieldInstance(NYHEquipmentController equipmentController)
+    {
+        if (equipmentController == null)
+            return null;
+
+        if (equipmentController.TryGetEquippedInventoryItem(EquipmentSlot.Weapon, 0, out InventoryItem itemView)
+            && itemView != null
+            && itemView.ItemInstance is ShieldWeaponInstance viewShield)
+        {
+            return viewShield;
+        }
+
+        if (equipmentController.TryGetEquipped(EquipmentSlot.Weapon, out NYHEquipmentItemInstance equipped)
+            && equipped != null
+            && equipped.SourceInstance is ShieldWeaponInstance sourceShield)
+        {
+            return sourceShield;
         }
 
         return null;

@@ -28,16 +28,12 @@ public class MoveScene : MonoBehaviour
     [SerializeField] private string challengeSceneName = "NYH_Grid";
     [Tooltip("메인 메뉴 버튼을 눌렀을 때 로딩 씬 이후 최종적으로 이동할 씬 이름입니다.")]
     [SerializeField] private string mainMenuSceneName = "MainMeun";
-    [Tooltip("튜토리얼 버튼을 눌렀을 때 로딩 씬 이후 최종적으로 이동할 씬 이름입니다.")]
-    [SerializeField] private string tutorialSceneName = "Tutorial";
     
 
     [Header("Continue Button State")]
     [Tooltip("이어하기 버튼입니다. 저장 데이터가 없으면 interactable=false가 되어 회색 비활성 상태가 됩니다.")]
     [SerializeField] private Button continueButton;
 
-    [Tooltip("임시 저장 데이터 확인용 PlayerPrefs 키입니다. 실제 저장 시스템이 완성되면 HasContinueSave() 내부 구현만 교체하세요.")]
-    [SerializeField] private string continueSaveKey = "HasContinueSave";
 
     private void Awake()
     {
@@ -97,11 +93,6 @@ public class MoveScene : MonoBehaviour
     {
         // 타이틀 씬으로 이동
         LoadThroughLoadingScene(mainMenuSceneName);
-    }
-    // 튜토리얼 씬으로 이동
-    public void StartTutorial()
-    {
-        LoadThroughLoadingScene(tutorialSceneName);
     }
 
     public void RefreshContinueButton()

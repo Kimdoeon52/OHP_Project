@@ -39,9 +39,10 @@ public class VisionSystem : Singleton<VisionSystem>
         base.Awake();
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
         CancelTorchEffect();
+        base.OnDestroy();
     }
 
     public void UpdateVision(Vector2Int playerPos)

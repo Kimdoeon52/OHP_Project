@@ -39,8 +39,7 @@ public class FirePotion : ThrowablePotion
             origin,
             fireTerrainRadius,
             fireTerrainDurationTurns,
-            TrapTerrainType.Fire,
-            null));
+            TrapTerrainType.Fire));
     }
 
     protected override async UniTask ApplyEffect(Vector2Int tile)

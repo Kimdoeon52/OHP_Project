@@ -14,6 +14,12 @@ public class ShieldWeapon : CloseWeapon
         return Random.Range(minMinusDamage, maxMinusDamage + 1);
     }
 
+    // 방패 전용 인스턴스 생성 (받는 피해 차감용)
+    public override ItemInstance CreateInstance()
+    {
+        return new ShieldWeaponInstance { data = this };
+    }
+
     public override string GetToolTipStats()
     {
         return $"[{LocalizedName}]  <color=red>{LocalizationManager.GetOrDefault("msg_미감정", "Unidentified")}</color>\n" +

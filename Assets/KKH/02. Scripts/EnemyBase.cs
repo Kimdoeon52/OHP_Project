@@ -76,8 +76,6 @@ public abstract class EnemyBase : EntityBase, IDamageable
     private StatusController _statusController;
     /// <summary> 중복 사망 처리 방지 플래그 </summary>
     private bool _isDying;
-    /// <summary> 경보 발동 여부 </summary>
-    private bool isAlerted = false;
     /// <summary> 경보 발생 시 목표 지점 </summary>
     private Vector2Int? _alarmTarget = null;
 
@@ -654,8 +652,7 @@ public abstract class EnemyBase : EntityBase, IDamageable
             (target as IGridEntity)?.GridPosition ?? GridPosition,
             effectData.statusType,
             effectData.durationTurns,
-            effectData.power,
-            null // trapSource: 적 공격이므로 null
+            effectData.power
         );
 
         StatusController controller = component.GetOrAddComponent<StatusController>();

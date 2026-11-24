@@ -97,8 +97,6 @@ public class AudioManager : MonoBehaviour
     [Tooltip("적이 처치되었을 때 재생할 효과음입니다.")]
     [SerializeField] private AudioCue enemyKilledCue;
 
-    [Tooltip("함정이 발동했을 때 재생할 효과음입니다.")]
-    [SerializeField] private AudioCue trapTriggeredCue;
 
     [Tooltip("상자가 열렸을 때 재생할 효과음입니다.")]
     [SerializeField] private AudioCue chestOpenedCue;
@@ -622,7 +620,6 @@ public class AudioManager : MonoBehaviour
     {
         GameEvents.OnPlayerDamaged += OnPlayerDamaged;
         GameEvents.OnEnemyKilled += OnEnemyKilled;
-        GameEvents.OnTrapTriggered += OnTrapTriggered;
         GameEvents.OnChestOpened += OnChestOpened;
         GameEvents.OnKeyAcquired += OnKeyAcquired;
         GameEvents.OnItemPurchased += OnItemPurchased;
@@ -636,7 +633,6 @@ public class AudioManager : MonoBehaviour
     {
         GameEvents.OnPlayerDamaged -= OnPlayerDamaged;
         GameEvents.OnEnemyKilled -= OnEnemyKilled;
-        GameEvents.OnTrapTriggered -= OnTrapTriggered;
         GameEvents.OnChestOpened -= OnChestOpened;
         GameEvents.OnKeyAcquired -= OnKeyAcquired;
         GameEvents.OnItemPurchased -= OnItemPurchased;
@@ -648,7 +644,6 @@ public class AudioManager : MonoBehaviour
 
     private void OnPlayerDamaged(int damage) => PlaySfx(AudioEventId.PlayerDamaged);
     private void OnEnemyKilled(Vector2Int position, float timeBonus) => PlaySfx(AudioEventId.MonsterKilled);
-    private void OnTrapTriggered(Vector2Int position) => PlaySfx(trapTriggeredCue);
     private void OnChestOpened(Vector2Int position) => PlaySfx(AudioEventId.ChestOpened);
     private void OnKeyAcquired(KeyType keyType) => PlaySfx(AudioEventId.KeyPicked);
     private void OnItemPurchased(ItemBase item) => PlaySfx(itemPurchasedCue);

@@ -232,8 +232,6 @@ public class GridPlayerMovement : MonoBehaviour
 
         transform.position = targetWorld;
 
-        // 도착 직후에 함정을 발동시켜서 플레이어 이동 연출 중 일어날 수 있는 꼬임을 방지합니다.
-        TrapSystem.Instance?.TryTriggerAt(target, _player);
         HazardTerrainEffect.ApplyOnEnter(_player, target);
         VisionSystem.Instance.UpdateVision(_player.GridPosition);
         TrapTerrainController.TryApplyTerrainAt(_player, target);

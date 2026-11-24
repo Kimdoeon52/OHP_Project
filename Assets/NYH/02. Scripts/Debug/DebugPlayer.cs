@@ -423,7 +423,7 @@ public class DebugPlayer : MonoBehaviour
 
         IGridEntity targetEntity = player != null ? player : FindAnyObjectByType<GridPlayer>();
         Vector2Int targetPosition = targetEntity != null ? targetEntity.GridPosition : Vector2Int.zero;
-        targetStatus.ApplyStatus(new StatusRequest(targetEntity, targetPosition, statusType, statusDurationTurns, statusPower, null));
+        targetStatus.ApplyStatus(new StatusRequest(targetEntity, targetPosition, statusType, statusDurationTurns, statusPower));
 
         Debug.Log($"[DebugPlayer] 상태이상 적용: {statusType}, {statusDurationTurns}턴, 강도 {statusPower}");
         RefreshStatsUI();

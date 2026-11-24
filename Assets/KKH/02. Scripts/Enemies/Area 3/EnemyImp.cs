@@ -60,7 +60,7 @@ public class EnemyImp : EnemyBase
                 {
                     // 1초(즉 1턴) 동안 유지되는 화염 장판 생성 요청
                     GameEvents.OnTrapTerrainRequested?.Invoke(
-                        new TrapTerrainRequest(cell, 0, 1, TrapTerrainType.Fire, null)
+                        new TrapTerrainRequest(cell, 0, 1, TrapTerrainType.Fire)
                     );
                 }
             }

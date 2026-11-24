@@ -21,9 +21,6 @@ public class ItemPickup : MonoBehaviour
     public CurseData curse;   // SO라서 인스펙터에서 드래그 가능, 없으면 None
     public ItemInstance item;
 
-    [Header("줍기")]
-    [Tooltip("같은 칸에서 이 키를 누르면 줍는다.")]
-    [SerializeField] private KeyCode pickupKey = KeyCode.Space;
 
     private SpriteRenderer _renderer;
     private GridPlayer _player;

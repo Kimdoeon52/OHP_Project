@@ -5,8 +5,6 @@ using PrototypeRT;
 public class SearchAction : MonoBehaviour
 {
     [SerializeField] private GridPlayer player;
-    [Tooltip("탐색 입력 키.")]
-    [SerializeField] private KeyCode searchKey = KeyCode.F;
     [Tooltip("탐색 범위")]
     [SerializeField, Min(0)] private int searchRadius = 3;
 

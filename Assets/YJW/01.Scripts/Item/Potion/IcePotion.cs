@@ -38,8 +38,7 @@ public class IcePotion : ThrowablePotion
 			origin,
 			iceTerrainRadius,
 			iceTerrainDurationTurns,
-			TrapTerrainType.Chill,
-			null));
+			TrapTerrainType.Chill));
 	}
 
 	protected override async UniTask ApplyEffect(Vector2Int tile)

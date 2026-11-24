@@ -35,21 +35,9 @@ public static class TrapEffectUtility
         return GridSystem.Instance != null ? GridSystem.Instance.GetEntityAt(cell) : null;
     }
 
-    public static IDamageable AsDamageable(IGridEntity entity)
+    public static void RequestStatus(IGridEntity entity, Vector2Int targetPosition, StatusType statusType, int durationTurns, int power)
     {
-        return entity as IDamageable;
-    }
-
-    public static void DealDamage(IGridEntity entity, TrapData data)
-    {
-        IDamageable damageable = AsDamageable(entity);
-        if (damageable == null || damageable.IsDead || data == null) return;
-        damageable.TakeDamage(data.CalculateDamage(damageable));
-    }
-
-    public static void RequestStatus(IGridEntity entity, Vector2Int targetPosition, StatusType statusType, int durationTurns, int power, GridTrap sourceTrap)
-    {
-        var request = new StatusRequest(entity, targetPosition, statusType, durationTurns, power, sourceTrap);
+        var request = new StatusRequest(entity, targetPosition, statusType, durationTurns, power);
         GameEvents.OnStatusRequested?.Invoke(request);
 
         if (entity is Component component)
@@ -57,84 +45,5 @@ public static class TrapEffectUtility
             StatusController controller = component.GetOrAddComponent<StatusController>();
             controller.ApplyStatus(request);
         }
-    }
-
-    public static bool TryMoveEntity(IGridEntity entity, Vector2Int destination)
-    {
-        if (entity == null || GridSystem.Instance == null || !GridSystem.Instance.IsWalkable(destination))
-            return false;
-
-        if (entity is EntityBase entityBase)
-        {
-            entityBase.SetGridPosition(destination);
-            if (entity is GridPlayer && VisionSystem.Instance != null)
-                VisionSystem.Instance.UpdateVision(destination);
-            return true;
-        }
-
-        return false;
-    }
-
-    public static bool TryFindRandomWalkableCell(out Vector2Int cell)
-    {
-        cell = default;
-        if (GridSystem.Instance == null) return false;
-
-        var candidates = new List<Vector2Int>();
-        GridPlayer player = Object.FindFirstObjectByType<GridPlayer>();
-        foreach (Vector2Int candidate in GridSystem.Instance.GetAllWalkableCells())
-        {
-            if (TurnManager.Instance != null && TurnManager.Instance.GetEntityAt(candidate) != null)
-                continue;
-            if (player != null && player.GridPosition == candidate)
-                continue;
-            candidates.Add(candidate);
-        }
-
-        if (candidates.Count == 0) return false;
-        cell = candidates[Random.Range(0, candidates.Count)];
-        return true;
-    }
-
-    public static IGridEntity FindNearestEntity(Vector2Int origin, IGridEntity fallbackActivator, int maxRange)
-    {
-        IGridEntity best = fallbackActivator;
-        int bestDistance = best != null ? SquaredDistance(origin, best.GridPosition) : int.MaxValue;
-        int maxDistance = maxRange <= 0 ? int.MaxValue : maxRange * maxRange;
-
-        GridPlayer player = Object.FindFirstObjectByType<GridPlayer>();
-        if (player != null)
-        {
-            int distance = SquaredDistance(origin, player.GridPosition);
-            if (distance < bestDistance && distance <= maxDistance)
-            {
-                best = player;
-                bestDistance = distance;
-            }
-        }
-
-        if (GridSystem.Instance == null) return best;
-
-        foreach (Vector2Int cell in GridSystem.Instance.GetAllWalkableCells())
-        {
-            IGridEntity entity = TurnManager.Instance != null ? TurnManager.Instance.GetEntityAt(cell) : null;
-            if (entity == null) continue;
-
-            int distance = SquaredDistance(origin, entity.GridPosition);
-            if (distance < bestDistance && distance <= maxDistance)
-            {
-                best = entity;
-                bestDistance = distance;
-            }
-        }
-
-        return best;
-    }
-
-    private static int SquaredDistance(Vector2Int a, Vector2Int b)
-    {
-        int dx = a.x - b.x;
-        int dy = a.y - b.y;
-        return dx * dx + dy * dy;
     }
 }

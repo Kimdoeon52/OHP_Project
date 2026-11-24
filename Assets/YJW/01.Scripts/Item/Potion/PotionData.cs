@@ -130,7 +130,7 @@ public class PotionData : ItemBase
             Debug.LogWarning("PotionData: StatusController를 찾지 못해 포션 효과를 적용하지 못했습니다.");
             return;
         }
-        status.ApplyStatus(new StatusRequest(null, Vector2Int.zero, type, durationSeconds, 1, null));
+        status.ApplyStatus(new StatusRequest(null, Vector2Int.zero, type, durationSeconds, 1));
     }
 
     // 정화 포션: 독·둔화 제거 후 10초간 면역
@@ -145,7 +145,7 @@ public class PotionData : ItemBase
         status.TryRemoveStatus(StatusType.Poison);
         status.TryRemoveStatus(StatusType.Slow);
         status.TryRemoveStatus(StatusType.Cripple);
-        status.ApplyStatus(new StatusRequest(null, Vector2Int.zero, StatusType.Purified, value, 1, null));
+        status.ApplyStatus(new StatusRequest(null, Vector2Int.zero, StatusType.Purified, value, 1));
     }
 
     private static StatusController GetPlayerStatusController()

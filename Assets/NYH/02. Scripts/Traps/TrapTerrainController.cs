@@ -177,7 +177,7 @@ public class TrapTerrainController : MonoBehaviour
         // v1 밸런스: 장판에 닿을 때마다 1초/1파워 상태를 부여합니다.
         // 장판 유지 시간과 상태 지속 시간은 분리되어 있습니다.
         // 화상 지속시간 
-        TrapEffectUtility.RequestStatus(entity, cell, statusType, 5, 1, null);
+        TrapEffectUtility.RequestStatus(entity, cell, statusType, 5, 1);
         return true;
     }
 

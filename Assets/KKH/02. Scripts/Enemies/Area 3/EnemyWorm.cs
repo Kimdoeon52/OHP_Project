@@ -19,7 +19,6 @@ public class EnemyWorm : EnemyBase
 {
     [Header("Burrow Animation Settings")]
     [SerializeField] private string burrowStateName = "big worm 1 retreat";
-    [SerializeField] private string idleStateName = "big worm 1 idle";
     [SerializeField] private string travelBoolName = "Walk";
 
     [Header("Animation Frame Ranges (Retreat / Emerge)")]

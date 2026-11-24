@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.U2D.Sprites;
 
 public class SpritePivotUtility : EditorWindow
 {
@@ -33,14 +34,19 @@ public class SpritePivotUtility : EditorWindow
             // Sprite Import Mode에 맞춰 처리
             if (importer.spriteImportMode == SpriteImportMode.Multiple)
             {
-                // Multiple 모드: 시트 내 모든 개별 슬라이스의 피벗을 (0.5, 0.3)으로 변경
-                var spritesheet = importer.spritesheet;
-                for (int i = 0; i < spritesheet.Length; i++)
+                // Multiple 모드: 시트 내 모든 슬라이스 피벗 변경 (Sprite Editor 데이터 API)
+                var factory = new SpriteDataProviderFactories();
+                factory.Init();
+                ISpriteEditorDataProvider dataProvider = factory.GetSpriteEditorDataProviderFromObject(importer);
+                dataProvider.InitSpriteEditorDataProvider();
+                SpriteRect[] rects = dataProvider.GetSpriteRects();
+                foreach (SpriteRect rect in rects)
                 {
-                    spritesheet[i].alignment = (int)SpriteAlignment.Custom;
-                    spritesheet[i].pivot = new Vector2(0.5f, 0.4f);
+                    rect.alignment = SpriteAlignment.Custom;
+                    rect.pivot = new Vector2(0.5f, 0.4f);
                 }
-                importer.spritesheet = spritesheet;
+                dataProvider.SetSpriteRects(rects);
+                dataProvider.Apply();
             }
             else
             {

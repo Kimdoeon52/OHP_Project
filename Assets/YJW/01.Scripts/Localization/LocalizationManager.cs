@@ -21,10 +21,6 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.Korean, "이어하기" },
             { Language.English, "Continue" }
         }},
-        { "bt_튜토리얼", new Dictionary<Language, string> {
-            { Language.Korean, "튜토리얼" },
-            { Language.English, "Tutorial" }
-        }},
         { "bt_챌린지", new Dictionary<Language, string> {
             { Language.Korean, "챌린지" },
             { Language.English, "Challenge" }
@@ -298,10 +294,6 @@ public class LocalizationManager : PersistentSingleton<LocalizationManager>
             { Language.English, "Skill Points" }
         }},
         //------------------------------------------ 인게임
-        { "bt_튜토리얼스킵", new Dictionary<Language, string> {
-            { Language.Korean, "튜토리얼 스킵" },
-            { Language.English, "Skip Tutorial" }
-        }},
         { "bt_취소", new Dictionary<Language, string> {
             { Language.Korean, "취소" },
             { Language.English, "Cancel" }

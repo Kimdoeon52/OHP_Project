@@ -20,17 +20,14 @@ public class LastBossHead : BossBase, IGridEntity, IMultiCellGridEntity, IDamage
     [SerializeField] private float laserVisualThickness = 3.5f;
     [SerializeField] private int laserDamage = 20;
     [SerializeField] private int laserTelegraphMs = 1500;
-    [SerializeField] private int laserActiveMs = 800;
 
     [Header("패턴2 운석 설정")]
     [SerializeField] private int meteorDamage = 30;
-    [SerializeField] private int meteorTelegraphMs = 1500;
     [SerializeField] private GameObject meteorPrefab; // Optional meteor visual effect
 
     private int _minX;
     private int _maxX;
     private int _topY;
-    private bool _isRegisteredToTurnManager = false;
     private bool _isInitialized = false;
 
     // 사망 연출은 손(LastBossHand)과 동일한 고정값 사용 (duration=1.0f, shake=(0.4,0,0), vibrato=30, randomness=90)
