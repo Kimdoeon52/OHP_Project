@@ -23,11 +23,11 @@
 - [x] `SteamBootstrap` 자동 초기화 / `DailyChallenge` / `SteamLeaderboard`(일일·전체 보드) 코드
 - [x] 일일 런 세이브·이어하기 시 날짜 키 유지 (`RunSnapshot.dailyKey`), 시드 입력 여부 유지 (`RunSnapshot.customSeed`)
 - [ ] 타이틀 씬 랭킹 창 UI 연결 (`ScoreRecordPanel` 루트에 `RankingWindow`, 탭별 페이지에 `LeaderboardPanel`/`ScoreRecordPopup` + `RankRow` 프리팹)
-- [x] 결산 화면 코드 (`RunResultPanel` — `OnScoreFinalized` 때 `Scoreboard.BuildEntry`로 만든 기록을 `ScoreDetailPopup`으로 표시) / [ ] 씬 배선 (항상 켜진 오브젝트에 부착 + 게임 씬에 팝업 인스턴스)
+- [x] 결산 화면 코드 (`RunResultPanel` — `OnScoreFinalized` 때 `Scoreboard.BuildEntry`로 만든 기록을 `ScoreDetailPopup`으로 표시) / [x] 씬 배선 (`NYH_Grid` `UICanvas/RunResultView` + 팝업 인스턴스). 사망·시간초과는 게임오버 연출 뒤 표시, **최종층 클리어는 결산 → 닫으면 엔딩** (`ScoreResult.cleared`, `GameEvents.OnRunResultClosed`, `RunClearedEndingLoader`가 대기)
 - 결산에 Steam 순위 표시는 **하지 않기로 함** (업로드 응답 대기가 결산 흐름을 늦춤). 순위는 타이틀 랭킹 창에서만 확인
 - [x] 일일 챌린지 조합 — 날짜 시드에서 **1~4종 무작위**(`DailyChallenge.ChallengesFor`), 같은 날은 전원 동일. `ChallengeSelection.SetDaily`가 적용. 시작 전에는 알리지 않음(전용 안내 UI 없음), 인게임 표시 UI도 없어 체감으로만 파악 — 결산·기록 상세에서는 그대로 공개
 - [x] 다국어 키 추가 (`leaderboard.*` / `result.rank.*` / `profile.*`)
-- [x] 플레이어 이름 코드 (`PlayerProfile` 저장·검증, `NameInputPanel` 입력창, `ScoreEntry.playerName`) — 첫 실행 1회 입력 + 설정에서 변경, 한글·영문·숫자 8자, 로컬 기록판 전용(Steam 보드는 페르소나 이름 강제) / [ ] 씬 배선 + 설정창 버튼 연결
+- [x] 플레이어 이름 코드 (`PlayerProfile` 저장·검증, `NameInputPanel` 입력창, `ScoreEntry.playerName`) — 이름 없으면 언어별 자동 생성 + 설정에서 변경, 한글·영문·숫자 8자, 로컬 기록판 전용(Steam 보드는 페르소나 이름 강제) / [x] 씬 배선 + 설정창 버튼 연결 (메인 `MainSystemMenuController`, 게임 `UIManager` 시스템 탭 "이름 설정")
 - [ ] 출시 직전 Steamworks 파트너 사이트에서 테스트 기록 초기화 (에디터·디버그 층 이동으로 올라간 점수)
 - [ ] **`NO_STEAM` 디파인 제거** — 2026-11 GGC 출품 때문에 ProjectSettings Standalone 디파인에 상시 켜둠. 켜진 동안 Steam 초기화·랭킹·업적·일일 챌린지 전부 꺼지고 랭킹 창은 "내 순위표" 탭만 남음. `Tools/KDU/에디터 NO_STEAM 미리보기` 메뉴로 끄면 됨
 - [ ] 실제 Steam 앱 ID 발급 → `SteamBootstrap.AppId` 교체 (현재 480 테스트용)

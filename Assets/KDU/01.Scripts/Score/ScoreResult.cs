@@ -12,4 +12,5 @@ public struct ScoreResult
     public int challengeCount;   // 활성 챌린지 수
     public float multiplier;     // 1.5^챌린지수
     public int finalScore;       // 기본 × 배수
+    public bool cleared;         // 최종층 클리어로 끝났는지
 }

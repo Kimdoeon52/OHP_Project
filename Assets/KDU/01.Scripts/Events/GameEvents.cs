@@ -49,6 +49,7 @@ public static class GameEvents
     public static Action OnBossDefeated;              // 보스 처치 — 맵 출구 개방 등이 구독
     public static Action OnRunCleared;                // 최종층 클리어 — 승리/엔딩이 구독
     public static Action<ScoreResult> OnScoreFinalized; // 런 종료 점수 확정 — 결산 UI가 구독
+    public static Action OnRunResultClosed;             // 클리어 결산 팝업 닫힘 — 엔딩 전환이 구독
     public static Action<int> OnDepthChanged;           // 현재 층 변경 — HUD가 구독
     public static Action<int> OnScoreChanged;           // 진행 중 점수 변동 — HUD가 구독
     public static Action<SteamLeaderboard.Board, int> OnLeaderboardUploaded; // Steam 랭킹 업로드 완료 — 보드, 전역 순위
@@ -94,6 +95,7 @@ public static class GameEvents
         OnBossDefeated = null;              // 보스 처치
         OnRunCleared = null;                // 최종층 클리어
         OnScoreFinalized = null;            // 점수 확정
+        OnRunResultClosed = null;           // 클리어 결산 닫힘
         OnDepthChanged = null;              // 층 변경
         OnScoreChanged = null;              // 진행 중 점수 변동
         OnLeaderboardUploaded = null;       // Steam 랭킹 업로드

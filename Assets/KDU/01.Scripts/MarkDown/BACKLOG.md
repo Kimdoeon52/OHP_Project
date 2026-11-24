@@ -28,6 +28,7 @@
 - 영역별 페인터 풀 (Sewer 1~5 / Dungeon 6~10 / Hell 11~15) — `MAP_GENERATION.md` Phase 5
 - 더 다양한 빌더 (FigureEight 외) — `MAP_GENERATION.md` Phase 5
 - 폴리싱 (이펙트, 사운드 디테일 등) — 출시 전 폴리싱 스프린트
+- **아티팩트·룬 장비 슬롯** — 확장 계획, 기획 미완 (2026-11). GDD 갱신 후 구현. 코드 쪽 자리는 이미 있음(`EquipmentSlot.Artifact/Rune`, `LeaderboardDetails` 6칸 포맷). 추가 시 `ScoreDetailPopup` 프리팹 `equipCells`에 5·6번 칸(아티팩트, 룬)만 붙이면 기록 상세에 표시됨 — 지금은 4칸이라 해당 장비는 표시 생략
 
 ## 출시 스코프로 이동한 항목
 

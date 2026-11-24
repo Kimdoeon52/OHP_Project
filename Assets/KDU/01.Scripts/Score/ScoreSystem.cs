@@ -11,6 +11,7 @@ public class ScoreSystem : Singleton<ScoreSystem>
     private float _killBonus;      // 처치 몬스터 시간보너스 합
     private int _killCount;        // 총 처치 수
     private bool _finalized;
+    private bool _cleared;
 
     public ScoreResult LastResult { get; private set; }
 
@@ -27,7 +28,7 @@ public class ScoreSystem : Singleton<ScoreSystem>
         GameEvents.OnDepthChanged += OnDepthChanged;
         GameEvents.OnPlayerDied += Finalize;
         GameEvents.OnTimeUp += Finalize;
-        GameEvents.OnRunCleared += Finalize;
+        GameEvents.OnRunCleared += FinalizeCleared;
     }
 
     private void OnDisable()
@@ -38,7 +39,7 @@ public class ScoreSystem : Singleton<ScoreSystem>
         GameEvents.OnDepthChanged -= OnDepthChanged;
         GameEvents.OnPlayerDied -= Finalize;
         GameEvents.OnTimeUp -= Finalize;
-        GameEvents.OnRunCleared -= Finalize;
+        GameEvents.OnRunCleared -= FinalizeCleared;
     }
 
     private void OnEnemyKilled(Vector2Int pos, float timeBonus)
@@ -101,6 +102,15 @@ public class ScoreSystem : Singleton<ScoreSystem>
         }
     }
 
+    // 최종층 클리어로 런 종료
+    private void FinalizeCleared()
+    {
+        if (!_finalized)
+            _cleared = true;
+
+        Finalize();
+    }
+
     // 런 종료(사망/타임업/클리어) 1회만 점수 확정.
     private void Finalize()
     {
@@ -124,6 +134,7 @@ public class ScoreSystem : Singleton<ScoreSystem>
         r.challengeCount = challengeCount;
         r.multiplier = Mathf.Pow(ChallengeMultiplierBase, challengeCount);
         r.finalScore = Mathf.RoundToInt(r.baseScore * r.multiplier);
+        r.cleared = _cleared;
 
         LastResult = r;
 

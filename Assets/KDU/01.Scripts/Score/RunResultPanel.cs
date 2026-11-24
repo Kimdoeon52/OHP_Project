@@ -11,16 +11,26 @@ public class RunResultPanel : MonoBehaviour
     [Tooltip("점수 확정 후 표시까지 지연 (사망 연출용)")]
     [SerializeField, Min(0f)] private float showDelay;
 
+    [Tooltip("클리어 시 표시까지 지연")]
+    [SerializeField, Min(0f)] private float clearShowDelay = 0.5f;
+
+    // 씬에 결산 패널이 있는지 — 없으면 클리어 즉시 엔딩
+    public static bool IsActive { get; private set; }
+
     private Coroutine _showRoutine;
+    private bool _waitingClose;
 
     private void OnEnable()
     {
+        IsActive = true;
         GameEvents.OnScoreFinalized += OnScoreFinalized;
     }
 
     private void OnDisable()
     {
+        IsActive = false;
         GameEvents.OnScoreFinalized -= OnScoreFinalized;
+        StopWaitingClose();
     }
 
     public void Close()
@@ -43,17 +53,47 @@ public class RunResultPanel : MonoBehaviour
         if (_showRoutine != null)
             StopCoroutine(_showRoutine);
 
-        _showRoutine = StartCoroutine(ShowAfterDelay(entry));
+        _showRoutine = StartCoroutine(ShowAfterDelay(entry, result.cleared));
     }
 
-    private IEnumerator ShowAfterDelay(ScoreEntry entry)
+    private IEnumerator ShowAfterDelay(ScoreEntry entry, bool cleared)
     {
-        if (showDelay > 0f)
-            yield return new WaitForSecondsRealtime(showDelay);
-
-        if (detailPopup != null)
-            detailPopup.Open(entry, PlayerProfile.DisplayName);
+        float delay = cleared ? clearShowDelay : showDelay;
+        if (delay > 0f)
+            yield return new WaitForSecondsRealtime(delay);
 
         _showRoutine = null;
+
+        if (detailPopup == null)
+        {
+            if (cleared)
+                GameEvents.OnRunResultClosed?.Invoke();
+            yield break;
+        }
+
+        detailPopup.Open(entry, PlayerProfile.DisplayName);
+
+        // 클리어 결산은 닫으면 엔딩으로
+        if (cleared && !_waitingClose)
+        {
+            _waitingClose = true;
+            detailPopup.Closed += OnClearResultClosed;
+        }
+    }
+
+    private void OnClearResultClosed()
+    {
+        StopWaitingClose();
+        GameEvents.OnRunResultClosed?.Invoke();
+    }
+
+    private void StopWaitingClose()
+    {
+        if (!_waitingClose)
+            return;
+
+        _waitingClose = false;
+        if (detailPopup != null)
+            detailPopup.Closed -= OnClearResultClosed;
     }
 }

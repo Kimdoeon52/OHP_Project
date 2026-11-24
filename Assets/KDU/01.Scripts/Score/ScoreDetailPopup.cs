@@ -16,12 +16,15 @@ public class ScoreDetailPopup : MonoBehaviour
 
     [Header("장비")]
     [SerializeField] private ChallengePool challengePool;
-    [Tooltip("순서: 무기, 방어구, 반지0, 반지1, 아티팩트, 룬")]
+    [Tooltip("순서: 무기, 방어구, 반지0, 반지1, (확장) 아티팩트, 룬")]
     [SerializeField] private ScoreItemCell[] equipCells;
     [SerializeField] private GameObject emptyLabel;
 
     [Header("버튼")]
     [SerializeField] private Button closeButton;
+
+    // 닫힘 알림
+    public event System.Action Closed;
 
     private ScoreEntry _current;
     private string _playerName;
@@ -59,6 +62,7 @@ public class ScoreDetailPopup : MonoBehaviour
     public void Close()
     {
         gameObject.SetActive(false);
+        Closed?.Invoke();
     }
 
     // 현재 기록으로 전체 다시 그림 (언어 변경 시에도 호출)
