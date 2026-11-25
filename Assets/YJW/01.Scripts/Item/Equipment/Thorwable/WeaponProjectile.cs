@@ -98,10 +98,18 @@ public class WeaponProjectile : MonoBehaviour
 
             EnemyBase enemy = damageable as EnemyBase;
             int beforeHp = damageable.CurrentHp;
-            if (weaponInstance.weapon is IHitEffect hitEffect && enemy != null)
-                hitEffect.ApplyEffect(enemy, damage);
-            else
-                damageable.TakeDamage(damage);
+            DamageContext.CurrentDamageType = DamageType.Ranged;
+            try
+            {
+                if (weaponInstance.weapon is IHitEffect hitEffect && enemy != null)
+                    hitEffect.ApplyEffect(enemy, damage);
+                else
+                    damageable.TakeDamage(damage);
+            }
+            finally
+            {
+                DamageContext.CurrentDamageType = DamageType.Melee;
+            }
 
             int finalDamage = Mathf.Max(0, beforeHp - damageable.CurrentHp);
             if (finalDamage > 0 && damageable is not BossBase)

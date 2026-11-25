@@ -35,6 +35,9 @@ namespace EnemySystem
 
         private void Start()
         {
+            if (MapGenerator.Instance != null)
+                return;
+
             // MapGenerator 없는 단순 테스트 씬에서 자동으로 타일맵 기반 스폰 시도
             SpawnFromTilemap();
         }
@@ -83,7 +86,7 @@ namespace EnemySystem
 
             // 3. 1층 규칙으로 스폰
             DungeonRandom rng = new DungeonRandom();
-            rng.Init(Random.Range(0, 100000));
+            rng.Init(System.Environment.TickCount & 0x7FFFFFFF);
             Spawn(new List<RoomData> { mockRoom }, 1, rng);
         }
 
@@ -262,11 +265,11 @@ namespace EnemySystem
                 foreach (var dir in adjacentDirs)
                 {
                     Vector2Int candidate = exitTile + dir;
-                    // floorCells에 포함되고 Walkable인 위치만 허용
                     if (exitRoom.floorCells.Contains(candidate))
                     {
                         bool isWalkable = GridSystem.Instance == null || GridSystem.Instance.IsWalkable(candidate);
-                        if (isWalkable)
+                        bool isOccupied = GridSystem.Instance != null && GridSystem.Instance.IsCellOccupied(candidate);
+                        if (isWalkable && !isOccupied && !RoomSpawnRule.IsCellTooCloseToDoor(candidate, exitRoom))
                         {
                             spawnPos = candidate;
                             found = true;
@@ -276,27 +279,46 @@ namespace EnemySystem
                 }
             }
 
-            // 폴백: 인접 셀을 못 찾으면 방 중앙 Walkable 셀 사용
+            // 폴백: 인접 셀을 못 찾으면 방 중앙 Walkable 셀 사용 (문 앞·점유 셀 회피 우선)
             if (!found)
             {
                 Vector2Int center = new Vector2Int(
                     exitRoom.bounds.x + exitRoom.bounds.width / 2,
                     exitRoom.bounds.y + exitRoom.bounds.height / 2
                 );
-                float minDist = float.MaxValue;
+                float minDistSafe = float.MaxValue;
+                float minDistAny = float.MaxValue;
+                Vector2Int fallbackAny = Vector2Int.zero;
+                bool foundAny = false;
+
                 foreach (var cell in exitRoom.floorCells)
                 {
                     bool isWalkable = GridSystem.Instance == null || GridSystem.Instance.IsWalkable(cell);
-                    if (isWalkable)
+                    if (!isWalkable)
+                        continue;
+
+                    bool isOccupied = GridSystem.Instance != null && GridSystem.Instance.IsCellOccupied(cell);
+                    float dist = (cell - center).sqrMagnitude;
+
+                    if (!isOccupied && !RoomSpawnRule.IsCellTooCloseToDoor(cell, exitRoom) && dist < minDistSafe)
                     {
-                        float dist = (cell - center).sqrMagnitude;
-                        if (dist < minDist)
-                        {
-                            minDist = dist;
-                            spawnPos = cell;
-                            found = true;
-                        }
+                        minDistSafe = dist;
+                        spawnPos = cell;
+                        found = true;
                     }
+
+                    if (!isOccupied && dist < minDistAny)
+                    {
+                        minDistAny = dist;
+                        fallbackAny = cell;
+                        foundAny = true;
+                    }
+                }
+
+                if (!found && foundAny)
+                {
+                    spawnPos = fallbackAny;
+                    found = true;
                 }
             }
 
@@ -322,21 +344,35 @@ namespace EnemySystem
                 return;
             }
 
-            // 1. EnemyData에서 골램 정보 찾기
+            // 1. EnemyGolem 프리팹 우선 탐색, 없으면 displayName 폴백
             EnemyData golemData = null;
             foreach (var mapping in config.prefabMappings)
             {
-                if (mapping.enemyData != null && mapping.enemyData.displayName == "Golem")
+                if (mapping.enemyData != null && mapping.prefab != null && mapping.prefab.GetComponent<EnemyGolem>() != null)
                 {
                     golemData = mapping.enemyData;
                     break;
                 }
             }
+
+            if (golemData == null)
+            {
+                foreach (var mapping in config.prefabMappings)
+                {
+                    if (mapping.enemyData != null && mapping.enemyData.displayName == "Golem")
+                    {
+                        golemData = mapping.enemyData;
+                        break;
+                    }
+                }
+            }
+
             if (golemData == null)
             {
                 Debug.Log("스페셜 룸 골램 생성 실패: EnemyData에서 골램 정보를 찾을 수 없습니다.");
                 return;
             }
+
             foreach (var room in rooms)
             {
                 if (room.type == RoomType.Special && room.specialKind == SpecialRoomKind.Monster)
@@ -346,27 +382,42 @@ namespace EnemySystem
                         room.bounds.y + room.bounds.height / 2
                     );
                     Vector2Int spawnPos = center;
+                    Vector2Int fallbackPos = center;
+                    bool foundSafe = false;
                     bool foundWalkable = false;
-                    float minDist = float.MaxValue;
+                    float minSafeDist = float.MaxValue;
+                    float minWalkableDist = float.MaxValue;
 
                     foreach (var cell in room.floorCells)
                     {
                         bool isWalkable = GridSystem.Instance == null || GridSystem.Instance.IsWalkable(cell);
-                        if (isWalkable)
+                        if (!isWalkable)
+                            continue;
+
+                        bool isOccupied = GridSystem.Instance != null && GridSystem.Instance.IsCellOccupied(cell);
+                        float dist = (cell - center).sqrMagnitude;
+
+                        if (!isOccupied && !RoomSpawnRule.IsCellTooCloseToDoor(cell, room) && dist < minSafeDist)
                         {
-                            float dist = (cell - center).sqrMagnitude;
-                            if (dist < minDist)
-                            {
-                                minDist = dist;
-                                spawnPos = cell;
-                                foundWalkable = true;
-                            }
+                            minSafeDist = dist;
+                            spawnPos = cell;
+                            foundSafe = true;
+                        }
+
+                        if (!isOccupied && dist < minWalkableDist)
+                        {
+                            minWalkableDist = dist;
+                            fallbackPos = cell;
+                            foundWalkable = true;
                         }
                     }
 
-                    if (!foundWalkable && room.floorCells.Count > 0)
+                    if (!foundSafe)
                     {
-                        spawnPos = room.floorCells[0];
+                        if (foundWalkable)
+                            spawnPos = fallbackPos;
+                        else if (room.floorCells.Count > 0)
+                            spawnPos = room.floorCells[0];
                     }
 
                     var spawnEntry = new EnemySpawnEntry(golemData, spawnPos);

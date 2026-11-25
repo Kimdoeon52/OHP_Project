@@ -18,16 +18,16 @@ MonoBehaviour:
   grade: 0
   moveType: 1
   hasShield: 0
-  maxHp: 60
+  maxHp: 30
   attackMin: 10
   attackMax: 15
   attackPattern: 0
-  moveSpeed: 0.3
+  moveSpeed: 0.5
   attackSpeed: 1
-  defenseMin: 1
+  defenseMin: 2
   defenseMax: 3
-  evasion: 3
-  accuracy: 10
+  evasion: 5
+  accuracy: 15
   timeBonus: 3
   expReward: 15
   goldDropChance: 1

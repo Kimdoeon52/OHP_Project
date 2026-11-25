@@ -1,81 +1,57 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
-/// <summary>
-/// 거미 (EnemySpider) [Common] — Area 1 (하수구, 1~5층)
-///
-/// 핵심 메커니즘:
-///   1. 기본 추적 + 근접 1칸 공격 (EnemyBase 기본 템플릿 사용)
-///   2. 공격 명중 시 상태이상 2종 동시 발동:
-///      - 독(Poison)      : EnemyData.onHitEffect SO 설정 → EnemyBase.TryApplyOnHitEffect 자동 처리
-///      - 이속 감소(Cripple): slowDebuffData SO를 직접 읽어 TryApplySlowDebuff로 수동 추가 부여
-///
-/// override 목록:
-///   ExecutePendingAttack()  → 기본 공격 + TryApplySlowDebuff 추가 호출
-/// </summary>
+// 거미 (EnemySpider) — 명중 시 독(EnemyData) + 이속 감소(Cripple) 2중 상태이상 부여
 public class EnemySpider : EnemyBase
 {
     [Header("거미 추가 디버프 설정")]
-    [Tooltip("플레이어 적중 시 추가로 부여할 이속 감소(Cripple) 상태이상 데이터. 인스펙터에서 할당.")]
+    [Tooltip("이속 감소 상태이상 데이터")]
     [SerializeField] private StatusEffectData slowDebuffData;
 
-    /// <summary>
-    /// 공격 발동 override.
-    /// 명중 성공 시 독(TryHitPlayer 내부 공통 처리) + 이속감소(TryApplySlowDebuff) 순서로 2중 상태이상 적용.
-    /// </summary>
     protected override IEnumerator ExecutePendingAttack(Vector2Int targetCell, float delaySeconds)
     {
+        _isAttacking = true;
         ShowTelegraph(targetCell);
 
-        yield return new WaitForSeconds(delaySeconds);
+        yield return WaitGameSeconds(delaySeconds);
 
         if (!IsDead)
         {
             UpdateSpriteDirection(targetCell);
             if (_animator != null)
-            {
                 _animator.SetTrigger("Attack");
-            }
-            if (Player.GridPosition == targetCell)
+
+            yield return WaitGameSeconds(0.25f);
+
+            if (!IsDead && Player.GridPosition == targetCell)
             {
                 int damage = RollAttackDamage();
                 if (TryHitPlayer(damage))
-                {
-                    // 빗나간 공격에는 고유 디버프도 붙지 않도록 명중 성공 뒤에만 추가 적용합니다.
                     TryApplySlowDebuff(Player);
-                }
             }
         }
+
         ClearTelegraphs();
         _attackActionPoints = 0f;
         _isAttacking = false;
         _pendingAttackCell = null;
     }
 
-    /// <summary>
-    /// slowDebuffData를 기반으로 Cripple 상태이상을 대상에게 안전하게 부여.
-    /// slowDebuffData가 null이거나 대상이 사망이면 아무것도 안 함.
-    /// </summary>
     private void TryApplySlowDebuff(IDamageable target)
     {
-        if (slowDebuffData == null) return;
-        if (target == null || target.IsDead) return;
-        if (target is not Component component) return;
+        if (slowDebuffData == null)
+            return;
 
-        // 상태이상 요청 구축
-        var request = new StatusRequest(
-            target as IGridEntity,
-            (target as IGridEntity)?.GridPosition ?? GridPosition,
-            slowDebuffData.statusType,
-            slowDebuffData.durationTurns,
-            slowDebuffData.power
-        );
+        if (target == null || target.IsDead)
+            return;
 
-        // StatusController 없으면 자동 부착 후 상태 적용
+        if (target is not Component component)
+            return;
+
+        var request = new StatusRequest(target as IGridEntity, (target as IGridEntity)?.GridPosition ?? GridPosition, slowDebuffData.statusType, slowDebuffData.durationTurns, slowDebuffData.power);
+
         StatusController controller = component.GetOrAddComponent<StatusController>();
         controller.ApplyStatus(request);
-
-        // 상태이상 발동 전역 이벤트 알림 (UI / 사운드 구독자용)
         GameEvents.OnStatusEffectApplied?.Invoke(request);
     }
 }

@@ -35,44 +35,54 @@ namespace EnemySystem
         /// 지정 위치가 문(doorCells)과 맨해튼 거리 1 이내인지 판별.
         /// 문 바로 앞 배치 시 플레이어가 방 진입 즉시 피해를 입는 부정 경험 방지 목적.
         /// </summary>
+        public static bool IsCellTooCloseToDoor(Vector2Int pos, RoomData room)
+        {
+            return IsTooCloseToDoor(pos, room);
+        }
+
         protected static bool IsTooCloseToDoor(Vector2Int pos, RoomData room)
         {
+            if (room == null || room.doorCells == null)
+                return false;
+
             foreach (var door in room.doorCells)
             {
                 int manhattan = Mathf.Abs(pos.x - door.x) + Mathf.Abs(pos.y - door.y);
-                if (manhattan <= 1) return true;
+                if (manhattan <= 1)
+                    return true;
             }
             return false;
         }
 
-        /// <summary>
-        /// 4방향 중 1방향 이상으로 requiredClearance칸 이상의 직선 시야가 확보되는지 확인.
-        /// requiresLineOfSight == true인 원거리 적(마법사/궁수) 배치 검증에 사용.
-        /// </summary>
-        /// <param name="pos">검증할 격자 좌표</param>
-        /// <param name="requiredClearance">필요한 최소 시야 거리 (기본값 3칸)</param>
         protected static bool HasStraightLOS(Vector2Int pos, int requiredClearance = 3)
+        {
+            return HasStraightLOS(pos, null, requiredClearance);
+        }
+
+        protected static bool HasStraightLOS(Vector2Int pos, RoomData room, int requiredClearance = 3)
         {
             Vector2Int[] directions = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
             foreach (var dir in directions)
             {
-                if (CheckClearance(pos, dir, requiredClearance)) return true;
+                if (CheckClearance(pos, dir, requiredClearance, room))
+                    return true;
             }
             return false;
         }
 
-        /// <summary>
-        /// 시작점에서 특정 방향으로 distance칸이 전부 Walkable인지 체크.
-        /// GridSystem 없는 에디터 테스트 환경에서는 true 반환.
-        /// </summary>
-        private static bool CheckClearance(Vector2Int startPos, Vector2Int direction, int distance)
+        private static bool CheckClearance(Vector2Int startPos, Vector2Int direction, int distance, RoomData room)
         {
-            if (GridSystem.Instance == null) return true;
+            if (GridSystem.Instance == null)
+                return true;
 
             for (int i = 1; i <= distance; i++)
             {
                 Vector2Int next = startPos + (direction * i);
-                if (!GridSystem.Instance.IsWalkable(next)) return false;
+                if (!GridSystem.Instance.IsWalkable(next))
+                    return false;
+
+                if (room != null && room.doorCells != null && room.doorCells.Contains(next))
+                    return false;
             }
             return true;
         }
@@ -238,7 +248,7 @@ namespace EnemySystem
                     int tempIndex = posIndex;
                     while (tempIndex < validPositions.Count)
                     {
-                        if (HasStraightLOS(validPositions[tempIndex]))
+                        if (HasStraightLOS(validPositions[tempIndex], room))
                         {
                             found = true;
                             posIndex = tempIndex;
@@ -326,7 +336,7 @@ namespace EnemySystem
                     int tempIndex = posIndex;
                     while (tempIndex < validPositions.Count)
                     {
-                        if (HasStraightLOS(validPositions[tempIndex]))
+                        if (HasStraightLOS(validPositions[tempIndex], room))
                         {
                             found = true;
                             posIndex = tempIndex;

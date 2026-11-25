@@ -55,6 +55,7 @@ public class EnemyGolem : EnemyBase
         if (instance != null)
         {
             instance.enhanceLevel = _weaponEnhanceLevel;
+            instance.curse = EnemyLootDropper.RollCurseForEquipment(instance, rng);
             // 골렘이 들고 있던 무기 — 감정 완료 상태로 드롭
             instance.isAnalyzed = true;
             _holdingWeaponInstance = instance;

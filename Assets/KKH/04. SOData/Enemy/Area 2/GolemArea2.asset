@@ -15,18 +15,18 @@ MonoBehaviour:
   id: 2006
   displayName: Golem
   sprite: {fileID: -774327837, guid: 9ab21432c5f70fe4f88c7a8d9f2e93f7, type: 3}
-  grade: 0
-  moveType: 2
+  grade: 1
+  moveType: 0
   hasShield: 0
-  maxHp: 100
+  maxHp: 50
   attackMin: 3
   attackMax: 3
   attackPattern: 0
-  moveSpeed: 0.4
+  moveSpeed: 0.75
   attackSpeed: 1
   defenseMin: 1
   defenseMax: 3
-  evasion: 8
+  evasion: 10
   accuracy: 15
   timeBonus: 10
   expReward: 15

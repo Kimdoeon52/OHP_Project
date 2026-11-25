@@ -18,11 +18,11 @@ MonoBehaviour:
   grade: 1
   moveType: 0
   hasShield: 0
-  maxHp: 110
+  maxHp: 55
   attackMin: 15
   attackMax: 22
   attackPattern: 0
-  moveSpeed: 0.3
+  moveSpeed: 0.5
   attackSpeed: 1
   defenseMin: 2
   defenseMax: 5
