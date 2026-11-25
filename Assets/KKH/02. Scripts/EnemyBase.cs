@@ -212,6 +212,11 @@ public abstract class EnemyBase : EntityBase, IDamageable
         TakeDamage(amount);
     }
 
+    public virtual bool IsDamageImmune(DamageType damageType)
+    {
+        return false;
+    }
+
     public void Heal(int amount)
     {
         if (IsDead || amount <= 0)

@@ -31,6 +31,7 @@ public class MonsterHealthBar : MonoBehaviour
     [SerializeField] private float drainSpeed = 2f;
 
     private Canvas _canvas;
+    private SpriteRenderer _targetRenderer;
     private Coroutine _drainCoroutine;
     private bool _isInitialized = false;
 
@@ -41,6 +42,7 @@ public class MonsterHealthBar : MonoBehaviour
         {
             targetEnemy = GetComponentInParent<EnemyBase>();
         }
+        CacheTargetRenderer();
     }
 
     private void Start()
@@ -52,10 +54,21 @@ public class MonsterHealthBar : MonoBehaviour
             return;
         }
 
+        CacheTargetRenderer();
         // 초기 상태 설정
         UpdateSliderValuesInstant();
         CheckVisibility();
         _isInitialized = true;
+    }
+
+    private void CacheTargetRenderer()
+    {
+        if (targetEnemy != null && _targetRenderer == null)
+        {
+            _targetRenderer = targetEnemy.GetComponent<SpriteRenderer>();
+            if (_targetRenderer == null)
+                _targetRenderer = targetEnemy.GetComponentInChildren<SpriteRenderer>();
+        }
     }
 
     private void OnEnable()
@@ -94,9 +107,9 @@ public class MonsterHealthBar : MonoBehaviour
                 // 체력이 회복된 경우는 즉시 둘 다 업데이트
                 UpdateSliderValuesInstant();
             }
-
-            CheckVisibility();
         }
+
+        CheckVisibility();
     }
 
     /// <summary>
@@ -117,6 +130,12 @@ public class MonsterHealthBar : MonoBehaviour
     private void CheckVisibility()
     {
         if (targetEnemy == null || targetEnemy.IsDead)
+        {
+            SetVisibility(false);
+            return;
+        }
+
+        if (_targetRenderer != null && !_targetRenderer.enabled)
         {
             SetVisibility(false);
             return;

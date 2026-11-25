@@ -631,7 +631,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.7280159, y: 1.7280161}
+  m_Size: {x: 0.9, y: 0.9}
   m_EdgeRadius: 0
 --- !u!114 &5157262205569359877
 MonoBehaviour:
@@ -646,7 +646,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   data: {fileID: 11400000, guid: a0150d33e3f97ea44b55bc93c83d19f2, type: 2}
-  warningPrefab: {fileID: 0}
+  warningPrefab: {fileID: 2305967036810482513, guid: 61d0fc4ee2effe944b2d6eec70752196, type: 3}
   hitParticlePrefab: {fileID: 0}
   deathEffectPrefab: {fileID: 0}
   goldPickupPrefab: {fileID: 1257418033240296761, guid: 66ffa8c140c0701468162ba42fae4d28, type: 3}
@@ -787,6 +787,6 @@ MonoBehaviour:
   targetEnemy: {fileID: 5157262205569359877}
   mainHpSlider: {fileID: 2687993084884800812}
   delayedHpSlider: {fileID: 6813272762978331779}
-  autoHideOnFullHp: 0
+  autoHideOnFullHp: 1
   delayDuration: 0.5
   drainSpeed: 2

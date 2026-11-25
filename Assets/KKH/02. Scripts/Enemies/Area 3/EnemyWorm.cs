@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// 지렁이 (EnemyWorm) — 벽 통과 땅굴 이동 및 이동 중 원거리 공격 면역
+// 지렁이 (EnemyWorm) — 벽 통과 땅굴 이동 및 버로우 중 무적
 public class EnemyWorm : EnemyBase
 {
     [Header("Burrow Animation Settings")]
@@ -41,15 +41,35 @@ public class EnemyWorm : EnemyBase
     [Tooltip("공격 예고 대기 시간")]
     [SerializeField] private float attackTelegraphDelay = 0.6f;
 
+    private Collider2D _collider;
     private Coroutine _moveCoroutine;
     private bool _isMovingVisual = false;
-    private bool _isUnderground = false;
+    private bool _isSubmerged = false;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        _collider = GetComponent<Collider2D>();
+    }
+
+    protected override void OnDestroy()
+    {
+        if (_collider != null)
+            _collider.enabled = true;
+
+        base.OnDestroy();
+    }
+
+    protected override bool HasCustomMovementVisual()
+    {
+        return true;
+    }
 
     protected override void Update()
     {
         if (!_isMovingVisual)
         {
-            bool isInWall = GridSystem.Instance != null && !GridSystem.Instance.IsWalkable(GridPosition);
+            bool isInWall = IsCurrentlyInWall();
             if (isInWall && _animator != null)
             {
                 _animator.speed = 0f;
@@ -60,7 +80,40 @@ public class EnemyWorm : EnemyBase
         if (_isMovingVisual || _isAttacking || _pendingAttackCell != null)
             return;
 
-        base.Update();
+        if (IsDead || Player == null)
+            return;
+
+        if (TimeSystem.Instance == null || !TimeSystem.Instance.IsRunning)
+            return;
+
+        _moveActionPoints += Time.deltaTime;
+        _attackActionPoints += Time.deltaTime;
+
+        bool canAttackNow = !SafeRoomTimerGate.PlayerInSafeRoom && IsAdjacentToPlayer();
+        if (canAttackNow)
+        {
+            _moveActionPoints = Mathf.Min(_moveActionPoints, GetMoveCost());
+
+            float attackCost = GetAttackCost();
+            if (_attackActionPoints >= attackCost)
+            {
+                CheckAttackTelegraph();
+                _attackActionPoints -= attackCost;
+            }
+            return;
+        }
+
+        float moveCost = GetMoveCost();
+        if (_moveActionPoints >= moveCost)
+        {
+            PerformMovement();
+            _moveActionPoints -= moveCost;
+        }
+    }
+
+    public override bool IsDamageImmune(DamageType damageType)
+    {
+        return _isMovingVisual || _isSubmerged || IsCurrentlyInWall();
     }
 
     public override void TakeDamage(int amount, DamageType damageType)
@@ -70,37 +123,13 @@ public class EnemyWorm : EnemyBase
 
         isDetected = true;
 
-        if ((_isMovingVisual || _isUnderground) && damageType == DamageType.Ranged)
+        if (IsDamageImmune(damageType))
         {
             GameEvents.OnCombatTextRequested?.Invoke(new CombatTextRequest(transform.position, "Immune", 0, CombatTextType.Miss));
             return;
         }
 
-        bool isInWall = GridSystem.Instance != null && !GridSystem.Instance.IsWalkable(GridPosition);
-        if (_isUnderground || (isInWall && !_isMovingVisual))
-        {
-            GameEvents.OnCombatTextRequested?.Invoke(new CombatTextRequest(transform.position, "Immune", 0, CombatTextType.Miss));
-            return;
-        }
-
-        if (_isMovingVisual)
-        {
-            int finalDamage = ApplyDefense(amount);
-            CurrentHp -= finalDamage;
-
-            if (finalDamage > 0)
-            {
-                GameEvents.OnAudioEventRequested?.Invoke(AudioEventId.MonsterHit);
-                GameEvents.OnPlayVFX?.Invoke(transform.position, VFXType.MonsterHit);
-            }
-
-            if (CurrentHp <= 0)
-                Die();
-        }
-        else
-        {
-            base.TakeDamage(amount);
-        }
+        base.TakeDamage(amount);
     }
 
     public override void TakeDamage(int amount)
@@ -117,7 +146,10 @@ public class EnemyWorm : EnemyBase
         }
 
         _isMovingVisual = false;
-        _isUnderground = false;
+        _isSubmerged = false;
+
+        if (_collider != null)
+            _collider.enabled = true;
 
         if (_animator != null)
             _animator.speed = 1f;
@@ -149,6 +181,9 @@ public class EnemyWorm : EnemyBase
         if (IsDead || _isMovingVisual || _isAttacking || _pendingAttackCell != null)
             return;
 
+        if (!SafeRoomTimerGate.PlayerInSafeRoom && IsAdjacentToPlayer())
+            return;
+
         Vector2Int? targetCell = FindMoveTarget();
         if (!targetCell.HasValue)
             return;
@@ -157,8 +192,9 @@ public class EnemyWorm : EnemyBase
         if (path == null || path.Count == 0)
             return;
 
-        if (path.Count > 3)
-            path = path.GetRange(0, 3);
+        path = TrimPathToWalkable(path);
+        if (path == null || path.Count == 0)
+            return;
 
         if (_moveCoroutine != null)
             StopCoroutine(_moveCoroutine);
@@ -166,17 +202,51 @@ public class EnemyWorm : EnemyBase
         _moveCoroutine = StartCoroutine(BurrowMoveSequence(path));
     }
 
+    // 3칸 제한 적용 시 벽 한가운데서 멈추지 않도록 착지 가능한 바닥 타일까지 보정
+    private List<Vector2Int> TrimPathToWalkable(List<Vector2Int> path)
+    {
+        if (path == null || path.Count == 0)
+            return null;
+
+        int maxBaseIndex = Mathf.Min(path.Count - 1, 2);
+        for (int i = maxBaseIndex; i >= 0; i--)
+        {
+            if (IsSafeLandingCell(path[i]))
+                return path.GetRange(0, i + 1);
+        }
+
+        int maxExtendIndex = Mathf.Min(path.Count - 1, 5);
+        for (int i = 3; i <= maxExtendIndex; i++)
+        {
+            if (IsSafeLandingCell(path[i]))
+                return path.GetRange(0, i + 1);
+        }
+
+        return null;
+    }
+
+    private bool IsSafeLandingCell(Vector2Int cell)
+    {
+        if (GridSystem.Instance != null && !GridSystem.Instance.IsWalkable(cell))
+            return false;
+
+        return CanOccupyCell(cell);
+    }
+
     private IEnumerator BurrowMoveSequence(List<Vector2Int> path)
     {
         _isMovingVisual = true;
+        if (_collider != null)
+            _collider.enabled = false;
 
-        bool startInWall = GridSystem.Instance != null && !GridSystem.Instance.IsWalkable(GridPosition);
+        bool startInWall = IsCurrentlyInWall();
         float diveDuration = GetBurrowDiveTime();
         float emergeDuration = GetEmergeTime();
 
         if (!startInWall)
         {
-            _isUnderground = false;
+            _isSubmerged = false;
+            UpdateVisibility();
 
             if (_animator != null)
             {
@@ -191,7 +261,7 @@ public class EnemyWorm : EnemyBase
             yield return WaitGameSeconds(diveDuration);
         }
 
-        _isUnderground = true;
+        _isSubmerged = true;
         UpdateVisibility();
 
         if (_animator != null)
@@ -239,14 +309,14 @@ public class EnemyWorm : EnemyBase
                 break;
 
             transform.position = targetPos;
-            TrapTerrainController.TryApplyTerrainAt(this, cell);
         }
 
         bool endInWall = GridSystem.Instance != null && !GridSystem.Instance.IsWalkable(lastCell);
 
         if (!endInWall)
         {
-            _isUnderground = false;
+            _isSubmerged = false;
+            UpdateVisibility();
 
             if (_animator != null)
             {
@@ -257,7 +327,6 @@ public class EnemyWorm : EnemyBase
                 _animator.Update(0f);
             }
 
-            UpdateVisibility();
             yield return WaitGameSeconds(emergeDuration);
 
             if (_animator != null)
@@ -265,6 +334,8 @@ public class EnemyWorm : EnemyBase
                 SafeSetBool(travelBoolName, false);
                 _animator.speed = 1f;
             }
+
+            TrapTerrainController.TryApplyTerrainAt(this, lastCell);
         }
         else if (_animator != null)
         {
@@ -272,6 +343,9 @@ public class EnemyWorm : EnemyBase
         }
 
         _isMovingVisual = false;
+        if (!endInWall && _collider != null)
+            _collider.enabled = true;
+
         UpdateVisibility();
     }
 
@@ -292,21 +366,45 @@ public class EnemyWorm : EnemyBase
         Vector2Int playerPos = Player.GridPosition;
         DungeonRandom rng = GetRng();
 
-        if (data != null && SquaredDistanceToPlayer() <= data.visionRange * data.visionRange)
+        if (GameManager.Instance != null && GameManager.Instance.isAlerted && !SafeRoomTimerGate.PlayerInSafeRoom)
+        {
+            if (_alarmTarget == null)
+                _alarmTarget = playerPos;
+
+            isDetected = true;
+        }
+
+        bool inVisionRange = data != null && SquaredDistanceToPlayer() <= data.visionRange * data.visionRange;
+        bool hasLos = VisionSystem.Instance == null || VisionSystem.Instance.HasLineOfSight(GridPosition, playerPos);
+
+        if (inVisionRange && (isDetected || hasLos))
         {
             isDetected = true;
-            Vector2Int[] adjacentDirs = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
-            List<Vector2Int> validCells = new List<Vector2Int>();
+            _alarmTarget = null;
+            Vector2Int? adj = PickAdjacentFloorCell(playerPos, rng);
+            if (adj.HasValue)
+                return adj.Value;
+        }
 
-            foreach (var dir in adjacentDirs)
+        if (_alarmTarget.HasValue)
+        {
+            Vector2Int alarmCell = _alarmTarget.Value;
+            if (GridPosition == alarmCell)
             {
-                var cell = playerPos + dir;
-                if (CanOccupyCell(cell) && cell != GridPosition)
-                    validCells.Add(cell);
+                _alarmTarget = null;
             }
+            else if (IsSafeLandingCell(alarmCell))
+            {
+                return alarmCell;
+            }
+            else
+            {
+                Vector2Int? adjAlarm = PickAdjacentFloorCell(alarmCell, rng);
+                if (adjAlarm.HasValue)
+                    return adjAlarm.Value;
 
-            if (validCells.Count > 0)
-                return validCells[rng.Range(0, validCells.Count)];
+                _alarmTarget = null;
+            }
         }
 
         List<Vector2Int> wanderCells = new List<Vector2Int>();
@@ -318,13 +416,31 @@ public class EnemyWorm : EnemyBase
                     continue;
 
                 var cell = GridPosition + new Vector2Int(x, y);
-                if (cell != GridPosition && CanOccupyCell(cell))
+                if (cell != GridPosition && IsSafeLandingCell(cell))
                     wanderCells.Add(cell);
             }
         }
 
         if (wanderCells.Count > 0)
             return wanderCells[rng.Range(0, wanderCells.Count)];
+
+        return null;
+    }
+
+    private Vector2Int? PickAdjacentFloorCell(Vector2Int centerCell, DungeonRandom rng)
+    {
+        Vector2Int[] adjacentDirs = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+        List<Vector2Int> validCells = new List<Vector2Int>();
+
+        foreach (var dir in adjacentDirs)
+        {
+            var cell = centerCell + dir;
+            if (cell != GridPosition && IsSafeLandingCell(cell))
+                validCells.Add(cell);
+        }
+
+        if (validCells.Count > 0)
+            return validCells[rng.Range(0, validCells.Count)];
 
         return null;
     }
@@ -337,7 +453,10 @@ public class EnemyWorm : EnemyBase
         if (IsInsideClosedRestrictedRoom(cell))
             return false;
 
-        if (!GridSystem.Instance.IsInBounds(cell))
+        if (GridSystem.Instance == null || !GridSystem.Instance.IsInBounds(cell))
+            return false;
+
+        if (!GridSystem.Instance.IsWalkable(cell))
             return false;
 
         if (cell == Player.GridPosition)
@@ -351,6 +470,11 @@ public class EnemyWorm : EnemyBase
             return false;
 
         return true;
+    }
+
+    private bool IsCurrentlyInWall()
+    {
+        return GridSystem.Instance != null && !GridSystem.Instance.IsWalkable(GridPosition);
     }
 
     // 잠긴 Special/Secret 방 내부 셀인지 확인하여 벽 관통 무단 침투 차단
@@ -446,31 +570,23 @@ public class EnemyWorm : EnemyBase
 
     protected override void UpdateVisibility()
     {
-        if (_isMovingVisual)
+        if (SpriteRenderer == null)
+            return;
+
+        bool inVision = VisionSystem.Instance != null && VisionSystem.Instance.IsVisible(GridPosition);
+        if (!inVision)
         {
-            bool isInWall = GridSystem.Instance != null && !GridSystem.Instance.IsWalkable(GridPosition);
-            if (_isUnderground && isInWall)
-            {
-                if (SpriteRenderer != null)
-                    SpriteRenderer.enabled = false;
-            }
-            else if (SpriteRenderer != null)
-            {
-                SpriteRenderer.enabled = true;
-            }
+            SpriteRenderer.enabled = false;
             return;
         }
 
-        bool isInWallStationary = GridSystem.Instance != null && !GridSystem.Instance.IsWalkable(GridPosition);
-        if (isInWallStationary)
+        if (_isSubmerged || IsCurrentlyInWall())
         {
-            if (SpriteRenderer != null)
-                SpriteRenderer.enabled = false;
+            SpriteRenderer.enabled = false;
+            return;
         }
-        else
-        {
-            base.UpdateVisibility();
-        }
+
+        SpriteRenderer.enabled = true;
     }
 
     protected override void CheckAttackTelegraph()

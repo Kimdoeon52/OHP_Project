@@ -142,7 +142,7 @@ public class GridPlayerCombat : MonoBehaviour
 
                     PublishCombatText(GetCombatWorldPosition(damageable), finalDamage.ToString(), finalDamage, textType);
                 }
-                else
+                else if (enemyTarget == null || !enemyTarget.IsDamageImmune(DamageType.Melee))
                 {
                     PublishCombatText(GetCombatWorldPosition(damageable), "Block", 0, CombatTextType.Block);
                 }
